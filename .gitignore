@@ -1,0 +1,36 @@
+.DS_Store
+
+# app
+
+/app/node_modules
+/app/dist
+/app/npm-debug.log*
+/app/yarn-debug.log*
+/app/yarn-error.log*
+/app/package-lock.json
+
+# server
+/server/node_modules
+/server/public/hot
+/server/public/storage
+/server/storage/*.key
+/server/vendor
+/server/.idea
+/server/.vscode
+/server/.vagrant
+/server/npm-debug.log
+/server/yarn-error.log
+/server/.env
+/server/composer.lock
+/server/config/database_prod.php
+
+
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
