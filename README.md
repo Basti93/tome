@@ -1,6 +1,6 @@
-# T.O.M.E. - Trainings Organization Made Easy
+# T.O.M.E. - Training Organization Made Easy
 
-This is a webapp to organize trainings for sport clubs. 
+This is a webapp to organize training sessions for sport clubs. 
 
 The two main goals are:
 - Support the work of trainers
