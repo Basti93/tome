@@ -153,7 +153,7 @@
     color="primary"
     fixed>
     <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-    <v-toolbar-title>SSC-Trainingsplanung</v-toolbar-title>
+    <v-toolbar-title>{{title}}</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-menu
       v-if="loggedInUser"
@@ -204,6 +204,7 @@
       return {
         drawer: false,
         nonApprovedUserCount: 0,
+        title: process.env.VUE_APP_TITLE,
       }
     },
     created() {

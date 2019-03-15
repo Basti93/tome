@@ -3,6 +3,7 @@
     <v-card-title>
       <StatisticsFilter1
         v-bind:groupIds="filterGroupIds"
+        v-bind:year="filterYear"
         v-on:branchSelected="filterBranchIdChanged"
         v-on:groupsSelected="filterGroupIdsChanged"
         v-on:yearSelected="filterYearChanged">
@@ -67,6 +68,8 @@
       } else {
         this.filterGroupIds.push(this.loggedInUser.groupId);
       }
+      this.filterYear = this.moment().year();
+      this.fetchData();
     },
     computed: {
       ...mapGetters('masterData', {getGroupColorById: 'getGroupColorById', getGroupIdsByBranchId: 'getGroupIdsByBranchId'}),
@@ -91,8 +94,6 @@
             count.splice((monthNumber - 1), 1, response.data[i].total);
           }
 
-
-
           self.series = [{
             data: count
           }];
@@ -101,22 +102,17 @@
       },
       filterBranchIdChanged: function (branchId) {
         this.filterGroupIds = this.getGroupIdsByBranchId(branchId);
+        this.fetchData();
       },
       filterGroupIdsChanged: function (groupIds) {
         this.filterGroupIds = groupIds;
+        this.fetchData();
       },
       filterYearChanged: function (year) {
         this.filterYear = year;
+        this.fetchData();
       },
     },
-    watch: {
-      filterYear: function () {
-        this.fetchData();
-      },
-      filterGroupIds: function () {
-        this.fetchData();
-      },
-    }
   }
 </script>
 

@@ -88,7 +88,7 @@ class OldDatabaseMigrationSeeder extends Seeder
         $member = DB::connection("mysqlOld")->table('MEMBERS')->where('ID', $op->MEMBER_ID)->first();
         if ($member) {
           $user = User::where('firstName', $member->FIRST_NAME)->where('familyName', $member->FAMILY_NAME)->first();
-          $training->participants()->attach($user);
+          $training->participants()->attach($user, ['attend' => 1]);
         }
       }
       $oldTrainers = DB::connection("mysqlOld")->table('TRAINING_TRAINER')->where('TRAINING_ID', $ot->ID)->get();

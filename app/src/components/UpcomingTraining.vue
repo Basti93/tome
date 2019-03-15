@@ -2,7 +2,7 @@
   <div>
     <v-card class="tp-upcoming-training white--text" :class="'ma-3'">
       <v-card-title>
-        <h3>{{ moment(start).format('dddd [den] Do MMMM') }}&nbsp;({{moment(start).endOf('day').fromNow()}})</h3>
+       <h3>{{ moment(start).format('dddd [den] Do MMMM') }}&nbsp;({{moment(start).fromNow()}})</h3>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
@@ -15,7 +15,7 @@
             <v-flex xs6 v-show="allowedToCheckIn()">
               <v-btn
                 color="primary"
-                @click="participate()"
+                @click="currentUser ? participate() : showCookieUserLogin()"
                 v-show="!attending">
                 Anmelden
               </v-btn>
@@ -70,7 +70,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <v-chip v-for="(item, index) in groups"
+        <v-chip v-for="(item) in groups"
                 :key="item.id">{{item.name}}
         </v-chip>
       </v-card-text>
@@ -79,29 +79,31 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
   import TrainingContent from "./TrainingContent";
-  import User from "../models/User";
+  import User from "@/models/User";
+  import {mapGetters} from 'vuex'
 
   export default {
     name: "UpcomingTraining",
     components: {TrainingContent},
     //from parent
     props: {
-      id: Number,
-      date: Date,
-      start: Date,
-      end: Date,
-      location: String,
-      groups: Array,
-      participantIds: Array,
-      contentIds: Array,
-      comment: String,
+      training: Object,
       currentUser: User,
+      isCookieUser: Boolean,
     },
     data: function () {
       return {
         attendingInput: false,
+        id: null,
+        date: null,
+        start: null,
+        end: null,
+        location: null,
+        groups: [],
+        participantIds: [],
+        contentIds: [],
+        comment: null,
       }
     },
     created() {
@@ -114,6 +116,24 @@
         }
         return false;
       },
+      ...mapGetters('masterData', {
+        getLocationNameById: 'getLocationNameById',
+        getGroupsByIds: 'getGroupsByIds'
+      }),
+    },
+    watch: {
+      training: function () {
+        this.id = this.training.id;
+        this.date = this.moment(this.training.date).toDate();
+        this.start = this.moment(this.training.start).toDate();
+        this.end = this.moment(this.training.end).toDate();
+        this.location = this.getLocationNameById(this.training.locationId);
+        this.groups = this.getGroupsByIds(this.training.groupIds);
+        this.participantIds = this.training.participantIds;
+        this.contentIds = this.training.contentIds;
+        this.comment = this.training.comment;
+
+      },
     },
     methods: {
       allowedToCheckIn() {
@@ -124,23 +144,46 @@
       },
       participate() {
         var self = this;
-        this.$http.post('training/' + this.id + '/checkin/' + this.currentUser.id).then(res => {
-          if (res.data.status == 'ok') {
-            self.$emit('checkedIn', self.id);
-          } else {
-            self.attendingInput = false;
-          }
-        })
+        if (this.isCookieUser) {
+          this.$http.post('training/' + this.id + '/checkinunregistered/' + this.currentUser.id).then(res => {
+            if (res.data.status == 'ok') {
+              self.$emit('checkedIn', self.id)
+            } else {
+              self.attendingInput = true;
+            }
+          })
+        } else {
+          this.$http.post('training/' + this.id + '/checkin/' + this.currentUser.id).then(res => {
+            if (res.data.status == 'ok') {
+              self.$emit('checkedIn', self.id);
+            } else {
+              self.attendingInput = false;
+            }
+          })
+        }
+      },
+      showCookieUserLogin() {
+        this.$emit('showCookieUserLogin');
       },
       cancelParticipation() {
         var self = this;
-        this.$http.post('training/' + this.id + '/checkout/' + this.currentUser.id).then(res => {
-          if (res.data.status == 'ok') {
-            self.$emit('checkedOut', self.id)
-          } else {
-            self.attendingInput = true;
-          }
-        })
+        if (this.isCookieUser) {
+          this.$http.post('training/' + this.id + '/checkoutunregistered/' + this.currentUser.id).then(res => {
+            if (res.data.status == 'ok') {
+              self.$emit('checkedOut', self.id)
+            } else {
+              self.attendingInput = true;
+            }
+          })
+        } else {
+          this.$http.post('training/' + this.id + '/checkout/' + this.currentUser.id).then(res => {
+            if (res.data.status == 'ok') {
+              self.$emit('checkedOut', self.id)
+            } else {
+              self.attendingInput = true;
+            }
+          })
+        }
       },
     },
   }

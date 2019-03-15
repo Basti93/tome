@@ -3,6 +3,7 @@
     <v-card-title>
       <StatisticsFilter1
         v-bind:groupIds="filterGroupIds"
+        v-bind:year="filterYear"
         v-on:branchSelected="filterBranchIdChanged"
         v-on:groupsSelected="filterGroupIdsChanged"
         v-on:yearSelected="filterYearChanged">
@@ -86,6 +87,7 @@
       } else {
         this.filterGroupIds.push(this.loggedInUser.groupId);
       }
+      this.filterYear = this.moment().year();
       this.fetchData();
     },
     computed: {

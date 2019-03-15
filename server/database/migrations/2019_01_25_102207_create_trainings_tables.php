@@ -20,17 +20,6 @@ class CreateTrainingsTables extends Migration
             $table->text('comment')->nullable();
             $table->unsignedInteger('location_id')->nullable();
             $table->foreign('location_id')->references('id')->on('locations');
-            $table->boolean('floor')->default(false);
-            $table->boolean('pommelhorse')->default(false);
-            $table->boolean('stillrings')->default(false);
-            $table->boolean('vault')->default(false);
-            $table->boolean('parallelbars')->default(false);
-            $table->boolean('horizontalbar')->default(false);
-            $table->boolean('unevenbars')->default(false);
-            $table->boolean('balancebeam')->default(false);
-            $table->boolean('strength')->default(false);
-            $table->boolean('flexibility')->default(false);
-            $table->boolean('play')->default(false);
             $table->timestamps();
         });
 
@@ -44,6 +33,8 @@ class CreateTrainingsTables extends Migration
 
       Schema::create('training_participation', function (Blueprint $table) {
         $table->increments('id');
+        $table->boolean('attend')->nullable();
+        $table->text('cancelreason')->nullable();
         $table->unsignedInteger('training_id')->nullable();
         $table->foreign('training_id')->references('id')->on('trainings');
         $table->unsignedInteger('user_id')->nullable();

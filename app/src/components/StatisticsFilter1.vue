@@ -32,6 +32,7 @@
           :items="years"
           v-model="selectedYear"
           label="Jahr"
+          @change="selectedYearChanged()"
           prepend-icon="date_range"
         ></v-select>
       </v-flex>
@@ -46,10 +47,11 @@
     name: "StatisticsFilter1",
     props: {
       'groupIds': Array,
+      'year': Number,
     },
     created() {
       this.years = [2019, 2018, 2017]
-      this.selectedYear = this.moment().year();
+      this.selectedYear = this.year;
       this.initSelect()
     },
     data() {
@@ -83,6 +85,9 @@
           this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
         }
       },
+      selectedYearChanged: function () {
+        this.$emit('yearSelected', this.selectedYear)
+      },
     },
     watch: {
       selectedBranchId: function () {
@@ -99,9 +104,6 @@
       },
       selectedGroupIds: function () {
         this.$emit('groupsSelected', this.selectedGroupIds)
-      },
-      selectedYear: function () {
-        this.$emit('yearSelected', this.selectedYear)
       },
     }
   }

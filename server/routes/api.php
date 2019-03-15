@@ -60,6 +60,9 @@ $api->version('v1', function (Router $api) {
     //free for all
     $api->group(['prefix' => 'training'], function(Router $api) {
       $api->get('/upcoming', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainings');
+      $api->get('/automaticattendservice', 'App\\Api\\V1\\Controllers\\TrainingController@automaticAttendService');
+      $api->post('{id}/checkinunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkInUnregistered');
+      $api->post('{id}/checkoutunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOutUnregistered');
     });
 
     $api->group(['prefix' => 'branch'], function(Router $api) {
@@ -78,6 +81,7 @@ $api->version('v1', function (Router $api) {
       $api->get('/', 'App\\Api\\V1\\Controllers\\GroupController@index');
       $api->get('/branch/{id}', 'App\\Api\\V1\\Controllers\\GroupController@getByBranchId');
     });
+
     $api->group(['prefix' => 'simpleuser'], function(Router $api) {
       $api->get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
     });

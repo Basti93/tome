@@ -8,6 +8,8 @@
 /app/yarn-debug.log*
 /app/yarn-error.log*
 /app/package-lock.json
+/app/.env
+/app/.env.production
 
 # server
 /server/node_modules

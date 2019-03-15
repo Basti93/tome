@@ -25,7 +25,7 @@
         </v-container>
       </v-content>
       <v-footer app fixed>
-        <span>&copy; T.O.M.E - 2019</span>
+        <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E - 2019</a></span>
       </v-footer>
     </v-app>
   </div>

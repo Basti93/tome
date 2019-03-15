@@ -15,7 +15,8 @@ import ApproveUsers from "@/pages/ApproveUsers";
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',
+  mode: 'abstract',
+  base: 'TrainingCheckIn',
   routes: [
     {
       path: '/',

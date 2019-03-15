@@ -8,7 +8,7 @@ import VueAxios from 'vue-axios'
 Vue.use(VueAxios, axios)
 
 //axios configuration
-Vue.axios.defaults.baseURL = 'http://localhost:8000/api/';
+Vue.axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 Vue.axios.defaults.headers.common = {'Content-Type': 'application/json'}
 
 //add token to all requests
