@@ -60,7 +60,7 @@
                                 v-for="(item) in upcomingTrainings"
                                 :key="item.id"
                                 hover
-                                @click="setSelectedTraining(item)"
+                                @click="selectTraining(item.id)"
                                 class="tp-training-check-in__navigation-card"
                                 :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                         >
@@ -73,15 +73,17 @@
                         </v-card>
                     </div>
                     <v-divider></v-divider>
-                    <UpcomingTraining
+                    <TrainingCheckIn
+                            v-if="selectedTraining"
                             :currentUser="currentUser"
                             :isCookieUser="isCookieUser"
                             :training="selectedTraining"
+                            :participantIds="selectedTraining.participantIds"
                             v-on:checkedIn="updateCheckedIn($event)"
                             v-on:checkedOut="updateCheckedOut($event)"
                             v-on:showCookieUserLogin="showCookieUserLogin()"
                             class="tp-training-check-in__card">
-                    </UpcomingTraining>
+                    </TrainingCheckIn>
                 </v-card-text>
             </v-card>
         </v-flex>
@@ -92,25 +94,25 @@
 
 
     import {mapGetters} from 'vuex'
-    import UpcomingTraining from "@/components/UpcomingTraining";
+    import TrainingCheckIn from "@/components/TrainingCheckIn";
     import GroupSelect from "@/components/GroupSelect";
     import CookieUserDialog from "@/components/CookieUserDialog";
     import User from "@/models/User";
 
     export default {
-        name: "TrainingCheckIn",
-        components: {CookieUserDialog, UpcomingTraining, GroupSelect},
+        name: "TrainingsCheckIn",
+        components: {CookieUserDialog, TrainingCheckIn, GroupSelect},
         data: function () {
             return {
                 filterGroupId: null,
                 filterBranchId: null,
                 tempFilterGroupId: null,
                 tempFilterBranchId: null,
-                upcomingTrainings: Array,
+                upcomingTrainings: [],
                 dataLoaded: false,
                 filterDialogVisible: false,
                 cookieUserDialogVisible: false,
-                selectedTraining: null,
+                selectedTrainingId: null,
                 cookieUser: null,
                 animationTrigger: false,
             }
@@ -130,14 +132,11 @@
                 }
                 return null;
             },
-            selectedTrainingId: function () {
-                if (this.selectedTraining) {
-                    return this.selectedTraining.id;
-                }
-                return null;
-            },
             isCookieUser: function () {
                 return this.cookieUser != null;
+            },
+            selectedTraining: function () {
+                return this.getUpcomingTrainingById(this.selectedTrainingId);
             },
             currentUserGroupId() {
                 if (this.currentUser && this.currentUser.groupId) {
@@ -204,34 +203,33 @@
 
                 this.$http.get(url).then(response => {
                     self.upcomingTrainings = response.data.data;
-                    this.setSelectedTraining(self.upcomingTrainings[0]);
+                    this.selectTraining(self.upcomingTrainings[0].id);
                     self.dataLoaded = true;
                 })
             },
             updateCheckedIn: function (id) {
-                let training = this.getTrainingById(id);
-                this.$set(training, 'attending', true)
-                training.participantIds.push(this.currentUserId);
+                this.selectedTraining.participantIds.push(this.currentUserId);
                 this.$emit("showSnackbar", "Im Training angemeldet", "success");
             },
             updateCheckedOut: function (id) {
-                let training = this.getTrainingById(id);
-                this.$set(training, 'attending', false)
-                training.participantIds = training.participantIds.filter(id => id !== this.currentUserId)
+                this.selectedTraining.participantIds = this.selectedTraining.participantIds.filter(id => id !== this.currentUserId)
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },
             showCookieUserLogin: function () {
                 this.cookieUserDialogVisible = true;
             },
-            getTrainingById: function (id) {
-                return this.upcomingTrainings.filter(ut => ut.id == id)[0];
-            },
-            setSelectedTraining: function (item) {
-                this.selectedTraining = item;
+            selectTraining: function (id) {
+                this.selectedTrainingId = id;
                 this.animationTrigger = !this.animationTrigger;
             },
+            getUpcomingTrainingById: function (id) {
+                return this.upcomingTrainings.filter(ut => ut.id == id)[0];
+            },
             attending: function (trainingId) {
-                return this.getTrainingById(trainingId).participantIds.filter(id => id === this.currentUserId).length > 0;
+                let training = this.getUpcomingTrainingById(trainingId);
+                if (training) {
+                    return training.participantIds.filter(id => id === this.currentUserId).length > 0;
+                }
             },
             removeCookieUser: function () {
                 this.eraseCookie('cookieUser');

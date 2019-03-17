@@ -214,7 +214,8 @@ class TrainingController extends Controller
         $this->checkInBasic($user, $training);
     }
 
-    private function checkInBasic($user, $training) {
+    private function checkInBasic($user, $training)
+    {
 
         if ($training->groups()->where('groups.id', $user->group_id)->exists()) {
             $training->participants()->attach($user);
@@ -227,7 +228,9 @@ class TrainingController extends Controller
             ], 403);
         }
     }
-    private function checkOutBasic($user, $training) {
+
+    private function checkOutBasic($user, $training)
+    {
 
         if ($training->groups()->where('groups.id', $user->group_id)->exists()) {
             $training->participants()->detach($user);
@@ -247,10 +250,11 @@ class TrainingController extends Controller
         if ($user !== null) {
             $training = Training::findOrFail($id);
             $this->checkInBasic($user, $training);
+        } else {
+            return response()->json([
+                'status' => 'unregistered user not found'
+            ], 404);
         }
-        return response()->json([
-            'status' => 'unregistered user not found'
-        ], 404);
 
     }
 
@@ -261,10 +265,11 @@ class TrainingController extends Controller
             $training = Training::findOrFail($id);
 
             $this->checkOutBasic($user, $training);
+        } else {
+            return response()->json([
+                'status' => 'unregistered user not found'
+            ], 404);
         }
-        return response()->json([
-            'status' => 'unregistered user not found'
-        ], 404);
     }
 
     public function checkOut($id, $userId)
@@ -301,7 +306,8 @@ class TrainingController extends Controller
      * Of course only the users which belong the correct training group.
      * Users which are already actively chosen to attend or not are not touched.
      */
-    public function automaticAttendService() {
+    public function automaticAttendService()
+    {
         $now = date('Y-m-d H:i:s');
         $tomorrow = date("Y-m-d H:i:s", time() + 86400);
         $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->get();

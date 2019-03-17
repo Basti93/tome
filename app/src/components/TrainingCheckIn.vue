@@ -84,34 +84,40 @@
   import {mapGetters} from 'vuex'
 
   export default {
-    name: "UpcomingTraining",
+    name: "TrainingCheckIn",
     components: {TrainingContent},
     //from parent
     props: {
       training: Object,
       currentUser: User,
       isCookieUser: Boolean,
+      participantIds: Array,
     },
     data: function () {
       return {
-        attendingInput: false,
         id: null,
         date: null,
         start: null,
         end: null,
         location: null,
         groups: [],
-        participantIds: [],
         contentIds: [],
         comment: null,
       }
     },
     created() {
-      this.attendingInput = this.attending;
+      this.id = this.training.id;
+      this.date = this.moment(this.training.date).toDate();
+      this.start = this.moment(this.training.start).toDate();
+      this.end = this.moment(this.training.end).toDate();
+      this.location = this.getLocationNameById(this.training.locationId);
+      this.groups = this.getGroupsByIds(this.training.groupIds);
+      this.contentIds = this.training.contentIds;
+      this.comment = this.training.comment;
     },
     computed: {
       attending: function () {
-        if (this.currentUser) {
+        if (this.currentUser && this.participantIds) {
           return this.participantIds.filter(pId => pId === this.currentUser.id).length > 0;
         }
         return false;
@@ -129,7 +135,6 @@
         this.end = this.moment(this.training.end).toDate();
         this.location = this.getLocationNameById(this.training.locationId);
         this.groups = this.getGroupsByIds(this.training.groupIds);
-        this.participantIds = this.training.participantIds;
         this.contentIds = this.training.contentIds;
         this.comment = this.training.comment;
 
@@ -146,18 +151,14 @@
         var self = this;
         if (this.isCookieUser) {
           this.$http.post('training/' + this.id + '/checkinunregistered/' + this.currentUser.id).then(res => {
-            if (res.data.status == 'ok') {
+            if (res.status === 200) {
               self.$emit('checkedIn', self.id)
-            } else {
-              self.attendingInput = true;
             }
           })
         } else {
           this.$http.post('training/' + this.id + '/checkin/' + this.currentUser.id).then(res => {
-            if (res.data.status == 'ok') {
+            if (res.status === 200) {
               self.$emit('checkedIn', self.id);
-            } else {
-              self.attendingInput = false;
             }
           })
         }
@@ -169,18 +170,14 @@
         var self = this;
         if (this.isCookieUser) {
           this.$http.post('training/' + this.id + '/checkoutunregistered/' + this.currentUser.id).then(res => {
-            if (res.data.status == 'ok') {
+            if (res.status === 200) {
               self.$emit('checkedOut', self.id)
-            } else {
-              self.attendingInput = true;
             }
           })
         } else {
           this.$http.post('training/' + this.id + '/checkout/' + this.currentUser.id).then(res => {
-            if (res.data.status == 'ok') {
+            if (res.status === 200) {
               self.$emit('checkedOut', self.id)
-            } else {
-              self.attendingInput = true;
             }
           })
         }

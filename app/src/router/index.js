@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import store from '@/store/index'
 import Router from 'vue-router'
-import TrainingCheckIn from '@/pages/TrainingCheckIn'
+import TrainingsCheckIn from '@/pages/TrainingsCheckIn'
 import Signup from "@/pages/Signup";
 import Login from "@/pages/Login";
 import Logout from "@/pages/Logout";
@@ -20,8 +20,8 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'TrainingCheckIn',
-      component: TrainingCheckIn
+      name: 'TrainingsCheckIn',
+      component: TrainingsCheckIn
     },
     {
       path: '/trainings',
