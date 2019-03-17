@@ -5,6 +5,16 @@
         <span class="title">Wer bist du?</span>
         <v-spacer></v-spacer>
         <v-card-text>
+          <v-alert
+                  :value="true"
+                  type="info"
+                  outline
+                  pa-1
+                  ma-0
+                  class="caption"
+          >
+            Falls du dich bereits registriert hast melde dich an, um an einem Training teilzunehmen.
+          </v-alert>
           <v-select
             :items="$store.state.masterData.branches"
             item-text="name"

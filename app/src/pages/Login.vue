@@ -94,6 +94,7 @@
         localStorage.token = req.data.token
         localStorage.user = JSON.stringify(req.data.user)
         this.$store.dispatch('login')
+        this.eraseCookie('cookieUser');
         this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
         this.$router.replace(this.$route.query.redirect || '/')
       },

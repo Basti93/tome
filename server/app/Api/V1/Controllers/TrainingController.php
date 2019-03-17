@@ -9,6 +9,7 @@ use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class TrainingController extends Controller
 {
@@ -211,73 +212,99 @@ class TrainingController extends Controller
     {
         $training = Training::findOrFail($id);
         $user = User::findOrFail($userId);
-        $this->checkInBasic($user, $training);
-    }
-
-    private function checkInBasic($user, $training)
-    {
-
-        if ($training->groups()->where('groups.id', $user->group_id)->exists()) {
-            $training->participants()->attach($user);
-            return response()->json([
-                'status' => 'ok'
-            ], 201);
-        } else {
-            return response()->json([
-                'status' => 'User is not assigned to the training group'
-            ], 403);
-        }
-    }
-
-    private function checkOutBasic($user, $training)
-    {
-
-        if ($training->groups()->where('groups.id', $user->group_id)->exists()) {
-            $training->participants()->detach($user);
-            return response()->json([
-                'status' => 'ok'
-            ], 201);
-        } else {
-            return response()->json([
-                'status' => 'User is not assigned to the training group'
-            ], 403);
-        }
+        return $this->checkInBasic($user, $training);
     }
 
     public function checkInUnregistered($id, $userId)
     {
         $user = User::whereRegistered('0')->whereActive('1')->findOrFail($userId);
-        if ($user !== null) {
-            $training = Training::findOrFail($id);
-            $this->checkInBasic($user, $training);
-        } else {
+        if ($user === null) {
             return response()->json([
                 'status' => 'unregistered user not found'
             ], 404);
-        }
 
+        }
+        $training = Training::findOrFail($id);
+        return $this->checkInBasic($user, $training);
     }
 
-    public function checkOutUnregistered($id, $userId)
+    private function checkInBasic($user, $training)
+    {
+
+        if (!$training->groups()->where('groups.id', $user->group_id)->exists()) {
+            return response()->json([
+                'status' => 'User is not assigned to the training group'
+            ], 403);
+        }
+
+        if (!$training->participants()->where('user_id', $user->id)->exists()) {
+            $training->participants()->attach($user);
+        }
+
+        DB::table('training_participation')
+            ->where('user_id', $user->id)
+            ->where('training_id', $training->id)
+            ->update(['attend' => 1]);
+
+        return response()->json([
+            'status' => 'ok'
+        ], 201);
+    }
+
+
+    public function checkOutUnregistered(Request $request, $id, $userId)
     {
         $user = User::whereRegistered('0')->whereActive('1')->findOrFail($userId);
-        if ($user !== null) {
-            $training = Training::findOrFail($id);
-
-            $this->checkOutBasic($user, $training);
-        } else {
+        if ($user === null) {
             return response()->json([
                 'status' => 'unregistered user not found'
             ], 404);
         }
+
+        $training = Training::findOrFail($id);
+        return $this->checkOutBasic($user, $training, $request->input('reason'));
     }
 
-    public function checkOut($id, $userId)
+    public function checkOut(Request $request, $id, $userId)
     {
         $training = Training::findOrFail($id);
         $user = User::findOrFail($userId);
-        $this->checkOutBasic($user, $training);
+        return $this->checkOutBasic($user, $training, $request->input('reason'));
+    }
 
+    private function checkOutBasic($user, $training, $reason)
+    {
+
+        if (!$training->groups()->where('groups.id', $user->group_id)->exists()) {
+            return response()->json([
+                'status' => 'not_assigned',
+                'message' => 'User is not assigned to the training group',
+            ], 403);
+        }
+
+        //if training is in the next 24 hours
+        if (strtotime($training->start) > time() && strtotime($training->start) < (time() + 86400)) {
+            if (empty($reason)) {
+                return response()->json([
+                    'status' => 'cancel_needs_reason',
+                    'message' => 'The training is in the next 24 hours and needs a reason for cancellation',
+                ], 201);
+            } else {
+                DB::table('training_participation')
+                    ->where('user_id', $user->id)
+                    ->where('training_id', $training->id)
+                    ->update(['cancelreason' => $reason, 'attend' => 0]);
+            }
+        }
+
+        DB::table('training_participation')
+            ->where('user_id', $user->id)
+            ->where('training_id', $training->id)
+            ->update(['attend' => 0]);
+
+        return response()->json([
+            'status' => 'ok',
+        ], 201);
     }
 
     public function update(StoreTrainingRequest $request, $id)

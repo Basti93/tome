@@ -79,8 +79,8 @@
                             :isCookieUser="isCookieUser"
                             :training="selectedTraining"
                             :participantIds="selectedTraining.participantIds"
-                            v-on:checkedIn="updateCheckedIn($event)"
-                            v-on:checkedOut="updateCheckedOut($event)"
+                            v-on:checkedIn="updateCheckedIn()"
+                            v-on:checkedOut="updateCheckedOut()"
                             v-on:showCookieUserLogin="showCookieUserLogin()"
                             class="tp-training-check-in__card">
                     </TrainingCheckIn>
@@ -207,11 +207,11 @@
                     self.dataLoaded = true;
                 })
             },
-            updateCheckedIn: function (id) {
+            updateCheckedIn: function () {
                 this.selectedTraining.participantIds.push(this.currentUserId);
                 this.$emit("showSnackbar", "Im Training angemeldet", "success");
             },
-            updateCheckedOut: function (id) {
+            updateCheckedOut: function () {
                 this.selectedTraining.participantIds = this.selectedTraining.participantIds.filter(id => id !== this.currentUserId)
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },

@@ -153,7 +153,7 @@
     color="primary"
     fixed>
     <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-    <v-toolbar-title>{{title}}</v-toolbar-title>
+    <v-toolbar-title class="tome-title"><router-link to="/">{{title}}</router-link></v-toolbar-title>
     <v-spacer></v-spacer>
     <v-menu
       v-if="loggedInUser"
@@ -233,5 +233,8 @@
 </script>
 
 <style scoped>
-
+.tome-title a{
+  text-decoration: none;
+  color: #FFFFFF;
+}
 </style>
