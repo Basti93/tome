@@ -51,12 +51,12 @@
       ...mapGetters({loggedInUser: 'loggedInUser'}),
     },
     created() {
-      this.init();
+      this.moment.locale('de')
+      if (this.$isOffline) {
+       this.showSnackbar("Fehler beim Laden von Daten. Überprüfe deine Internetverbindung und lade die App erneut.", "error", 9999999)
+      }
     },
     methods: {
-      init: function () {
-        this.moment.locale('de');
-      },
       showSnackbar(text, color = "info", timeout = 3000) {
         this.text = text
         this.timeout = timeout

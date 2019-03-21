@@ -42,6 +42,10 @@ function addSubscriber(callback) {
 Vue.axios.interceptors.response.use(response => {
   return response;
 }, error => {
+  if (!error.response) {
+    //network error
+    return Promise.reject(error)
+  }
   const { config, response: { status } } = error
   const originalRequest = config
 

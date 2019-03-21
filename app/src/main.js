@@ -11,6 +11,7 @@ import store from "./store";
 import router from './router'
 import de from 'vuetify/src/locale/de.ts'
 import VueApexCharts from 'vue-apexcharts'
+import './registerServiceWorker'
 
 Vue.prototype.moment = Moment
 
@@ -57,29 +58,32 @@ Vue.mixin({
 
 Vue.config.productionTip = false
 
-var p1 = axios.get('/branch').then(function (response) {
-  store.commit('masterData/setBranches', response.data)
-}.bind(this));
-var p2 = axios.get('/group').then(function (response) {
-  store.commit('masterData/setGroups', response.data)
-}.bind(this));
-var p3 = axios.get('/location').then(function (response) {
-  store.commit('masterData/setLocations', response.data)
-});
-var p4 = axios.get('/content').then(function (response) {
-  store.commit('masterData/setContents', response.data)
-});
 
-Promise.all([p1, p2, p3, p4]).then(function () {
-  /* eslint-disable no-new */
-  new Vue({
-    axios,
-    router,
-    store,
-    render: h => h(App),
-  }).$mount('#app')
-});
+const init = async () => {
+  try {
+    const branchsPromise = axios.get('/branch');
+    const groupsPromise = axios.get('/group');
+    const locationsPromise = axios.get('/location');
+    const contentsPromise = axios.get('/content');
 
-router.replace('/')
+    const [branches, groups, locations, contents] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise]);
 
+    store.commit('masterData/setBranches', branches.data);
+    store.commit('masterData/setGroups', groups.data);
+    store.commit('masterData/setLocations', locations.data);
+    store.commit('masterData/setContents', contents.data);
+  } catch (e) {
+    console.error("Could not load initial data")
+    Vue.prototype.$isOffline = true;
+  } finally {
+    new Vue({
+      axios,
+      router,
+      store,
+      render: h => h(App),
+    }).$mount('#app')
+    router.replace('/')
+  }
+};
 
+init();

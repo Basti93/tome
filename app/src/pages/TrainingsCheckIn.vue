@@ -53,37 +53,39 @@
 
                 </v-toolbar>
                 <v-divider></v-divider>
-                <v-card-text flat v-show="dataLoaded">
-                    <h3>Aktuelle Trainings</h3>
-                    <div class="tp-training-check-in__navigation">
-                        <v-card
-                                v-for="(item) in upcomingTrainings"
-                                :key="item.id"
-                                hover
-                                @click="selectTraining(item.id)"
-                                class="tp-training-check-in__navigation-card"
-                                :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
-                        >
-                            <v-card-title>
-                                <h2 class="subheading">{{ moment(item.start).format('dddd').slice(0, 2) }}</h2>
-                                <p class="title pt-1">{{moment(item.start).format('DD')}}</p>
-                                <v-icon v-show="attending(item.id)" small>check</v-icon>
-                                <v-icon v-show="!attending(item.id)" small>priority_high</v-icon>
-                            </v-card-title>
-                        </v-card>
+                <v-card-text flat>
+                    <div v-show="dataLoaded">
+                        <h3>Aktuelle Trainings</h3>
+                        <div class="tp-training-check-in__navigation">
+                            <v-card
+                                    v-for="(item) in upcomingTrainings"
+                                    :key="item.id"
+                                    hover
+                                    @click="selectTraining(item.id)"
+                                    class="tp-training-check-in__navigation-card"
+                                    :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
+                            >
+                                <v-card-title>
+                                    <h2 class="subheading">{{ moment(item.start).format('dddd').slice(0, 2) }}</h2>
+                                    <p class="title pt-1">{{moment(item.start).format('DD')}}</p>
+                                    <v-icon v-show="attending(item.id)" small>check</v-icon>
+                                    <v-icon v-show="!attending(item.id)" small>priority_high</v-icon>
+                                </v-card-title>
+                            </v-card>
+                        </div>
+                        <v-divider></v-divider>
+                        <TrainingCheckIn
+                                v-if="selectedTraining"
+                                :currentUser="currentUser"
+                                :isCookieUser="isCookieUser"
+                                :training="selectedTraining"
+                                :participantIds="selectedTraining.participantIds"
+                                v-on:checkedIn="updateCheckedIn()"
+                                v-on:checkedOut="updateCheckedOut()"
+                                v-on:showCookieUserLogin="showCookieUserLogin()"
+                                class="tp-training-check-in__card">
+                        </TrainingCheckIn>
                     </div>
-                    <v-divider></v-divider>
-                    <TrainingCheckIn
-                            v-if="selectedTraining"
-                            :currentUser="currentUser"
-                            :isCookieUser="isCookieUser"
-                            :training="selectedTraining"
-                            :participantIds="selectedTraining.participantIds"
-                            v-on:checkedIn="updateCheckedIn()"
-                            v-on:checkedOut="updateCheckedOut()"
-                            v-on:showCookieUserLogin="showCookieUserLogin()"
-                            class="tp-training-check-in__card">
-                    </TrainingCheckIn>
                 </v-card-text>
             </v-card>
         </v-flex>

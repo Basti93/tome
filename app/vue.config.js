@@ -6,5 +6,11 @@ module.exports = {
                 maxSize: 250000,
             }
         }
+    },
+    pwa: {
+        workboxPluginMode: 'InjectManifest',
+        workboxOptions: {
+            swSrc: 'src/service-worker.js'
+        }
     }
 }
