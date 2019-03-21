@@ -74,17 +74,19 @@
                             </v-card>
                         </div>
                         <v-divider></v-divider>
-                        <TrainingCheckIn
-                                v-if="selectedTraining"
-                                :currentUser="currentUser"
-                                :isCookieUser="isCookieUser"
-                                :training="selectedTraining"
-                                :participantIds="selectedTraining.participantIds"
-                                v-on:checkedIn="updateCheckedIn()"
-                                v-on:checkedOut="updateCheckedOut()"
-                                v-on:showCookieUserLogin="showCookieUserLogin()"
-                                class="tp-training-check-in__card">
-                        </TrainingCheckIn>
+                        <v-slide-x-transition>
+                            <TrainingCheckIn
+                                    v-if="selectedTraining && animationTrigger"
+                                    :currentUser="currentUser"
+                                    :isCookieUser="isCookieUser"
+                                    :training="selectedTraining"
+                                    :participantIds="selectedTraining.participantIds"
+                                    v-on:checkedIn="updateCheckedIn()"
+                                    v-on:checkedOut="updateCheckedOut()"
+                                    v-on:showCookieUserLogin="showCookieUserLogin()"
+                                    class="tp-training-check-in__card">
+                            </TrainingCheckIn>
+                        </v-slide-x-transition>
                     </div>
                 </v-card-text>
             </v-card>
@@ -116,7 +118,7 @@
                 cookieUserDialogVisible: false,
                 selectedTrainingId: null,
                 cookieUser: null,
-                animationTrigger: false,
+                animationTrigger: true,
             }
         },
         computed: {
@@ -221,8 +223,11 @@
                 this.cookieUserDialogVisible = true;
             },
             selectTraining: function (id) {
+                this.animationTrigger = false;
                 this.selectedTrainingId = id;
-                this.animationTrigger = !this.animationTrigger;
+                setTimeout(() => {
+                    this.animationTrigger = true;
+                }, 100);
             },
             getUpcomingTrainingById: function (id) {
                 return this.upcomingTrainings.filter(ut => ut.id == id)[0];

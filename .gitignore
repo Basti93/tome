@@ -10,6 +10,7 @@
 /app/package-lock.json
 /app/.env
 /app/.env.production
+/app/public/manifest.json
 
 # server
 /server/node_modules
