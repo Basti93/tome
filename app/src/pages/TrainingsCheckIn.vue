@@ -226,7 +226,7 @@
             },
             updateCheckedIn() {
                 this.selectedTraining.participants.push(new TrainingParticipant(this.selectTraining.id, this.currentUserId, true));
-                this.$emit("showSnackbar", "Im Training angemeldet", "success");
+                this.$emit("showSnackbar", "Für das Training angemeldet", "success");
             },
             updateCheckedOut() {
                 this.selectedTraining.participants = this.selectedTraining.participants.filter(p => p.userId !== this.currentUserId);

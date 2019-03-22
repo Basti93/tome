@@ -83,149 +83,172 @@
           </v-card-title>
 
           <v-card-text>
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12 md6>
-                  <v-menu
-                    ref="editDialogDateMenu"
-                    :close-on-content-click="false"
-                    v-model="editDialogDateMenu"
-                    lazy
-                    full-width
-                  >
-                    <v-text-field
-                      slot="activator"
-                      v-model="editedItemDateFormatted"
-                      required
-                      label="Datum"
-                      prepend-icon="event"
-                      readonly
-                    ></v-text-field>
-                    <v-date-picker v-model="editedItemDate" @input="editDialogDateMenu = false"></v-date-picker>
-                  </v-menu>
-                </v-flex>
-                <v-flex xs12 sm6 md3>
-                  <v-menu
-                    ref="editDialogStartMenu"
-                    :close-on-content-click="false"
-                    v-model="editDialogStartMenu"
-                    lazy
-                    full-width
-                  >
-                    <v-text-field
-                      slot="activator"
-                      v-model="editedItem.start"
-                      label="Start"
-                      required
-                      prepend-icon="schedule"
-                      readonly
-                    ></v-text-field>
-                    <v-time-picker v-model="editedItem.start" @input="editDialogStartMenu = false" format="24hr"></v-time-picker>
-                  </v-menu>
-                </v-flex>
-                <v-flex xs12 sm6 md3>
-                  <v-menu
-                    ref="editDialogEndMenu"
-                    :close-on-content-click="false"
-                    v-model="editDialogEndMenu"
-                    lazy
-                    full-width
-                  >
-                    <v-text-field
-                      slot="activator"
-                      v-model="editedItem.end"
-                      required
-                      label="Ende"
-                      prepend-icon="schedule"
-                      readonly
-                    ></v-text-field>
-                    <v-time-picker v-model="editedItem.end" @input="editDialogEndMenu = false" format="24hr"></v-time-picker>
-                  </v-menu>
-                </v-flex>
-                <v-flex xs12>
-                  <v-autocomplete
-                    :items="locations"
-                    item-text="name"
-                    item-value="id"
-                    v-model="editedItem.locationId"
-                    clearable
-                    required
-                    label="Ort"
-                    prepend-icon="add_location"
-                  ></v-autocomplete>
-                </v-flex>
-                <v-flex xs12>
-                  <v-autocomplete
-                    v-model="editedItem.trainerIds"
-                    :items="filterTrainers"
-                    item-value="id"
-                    :item-text="fullName"
-                    attach
-                    clearable
-                    chips
-                    deletable-chips
-                    label="Trainer"
-                    prepend-icon="verified_user"
-                    multiple
-                  >
-                  </v-autocomplete>
-                </v-flex>
-                <v-flex xs12>
-                  <v-autocomplete
-                    :items="filterGroups"
-                    v-model="editedItem.groupIds"
-                    item-value="id"
-                    item-text="name"
-                    label="Gruppen"
-                    prepend-icon="groups"
-                    multiple
-                    clearable
-                    chips
-                    deletable-chips>
-                  </v-autocomplete>
-                </v-flex>
-                <v-flex xs12>
-                  <v-autocomplete
-                    :disabled="!editDialogFilteredUsers"
-                    :items="editDialogFilteredUsers"
-                    v-model="editedItem.participantIds"
-                    item-value="id"
-                    :item-text="fullName"
-                    label="Teilnehmer"
-                    prepend-icon="how_to_reg"
-                    multiple
-                    clearable>
-                    <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                    >
-                      <v-chip>
-                        <span>{{ item.firstName }}</span>
-                      </v-chip>
-                    </template>
-                  </v-autocomplete>
-                </v-flex>
-                <v-flex xs12 ml-2 style="text-align: left;">
-                  <v-label>Trainingsinhalte</v-label>
-                  <TrainingContent
-                    :contentIds="branchContentIds"
-                    :initContentIds="editedItem.contentIds"
-                    selectable
-                    v-on:contentSelected="editItemContentSelected($event)"
-                    v-on:contentUnselected="editItemContentUnselected($event)"
-                    >
+            <v-tabs
+                    icons-and-text
+            >
+              <v-tabs-slider color="yellow"></v-tabs-slider>
 
-                  </TrainingContent>
-                </v-flex>
-                <v-flex xs12>
-                  <v-textarea
-                    box
-                    label="Kommentar"
-                    v-model="editedItem.comment"
-                  ></v-textarea>
-                </v-flex>
-              </v-layout>
-            </v-container>
+              <v-tab href="#tab-1">
+                Allgemein
+                <v-icon>event</v-icon>
+              </v-tab>
+
+              <v-tab href="#tab-2">
+                Teilnehmer
+                <v-icon>groups</v-icon>
+              </v-tab>
+              <v-tab-item :value="'tab-1'">
+                <v-container grid-list-md>
+                  <v-layout wrap>
+                    <v-flex xs12 md6>
+                      <v-menu
+                              ref="editDialogDateMenu"
+                              :close-on-content-click="false"
+                              v-model="editDialogDateMenu"
+                              lazy
+                              full-width
+                      >
+                        <v-text-field
+                                slot="activator"
+                                v-model="editedItemDateFormatted"
+                                required
+                                label="Datum"
+                                prepend-icon="event"
+                                readonly
+                        ></v-text-field>
+                        <v-date-picker v-model="editedItemDate" @input="editDialogDateMenu = false"></v-date-picker>
+                      </v-menu>
+                    </v-flex>
+                    <v-flex xs6 md3>
+                      <v-menu
+                              ref="editDialogStartMenu"
+                              :close-on-content-click="false"
+                              v-model="editDialogStartMenu"
+                              lazy
+                              full-width
+                      >
+                        <v-text-field
+                                slot="activator"
+                                v-model="editedItem.start"
+                                label="Start"
+                                required
+                                prepend-icon="schedule"
+                                readonly
+                        ></v-text-field>
+                        <v-time-picker v-model="editedItem.start" @input="editDialogStartMenu = false" format="24hr"></v-time-picker>
+                      </v-menu>
+                    </v-flex>
+                    <v-flex xs6 md3>
+                      <v-menu
+                              ref="editDialogEndMenu"
+                              :close-on-content-click="false"
+                              v-model="editDialogEndMenu"
+                              lazy
+                              full-width
+                      >
+                        <v-text-field
+                                slot="activator"
+                                v-model="editedItem.end"
+                                required
+                                label="Ende"
+                                prepend-icon="schedule"
+                                readonly
+                        ></v-text-field>
+                        <v-time-picker v-model="editedItem.end" @input="editDialogEndMenu = false" format="24hr"></v-time-picker>
+                      </v-menu>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-autocomplete
+                              :items="locations"
+                              item-text="name"
+                              item-value="id"
+                              v-model="editedItem.locationId"
+                              clearable
+                              required
+                              label="Ort"
+                              prepend-icon="add_location"
+                      ></v-autocomplete>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-autocomplete
+                              v-model="editedItem.trainerIds"
+                              :items="filterTrainers"
+                              item-value="id"
+                              :item-text="fullName"
+                              attach
+                              clearable
+                              chips
+                              deletable-chips
+                              label="Trainer"
+                              prepend-icon="verified_user"
+                              multiple
+                      >
+                      </v-autocomplete>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-autocomplete
+                              :items="filterGroups"
+                              v-model="editedItem.groupIds"
+                              item-value="id"
+                              item-text="name"
+                              label="Gruppen"
+                              prepend-icon="groups"
+                              multiple
+                              clearable
+                              chips
+                              deletable-chips>
+                      </v-autocomplete>
+                    </v-flex>
+                    <v-flex xs12 ml-2 style="text-align: left;">
+                      <v-label>Trainingsinhalte</v-label>
+                      <TrainingContent
+                              :contentIds="branchContentIds"
+                              :initContentIds="editedItem.contentIds"
+                              selectable
+                              v-on:contentSelected="editItemContentSelected($event)"
+                              v-on:contentUnselected="editItemContentUnselected($event)"
+                      >
+
+                      </TrainingContent>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-textarea
+                              box
+                              label="Kommentar"
+                              v-model="editedItem.comment"
+                      ></v-textarea>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-tab-item>
+              <v-tab-item :value="'tab-2'">
+                <v-container grid-list-md>
+                  <v-layout wrap>
+                    <v-flex xs12>
+                      <v-autocomplete
+                              :disabled="!editDialogFilteredUsers"
+                              :items="editDialogFilteredUsers"
+                              v-model="editedItem.participantIds"
+                              item-value="id"
+                              :item-text="fullName"
+                              label="Teilnehmer"
+                              prepend-icon="how_to_reg"
+                              multiple
+                              clearable>
+                        <template
+                                slot="selection"
+                                slot-scope="{ item, index }"
+                        >
+                          <v-chip>
+                            <span>{{ item.firstName }}</span>
+                          </v-chip>
+                        </template>
+                      </v-autocomplete>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-tab-item>
+            </v-tabs>
           </v-card-text>
 
           <v-card-actions>
@@ -239,13 +262,15 @@
   </v-layout>
 </template>
 
-<script>
+<script lang="ts">
   import Vue from 'vue'
   import {mapGetters, mapState} from 'vuex'
-  import GroupsSelectDialog from "@/components/GroupsSelectDialog.vue";
+  import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
   import TrainingContent from "../components/TrainingContent";
+  import Training from "@/models/Training";
+  import TrainingParticipant from "@/models/TrainingParticipant";
 
-  export default {
+  export default Vue.extend({
     name: "Trainings",
     components: {TrainingContent, GroupsSelectDialog},
     data: function () {
@@ -429,6 +454,12 @@
           this.editedItemDate = this.moment(item.start).format('Y-MM-DD')
           this.editedItem.start = this.moment(item.start).format('HH:mm')
           this.editedItem.end = this.moment(item.end).format('HH:mm')
+          this.editedItem.participantIds = []
+          for (const participant of item.participants) {
+            if (participant.attend === 1) {
+              this.editedItem.participantIds.push(participant.userId);
+            }
+          }
           this.dialog = true
         }
       },
@@ -534,7 +565,7 @@
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
       }
     },
-  }
+  })
 </script>
 
 <style scoped>

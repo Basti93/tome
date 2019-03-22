@@ -8,8 +8,8 @@ use App\Http\Resources\Training as TrainingResource;
 use App\Training;
 use App\User;
 use DateTime;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TrainingController extends Controller
 {
@@ -198,9 +198,18 @@ class TrainingController extends Controller
         $training->comment = $request->input('comment');
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
-        $training->participants()->sync($request->input('participantIds'));
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
+
+        DB::table('training_participation')
+            ->whereIn('user_id', $request->input('participantIds'))
+            ->where('training_id', $training->id)
+            ->update(['attend' => 1]);
+
+        DB::table('training_participation')
+            ->whereNotIn('user_id', $request->input('participantIds'))
+            ->where('training_id', $training->id)
+            ->update(['attend' => 0]);
 
         return response()->json([
             'status' => 'ok'
@@ -318,9 +327,18 @@ class TrainingController extends Controller
         $training->comment = $request->input('comment');
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));
-        $training->participants()->sync($request->input('participantIds'));
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
+
+        DB::table('training_participation')
+            ->whereIn('user_id', $request->input('participantIds'))
+            ->where('training_id', $training->id)
+            ->update(['attend' => 1]);
+
+        DB::table('training_participation')
+            ->whereNotIn('user_id', $request->input('participantIds'))
+            ->where('training_id', $training->id)
+            ->update(['attend' => 0]);
 
         return response()->json([
             'status' => 'ok'
