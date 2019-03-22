@@ -28,7 +28,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'updated_at', 'created_at', 'pivot', 'roles'
+        'password', 'remember_token', 'updated_at', 'created_at', 'roles'
     ];
 
     protected $appends = ['roleNames', 'trainer_group_ids'];
@@ -75,7 +75,12 @@ class User extends Authenticatable implements JWTSubject
     return $this->belongsToMany('App\Group', 'trainer_group', 'user_id');
   }
 
-  public function getTrainerGroupIdsAttribute()
+    public function trainings()
+    {
+        return $this->belongsToMany(Training::class,'training_participation', 'user_id', 'training_id')->withPivot('attend');
+    }
+
+    public function getTrainerGroupIdsAttribute()
   {
     return $this->trainerGroups->pluck('pivot.group_id');
   }

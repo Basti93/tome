@@ -94,16 +94,18 @@
     </v-layout>
 </template>
 
-<script>
+<script lang="ts">
 
-
+    import Vue from "vue";
     import {mapGetters} from 'vuex'
-    import TrainingCheckIn from "@/components/TrainingCheckIn";
-    import GroupSelect from "@/components/GroupSelect";
-    import CookieUserDialog from "@/components/CookieUserDialog";
-    import User from "@/models/User";
+    import TrainingCheckIn from "../components/TrainingCheckIn.vue";
+    import GroupSelect from "../components/GroupSelect.vue";
+    import CookieUserDialog from "../components/CookieUserDialog.vue";
+    import User from "../models/User";
+    import Training from "@/models/Training";
+    import TrainingParticipant from "@/models/TrainingParticipant";
 
-    export default {
+    export default Vue.extend({
         name: "TrainingsCheckIn",
         components: {CookieUserDialog, TrainingCheckIn, GroupSelect},
         data: function () {
@@ -112,7 +114,7 @@
                 filterBranchId: null,
                 tempFilterGroupId: null,
                 tempFilterBranchId: null,
-                upcomingTrainings: [],
+                upcomingTrainings: [] as Training[],
                 dataLoaded: false,
                 filterDialogVisible: false,
                 cookieUserDialogVisible: false,
@@ -128,7 +130,7 @@
                 getGroupById: 'getGroupById',
                 getBranchById: 'getBranchById',
             }),
-            currentUser: function () {
+            currentUser() {
                 if (this.loggedInUser) {
                     return this.loggedInUser;
                 } else if (this.cookieUser) {
@@ -136,10 +138,10 @@
                 }
                 return null;
             },
-            isCookieUser: function () {
+            isCookieUser() {
                 return this.cookieUser != null;
             },
-            selectedTraining: function () {
+            selectedTraining() {
                 return this.getUpcomingTrainingById(this.selectedTrainingId);
             },
             currentUserGroupId() {
@@ -196,7 +198,7 @@
                 this.fetchData();
                 this.filterDialogVisible = false;
             },
-            fetchData: function () {
+            async fetchData() {
                 var self = this;
                 self.dataLoaded = false;
 
@@ -205,56 +207,63 @@
                     url += '?groupIds=' + this.filterGroupId;
                 }
 
-                this.$http.get(url).then(response => {
-                    self.upcomingTrainings = response.data.data;
-                    this.selectTraining(self.upcomingTrainings[0].id);
-                    self.dataLoaded = true;
-                })
+                let response = await this.$http.get(url);
+                for (let trObj of response.data.data) {
+                    let participants = [] as TrainingParticipant[];
+                    for (let partObj of trObj.participants) {
+                        participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                    }
+                    self.upcomingTrainings.push(new Training(trObj.id, new Date(trObj.start), new Date(trObj.end), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
+                }
+                this.selectTraining(self.upcomingTrainings[0].id);
+                self.dataLoaded = true;
             },
-            updateCheckedIn: function () {
-                this.selectedTraining.participantIds.push(this.currentUserId);
+            updateCheckedIn() {
+                //this.selectedTraining.participantIds.push(this.currentUserId);
                 this.$emit("showSnackbar", "Im Training angemeldet", "success");
             },
-            updateCheckedOut: function () {
-                this.selectedTraining.participantIds = this.selectedTraining.participantIds.filter(id => id !== this.currentUserId)
+            updateCheckedOut() {
+                //this.selectedTraining.participantIds = this.selectedTraining.participantIds.filter(id => id !== this.currentUserId)
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },
-            showCookieUserLogin: function () {
+            showCookieUserLogin() {
                 this.cookieUserDialogVisible = true;
             },
-            selectTraining: function (id) {
+            selectTraining(id) {
                 this.animationTrigger = false;
                 this.selectedTrainingId = id;
                 setTimeout(() => {
                     this.animationTrigger = true;
                 }, 100);
             },
-            getUpcomingTrainingById: function (id) {
+            getUpcomingTrainingById(id) {
                 return this.upcomingTrainings.filter(ut => ut.id == id)[0];
             },
-            attending: function (trainingId) {
+            attending(trainingId) {
                 let training = this.getUpcomingTrainingById(trainingId);
                 if (training) {
-                    return training.participantIds.filter(id => id === this.currentUserId).length > 0;
+                    //return training.participantIds.filter(id => id === this.currentUserId).length > 0;
+                    return false;
                 }
             },
-            removeCookieUser: function () {
+            removeCookieUser() {
                 this.eraseCookie('cookieUser');
                 this.cookieUser = null;
             },
-            cookieUserDialogClosed: function () {
+            cookieUserDialogClosed() {
                 this.cookieUser = User.from(this.getCookie('cookieUser'));
                 this.cookieUserDialogVisible = false;
             },
         },
         watch: {
-            currentUser: function () {
+            currentUser() {
                 this.filterGroupId = this.currentUserGroupId;
                 this.filterBranchId = this.currentUserBranchId;
                 this.fetchData();
             }
         }
-    }
+    })
+
 </script>
 
 <style scoped lang="scss">

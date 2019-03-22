@@ -231,7 +231,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import GroupSelect from "../components/GroupSelect";
+  import GroupSelect from "@/components/GroupSelect.vue";
 
   export default {
     name: "ApproveUsers",

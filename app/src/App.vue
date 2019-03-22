@@ -3,19 +3,19 @@
     <v-app id="tome" dark>
       <Navigation/>
       <v-content
-        :class="{'pt-0': $vuetify.breakpoint.smAndDown, 'pt-4': $vuetify.breakpoint.mdAndUp}">
+              :class="{'pt-0': $vuetify.breakpoint.smAndDown, 'pt-4': $vuetify.breakpoint.mdAndUp}">
         <v-container
-          fluid
-          fill-height
-          :class="{'pa-0': $vuetify.breakpoint.smAndDown, 'pa-2': $vuetify.breakpoint.mdAndUp}">
+                fluid
+                fill-height
+                :class="{'pa-0': $vuetify.breakpoint.smAndDown, 'pa-2': $vuetify.breakpoint.mdAndUp}">
           <SnackbarStore/>
           <v-snackbar
-            bottom
-            right
-            :text="text"
-            :timeout="timeout"
-            :color="color"
-            v-model="snackbar"
+                  bottom
+                  right
+                  :text="text"
+                  :timeout="timeout"
+                  :color="color"
+                  v-model="snackbar"
           >
             {{text}}
           </v-snackbar>
@@ -33,8 +33,8 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import Navigation from "@/components/Navigation";
-  import SnackbarStore from '@/components/SnackbarStore'
+  import Navigation from "@/components/Navigation.vue";
+  import SnackbarStore from '@/components/SnackbarStore.vue'
 
   export default {
     name: 'App',
@@ -53,7 +53,7 @@
     created() {
       this.moment.locale('de')
       if (this.$isOffline) {
-       this.showSnackbar("Fehler beim Laden von Daten. Überprüfe deine Internetverbindung und lade die App erneut.", "error", 9999999)
+        this.$emit("showSnackbar", "Fehler Fehler", "error");
       }
     },
     methods: {

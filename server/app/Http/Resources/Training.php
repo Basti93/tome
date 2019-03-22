@@ -21,7 +21,7 @@ class Training extends JsonResource
             'locationId' => $this->location_id,
             'groupIds' => $this->group_ids,
             'trainerIds' => $this->trainer_ids,
-            'participantIds' => $this->participant_ids,
+            'participants' => $this->trainingParticipation,
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
         ];

@@ -2,14 +2,14 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import Moment from 'moment'
-import App from './App'
+import App from './App.vue'
 import axios from './axios'
 import Vuetify from 'vuetify'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import 'vuetify/dist/vuetify.min.css'
 import store from "./store";
 import router from './router'
-import de from 'vuetify/src/locale/de.ts'
+import de from 'vuetify/src/locale/de'
 import VueApexCharts from 'vue-apexcharts'
 import './registerServiceWorker'
 
@@ -76,6 +76,7 @@ const init = async () => {
     console.error("Could not load initial data")
     Vue.prototype.$isOffline = true;
   } finally {
+    // @ts-ignore
     new Vue({
       axios,
       router,

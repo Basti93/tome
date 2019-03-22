@@ -28,8 +28,8 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import TrainingParticipationBarChart from "../components/TrainingParticipationBarChart";
-  import TrainerTimeline from "../components/TrainerTimeline";
+  import TrainingParticipationBarChart from "@/components/TrainingParticipationBarChart.vue";
+  import TrainerTimeline from "@/components/TrainerTimeline.vue";
 
   export default {
     name: "Statistics",

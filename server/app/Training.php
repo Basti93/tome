@@ -7,12 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Training extends Model
 {
     //
-  protected $appends = ['group_ids','trainer_ids','participant_ids', 'content_ids'];
+  protected $appends = ['group_ids','trainer_ids', 'content_ids'];
   protected $hidden = ['updated_at', 'created_at'];
 
   public function participants()
   {
-    return $this->belongsToMany('App\User','training_participation', 'training_id', 'user_id');
+    return $this->belongsToMany(User::class,'training_participation', 'training_id', 'user_id')->withPivot('attend');
+  }
+
+  public function trainingParticipation()
+  {
+    return $this->hasMany(TrainingParticipation::class, 'training_id');
   }
 
   public function trainers()
@@ -38,11 +43,6 @@ class Training extends Model
   public function getTrainerIdsAttribute()
   {
     return $this->trainers->pluck('pivot.user_id');
-  }
-
-  public function getParticipantIdsAttribute()
-  {
-    return $this->participants->pluck('pivot.user_id');
   }
 
   public function getContentIdsAttribute()

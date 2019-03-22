@@ -242,7 +242,7 @@
 <script>
   import Vue from 'vue'
   import {mapGetters, mapState} from 'vuex'
-  import GroupsSelectDialog from "@/components/GroupsSelectDialog";
+  import GroupsSelectDialog from "@/components/GroupsSelectDialog.vue";
   import TrainingContent from "../components/TrainingContent";
 
   export default {
@@ -271,6 +271,8 @@
           {text: 'Ort', value: 'locationId'},
         ],
         trainings: [],
+        trainers: [],
+        users: [],
         editedId: null,
         editedItem: {
           id: null,
@@ -301,22 +303,14 @@
       }
     },
     created() {
-      var self = this;
-      this.$http.get('/user/trainer').then(function (response) {
-        self.$store.commit('masterData/setTrainers', response.data)
-
-      }).catch(function () {
-        self.$emit("showSnackbar", "Fehler beim laden! Seite erneut aufrufen", "error")
-      });
-
       this.filterGroupIds = this.trainerGroupIds;
+      this.pagination.rowsPerPage = 10;
     },
     computed: {
       ...mapGetters({loggedInUser: 'loggedInUser'}),
-      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getTrainersByGroupIds: 'getTrainersByGroupIds', getTrainersByBranchId: 'getTrainersByBranchId', getTrainerBranchIdByUser: 'getTrainerBranchIdByUser', getContentIdsByBranchId: 'getContentIdsByBranchId'}),
+      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getTrainerBranchIdByUser: 'getTrainerBranchIdByUser', getContentIdsByBranchId: 'getContentIdsByBranchId'}),
       ...mapState('masterData', {
         locations: 'locations',
-        users: 'users',
       }),
       editedItemDateFormatted() {
         return this.formatDate(this.editedItemDate)
@@ -342,9 +336,9 @@
       },
       filterTrainers() {
         if (this.filterGroupIds.length > 0) {
-          return this.getTrainersByGroupIds(this.filterGroupIds)
+          return this.trainers.filter(t => t.trainerGroups.filter(tg => tg.branchId === this.filterGroupIds))
         } else if (this.filterBranchId) {
-          return this.getTrainersByBranchId(this.filterBranchId)
+          return this.trainers.filter(g => this.filterBranchId.includes(g.branchId))
         }
         return [];
       },
@@ -411,17 +405,27 @@
           userUrl += '?branchId=' + this.filterBranchId;
         }
         let p2 = this.$http.get(userUrl).then(function (res) {
-          this.$store.commit('masterData/setUsers', res.data)
+          this.users = res.data;
         }.bind(this));
 
-        Promise.all([p1, p2]).then(function () {
+        let trainerUrl = '/user/trainer';
+        if (this.filterGroupIds && this.filterGroupIds.length > 0) {
+          trainerUrl += '?groupIds=' + this.filterGroupIds;
+        } else if (this.filterBranchId) {
+          trainerUrl += '?branchId=' + this.filterBranchId;
+        }
+        let p3 = this.$http.get(trainerUrl).then(function (res) {
+          this.trainers = res.data;
+        }.bind(this));
+
+        Promise.all([p1, p2, p3]).then(function () {
             this.loading = false
         }.bind(this));
       },
       editItem(item) {
         if (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) {
           this.editedId = item.id
-          this.editedItem = Object.assign({}, item)
+          this.editedItem = {...item}
           this.editedItemDate = this.moment(item.start).format('Y-MM-DD')
           this.editedItem.start = this.moment(item.start).format('HH:mm')
           this.editedItem.end = this.moment(item.end).format('HH:mm')
@@ -429,7 +433,7 @@
         }
       },
       create() {
-        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedItem = {...this.defaultItem}
         this.dialog = true
       },
       deleteItem(item) {
@@ -463,7 +467,7 @@
       close() {
         this.dialog = false
         setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
+          this.editedItem = {...this.defaultItem}
         }, 300)
       },
       reset() {
