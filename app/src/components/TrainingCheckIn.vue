@@ -95,40 +95,46 @@
 
                 <v-card-text>
                     <v-form v-model="cancelDialogValid">
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12>
-                                <v-alert
-                                        :value="true"
-                                        type="warning"
-                                        outline
-                                        pa-1
-                                        ma-0
-                                        class="caption"
-                                >
-                                    Das Training findet innerhalb der nächsten 24 Stunden statt. Bitte gib einen Grund für deine Absage an.
-                                </v-alert>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-textarea
-                                        box
-                                        label="Gib hier einen Grund an"
-                                        required
-                                        :rules="cancelReasonRules"
-                                        v-model="cancelReason">
+                        <v-container grid-list-md>
+                            <v-layout wrap>
+                                <v-flex xs12>
+                                    <v-alert
+                                            :value="true"
+                                            type="warning"
+                                            outline
+                                            pa-1
+                                            ma-0
+                                            class="caption"
+                                    >
+                                        Das Training findet innerhalb der nächsten 24 Stunden statt. Bitte gib einen Grund für deine Absage an.
+                                    </v-alert>
+                                </v-flex>
+                                <v-flex xs12>
+                                    <v-textarea
+                                            box
+                                            label="Gib hier einen Grund an"
+                                            required
+                                            :rules="cancelReasonRules"
+                                            v-model="cancelReason">
 
-                                </v-textarea>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                        :disabled="!cancelDialogValid"
-                                        @click="cancelParticipation(cancelReason)"
-                                        color="primary"
-                                >
-                                    Absage abschicken
-                                </v-btn>
-                            </v-flex>
-                        </v-layout>
-                    </v-container>
+                                    </v-textarea>
+                                    <v-spacer></v-spacer>
+                                    <v-btn
+                                            @click="showCancelDialog = false"
+                                            color="primary"
+                                    >
+                                        Abbrechen
+                                    </v-btn>
+                                    <v-btn
+                                            :disabled="!cancelDialogValid"
+                                            @click="cancelParticipation(cancelReason)"
+                                            color="primary"
+                                    >
+                                        Absage abschicken
+                                    </v-btn>
+                                </v-flex>
+                            </v-layout>
+                        </v-container>
                     </v-form>
                 </v-card-text>
             </v-card>
@@ -149,7 +155,7 @@
             training: Object,
             currentUser: User,
             isCookieUser: Boolean,
-            participantIds: Array,
+            participants: Array,
         },
         data: function () {
             return {
@@ -181,8 +187,8 @@
         },
         computed: {
             attending: function () {
-                if (this.currentUser && this.participantIds) {
-                    return this.participantIds.filter(pId => pId === this.currentUser.id).length > 0;
+                if (this.currentUser && this.participants) {
+                    return this.participants.filter(p => (p.userId === this.currentUser.id && p.attend)).length > 0;
                 }
                 return false;
             },
@@ -211,50 +217,52 @@
                 }
                 return true;
             },
-            participate() {
-                if (this.isCookieUser) {
-                    this.$http.post('training/' + this.id + '/checkinunregistered/' + this.currentUser.id)
-                        .then(res => this.processCheckinRequest(res.data))
-                } else {
-                    this.$http.post('training/' + this.id + '/checkin/' + this.currentUser.id)
-                        .then(res => this.processCheckinRequest(res.data))
-                }
-            },
             showCookieUserLogin() {
                 this.$emit('showCookieUserLogin');
             },
-            cancelParticipation(reason) {
-                let url = 'training/' + this.id;
-                if (this.isCookieUser) {
-                    url += '/checkoutunregistered/';
-                } else {
-                    url += '/checkout/';
-                }
-                url += this.currentUser.id;
-                if (reason) {
-                    let data = {
-                        reason: reason,
+            async participate() {
+                try {
+                    let url = 'training/' + this.id;
+                    if (this.isCookieUser) {
+                        url += '/checkinunregistered/' + this.currentUser.id;
+                    } else {
+                        url += '/checkin/' + this.currentUser.id;
                     }
-                    this.$http.post(url, data)
-                        .then(res => this.processCheckoutRequest(res.data))
-                } else {
-                    this.$http.post(url)
-                        .then(res => this.processCheckoutRequest(res.data))
-                }
-
-            },
-            processCheckinRequest(data) {
-                if (data.status === 'ok') {
-                    this.$emit('checkedIn')
+                    //send post
+                    const {data} = await this.$http.post(url);
+                    if (data.status === 'ok') {
+                        this.$emit('checkedIn')
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
             },
-            processCheckoutRequest(data) {
-                if (data.status === 'ok') {
-                    this.cancelReason = null;
-                    this.showCancelDialog = false;
-                    this.$emit('checkedOut')
-                } else if (data.status === 'cancel_needs_reason') {
-                    this.showCancelDialog = true;
+            async cancelParticipation(reason) {
+                try {
+                    let url = 'training/' + this.id;
+                    if (this.isCookieUser) {
+                        url += '/checkoutunregistered/';
+                    } else {
+                        url += '/checkout/';
+                    }
+                    url += this.currentUser.id;
+                    let postData = {};
+                    if (reason) {
+                        postData = {
+                            reason: reason,
+                        }
+                    }
+                    //send post
+                    const {data} = await this.$http.post(url, postData);
+                    if (data.status === 'ok') {
+                        this.cancelReason = null;
+                        this.showCancelDialog = false;
+                        this.$emit('checkedOut')
+                    } else if (data.status === 'cancel_needs_reason') {
+                        this.showCancelDialog = true;
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
             },
         },

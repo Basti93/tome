@@ -80,7 +80,7 @@
                                     :currentUser="currentUser"
                                     :isCookieUser="isCookieUser"
                                     :training="selectedTraining"
-                                    :participantIds="selectedTraining.participantIds"
+                                    :participants="selectedTraining.participants"
                                     v-on:checkedIn="updateCheckedIn()"
                                     v-on:checkedOut="updateCheckedOut()"
                                     v-on:showCookieUserLogin="showCookieUserLogin()"
@@ -199,31 +199,37 @@
                 this.filterDialogVisible = false;
             },
             async fetchData() {
-                var self = this;
-                self.dataLoaded = false;
-
-                let url = '/training/upcoming';
-                if (this.filterGroupId) {
-                    url += '?groupIds=' + this.filterGroupId;
-                }
-
-                let response = await this.$http.get(url);
-                for (let trObj of response.data.data) {
-                    let participants = [] as TrainingParticipant[];
-                    for (let partObj of trObj.participants) {
-                        participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                try {
+                    this.dataLoaded = false;
+                    //build fetch url
+                    let url = '/training/upcoming';
+                    if (this.filterGroupId) {
+                        url += '?groupIds=' + this.filterGroupId;
                     }
-                    self.upcomingTrainings.push(new Training(trObj.id, new Date(trObj.start), new Date(trObj.end), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
+                    //load data
+                    let response = await this.$http.get(url);
+                    //json result to objects
+                    for (let trObj of response.data.data) {
+                        let participants = [] as TrainingParticipant[];
+                        for (let partObj of trObj.participants) {
+                            participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                        }
+                        this.upcomingTrainings.push(new Training(trObj.id, new Date(trObj.start), new Date(trObj.end), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
+                    }
+                    //select first training
+                    this.selectTraining(this.upcomingTrainings[0].id);
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    this.dataLoaded = true;
                 }
-                this.selectTraining(self.upcomingTrainings[0].id);
-                self.dataLoaded = true;
             },
             updateCheckedIn() {
-                //this.selectedTraining.participantIds.push(this.currentUserId);
+                this.selectedTraining.participants.push(new TrainingParticipant(this.selectTraining.id, this.currentUserId, true));
                 this.$emit("showSnackbar", "Im Training angemeldet", "success");
             },
             updateCheckedOut() {
-                //this.selectedTraining.participantIds = this.selectedTraining.participantIds.filter(id => id !== this.currentUserId)
+                this.selectedTraining.participants = this.selectedTraining.participants.filter(p => p.userId !== this.currentUserId);
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },
             showCookieUserLogin() {
@@ -242,8 +248,7 @@
             attending(trainingId) {
                 let training = this.getUpcomingTrainingById(trainingId);
                 if (training) {
-                    //return training.participantIds.filter(id => id === this.currentUserId).length > 0;
-                    return false;
+                    return training.participants.filter(p => (p.userId === this.currentUserId && p.attend)).length > 0;
                 }
             },
             removeCookieUser() {
