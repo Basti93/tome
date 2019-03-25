@@ -109,10 +109,8 @@
         this.$http.get(url).then(function (response) {
           let names = [];
           let count = [];
-          let colors = [];
           for (let i = 0; i < response.data.length; i++) {
             names.push(response.data[i].firstName + " " + response.data[i].familyName)
-            colors.push(self.getGroupColorById(response.data[i].groupId))
             count.push(response.data[i].total)
           }
 
@@ -120,7 +118,6 @@
             xaxis: {
               categories: names,
             },
-            colors: colors,
           };
 
           self.series = [{

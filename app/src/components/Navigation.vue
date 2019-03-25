@@ -83,6 +83,7 @@
           <v-list-tile-title>Statistiken</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      <!--
       <v-list-tile
         v-show="loggedInUser"
         to="/feedback"
@@ -95,6 +96,7 @@
           <v-list-tile-title>Kummerkasten</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
+      -->
       <v-list-tile
         v-show="!loggedInUser"
         to="/login"

@@ -52,7 +52,9 @@ class UserController extends Controller
 
     $users = User::latest()
       ->when($groupIds, function ($query, $groupIds) {
-        return $query->whereIn('group_id', preg_split('/,/', $groupIds));
+          $query->whereHas('groups', function ($query) use ($groupIds) {
+              $query->whereIn('group_id', preg_split('/,/', $groupIds));
+          });
       })
       ->when($branchId, function ($query, $branchId) {
         $query->whereHas('group', function ($query) use ($branchId) {
@@ -62,7 +64,7 @@ class UserController extends Controller
         });
       })
       ->when($unassigned, function ($query) {
-        return $query->doesntHave('group');
+        return $query->doesntHave('groups');
       });
 
     if (!empty(request('per_page'))) {
@@ -91,7 +93,9 @@ class UserController extends Controller
     $users = User::orderBy($sortBy, $direction)
       //get users with group ids
       ->when($groupIds, function ($query, $groupIds) {
-        return $query->whereIn('group_id', preg_split('/,/', $groupIds));
+          $query->whereHas('groups', function ($query) use ($groupIds) {
+              $query->whereIn('group_id', preg_split('/,/', $groupIds));
+          });
       })
       //get users with branch id
       ->when($branchId, function ($query, $branchId) {
@@ -102,7 +106,7 @@ class UserController extends Controller
         });
       })
       ->when($unassigned, function ($query) {
-        return $query->doesntHave('group');
+        return $query->doesntHave('groups');
       })
       ->paginate($per_page);
 
@@ -144,12 +148,6 @@ class UserController extends Controller
   {
     $user = User::findOrFail($id);
 
-    //map groupId to group_id
-    if ($request->has('groupId')) {
-      $user['group_id'] = $request->input('groupId');
-    } else {
-      $user['group_id'] = null;
-    }
     //active boolean to 0 and 1
     if ($request->has('active')) {
       $user['active'] = $request->input('active') == 'true' ? 1 : 0;
@@ -158,6 +156,7 @@ class UserController extends Controller
       throw new HttpException(500);
     }
 
+    $user->groups()->sync($request->input('groupIds'));
     $user->trainerGroups()->sync($request->input('trainerGroupIds'));
 
     return response()->json([
@@ -170,15 +169,13 @@ class UserController extends Controller
   public function createUnregistered(CreateUnregisteredUserRequest $request)
   {
     $user = new User();
-    if ($request->has('groupId')) {
-      $user['group_id'] = $request->input('groupId');
-    } else {
-      $user['group_id'] = null;
-    }
+
     $user->registered = 0;
     $user->firstName = $request->input('firstName');
     $user->familyName = $request->input('familyName');
     $user->save();
+
+    $user->groups()->sync($request->input('groupIds'));
 
     return response()->json([
       'status' => 'ok'

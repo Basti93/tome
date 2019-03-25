@@ -3,17 +3,18 @@ export default class User {
   static from (jsonString) {
     try {
       let jsonObj = JSON.parse(jsonString);
-      return new User({id: jsonObj.id, email: jsonObj.email, firstName: jsonObj.firstName, familyName: jsonObj.familyName, active: jsonObj.active, groupId: jsonObj.groupId, roleNames: jsonObj.roleNames, trainerGroupIds: jsonObj.trainerGroupIds, registered: jsonObj.registered})
+      return new User({id: jsonObj.id, email: jsonObj.email, firstName: jsonObj.firstName, familyName: jsonObj.familyName, active: jsonObj.active, groupId: jsonObj.groupId, groupIds: jsonObj.groupIds, roleNames: jsonObj.roleNames, trainerGroupIds: jsonObj.trainerGroupIds, registered: jsonObj.registered})
     } catch (_) {
       return null
     }
   }
 
 
-  constructor ({ id, email, firstName, familyName, active, groupId, roleNames, trainerGroupIds, registered }) {
+  constructor ({ id, email, firstName, familyName, active, groupId, groupIds, roleNames, trainerGroupIds, registered }) {
     this.id = id
     this.active = active == 1 ? true : false
     this.groupId = groupId
+    this.groupIds = groupIds
     this.email = email // eslint-disable-line camelcase
     this.firstName = firstName
     this.familyName = familyName

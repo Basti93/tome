@@ -3,10 +3,10 @@
 namespace App;
 
 use Hash;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 
 class User extends Authenticatable implements JWTSubject
@@ -31,12 +31,12 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token', 'updated_at', 'created_at', 'roles'
     ];
 
-    protected $appends = ['roleNames', 'trainer_group_ids'];
+    protected $appends = ['roleNames', 'group_ids', 'trainer_group_ids'];
 
     /**
      * Automatically creates hash for the user password.
      *
-     * @param  string  $value
+     * @param  string $value
      * @return void
      */
     public function setPasswordAttribute($value)
@@ -65,33 +65,44 @@ class User extends Authenticatable implements JWTSubject
     }
 
 
-  public function group()
-  {
-    return $this->hasOne('App\Group', 'id', 'group_id');
-  }
+    public function group()
+    {
+        return $this->hasOne('App\Group', 'id', 'group_id');
+    }
 
-  public function trainerGroups()
-  {
-    return $this->belongsToMany('App\Group', 'trainer_group', 'user_id');
-  }
+    public function trainerGroups()
+    {
+        return $this->belongsToMany('App\Group', 'trainer_group', 'user_id');
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany('App\Group', 'user_group', 'user_id');
+    }
 
     public function trainings()
     {
-        return $this->belongsToMany(Training::class,'training_participation', 'user_id', 'training_id')->withPivot('attend');
+        return $this->belongsToMany(Training::class, 'training_participation', 'user_id', 'training_id')->withPivot('attend');
     }
 
     public function getTrainerGroupIdsAttribute()
-  {
-    return $this->trainerGroups->pluck('pivot.group_id');
-  }
+    {
+        return $this->trainerGroups->pluck('pivot.group_id');
+    }
 
-  public function getRoleNamesAttribute()
-  {
-    return $this->getRoleNames();
-  }
+    public function getGroupIdsAttribute()
+    {
+        return $this->groups->pluck('pivot.group_id');
+    }
 
-  public function isApproved() {
-      return $this->approved == 1;
-  }
+    public function getRoleNamesAttribute()
+    {
+        return $this->getRoleNames();
+    }
+
+    public function isApproved()
+    {
+        return $this->approved == 1;
+    }
 
 }

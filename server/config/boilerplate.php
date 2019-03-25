@@ -24,7 +24,7 @@ return [
         'validation_rules' => [
             'firstName' => 'required',
             'familyName' => 'required',
-            'email' => 'required|email',
+            'email' => 'email',
         ]
     ],
     // these options are related to store a training
@@ -42,7 +42,7 @@ return [
         'validation_rules' => [
             'firstName' => 'required',
             'familyName' => 'required',
-            'groupId' => 'required',
+            'groupIds' => 'required',
         ]
     ],
 

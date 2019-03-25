@@ -104,6 +104,7 @@
     import User from "../models/User";
     import Training from "@/models/Training";
     import TrainingParticipant from "@/models/TrainingParticipant";
+    import { getCookie, eraseCookie } from "@/helpers/cookie-helper";
 
     export default Vue.extend({
         name: "TrainingsCheckIn",
@@ -259,6 +260,8 @@
                 this.cookieUser = User.from(this.getCookie('cookieUser'));
                 this.cookieUserDialogVisible = false;
             },
+            getCookie,
+            eraseCookie,
         },
         watch: {
             currentUser() {

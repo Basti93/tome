@@ -35,8 +35,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" flat @click="done()" :disabled="!valid"><v-icon>done</v-icon></v-btn>
-        <v-btn color="primary" flat @click="show=false"><v-icon>close</v-icon></v-btn>
+        <v-btn color="primary" @click="done()" :disabled="!valid"><v-icon>done</v-icon></v-btn>
+        <v-btn color="primary" @click="show=false"><v-icon>close</v-icon></v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

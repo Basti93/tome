@@ -137,7 +137,8 @@ class TrainingController extends Controller
             ->join('users', 'training_participation.user_id', '=', 'users.id')
             ->join('trainings', 'training_participation.training_id', '=', 'trainings.id')
             ->when($groupIds, function ($query, $groupIds) {
-                $query->whereIn('users.group_id', preg_split('/,/', $groupIds));
+                $query->join('user_group', 'user_group.user_id', '=', 'users.id')
+                    ->whereIn('user_group.group_id', preg_split('/,/', $groupIds));
             })
             ->when($year, function ($query, $year) {
                 $from = date($year . '-01-01');
@@ -145,8 +146,8 @@ class TrainingController extends Controller
                 $query->whereBetween('trainings.start', array($from, $to));
             })
             ->where('training_participation.attend', 1)
-            ->groupBy('users.id', 'users.firstName', 'users.familyName', 'users.group_id')
-            ->select('users.id', 'users.firstName', 'users.familyName', 'users.group_id', DB::raw('count(*) as total'))
+            ->groupBy('users.id', 'users.firstName', 'users.familyName')
+            ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(*) as total'))
             ->orderBy('total', 'desc')
             ->get();
         return response()->json($result);
@@ -162,7 +163,8 @@ class TrainingController extends Controller
             ->when($groupIds, function ($query, $groupIds) {
                 $query->join('training_participation', 'training_participation.training_id', '=', 'trainings.id')
                     ->join('users', 'training_participation.user_id', '=', 'users.id')
-                    ->whereIn('users.group_id', preg_split('/,/', $groupIds));
+                    ->join('user_group', 'user_group.user_id', '=', 'users.id')
+                    ->whereIn('user_group.group_id', preg_split('/,/', $groupIds));
             })
             ->when($year, function ($query, $year) {
                 $from = date($year . '-01-01');

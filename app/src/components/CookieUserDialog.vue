@@ -55,6 +55,7 @@
 
 <script>
   import User from "@/models/User";
+  import { setCookie } from  "../helpers/cookie-helper"
 
   export default {
     name: "CookieUserDialog",
@@ -101,7 +102,9 @@
             }
           });
       },
+      setCookie,
       fullName: item => item.firstName + ' ' + item.familyName,
+
     },
     watch: {
       propBranchId: function (id) {

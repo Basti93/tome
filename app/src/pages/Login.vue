@@ -46,10 +46,12 @@
   </v-layout>
 </template>
 
-<script>
+<script lang="ts">
+  import Vue from "vue";
   import {mapGetters} from 'vuex'
+  import { eraseCookie } from "@/helpers/cookie-helper";
 
-  export default {
+  export default Vue.extend({
     name: "Login",
     data: () => ({
       valid: true,
@@ -81,31 +83,29 @@
           this.$router.replace(this.$route.query.redirect || '/')
         }
       },
-      login() {
-        this.$http.post('/auth/login', {email: this.email, password: this.password})
-          .then(request => this.checkLogIn(request))
-          .catch(() => this.loginFailed())
-      },
-      checkLogIn(req) {
-        if (!req.data.token) {
-          this.loginFailed()
-          return
+      async login() {
+        try {
+          const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password});
+          if (!data.token) {
+            throw "Login Failed. No token recieved from server!"
+          }
+          localStorage.token = data.token
+          localStorage.user = JSON.stringify(data.user)
+          this.$store.dispatch('login')
+          this.eraseCookie('cookieUser');
+          this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
+          this.$router.replace(this.$route.query.redirect || '/')
+        } catch (error) {
+          console.error(error);
+          this.$store.dispatch('logout')
+          delete localStorage.token
+          delete localStorage.user
+          this.$emit("showSnackbar", "Anmelden fehlgeschlagen! Bitte nochmal probieren", "error");
         }
-        localStorage.token = req.data.token
-        localStorage.user = JSON.stringify(req.data.user)
-        this.$store.dispatch('login')
-        this.eraseCookie('cookieUser');
-        this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
-        this.$router.replace(this.$route.query.redirect || '/')
       },
-      loginFailed() {
-        this.$store.dispatch('logout')
-        delete localStorage.token
-        delete localStorage.user
-        this.$emit("showSnackbar", "Anmelden fehlgeschlagen! Bitte nochmal probieren", "error");
-      }
+      eraseCookie,
     },
-  }
+  })
 </script>
 
 <style scoped>

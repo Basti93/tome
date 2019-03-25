@@ -49,11 +49,11 @@
     methods: {
       fillGroupSelect: function () {
         this.groupItems = [];
-        this.groups.forEach(function (item) {
-          if (this.selectedBranchId === item.branchId) {
-            this.groupItems.push(item);
-          }
-        }.bind(this));
+        for (const group of this.groups) {
+            if (this.selectedBranchId === group.branchId) {
+                this.groupItems.push(group);
+            }
+        }
       },
     },
     watch: {
