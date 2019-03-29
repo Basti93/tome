@@ -256,14 +256,11 @@ class TrainingController extends Controller
             ], 403);
         }
 
-        if (!$training->participants()->where('user_id', $user->id)->exists()) {
-            $training->participants()->attach($user);
+        if ($training->participants->contains($user->id)) {
+            $training->participants()->updateExistingPivot($user->id, array('attend' => 1), false);
+        } else {
+            $training->participants()->attach($user, ['attend' => 1]);
         }
-
-        DB::table('training_participation')
-            ->where('user_id', $user->id)
-            ->where('training_id', $training->id)
-            ->update(['attend' => 1]);
 
         return response()->json([
             'status' => 'ok'
@@ -309,17 +306,16 @@ class TrainingController extends Controller
                     'message' => 'The training is in the next 24 hours and needs a reason for cancellation',
                 ], 201);
             } else {
-                DB::table('training_participation')
-                    ->where('user_id', $user->id)
-                    ->where('training_id', $training->id)
-                    ->update(['cancelreason' => $reason, 'attend' => 0]);
+                $training->participants()->updateExistingPivot($user->id, array('attend' => 0, 'cancelreason' => $reason), false);
             }
-        }
+        } else {
+            if ($training->participants->contains($user->id)) {
+                $training->participants()->updateExistingPivot($user->id, array('attend' => 0), false);
+            } else {
+                $training->participants()->attach($user, ['attend' => 0]);
+            }
 
-        DB::table('training_participation')
-            ->where('user_id', $user->id)
-            ->where('training_id', $training->id)
-            ->update(['attend' => 0]);
+        }
 
         return response()->json([
             'status' => 'ok',

@@ -33,6 +33,10 @@ class User extends Authenticatable implements JWTSubject
 
     protected $appends = ['roleNames', 'group_ids', 'trainer_group_ids'];
 
+    public function getFullName() {
+        return $this->firstName." ".$this->familyName;
+    }
+
     /**
      * Automatically creates hash for the user password.
      *

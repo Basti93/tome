@@ -8,11 +8,7 @@
   >
     <v-card flat class="pt-4" v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
       <v-icon x-large center>account_circle</v-icon>
-      <div>
-        <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
-        <p class="caption">{{currentUserGroupName}}</p>
-      </div>
-
+      <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
     </v-card>
     <v-divider></v-divider>
     <v-list dense class="pt-2">
@@ -167,11 +163,8 @@
       slot="activator"
       v-show="$vuetify.breakpoint.mdAndUp"
     >
-      <div style="padding-right: 32px;">
-        <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
-        <p class="black--text" style="font-size: 10px;">{{currentUserGroupName}}</p>
-      </div>
-      <v-icon right style="position: absolute; top: 8px; right: 0px;">account_circle</v-icon>
+      <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
+      <v-icon right>account_circle</v-icon>
     </v-btn>
       <v-list>
         <v-list-tile to="/profile">

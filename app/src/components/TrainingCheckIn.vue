@@ -8,21 +8,23 @@
             <v-card-text class="tp-upcoming-training__text">
                 <v-container grid-list-md>
                     <v-layout wrap>
-                        <v-flex xs6>
+                        <v-flex xs5>
                             <p class="font-weight-bold">Von {{moment(start).format('HH:mm')}} Uhr</p>
                             <p class="font-weight-bold">Bis {{moment(end).format('HH:mm')}} Uhr</p>
                         </v-flex>
-                        <v-flex xs6 v-if="allowedToCheckIn()">
+                        <v-flex xs7 v-if="allowedToCheckIn()">
                             <v-btn
+                                    style="min-width: 125px"
+                                    v-if="!attending || notYet"
                                     color="primary"
-                                    @click="currentUser ? participate() : showCookieUserLogin()"
-                                    v-show="!attending">
+                                    @click="currentUser ? participate() : showCookieUserLogin()">
                                 Teilnehmen
                             </v-btn>
                             <v-btn
+                                    style="min-width: 125px"
+                                    v-if="attending || notYet"
                                     color="error"
-                                    @click="cancelParticipation()"
-                                    v-show="attending">
+                                    @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
                                 Absagen
                             </v-btn>
                         </v-flex>
@@ -189,6 +191,13 @@
             attending: function () {
                 if (this.currentUser && this.participants) {
                     return this.participants.filter(p => (p.userId === this.currentUser.id && p.attend)).length > 0;
+                }
+                return false;
+            },
+            notYet: function () {
+                if (this.currentUser && this.participants) {
+                    const found = this.participants.filter(p => (p.userId === this.currentUser.id));
+                    return (!found || found.length === 0 || found[0].attend === null);
                 }
                 return false;
             },

@@ -52,13 +52,14 @@
                                     hover
                                     @click="selectTraining(item.id)"
                                     class="tp-training-check-in__navigation-card"
-                                    :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
+                                    :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--canceled': canceled(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                             >
                                 <v-card-title>
                                     <h2 class="subheading">{{ moment(item.start).format('dddd').slice(0, 2) }}</h2>
                                     <p class="title pt-1">{{moment(item.start).format('DD')}}</p>
-                                    <v-icon v-show="attending(item.id)" small>check</v-icon>
-                                    <v-icon v-show="!attending(item.id)" small>priority_high</v-icon>
+                                    <v-icon v-if="attending(item.id)" small>check</v-icon>
+                                    <v-icon v-else-if="canceled(item.id)" small>not_interested</v-icon>
+                                    <v-icon v-else small>new_releases</v-icon>
                                 </v-card-title>
                             </v-card>
                         </div>
@@ -214,11 +215,24 @@
                 }
             },
             updateCheckedIn() {
-                this.selectedTraining.participants.push(new TrainingParticipant(this.selectTraining.id, this.currentUserId, true));
+                let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+                if (participant && participant.length > 0) {
+                    const index = this.selectedTraining.participants.indexOf(participant[0]);
+                    participant[0].attend = true;
+                    this.$set(this.selectedTraining.participants[index], 'attend', true);
+                } else {
+                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, true));
+                }
                 this.$emit("showSnackbar", "Für das Training angemeldet", "success");
             },
             updateCheckedOut() {
-                this.selectedTraining.participants = this.selectedTraining.participants.filter(p => p.userId !== this.currentUserId);
+                let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+                if (participant && participant.length > 0) {
+                    const index = this.selectedTraining.participants.indexOf(participant[0]);
+                    this.$set(this.selectedTraining.participants[index], 'attend', false);
+                } else {
+                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, false));
+                }
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },
             showCookieUserLogin() {
@@ -234,12 +248,6 @@
             getUpcomingTrainingById(id) {
                 return this.upcomingTrainings.filter(ut => ut.id == id)[0];
             },
-            attending(trainingId) {
-                let training = this.getUpcomingTrainingById(trainingId);
-                if (training) {
-                    return training.participants.filter(p => (p.userId === this.currentUserId && p.attend)).length > 0;
-                }
-            },
             removeCookieUser() {
                 this.eraseCookie('cookieUser');
                 this.cookieUser = null;
@@ -247,6 +255,23 @@
             cookieUserDialogClosed() {
                 this.cookieUser = User.from(this.getCookie('cookieUser'));
                 this.cookieUserDialogVisible = false;
+            },
+            attendingStatus(trainingId) {
+                const training = this.getUpcomingTrainingById(trainingId);
+                if (training) {
+                    const tp = training.participants.filter(p => (p.userId === this.currentUserId));
+                    if (tp && tp.length > 0) {
+                        return tp[0].attend;
+                    }
+                }
+                return null;
+            },
+            attending(trainingId) {
+                return this.attendingStatus(trainingId) ? true : false;
+            },
+            canceled(trainingId) {
+                const status = this.attendingStatus(trainingId);
+                return (status !== null && !status) ? true : false;
             },
             getCookie,
             eraseCookie,
@@ -287,6 +312,10 @@
 
             &--attending {
                 background-color: #60cc69 !important;
+            }
+
+            &--canceled {
+                background-color: #ff5252 !important;
             }
         }
 

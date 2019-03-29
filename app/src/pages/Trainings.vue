@@ -5,6 +5,11 @@
         <v-toolbar card prominent>
           <v-toolbar-title>Trainingsverwaltung</v-toolbar-title>
           <v-spacer></v-spacer>
+          <v-btn title="Neues Training anlegen" color="primary" @click="create">
+            <v-icon left>add_circle</v-icon>
+            Anlegen
+          </v-btn>
+          <v-spacer></v-spacer>
           <div v-if="$vuetify.breakpoint.lgAndUp">
             <div v-if="filterGroupIds.length > 0">
               <v-chip
@@ -22,10 +27,6 @@
           </div>
           <v-btn title="Liste nach Sparte und Gruppe filtern" icon color="primary" @click="showFilterDialog = true">
             <v-icon>filter_list</v-icon>
-          </v-btn>
-          <v-btn title="Neues Training anlegen" color="primary" @click="create">
-            <v-icon left>add_circle</v-icon>
-            Anlegen
           </v-btn>
           <GroupsSelectDialog
             v-bind:visible="showFilterDialog"
