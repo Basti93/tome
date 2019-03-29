@@ -51,12 +51,20 @@ class TrainingController extends Controller
     public function getUpcomingTrainings()
     {
         $groupIds = request()->query('groupIds');
+        $branchId = request()->query('branchId');
 
         $trainings = Training::where('start', '>=', DB::raw('NOW()'))
             ->orderBy('start', 'asc')
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })
+            ->when($branchId, function ($query, $branchId) {
+                $query->whereHas('groups', function ($query) use ($branchId) {
+                    $query->with(['branch' => function ($query) use ($branchId) {
+                        $query->where('id', $branchId);
+                    }]);
                 });
             })
             ->limit(5)
@@ -242,7 +250,7 @@ class TrainingController extends Controller
     private function checkInBasic($user, $training)
     {
 
-        if (!$training->groups()->where('groups.id', $user->group_id)->exists()) {
+        if (!$training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
             return response()->json([
                 'status' => 'User is not assigned to the training group'
             ], 403);
@@ -286,7 +294,7 @@ class TrainingController extends Controller
     private function checkOutBasic($user, $training, $reason)
     {
 
-        if (!$training->groups()->where('groups.id', $user->group_id)->exists()) {
+        if (!$training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
             return response()->json([
                 'status' => 'not_assigned',
                 'message' => 'User is not assigned to the training group',

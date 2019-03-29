@@ -59,11 +59,10 @@
                       justify-center
                       align-center
                     >
-                      <GroupSelect
-                        v-bind:groupId="selectedGroupId"
-                        v-bind:branchId="selectedBranchId"
-                        v-on:groupSelected="groupChanged"
-                      ></GroupSelect>
+                      <GroupsSelect
+                        v-bind:groupIds="selectedGroupIds"
+                        v-on:groupsChanged="groupsChanged">
+                      </GroupsSelect>
                     </v-layout>
                   </v-container>
                 </v-card>
@@ -77,7 +76,7 @@
                 <v-btn
                   color="primary"
                   @click="approveWizardStep = 3"
-                  :disabled="!selectedGroupId"
+                  :disabled="!selectedGroupIds"
                 >
                   Weiter
                   <v-icon right>arrow_forward</v-icon>
@@ -231,18 +230,17 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import GroupSelect from "@/components/GroupSelect.vue";
+  import GroupsSelect from "../components/GroupsSelect";
 
   export default {
     name: "ApproveUsers",
-    components: {GroupSelect},
+    components: {GroupsSelect},
     data: function () {
       return {
         nonApprovedUsers: [],
         selectedNonApprovedUserId: null,
         approveWizardStep: 0,
-        selectedGroupId: null,
-        selectedBranchId: null,
+        selectedGroupIds: [],
         nonRegisteredUsers: [],
         nonRegisteredUserId: null,
         confirmDialog: false,
@@ -284,8 +282,8 @@
         return user.firstName + ' ' + user.familyName;
 
       },
-      groupChanged: function (groupId) {
-        this.selectedGroupId = groupId;
+      groupsChanged: function ({groupIds}) {
+        this.selectedGroupIds = groupIds;
       },
       confirmMigrateUser: function () {
         this.confirmDialog = false;
@@ -298,11 +296,11 @@
           this.confirmDialog = true;
           return;
         }
-        this.$http.post('user/' + this.selectedNonApprovedUserId + '/approve/', {groupId: this.selectedGroupId, migrateUserId: this.nonRegisteredUserId}).then(res => {
+        this.$http.post('user/' + this.selectedNonApprovedUserId + '/approve/', {groupIds: this.selectedGroupIds, migrateUserId: this.nonRegisteredUserId}).then(res => {
           if (res.data.status == 'ok') {
             this.selectedNonApprovedUserId = null;
             this.nonRegisteredUserId = null;
-            this.selectedGroupId = null;
+            this.selectedGroupIds = [];
             this.$emit('showSnackbar', 'Benutzer erfolgreich freigschaltet');
             this.fetchNonApprovedUsers()
             this.fetchNonRegisteredUsers()

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" max-width="500px" :propGroupId="groupId" :propUserId="userId" :propBranchId="branchId">
+  <v-dialog v-model="show" max-width="500px" :propGroupId="groupId" :propUserId="userId" :propBranchId="branchId" persistent>
     <v-card>
       <v-card-title>
         <span class="title">Wer bist du?</span>
@@ -13,7 +13,7 @@
                   ma-0
                   class="caption"
           >
-            Falls du dich bereits registriert hast melde dich an, um an einem Training teilzunehmen.
+            Falls du dich bereits registriert hast, melde dich an um an einem Training teilzunehmen.
           </v-alert>
           <v-select
             :items="$store.state.masterData.branches"
@@ -48,6 +48,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="show=false">Abbrechen</v-btn>
+        <v-btn color="primary" @click="done()">Ok</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -104,6 +105,13 @@
       },
       setCookie,
       fullName: item => item.firstName + ' ' + item.familyName,
+      done: function () {
+        if (this.userId) {
+          this.setCookie('cookieUser', JSON.stringify(this.groupUsers.filter(u => u.id === this.userId)[0]));
+          this.$emit('cookieUserChanged', this.userId)
+          this.$emit('close')
+        }
+      },
 
     },
     watch: {
@@ -113,13 +121,6 @@
       propGroupId: function (id) {
         this.groupSelect(id);
       },
-      userId: function (id) {
-        if (id) {
-            this.setCookie('cookieUser', JSON.stringify(this.groupUsers.filter(u => u.id === this.userId)[0]));
-            this.$emit('cookieUserChanged', id)
-            this.$emit('close')
-        }
-      }
     },
     computed: {
       show: {

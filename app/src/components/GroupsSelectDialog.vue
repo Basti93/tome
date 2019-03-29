@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly">
+  <v-dialog v-model="show" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
     <v-card>
       <v-card-title>
         <span class="title">Filter ändern</span>

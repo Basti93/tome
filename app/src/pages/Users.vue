@@ -18,7 +18,7 @@
                     </v-btn>
                     <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="showCreateDialog = true">
                         <v-icon left>add_circle</v-icon>
-                        Benutzer anlegen
+                        Anlegen
                     </v-btn>
                     <v-menu bottom left>
                         <v-btn
@@ -85,7 +85,7 @@
                     </v-data-table>
                 </v-card-text>
             </v-card>
-            <v-dialog v-model="dialog" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+            <v-dialog v-model="showDialog" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
                 <v-card>
                     <v-card-title>
                         <span class="title">Benutzer Bearbeiten</span>
@@ -98,16 +98,35 @@
                                     <v-text-field
                                             v-model="editedItem.firstName"
                                             label="Vorname"
+                                            prepend-icon="account_circle"
                                     ></v-text-field>
                                 </v-flex>
                                 <v-flex xs12 sm6>
                                     <v-text-field
                                             v-model="editedItem.familyName"
                                             label="Nachname"
+                                            prepend-icon="account_circle"
                                     ></v-text-field>
                                 </v-flex>
-                                <!-- TODO: Geburtsdatum -->
-                                <v-flex xs12>
+                                <v-flex xs12 md6>
+                                    <v-menu
+                                            ref="birthdateMenu"
+                                            :close-on-content-click="false"
+                                            v-model="birthdateMenu"
+                                            lazy
+                                            full-width>
+                                        <v-text-field
+                                                slot="activator"
+                                                v-model="birthdateFormatted"
+                                                required
+                                                label="Geburtsdatum"
+                                                prepend-icon="event"
+                                                readonly
+                                        ></v-text-field>
+                                        <v-date-picker v-model="editedItem.birthdate" @input="birthdateMenu = false"></v-date-picker>
+                                    </v-menu>
+                                </v-flex>
+                                <v-flex xs12 md6>
                                     <GroupsSelect
                                             v-bind:groupIds="editedItem.groupIds"
                                             v-on:groupsChanged="editedItemGroupsChanged">
@@ -117,6 +136,7 @@
                                     <v-checkbox
                                             v-model="editedItem.active"
                                             label="Aktiv"
+                                            prepend-icon="active"
                                     ></v-checkbox>
                                 </v-flex>
                             </v-layout>
@@ -125,14 +145,21 @@
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="primary" @click="closeDialog" right><v-icon>close</v-icon>Abbrechen</v-btn>
-                        <v-btn color="primary" @click="save" right><v-icon>save</v-icon>Speichern</v-btn>
+                        <v-btn color="primary" @click="closeDialog()" right>
+                            <v-icon>close</v-icon>
+                            Abbrechen
+                        </v-btn>
+                        <v-btn color="primary" @click="save" right>
+                            <v-icon>save</v-icon>
+                            Speichern
+                        </v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
             <CreateUnregistredUserDialog
                     v-bind:visible="showCreateDialog"
-                    v-on:userCreated="fetchData()">
+                    v-on:userCreated="fetchData()"
+                    v-on:close="showCreateDialog = false">
             </CreateUnregistredUserDialog>
         </v-flex>
     </v-layout>
@@ -144,13 +171,14 @@
     import User from "../models/User";
     import CreateUnregistredUserDialog from "../components/CreateUnregistredUserDialog";
     import GroupsSelect from "../components/GroupsSelect";
+    import {formatDate, parseDate} from "../helpers/date-helpers"
 
     export default {
         name: "Users",
         components: {GroupsSelect, CreateUnregistredUserDialog, GroupsSelectDialog},
         data: function () {
             return {
-                dialog: false,
+                showDialog: false,
                 showFilterDialog: false,
                 showCreateDialog: false,
                 filterBranchId: null,
@@ -171,8 +199,9 @@
                 editedId: null,
                 editedItem: {
                     id: null,
-                    firstName: '',
-                    familyName: '',
+                    firstName: null,
+                    familyName: null,
+                    birthdate: null,
                     groupIds: [],
                     isTrainer: false,
                     active: false,
@@ -181,10 +210,12 @@
                     id: null,
                     firstName: '',
                     familyName: '',
+                    birthdate: null,
                     groupIds: [],
                     isTrainer: false,
                     active: false,
                 },
+                birthdateMenu: false,
             }
         },
         created() {
@@ -206,6 +237,9 @@
                 }
                 return [];
             },
+            birthdateFormatted() {
+                return this.formatDate(this.editedItem.birthdate)
+            },
         },
         watch: {
             pagination: {
@@ -216,18 +250,15 @@
                 },
                 deep: true
             },
-            dialog(val) {
-                val || this.closeDialog()
-            },
         },
         methods: {
             filterChanged({branchId: branchId, groupdIds: groupIds}) {
                 this.filterBranchId = branchId;
                 this.filterGroupIds = groupIds;
                 this.filterUnassignedUsers = false;
-                this.getUsers();
+                this.fetchData();
             },
-            fetchData() {
+            async fetchData() {
                 this.loading = true;
                 let url = null;
                 // get by sort option
@@ -244,28 +275,35 @@
                 } else if (this.filterUnassignedUsers) {
                     url += '&unassigned=true';
                 }
-                this.$http.get(url)
-                    .then(request => this.dataLoaded(request))
-                    .catch(err => console.log(err))
-                    .finally(() => this.loading = false);
+
+                try {
+                    const request = await this.$http.get(url);
+                    this.dataLoaded(request)
+                } catch (error) {
+                    console.error(error)
+                } finally {
+                    this.loading = false
+                }
             },
             dataLoaded(res) {
                 this.users = [];
+                const self = this;
                 for (let i = 0; i < res.data.data.length; i++) {
                     let userObj = res.data.data[i];
-                    this.users.push(new User({
+                    self.users.push(new User({
                         id: userObj.id,
                         firstName: userObj.firstName,
                         familyName: userObj.familyName,
+                        birthdate: self.moment(userObj.birthdate).format('Y-MM-DD'),
                         active: userObj.active,
                         groupIds: userObj.groupIds,
                         roleNames: userObj.roleNames,
                         registered: userObj.registered
                     }))
                 }
-                this.pagination.page = res.data.currentPage;
-                this.pagination.totalItems = res.data.total;
-                this.total = res.data.total;
+                self.pagination.page = res.data.currentPage;
+                self.pagination.totalItems = res.data.total;
+                self.total = res.data.total;
             },
             onFilterUnassignedUsers() {
                 this.filterBranchId = null;
@@ -276,8 +314,8 @@
             editItem(item) {
                 if ((this.loggedInUser.isAdmin && !item.isAdmin) || (this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin)) {
                     this.editedId = item.id
-                    this.editedItem = Object.assign({}, item)
-                    this.dialog = true
+                    this.editedItem = {...item}
+                    this.showDialog = true
                 } else {
                     this.$emit("showSnackbar", "Trainer und Admins können sich nur selbst bearbeiten.", "info")
                 }
@@ -299,40 +337,29 @@
                 this.editedItem.groupIds = groupIds;
             },
             closeDialog() {
-                this.dialog = false
+                this.showDialog = false
                 this.editedItem = {...this.defaultItem}
             },
             reset() {
                 this.filterGroupId = null;
                 this.fetchData();
             },
-            save() {
+            async save() {
                 if (this.editedId) {
-                    var self = this;
-
-                    self.$http.put('/user/' + self.editedId, self.editedItem)
-                        .then(function (res) {
-                            if (!res.data.error) {
-                                self.closeDialog()
-                                self.$emit("showSnackbar", "Benutzer gespeichert", "success")
-                                self.fetchData();
-                            } else {
-                                self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
-                            }
-                        })
-                        .catch(function (err) {
-                            console.log(err);
-                            self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
-                        })
+                    const self = this;
+                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate).format(), groupIds: self.editedItem.groupIds};
+                    const {data} = await self.$http.put('/user/' + self.editedId, postData);
+                    if (data.error) {
+                        self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
+                    } else {
+                        self.closeDialog()
+                        self.$emit("showSnackbar", "Benutzer gespeichert", "success")
+                        self.fetchData();
+                    }
                 }
             },
-            getGroupName: function (id) {
-                if (id) {
-                    return this.getGroupById(id).name;
-                } else {
-                    return "Keine"
-                }
-            }
+            formatDate,
+            parseDate,
         },
     }
 </script>

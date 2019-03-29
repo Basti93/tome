@@ -269,6 +269,7 @@
   import TrainingContent from "../components/TrainingContent";
   import Training from "@/models/Training";
   import TrainingParticipant from "@/models/TrainingParticipant";
+  import {formatDate, parseDate} from "../helpers/date-helpers"
 
   export default Vue.extend({
     name: "Trainings",
@@ -552,18 +553,8 @@
             })
         }
       },
-      formatDate(date) {
-        if (!date) return null
-
-        const [year, month, day] = date.split('-')
-        return `${day}.${month}.${year}`
-      },
-      parseDate(date) {
-        if (!date) return null
-
-        const [day, month, year] = date.split('.')
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-      }
+      formatDate,
+      parseDate,
     },
   })
 </script>

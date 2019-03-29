@@ -213,7 +213,9 @@
         methods: {
             allowedToCheckIn() {
                 if (this.currentUser) {
-                    return this.groups.map(g => g.id).filter(gId => gId === this.currentUser.groupId).length > 0;
+                    if (this.currentUser.groupIds) {
+                        return this.groups.map(g => g.id).filter(gId => this.currentUser.groupIds.includes(gId)).length > 0;
+                    }
                 }
                 return true;
             },

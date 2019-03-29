@@ -8,27 +8,29 @@ use App\User;
 
 class SimpleUserController extends Controller
 {
-  /**
-   * Create a new AuthController instance.
-   *
-   * @return void
-   */
-  public function __construct()
-  {
-  }
+    /**
+     * Create a new AuthController instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+    }
 
 
-  public function index()
-  {
-    $groupIds = request()->query('groupIds');
+    public function index()
+    {
+        $groupIds = request()->query('groupIds');
 
-    $users = User::where('active', true)
-    ->when($groupIds, function ($query, $groupIds) {
-      return $query->whereIn('group_id', preg_split('/,/', $groupIds));
-    });
+        $users = User::where('active', true)
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            });
 
-    return SimpleUserResource::collection($users->get());
-  }
+        return SimpleUserResource::collection($users->get());
+    }
 
 
 }

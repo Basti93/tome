@@ -23,13 +23,33 @@
                             <v-text-field
                                     v-model="firstName"
                                     label="Vorname"
+                                    prepend-icon="account_circle"
                             ></v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6>
                             <v-text-field
                                     v-model="familyName"
                                     label="Nachname"
+                                    prepend-icon="account_circle"
                             ></v-text-field>
+                        </v-flex>
+                        <v-flex xs12 md6>
+                            <v-menu
+                                    ref="birthdateMenu"
+                                    :close-on-content-click="false"
+                                    v-model="birthdateMenu"
+                                    lazy
+                                    full-width>
+                                <v-text-field
+                                        slot="activator"
+                                        v-model="birthdateFormatted"
+                                        required
+                                        label="Geburtsdatum"
+                                        prepend-icon="event"
+                                        readonly
+                                ></v-text-field>
+                                <v-date-picker v-model="birthdate" @input="birthdateMenu = false"></v-date-picker>
+                            </v-menu>
                         </v-flex>
                         <v-flex xs12 md6>
                             <GroupsSelect
@@ -42,7 +62,7 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="closeDialog" right>
+                <v-btn color="primary" @click="show=false" right>
                     <v-icon>close</v-icon>
                     Abbrechen
                 </v-btn>
@@ -57,6 +77,7 @@
 
 <script>
     import GroupsSelect from "./GroupsSelect";
+    import {formatDate, parseDate} from "../helpers/date-helpers"
 
     export default {
         name: "CreateUnregistredUserDialog",
@@ -66,8 +87,10 @@
             return {
                 firstName: null,
                 familyName: null,
+                birthdate: null,
                 groupIds: [],
                 editGroups: [],
+                birthdateMenu: false,
             }
         },
         computed: {
@@ -80,33 +103,33 @@
                         this.$emit('close')
                     }
                 }
-            }
+            },
+            birthdateFormatted() {
+                return this.formatDate(this.birthdate)
+            },
         },
         methods: {
-            createUser() {
+            async createUser() {
                 let self = this;
-                const data = {firstName: this.firstName, familyName: this.familyName, groupIds: this.groupIds};
-                this.$http.post('/user/unregistered', data)
-                    .then(function (res) {
-                        if (!res.data.error) {
-                            self.$emit("showSnackbar", "Benutzer angelegt", "success")
-                            self.$emit("userCreated")
-                            self.closeDialog();
-                        } else {
-                            self.$emit("showSnackbar", "Benutzer konnte nicht angelegt werden", "error")
-                        }
-                    })
-                    .catch(function (err) {
-                        console.log(err);
+                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate).format(), groupIds: this.groupIds};
+                try {
+                    const {data} = await this.$http.post('/user/unregistered', postData);
+                    if (data.error) {
                         self.$emit("showSnackbar", "Benutzer konnte nicht angelegt werden", "error")
-                    })
-            },
-            closeDialog() {
-                this.show = false;
+                    } else {
+                        self.$emit("showSnackbar", "Benutzer angelegt", "success")
+                        self.$emit("userCreated")
+                        self.show = false;
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
             },
             groupsChanged({groupIds}) {
                 this.groupIds = groupIds;
-            }
+            },
+            formatDate,
+            parseDate,
         },
     }
 </script>

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use DateTime;
 
 class UserController extends Controller
 {
@@ -152,12 +153,14 @@ class UserController extends Controller
     if ($request->has('active')) {
       $user['active'] = $request->input('active') == 'true' ? 1 : 0;
     }
-    if (!$user->update($request->all())) {
-      throw new HttpException(500);
+      $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
+      if (!$user->update($request->all())) {
+        throw new HttpException(500);
     }
 
-    $user->groups()->sync($request->input('groupIds'));
-    $user->trainerGroups()->sync($request->input('trainerGroupIds'));
+
+      $user->groups()->sync($request->input('groupIds'));
+      $user->trainerGroups()->sync($request->input('trainerGroupIds'));
 
     return response()->json([
       'status' => 'ok'
@@ -173,6 +176,7 @@ class UserController extends Controller
     $user->registered = 0;
     $user->firstName = $request->input('firstName');
     $user->familyName = $request->input('familyName');
+    $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
     $user->save();
 
     $user->groups()->sync($request->input('groupIds'));
@@ -194,16 +198,16 @@ class UserController extends Controller
 
     $userToApprove->assignRole(Role::findByName('member'));
 
-    $groupId = $request->input('groupId');
+    $userToApprove->groups()->sync($request->input('groupIds'));
     $userToApprove->update([
-      'approved' => true,
-      'group_id' => $groupId
+      'approved' => true
     ]);
 
 
     $migrateUserId = $request->input('migrateUserId');
     if (!empty($migrateUserId)) {
       $migrateUser = User::findOrFail($migrateUserId);
+      $migrateUser->groups()->detach();
       DB::table('training_participation')->where('user_id', $migrateUser->id)->update(['user_id' => $userToApprove->id]);
       $migrateUser->delete();
     }

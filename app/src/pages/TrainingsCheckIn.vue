@@ -3,37 +3,26 @@
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
                 <v-toolbar card prominent>
-                    <v-toolbar-title v-show="$vuetify.breakpoint.mdAndUp">Trainingsanmeldung</v-toolbar-title>
+                    <v-toolbar-title>Trainingsanmeldung</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <div v-if="cookieUser" class="text-small tp-training-check-in__cookie-user mt-3">
-                        <div>
-                            <h5>Ausgewählter Sportler</h5>
-                            <p>{{cookieUser.getFullName()}}</p>
-                        </div>
-                        <v-btn
-                                icon
-                                @click="removeCookieUser()">
-                            <v-icon color="red">cancel</v-icon>
-                        </v-btn>
-                    </div>
+                    <v-chip v-if="cookieUser" close @input="removeCookieUser()" v-model="cookieUser">{{cookieUser.getFullName()}}</v-chip>
                     <CookieUserDialog
                             :visible="cookieUserDialogVisible"
                             v-on:close="cookieUserDialogClosed()"
                     ></CookieUserDialog>
                     <v-spacer></v-spacer>
-                    <v-chip v-show="$vuetify.breakpoint.mdAndUp">{{filterDisplayValue}}</v-chip>
+                    <v-chip>{{filterDisplayValue}}</v-chip>
                     <v-btn icon color="primary" @click="filterDialogVisible = true">
                         <v-icon>filter_list</v-icon>
                     </v-btn>
-                    <v-dialog v-model="filterDialogVisible" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly">
+                    <v-dialog v-model="filterDialogVisible" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
                         <v-card>
                             <v-card-title>
-                                <span class="title">Filter ändern</span>
+                                <span class="title">Gruppe wechseln</span>
                             </v-card-title>
                             <v-card-text>
                                 <GroupSelect
                                         v-bind:groupId="currentUserGroupId"
-                                        v-bind:branchId="currentUserBranchId"
                                         v-on:groupSelected="groupChanged"
                                         v-on:branchSelected="branchChanged"
                                 >
@@ -41,11 +30,11 @@
                             </v-card-text>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="primary" @click="filterDone()">
-                                    <v-icon>done</v-icon>
-                                </v-btn>
                                 <v-btn color="primary" @click="filterDialogVisible = false">
                                     <v-icon>close</v-icon>
+                                </v-btn>
+                                <v-btn color="primary" @click="filterDone()">
+                                    <v-icon>done</v-icon>
                                 </v-btn>
                             </v-card-actions>
                         </v-card>
@@ -122,6 +111,7 @@
                 selectedTrainingId: null,
                 cookieUser: null,
                 animationTrigger: true,
+                initializing: false,
             }
         },
         computed: {
@@ -146,8 +136,8 @@
                 return this.getUpcomingTrainingById(this.selectedTrainingId);
             },
             currentUserGroupId() {
-                if (this.currentUser && this.currentUser.groupId) {
-                    return this.currentUser.groupId
+                if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
+                    return this.currentUser.groupIds[0]
                 }
                 return null
             },
@@ -165,12 +155,6 @@
                 }
                 return "Alle Gruppen"
             },
-            currentUserBranchId() {
-                if (this.currentUser && this.currentUser.groupId) {
-                    return this.getBranchByGroupId(this.currentUser.groupId).id
-                }
-                return null
-            },
             currentUserId() {
                 if (this.currentUser) {
                     return this.currentUser.id;
@@ -178,13 +162,14 @@
                 return null;
             },
         },
-        created() {
+        async created() {
+            this.initializing = true;
             if (!this.loggedInUser) {
                 this.cookieUser = User.from(this.getCookie('cookieUser'));
             }
             this.filterGroupId = this.currentUserGroupId;
-            this.filterBranchId = this.currentUserBranchId;
-            this.fetchData();
+            await this.fetchData();
+            this.initializing = false;
         },
         methods: {
             groupChanged(groupId) {
@@ -202,13 +187,16 @@
             async fetchData() {
                 try {
                     this.dataLoaded = false;
+                    this.upcomingTrainings = [];
                     //build fetch url
                     let url = '/training/upcoming';
                     if (this.filterGroupId) {
                         url += '?groupIds=' + this.filterGroupId;
+                    } else if (this.filterBranchId) {
+                        url += '?branchId=' + this.filterBranchId;
                     }
                     //load data
-                    let response = await this.$http.get(url);
+                    const response = await this.$http.get(url);
                     //json result to objects
                     for (let trObj of response.data.data) {
                         let participants = [] as TrainingParticipant[];
@@ -266,8 +254,9 @@
         watch: {
             currentUser() {
                 this.filterGroupId = this.currentUserGroupId;
-                this.filterBranchId = this.currentUserBranchId;
-                this.fetchData();
+                if (!this.initializing) {
+                    this.fetchData();
+                }
             }
         }
     })
@@ -276,9 +265,6 @@
 
 <style scoped lang="scss">
     .tp-training-check-in {
-        &__cookie-user {
-            display: flex;
-        }
 
         &__navigation-card {
             flex-grow: 1;
