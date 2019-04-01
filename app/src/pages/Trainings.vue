@@ -380,7 +380,7 @@
       pagination: {
         handler() {
           if (!this.loading) {
-            this.loadData();
+            this.loadData(true);
           }
         },
         deep: true
@@ -402,9 +402,9 @@
       filterChanged({branchId: branchId, groupdIds: groupIds}) {
         this.filterGroupIds = groupIds;
         this.filterBranchId = branchId;
-        this.loadData();
+        this.loadData(true);
       },
-      loadData() {
+      loadData(loadCurrent) {
         this.loading = true;
         let url = '/training';
         // get by sort option
@@ -418,6 +418,9 @@
           url += '&groupIds=' + this.filterGroupIds;
         } else if (this.filterBranchId) {
           url += '&branchId=' + this.filterBranchId;
+        }
+        if (loadCurrent) {
+          url += "&current";
         }
         let p1 = this.$http.get(url).then(function (res) {
           this.trainings = res.data.data;

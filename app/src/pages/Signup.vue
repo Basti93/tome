@@ -115,23 +115,28 @@
           return "Passwörter müssen identisch sein!"
         }
       },
-      signup() {
-        this.$http.post('/auth/signup', {
-          firstName: this.firstName,
-          familyName: this.familyName,
-          email: this.email,
-          password: this.password
-        }).then(request => this.signupSuccessful(request))
-          .catch(() => this.signupFailed())
+      async signup() {
+        try {
+          await this.$http.post('/auth/signup', {
+            firstName: this.firstName,
+            familyName: this.familyName,
+            email: this.email,
+            password: this.password
+          });
+            this.completed = true;
+            this.$emit("showSnackbar", "Erfolgreich registriert", "success");
+        } catch (error) {
+            console.log(error);
+            if (error) {
+                if (error.status_code === 422) {
+                    for (const validationError of error.errors) {
+                        console.info(validationError);
+                        this.$emit("showSnackbar", validationError, "error");
+                    }
+                }
+            }
+        }
       },
-      signupSuccessful() {
-        this.completed = true;
-        this.$emit("showSnackbar", "Erfolgreich registriert", "success");
-      },
-      signupFailed() {
-        this.$emit("showSnackbar", "Regestrieren fehlgeschlagen! Bitte probiere es nochmal", "error");
-        console.error("Signup failed .(")
-      }
     },
   }
 </script>

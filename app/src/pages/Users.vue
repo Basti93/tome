@@ -5,6 +5,11 @@
                 <v-toolbar card prominent>
                     <v-toolbar-title>Benutzerverwaltung</v-toolbar-title>
                     <v-spacer></v-spacer>
+                    <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="showCreateDialog = true">
+                        <v-icon left>add_circle</v-icon>
+                        Anlegen
+                    </v-btn>
+                    <v-spacer></v-spacer>
                     <div v-if="$vuetify.breakpoint.lgAndUp">
                         <v-chip
                                 small
@@ -15,10 +20,6 @@
 
                     <v-btn title="Liste nach Sparte und Gruppe filtern" icon color="primary" @click="showFilterDialog = true">
                         <v-icon>filter_list</v-icon>
-                    </v-btn>
-                    <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="showCreateDialog = true">
-                        <v-icon left>add_circle</v-icon>
-                        Anlegen
                     </v-btn>
                     <v-menu bottom left>
                         <v-btn

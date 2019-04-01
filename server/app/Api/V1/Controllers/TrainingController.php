@@ -6,6 +6,7 @@ use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
 use App\Training;
+use App\TrainingParticipation;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;

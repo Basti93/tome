@@ -31,9 +31,9 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token', 'updated_at', 'created_at', 'roles'
     ];
 
-    protected $appends = ['roleNames', 'group_ids', 'trainer_group_ids'];
+    protected $appends = ['roleNames', 'group_ids', 'trainer_group_ids', 'name'];
 
-    public function getFullName() {
+    public function getNameAttribute() {
         return $this->firstName." ".$this->familyName;
     }
 

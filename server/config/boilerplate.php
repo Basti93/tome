@@ -13,7 +13,7 @@ return [
         'validation_rules' => [
             'firstName' => 'required',
             'familyName' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users',
             'password' => 'required'
         ]
     ],

@@ -6,10 +6,12 @@ use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\NonApprovedUser as NonApprovedUserResource;
+use App\Mail\Approved;
 use App\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use DateTime;
@@ -212,6 +214,8 @@ class UserController extends Controller
       $migrateUser->delete();
     }
 
+    $this->sendApprovedEmail($userToApprove);
+
     return response()->json([
       'status' => 'ok'
     ], 201);
@@ -230,5 +234,10 @@ class UserController extends Controller
       return response()->json(error);
     }
   }
+
+    public function sendApprovedEmail($user)
+    {
+        Mail::to($user)->send(new Approved($user));
+    }
 
 }

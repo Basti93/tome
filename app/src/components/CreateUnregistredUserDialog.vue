@@ -13,9 +13,7 @@
                         pa-0
                         ma-0
                         outline>
-                    Vorläufige Benutzer können sich für Trainings anmelden aber nicht einloggen. Erst nachdem sie sich selber dazu entschieden haben, sich zu registrieren können sie unter "Benutzer Freischalten" von
-                    einem Trainer freigeschaltet werden. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einem Vorläufigen Benutzer zuzuweißen und so die Daten des Vorläufigen Benutzer auf den
-                    registrierten Benutzer zu übertragen.
+                    Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
                 </v-alert>
                 <v-container grid-list-md>
                     <v-layout wrap>
