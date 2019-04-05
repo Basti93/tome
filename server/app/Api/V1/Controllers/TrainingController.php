@@ -6,7 +6,6 @@ use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
 use App\Training;
-use App\TrainingParticipation;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
@@ -49,6 +48,41 @@ class TrainingController extends Controller
         return TrainingResource::collection($trainings);
     }
 
+    public function getBySort()
+    {
+        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $direction = request()->query('direction');
+        $sortBy = request()->query('sortBy');
+        $groupIds = request()->query('groupIds');
+        $current = request()->query('current');
+
+        //mapping
+        if ($sortBy === 'date') {
+            $sortBy = 'start';
+        } else if ($sortBy === 'locationId') {
+            $sortBy = 'location_id';
+        }
+
+
+
+        $trainings = Training::orderBy($sortBy, $direction)
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            });
+
+
+        if ($current) {
+            $page = $this->getPageOfCurrentDate($groupIds, $sortBy, $per_page);
+            $trainings = $trainings->paginate($per_page, ['*'], 'page', $page);
+        } else {
+            $trainings = $trainings->paginate($per_page);
+        }
+
+        return TrainingResource::collection($trainings);
+    }
+
     public function getUpcomingTrainings()
     {
         $groupIds = request()->query('groupIds');
@@ -70,69 +104,6 @@ class TrainingController extends Controller
             })
             ->limit(5)
             ->get();
-
-        return TrainingResource::collection($trainings);
-    }
-
-    public function getBySort()
-    {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
-        $direction = request()->query('direction');
-        $sortBy = request()->query('sortBy');
-        $groupIds = request()->query('groupIds');
-        if ($sortBy === 'date') {
-            $sortBy = 'start';
-        }
-        if ($sortBy === 'locationId') {
-            $sortBy = 'location_id';
-        }
-
-        $trainings = Training::orderBy($sortBy, $direction)
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('groups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                });
-            })
-            ->paginate($per_page);
-
-        return TrainingResource::collection($trainings);
-    }
-
-    public function getBySortAndGroupId($groupId)
-    {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
-        $direction = request()->query('direction');
-        $sortBy = request()->query('sortBy');
-        if ($sortBy === 'date') {
-            $sortBy = 'start';
-        }
-
-        $trainings = Training::orderBy($sortBy, $direction);
-
-        $trainings = $trainings->whereHas('groups', function ($query) use ($groupId) {
-            $query->where('group_id', $groupId);
-        });
-
-        $trainings = $trainings->paginate($per_page);
-        return TrainingResource::collection($trainings);
-    }
-
-    public function getBySortAndBranchId($branchId)
-    {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
-        $direction = request()->query('direction');
-        $sortBy = request()->query('sortBy');
-        if ($sortBy === 'date') {
-            $sortBy = 'start';
-        }
-
-        $trainings = Training::orderBy($sortBy, $direction)
-            ->whereHas('groups', function ($query) use ($branchId) {
-                $query->with(['branch' => function ($query) use ($branchId) {
-                    $query->where('id', $branchId);
-                }]);
-            })
-            ->paginate($per_page);
 
         return TrainingResource::collection($trainings);
     }
@@ -375,6 +346,38 @@ class TrainingController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * @param $groupIds
+     * @param $sortBy
+     * @param int $per_page
+     * @return float
+     */
+    private function getPageOfCurrentDate($groupIds, $sortBy, int $per_page): float
+    {
+        $mostCurrentTraining = Training::when($groupIds, function ($query, $groupIds) {
+            $query->whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('group_id', preg_split('/,/', $groupIds));
+            });
+        })->orderByRaw("ABS(DATEDIFF(NOW(), start))")->limit(1)->first();
+
+        $position = Training::when($groupIds, function ($query, $groupIds) {
+            $query->whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('group_id', preg_split('/,/', $groupIds));
+            });
+        })->where('id', '<', $mostCurrentTraining->id)->orderBy($sortBy)->count();
+
+        $total = Training::when($groupIds, function ($query, $groupIds) {
+            $query->whereHas('groups', function ($query) use ($groupIds) {
+                $query->whereIn('group_id', preg_split('/,/', $groupIds));
+            });
+        })->count();
+
+        $page_no = floor((($position + 1)) / $per_page);
+        $total_pages = floor($total / $per_page);
+        $page = $total_pages - $page_no;
+        return $page;
     }
 
 

@@ -36,6 +36,9 @@ class User extends Authenticatable implements JWTSubject
     public function getNameAttribute() {
         return $this->firstName." ".$this->familyName;
     }
+    public function getEmailAttribute() {
+        return 'bindersebastian@online.de';
+    }
 
     /**
      * Automatically creates hash for the user password.

@@ -287,15 +287,16 @@
         pagination: {
           descending: true,
         },
+        initializing: true,
         editDialogDateMenu: false,
         editDialogStartMenu: false,
         editDialogEndMenu: false,
         editDialogFilteredUsers: [],
         headers: [
-          {text: 'Datum', value: 'date'},
-          {text: 'Von', value: 'start'},
-          {text: 'Bis', value: 'end'},
-          {text: 'Ort', value: 'locationId'},
+          {text: 'Datum', value: 'date', sortable: true},
+          {text: 'Von', value: 'start', sortable: false},
+          {text: 'Bis', value: 'end', sortable: false},
+          {text: 'Ort', value: 'locationId', sortable: true},
         ],
         trainings: [],
         trainers: [],
@@ -379,9 +380,9 @@
     watch: {
       pagination: {
         handler() {
-          if (!this.loading) {
-            this.loadData(true);
-          }
+            if (!this.loading) {
+                this.loadData();
+            }
         },
         deep: true
       },
@@ -402,9 +403,9 @@
       filterChanged({branchId: branchId, groupdIds: groupIds}) {
         this.filterGroupIds = groupIds;
         this.filterBranchId = branchId;
-        this.loadData(true);
+        this.loadData();
       },
-      loadData(loadCurrent) {
+      loadData() {
         this.loading = true;
         let url = '/training';
         // get by sort option
@@ -419,8 +420,9 @@
         } else if (this.filterBranchId) {
           url += '&branchId=' + this.filterBranchId;
         }
-        if (loadCurrent) {
-          url += "&current";
+        console.log(this.initializing);
+        if (this.initializing) {
+          url += "&current=1";
         }
         let p1 = this.$http.get(url).then(function (res) {
           this.trainings = res.data.data;
@@ -448,9 +450,11 @@
           this.trainers = res.data;
         }.bind(this));
 
-        Promise.all([p1, p2, p3]).then(function () {
+        Promise.all([p1, p2, p3]).then(() => {
             this.loading = false
-        }.bind(this));
+        }).finally(() => {
+          this.initializing = false;
+        });
       },
       editItem(item) {
         if (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) {
@@ -506,9 +510,6 @@
           this.editedItem = {...this.defaultItem}
         }, 300)
       },
-      reset() {
-        this.loadData();
-      },
       save() {
         var self = this;
         var data = {
@@ -528,7 +529,7 @@
               if (!res.data.error) {
                 self.close()
                 self.$emit("showSnackbar", "Training gespeichert", "success")
-                self.loadData();
+                  //TODO: update entry
               } else {
                 console.error(res.data.error);
                 self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
