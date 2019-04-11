@@ -23,12 +23,15 @@
 
         name: "GroupsSelect",
         props: {
-            'groupIds': Array,
+            groupIds: Array,
         },
         data() {
             return {
                 selectedGroupIds: [],
             }
+        },
+        created() {
+
         },
         computed: {
             ...mapGetters('masterData', {getBranchById: 'getBranchById'}),
@@ -42,10 +45,14 @@
             }
         },
         watch: {
-            groupIds: function () {
-                if (this.groupIds) {
-                    this.selectedGroupIds = this.groupIds;
-                }
+            groupIds: {
+                immediate: true,
+                    handler(newVal, oldVal) {
+                        if (newVal) {
+                            this.selectedGroupIds = newVal;
+                        }
+                },
+
             },
             selectedGroupIds: function () {
                 this.$emit('groupsChanged', {groupIds: this.selectedGroupIds})

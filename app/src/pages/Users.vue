@@ -59,6 +59,14 @@
                             <tr @click="editItem(props.item)" style="cursor: pointer">
                                 <td>{{ props.item.firstName }}</td>
                                 <td>{{ props.item.familyName }}</td>
+                                <td>
+                                    <v-chip v-for="(group) in getGroupsByIds(props.item.groupIds)"
+                                            :key="group.id">
+                                        {{ group.name }}
+                                    </v-chip>
+
+
+                                </td>
                                 <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
                                 <td>{{ props.item.registered ? 'Nein' : 'Ja' }}</td>
                                 <td>
@@ -172,7 +180,7 @@
     import User from "../models/User";
     import CreateUnregistredUserDialog from "../components/CreateUnregistredUserDialog";
     import GroupsSelect from "../components/GroupsSelect";
-    import {formatDate, parseDate} from "../helpers/date-helpers"
+    import {formatDate} from "../helpers/date-helpers"
 
     export default {
         name: "Users",
@@ -191,10 +199,11 @@
                 rowsPerPageItems: [10, 20, 50, 100],
                 pagination: {},
                 headers: [
-                    {text: 'Vorname', value: 'firstName'},
-                    {text: 'Nachname', value: 'familyName'},
-                    {text: 'Aktiv', value: 'active'},
-                    {text: 'Vorläufiger Benutzer', value: 'registered'},
+                    {text: 'Vorname', value: 'firstName', sortable: true},
+                    {text: 'Nachname', value: 'familyName', sortable: true},
+                    {text: 'Gruppen', value: 'groups', sortable: false},
+                    {text: 'Aktiv', value: 'active', sortable: true},
+                    {text: 'Vorläufiger Benutzer', value: 'registered', sortable: false},
                 ],
                 users: [],
                 editedId: null,
@@ -348,7 +357,7 @@
             async save() {
                 if (this.editedId) {
                     const self = this;
-                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate).format(), groupIds: self.editedItem.groupIds};
+                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate).format("YYYY-MM-DD HH:mm:ss"), groupIds: self.editedItem.groupIds, active: self.editedItem.active};
                     const {data} = await self.$http.put('/user/' + self.editedId, postData);
                     if (data.error) {
                         self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
@@ -360,7 +369,6 @@
                 }
             },
             formatDate,
-            parseDate,
         },
     }
 </script>

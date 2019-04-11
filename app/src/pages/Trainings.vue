@@ -344,12 +344,9 @@
         return this.formatDate(this.editedItemDate)
       },
       editedItemDate: {
-
-        // getter
         get: function () {
           return this.editedItem.date
         },
-        // setter
         set: function (newValue) {
           Vue.set(this.editedItem, 'date', newValue)
         }
@@ -394,7 +391,7 @@
       },
       'editedItem.groupIds'() {
         //change filtered user list on selected groups
-        this.editDialogFilteredUsers = this.users.filter(u => this.editedItem.groupIds.find(gId => gId === u.groupId));
+        this.editDialogFilteredUsers = this.users.filter(u => this.editedItem.groupIds.find(gId => u.groupIds.includes(gId)));
         //clean list from users which are not in the selected groups
         this.editedItem.participantIds = this.editedItem.participantIds.filter(pId => this.editDialogFilteredUsers.find(u => u.id === pId))
       },
@@ -420,7 +417,6 @@
         } else if (this.filterBranchId) {
           url += '&branchId=' + this.filterBranchId;
         }
-        console.log(this.initializing);
         if (this.initializing) {
           url += "&current=1";
         }
@@ -464,9 +460,11 @@
           this.editedItem.start = this.moment(item.start).format('HH:mm')
           this.editedItem.end = this.moment(item.end).format('HH:mm')
           this.editedItem.participantIds = []
-          for (const participant of item.participants) {
-            if (participant.attend === 1) {
-              this.editedItem.participantIds.push(participant.userId);
+          if (item.participants) {
+            for (const participant of item.participants) {
+              if (participant.attend === 1) {
+                this.editedItem.participantIds.push(participant.userId);
+              }
             }
           }
           this.dialog = true
@@ -511,8 +509,8 @@
         }, 300)
       },
       save() {
-        var self = this;
-        var data = {
+        const self = this;
+        const postData = {
           start: self.moment(self.editedItem.date + ' ' + self.editedItem.start).format(),
           end: self.moment(self.editedItem.date + ' ' + self.editedItem.end).format(),
           locationId: self.editedItem.locationId,
@@ -522,14 +520,19 @@
           contentIds: self.editedItem.contentIds,
           comment: self.editedItem.comment,
         }
-        if (this.editedId) {
-          data.id = this.editedId;
-          self.$http.put('/training/' + self.editedId, data)
+        if (self.editedId) {
+          postData.id = self.editedId;
+          self.$http.put('/training/' + self.editedId, postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()
                 self.$emit("showSnackbar", "Training gespeichert", "success")
-                  //TODO: update entry
+                self.$http.get('/training/' + self.editedId)
+                        .then(function ({data}) {
+                            const index = self.trainings.findIndex(t => (t && t.id == self.editedId));
+                            self.trainings.splice(index, 1, data.data);
+                        });
+
               } else {
                 console.error(res.data.error);
                 self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
@@ -541,7 +544,7 @@
             })
         } else {
 
-          self.$http.post('/training', data)
+          self.$http.post('/training', postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()

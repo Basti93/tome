@@ -19,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'firstName', 'familyName', 'email', 'password', 'approved', 'group_id'
+        'firstName', 'familyName', 'email', 'password', 'approved', 'group_id', 'birthdate'
     ];
 
     /**
@@ -35,9 +35,6 @@ class User extends Authenticatable implements JWTSubject
 
     public function getNameAttribute() {
         return $this->firstName." ".$this->familyName;
-    }
-    public function getEmailAttribute() {
-        return 'bindersebastian@online.de';
     }
 
     /**
@@ -111,5 +108,6 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->approved == 1;
     }
+
 
 }

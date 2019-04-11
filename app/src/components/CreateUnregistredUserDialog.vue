@@ -51,6 +51,7 @@
                         </v-flex>
                         <v-flex xs12 md6>
                             <GroupsSelect
+                                    :groupIds="groupIds"
                                     v-on:groupsChanged="groupsChanged">
                             </GroupsSelect>
                         </v-flex>
@@ -98,6 +99,12 @@
                 },
                 set(value) {
                     if (!value) {
+                        this.firstName = null;
+                        this.familyName = null;
+                        this.birthdate = null;
+                        this.groupIds = [];
+                        this.editGroups = [];
+                        this.birthdateMenu = false;
                         this.$emit('close')
                     }
                 }
@@ -109,7 +116,7 @@
         methods: {
             async createUser() {
                 let self = this;
-                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate).format(), groupIds: this.groupIds};
+                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate).format("YYYY-MM-DD"), groupIds: this.groupIds};
                 try {
                     const {data} = await this.$http.post('/user/unregistered', postData);
                     if (data.error) {

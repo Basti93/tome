@@ -27,7 +27,8 @@ class LoginController extends Controller
 
         try {
             $token = Auth::guard()->attempt($credentials);
-            if (!Auth::user()->isApproved()) {
+
+            if (!Auth::user() || !Auth::user()->isApproved()) {
               throw new HttpException(401);
             }
 

@@ -38,7 +38,8 @@
                           <v-text-field
                             v-model="editUser.firstName"
                             label="Vorname"
-                            :rules="nameRules"
+                            :rules="requiredRule"
+                            prepend-icon="account_circle"
                             required>
                           </v-text-field>
                         </v-flex>
@@ -46,17 +47,39 @@
                           <v-text-field
                             v-model="editUser.familyName"
                             label="Nachname"
-                            :rules="nameRules"
+                            :rules="requiredRule"
+                            prepend-icon="account_circle"
                             required>
                           </v-text-field>
                         </v-flex>
-                        <v-flex xs12>
+                        <v-flex xs12 md6>
                           <v-text-field
                             v-model="editUser.email"
                             label="E-Mail"
                             :rules="emailRules"
+                            prepend-icon="email"
                             required>
                           </v-text-field>
+                        </v-flex>
+                        <v-flex xs12 md6>
+                          <v-menu
+                                  ref="birthdateMenu"
+                                  :close-on-content-click="false"
+                                  v-model="birthdateMenu"
+                                  :rules="requiredRule"
+                                  required
+                                  lazy
+                                  full-width>
+                            <v-text-field
+                                    slot="activator"
+                                    v-model="birthdateFormatted"
+                                    required
+                                    label="Geburtsdatum"
+                                    prepend-icon="event"
+                                    readonly
+                            ></v-text-field>
+                            <v-date-picker v-model="editUser.birthdate" @input="birthdateMenu = false"></v-date-picker>
+                          </v-menu>
                         </v-flex>
                         <v-flex xs12 v-if="loggedInUser.isTrainer">
                           <v-card flat>
@@ -70,17 +93,12 @@
                                 type="info"
                                 outline
                               >
-                                Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier aktivieren und einer Gruppe zuweisen
+                                Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier Gruppen zuweisen
                               </v-alert>
-                                <v-checkbox
-                                  v-model="editUser.active"
-                                  label="Aktiv"
-                                ></v-checkbox>
-                                <GroupSelect
-                                  v-bind:groupId="editUser.groupId"
-                                  v-bind:branchId="currentUserBranchId"
-                                  v-on:groupSelected="groupChanged">
-                                </GroupSelect>
+                                <GroupsSelect
+                                  v-bind:groupIds="editUser.groupIds"
+                                  v-on:groupsChanged="groupsChanged">
+                                </GroupsSelect>
 
                               </v-flex>
                             </v-card-text>
@@ -105,29 +123,12 @@
                     </v-flex>
                   </v-card-title>
                   <v-card-text>
-
-                    <v-select
-                      v-bind:items="branches"
-                      v-model="branchId"
-                      item-value="id"
-                      item-text="name"
-                      label="Sparte"
-                      prepend-icon="bubble_chart"
-                      clearable>
-                    </v-select>
-                    <v-autocomplete
-                      v-bind:disabled="!branchId"
-                      v-bind:items="groups"
-                      v-model="editUser.trainerGroupIds"
-                      item-value="id"
-                      item-text="name"
-                      label="Deine Gruppen"
-                      prepend-icon="groups"
-                      multiple
-                      clearable
-                      chips
-                      deletable-chips>
-                    </v-autocomplete>
+                    <v-flex md6 offset-md3>
+                  <GroupsSelect
+                          v-bind:groupIds="editUser.trainerGroupIds"
+                          v-on:groupsChanged="trainerGroupsChanged"
+                  ></GroupsSelect>
+                    </v-flex>
                   </v-card-text>
                 </v-card>
               </v-tab-item>
@@ -140,27 +141,27 @@
 </template>
 
 <script>
-  import {mapGetters, mapState} from 'vuex'
-  import GroupSelect from "@/components/GroupSelect.vue";
+  import {mapGetters} from 'vuex'
+  import GroupsSelect from "@/components/GroupsSelect.vue";
+  import {formatDate} from "../helpers/date-helpers"
 
   export default {
     name: "Profile",
-    components: {GroupSelect},
+    components: {GroupsSelect},
     data: function () {
       return {
         valid: true,
-        groups: [],
-        branchId: null,
+        birthdateMenu: false,
         editUser: {
           id: null,
-          firstName: '',
-          familyName: '',
-          email: '',
+          firstName: null,
+          familyName: null,
+          email: null,
+          birthdate: null,
           trainerGroupIds: [],
-          groupId: null,
-          active: false,
+          groupIds: [],
         },
-        nameRules: [
+        requiredRule: [
           v => !!v || 'Pflichtfeld'
         ],
         emailRules: [
@@ -174,35 +175,30 @@
     },
     computed: {
       ...mapGetters({loggedInUser: 'loggedInUser'}),
-      ...mapGetters('masterData', {getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId',}),
-      ...mapState('masterData', {
-        branches: 'branches',
-      }),
-      currentUserBranchId() {
-        if (this.loggedInUser && this.loggedInUser.groupId) {
-          return this.getBranchByGroupId(this.loggedInUser.groupId).id
-        }
-        return null
+      birthdateFormatted() {
+        return this.formatDate(this.editUser.birthdate)
       },
     },
     methods: {
       assignCurrentUser: function () {
-        this.editUser = Object.assign({}, this.loggedInUser)
-        //select the branch of the first user group that the trainer has assigned
-        if (this.editUser.trainerGroupIds && this.editUser.trainerGroupIds.length > 0) {
-          this.branchId = this.getBranchByGroupId(this.editUser.trainerGroupIds[0]).id;
-        }
+        this.editUser = {...this.loggedInUser}
       },
-      fillGroupSelect: function () {
-        this.groups = this.getGroupsByBranchId(this.branchId);
-        this.editUser.trainerGroupIds = this.editUser.trainerGroupIds.filter(gId => this.groups.find(g => g.id === gId))
+      groupsChanged: function ({groupIds}) {
+        this.editUser.groupIds = groupIds;
       },
-      groupChanged: function (groupId) {
-        this.editUser.groupId = groupId;
+      trainerGroupsChanged: function ({groupIds}) {
+        this.editUser.trainerGroupIds = groupIds;
       },
       save: function () {
         let self = this;
-        this.$http.put('user/' + this.editUser.id, this.editUser).then(function (res) {
+        const postData = {
+          firstName: self.editUser.firstName,
+          familyName: self.editUser.familyName,
+          birthdate: self.moment(self.editUser.birthdate).format("YYYY-MM-DD HH:mm:ss"),
+          groupIds: self.editUser.groupIds,
+          trainerGroupIds: self.editUser.trainerGroupIds
+        };
+        this.$http.put('user/me', postData).then(function (res) {
           if (res.data.status == 'ok') {
             self.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
             self.$http.get('auth/me').then(function (res) {
@@ -213,15 +209,11 @@
           } else {
             self.$emit("showSnackbar", "Fehler beim Speichern. Bitte probier es nochmal", "error");
           }
-        })
+        });
 
-      }
+      },
+      formatDate,
     },
-    watch: {
-      branchId: function () {
-        this.fillGroupSelect();
-      }
-    }
   }
 </script>
 

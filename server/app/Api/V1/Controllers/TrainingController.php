@@ -20,7 +20,7 @@ class TrainingController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index']]);
+        $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
         $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
         $this->middleware('permission:update-training', ['only' => ['edit', 'update']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
@@ -48,6 +48,11 @@ class TrainingController extends Controller
         return TrainingResource::collection($trainings);
     }
 
+    public function getById($id)
+    {
+        return TrainingResource::make(Training::findOrFail($id));
+    }
+
     public function getBySort()
     {
         $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
@@ -62,8 +67,6 @@ class TrainingController extends Controller
         } else if ($sortBy === 'locationId') {
             $sortBy = 'location_id';
         }
-
-
 
         $trainings = Training::orderBy($sortBy, $direction)
             ->when($groupIds, function ($query, $groupIds) {
@@ -183,15 +186,7 @@ class TrainingController extends Controller
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
 
-        DB::table('training_participation')
-            ->whereIn('user_id', $request->input('participantIds'))
-            ->where('training_id', $training->id)
-            ->update(['attend' => 1]);
-
-        DB::table('training_participation')
-            ->whereNotIn('user_id', $request->input('participantIds'))
-            ->where('training_id', $training->id)
-            ->update(['attend' => 0]);
+        $this->updateParticipants($request->input('participantIds'), $training);
 
         return response()->json([
             'status' => 'ok'
@@ -228,11 +223,7 @@ class TrainingController extends Controller
             ], 403);
         }
 
-        if ($training->participants->contains($user->id)) {
-            $training->participants()->updateExistingPivot($user->id, array('attend' => 1), false);
-        } else {
-            $training->participants()->attach($user, ['attend' => 1]);
-        }
+        $this->updateParticipant($training, $user->id);
 
         return response()->json([
             'status' => 'ok'
@@ -308,15 +299,7 @@ class TrainingController extends Controller
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
 
-        DB::table('training_participation')
-            ->whereIn('user_id', $request->input('participantIds'))
-            ->where('training_id', $training->id)
-            ->update(['attend' => 1]);
-
-        DB::table('training_participation')
-            ->whereNotIn('user_id', $request->input('participantIds'))
-            ->where('training_id', $training->id)
-            ->update(['attend' => 0]);
+        $this->updateParticipants($request->input('participantIds'), $training);
 
         return response()->json([
             'status' => 'ok'
@@ -378,6 +361,37 @@ class TrainingController extends Controller
         $total_pages = floor($total / $per_page);
         $page = $total_pages - $page_no;
         return $page;
+    }
+
+    /**
+     * @param $participantIds
+     * @param Training $training
+     */
+    private function updateParticipants($participantIds, Training $training): void
+    {
+        if (!empty($participantIds)) {
+            foreach ($participantIds as $participantId) {
+                $this->updateParticipant($training, $participantId);
+            }
+        }
+
+        DB::table('training_participation')
+            ->whereNotIn('user_id', $participantIds)
+            ->where('training_id', $training->id)
+            ->update(['attend' => 0]);
+    }
+
+    /**
+     * @param Training $training
+     * @param $participantId
+     */
+    private function updateParticipant(Training $training, $participantId): void
+    {
+        if ($training->participants->contains($participantId)) {
+            $training->participants()->updateExistingPivot($participantId, array('attend' => 1), false);
+        } else {
+            $training->participants()->attach($participantId, ['attend' => 1]);
+        }
     }
 
 
