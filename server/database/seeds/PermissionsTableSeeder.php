@@ -20,6 +20,11 @@ class PermissionsTableSeeder extends Seeder
     Permission::firstOrCreate(['name' => 'delete-training', 'guard_name' => 'api']);
     Permission::firstOrCreate(['name' => 'checkin-training', 'guard_name' => 'api']);
 
+    Permission::firstOrCreate(['name' => 'create-training-series', 'guard_name' => 'api']);
+    Permission::firstOrCreate(['name' => 'read-training-series', 'guard_name' => 'api']);
+    Permission::firstOrCreate(['name' => 'update-training-series', 'guard_name' => 'api']);
+    Permission::firstOrCreate(['name' => 'delete-training-series', 'guard_name' => 'api']);
+
     Permission::firstOrCreate(['name' => 'create-user', 'guard_name' => 'api']);
     Permission::firstOrCreate(['name' => 'read-user', 'guard_name' => 'api']);
     Permission::firstOrCreate(['name' => 'update-user', 'guard_name' => 'api']);

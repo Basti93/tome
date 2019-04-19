@@ -124,7 +124,16 @@ class UserController extends Controller
      */
     public function getTrainers()
     {
-        return response()->json(User::role('trainer')->get());
+        $groupIds = request()->query('groupIds');
+
+        $trainers = User::role('trainer')
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('trainerGroups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })->get();
+
+        return response()->json($trainers);
     }
 
     public function getNonapproved()
@@ -264,7 +273,7 @@ class UserController extends Controller
 
     public function sendApprovedEmail($user)
     {
-        Mail::to($user)->send(new Approved($user));
+        //Mail::to($user)->send(new Approved($user));
     }
 
 }

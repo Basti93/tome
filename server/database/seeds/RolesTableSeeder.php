@@ -22,9 +22,14 @@ class RolesTableSeeder extends Seeder
       'checkin-training',
       'read-training',
       'update-training',
+      'delete-training',
       'read-user',
       'update-user',
-      'create-user'
+      'create-user',
+      'read-training-series',
+      'update-training-series',
+      'create-training-series',
+      'delete-training-series'
     );
 
     $role = Role::firstOrCreate(['name' => 'member', 'guard_name' => 'api']);

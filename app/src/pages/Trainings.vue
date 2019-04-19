@@ -77,7 +77,7 @@
           </v-data-table>
         </v-card-text>
       </v-card>
-      <v-dialog v-model="dialog" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly">
+      <v-dialog v-model="dialog" v-if="!loading" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly">
         <v-card>
           <v-card-title>
             <span class="title">Training Bearbeiten/Anlegen</span>
@@ -101,124 +101,20 @@
               <v-tab-item :value="'tab-1'">
                 <v-container grid-list-md>
                   <v-layout wrap>
-                    <v-flex xs12 md6>
-                      <v-menu
-                              ref="editDialogDateMenu"
-                              :close-on-content-click="false"
-                              v-model="editDialogDateMenu"
-                              lazy
-                              full-width
-                      >
-                        <v-text-field
-                                slot="activator"
-                                v-model="editedItemDateFormatted"
-                                required
-                                label="Datum"
-                                prepend-icon="event"
-                                readonly
-                        ></v-text-field>
-                        <v-date-picker v-model="editedItemDate" @input="editDialogDateMenu = false"></v-date-picker>
-                      </v-menu>
-                    </v-flex>
-                    <v-flex xs6 md3>
-                      <v-menu
-                              ref="editDialogStartMenu"
-                              :close-on-content-click="false"
-                              v-model="editDialogStartMenu"
-                              lazy
-                              full-width
-                      >
-                        <v-text-field
-                                slot="activator"
-                                v-model="editedItem.start"
-                                label="Start"
-                                required
-                                prepend-icon="schedule"
-                                readonly
-                        ></v-text-field>
-                        <v-time-picker v-model="editedItem.start" @input="editDialogStartMenu = false" format="24hr"></v-time-picker>
-                      </v-menu>
-                    </v-flex>
-                    <v-flex xs6 md3>
-                      <v-menu
-                              ref="editDialogEndMenu"
-                              :close-on-content-click="false"
-                              v-model="editDialogEndMenu"
-                              lazy
-                              full-width
-                      >
-                        <v-text-field
-                                slot="activator"
-                                v-model="editedItem.end"
-                                required
-                                label="Ende"
-                                prepend-icon="schedule"
-                                readonly
-                        ></v-text-field>
-                        <v-time-picker v-model="editedItem.end" @input="editDialogEndMenu = false" format="24hr"></v-time-picker>
-                      </v-menu>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-autocomplete
-                              :items="locations"
-                              item-text="name"
-                              item-value="id"
-                              v-model="editedItem.locationId"
-                              clearable
-                              required
-                              label="Ort"
-                              prepend-icon="add_location"
-                      ></v-autocomplete>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-autocomplete
-                              v-model="editedItem.trainerIds"
-                              :items="filterTrainers"
-                              item-value="id"
-                              :item-text="fullName"
-                              attach
-                              clearable
-                              chips
-                              deletable-chips
-                              label="Trainer"
-                              prepend-icon="verified_user"
-                              multiple
-                      >
-                      </v-autocomplete>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-autocomplete
-                              :items="filterGroups"
-                              v-model="editedItem.groupIds"
-                              item-value="id"
-                              item-text="name"
-                              label="Gruppen"
-                              prepend-icon="groups"
-                              multiple
-                              clearable
-                              chips
-                              deletable-chips>
-                      </v-autocomplete>
-                    </v-flex>
-                    <v-flex xs12 ml-2 style="text-align: left;">
-                      <v-label>Trainingsinhalte</v-label>
-                      <TrainingContent
-                              :contentIds="branchContentIds"
-                              :initContentIds="editedItem.contentIds"
-                              selectable
-                              v-on:contentSelected="editItemContentSelected($event)"
-                              v-on:contentUnselected="editItemContentUnselected($event)"
-                      >
-
-                      </TrainingContent>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-textarea
-                              box
-                              label="Kommentar"
-                              v-model="editedItem.comment"
-                      ></v-textarea>
-                    </v-flex>
+                    <EditTrainingBase
+                      :branchId="filterBranchId"
+                      :date="editedItem.date"
+                      :start="editedItem.start"
+                      :end="editedItem.end"
+                      :locationId="editedItem.locationId"
+                      :trainerIds="editedItem.trainerIds"
+                      :groupIds="editedItem.groupIds"
+                      :contentIds="editedItem.contentIds"
+                      :comment="editedItem.comment"
+                      :trainers="trainers"
+                      :groups="filterGroups"
+                      v-on:change="trainingBaseChanged"
+                    ></EditTrainingBase>
                   </v-layout>
                 </v-container>
               </v-tab-item>
@@ -268,13 +164,14 @@
   import {mapGetters, mapState} from 'vuex'
   import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
   import TrainingContent from "../components/TrainingContent";
+  import EditTrainingBase from "../components/EditTrainingBase";
   import Training from "@/models/Training";
   import TrainingParticipant from "@/models/TrainingParticipant";
   import {formatDate, parseDate} from "../helpers/date-helpers"
 
   export default Vue.extend({
     name: "Trainings",
-    components: {TrainingContent, GroupsSelectDialog},
+    components: {TrainingContent, GroupsSelectDialog, EditTrainingBase},
     data: function () {
       return {
         showFilterDialog: false,
@@ -300,43 +197,44 @@
         ],
         trainings: [],
         trainers: [],
-        users: [],
+        users: [] as Array,
         editedId: null,
         editedItem: {
           id: null,
           date: null,
-          dateFormatted: null,
           start: null,
           end: null,
           locationId: null,
-          trainerIds: [],
-          groupIds: [],
-          participantIds: [],
-          contentIds: [],
+          trainerIds: [] as Array,
+          groupIds: [] as Array,
+          participantIds: [] as Array,
+          contentIds: [] as Array,
           comment: null,
         },
         defaultItem: {
           id: null,
           date: new Date().toISOString().substr(0, 10),
-          dateFormatted: this.formatDate(new Date().toISOString().substr(0, 10)),
           start: '09:00',
           end: '12:00',
           locationId: null,
-          trainerIds: [],
-          groupIds: [],
-          participantIds: [],
-          contentIds: [],
+          trainerIds: [] as Array,
+          groupIds: [] as Array,
+          participantIds: [] as Array,
+          contentIds: [] as Array,
           comment: null,
         },
       }
     },
     created() {
-      this.filterGroupIds = this.trainerGroupIds;
+      if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
+        this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
+        this.filterGroupIds = this.trainerGroupIds;
+      }
       this.pagination.rowsPerPage = 10;
     },
     computed: {
       ...mapGetters({loggedInUser: 'loggedInUser'}),
-      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getTrainerBranchIdByUser: 'getTrainerBranchIdByUser', getContentIdsByBranchId: 'getContentIdsByBranchId'}),
+      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getContentIdsByBranchId: 'getContentIdsByBranchId'}),
       ...mapState('masterData', {
         locations: 'locations',
       }),
@@ -354,8 +252,6 @@
       filterGroups() {
         if (this.filterGroupIds.length > 0) {
           return this.getGroupsByIds(this.filterGroupIds)
-        } else if (this.filterBranchId) {
-          return this.getGroupsByBranchId(this.filterBranchId)
         }
         return [];
       },
@@ -371,7 +267,7 @@
         return this.loggedInUser.trainerGroupIds
       },
       branchContentIds() {
-        return this.getContentIdsByBranchId(this.getTrainerBranchIdByUser(this.loggedInUser));
+        return this.getContentIdsByBranchId(this.filterBranchId);
       }
     },
     watch: {
@@ -392,8 +288,10 @@
       'editedItem.groupIds'() {
         //change filtered user list on selected groups
         this.editDialogFilteredUsers = this.users.filter(u => this.editedItem.groupIds.find(gId => u.groupIds.includes(gId)));
-        //clean list from users which are not in the selected groups
-        this.editedItem.participantIds = this.editedItem.participantIds.filter(pId => this.editDialogFilteredUsers.find(u => u.id === pId))
+        if (this.editedItem.participantIds) {
+          //clean list from users which are not in the selected groups
+          this.editedItem.participantIds = this.editedItem.participantIds.filter(pId => this.editDialogFilteredUsers.find(u => u.id === pId))
+        }
       },
     },
     methods: {
@@ -414,8 +312,6 @@
         }
         if (this.filterGroupIds && this.filterGroupIds.length > 0) {
           url += '&groupIds=' + this.filterGroupIds;
-        } else if (this.filterBranchId) {
-          url += '&branchId=' + this.filterBranchId;
         }
         if (this.initializing) {
           url += "&current=1";
@@ -429,8 +325,6 @@
         let userUrl = '/user';
         if (this.filterGroupIds && this.filterGroupIds.length > 0) {
           userUrl += '?groupIds=' + this.filterGroupIds;
-        } else if (this.filterBranchId) {
-          userUrl += '?branchId=' + this.filterBranchId;
         }
         let p2 = this.$http.get(userUrl).then(function (res) {
           this.users = res.data;
@@ -439,8 +333,6 @@
         let trainerUrl = '/user/trainer';
         if (this.filterGroupIds && this.filterGroupIds.length > 0) {
           trainerUrl += '?groupIds=' + this.filterGroupIds;
-        } else if (this.filterBranchId) {
-          trainerUrl += '?branchId=' + this.filterBranchId;
         }
         let p3 = this.$http.get(trainerUrl).then(function (res) {
           this.trainers = res.data;
@@ -452,10 +344,13 @@
           this.initializing = false;
         });
       },
+      trainingBaseChanged(item) {
+        Object.assign(this.editedItem, item)
+      },
       editItem(item) {
         if (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) {
           this.editedId = item.id
-          this.editedItem = {...item}
+          Object.assign(this.editedItem, item)
           this.editedItemDate = this.moment(item.start).format('Y-MM-DD')
           this.editedItem.start = this.moment(item.start).format('HH:mm')
           this.editedItem.end = this.moment(item.end).format('HH:mm')
@@ -486,20 +381,6 @@
       userDeleted(item) {
         this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(item), 1)
-      },
-      editedItemGroupIdChanged(groupId) {
-        this.editedItem.groupId = groupId;
-      },
-      editItemContentSelected(contentId) {
-        if (!this.editedItem.contentIds.includes(contentId)) {
-          this.editedItem.contentIds.push(contentId);
-        }
-      },
-      editItemContentUnselected(contentId) {
-        var index = this.editedItem.contentIds.indexOf(contentId);
-        if (index > -1) {
-          this.editedItem.contentIds.splice(index, 1);
-        }
       },
       fullName: item => item.firstName + ' ' + item.familyName,
       close() {

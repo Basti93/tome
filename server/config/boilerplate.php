@@ -36,6 +36,15 @@ return [
             'end' => 'required',
         ]
     ],
+    'store_training_series' => [
+
+        // here you can specify some validation rules for your sign-in request
+        'validation_rules' => [
+            'startTime' => 'required',
+            'endTime' => 'required',
+            'weekdays' => 'required',
+        ]
+    ],
     'create_unregistered_user' => [
 
         // here you can specify some validation rules for your sign-in request

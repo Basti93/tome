@@ -37,6 +37,18 @@
       </v-list-tile>
       <v-list-tile
         v-show="hasRoles"
+        to="/trainingSeries"
+        @click="drawer = false">
+        <v-list-tile-action>
+          <v-icon>update</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+          <v-list-tile-title>Trainingsserien</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile
+        v-show="hasRoles"
         to="/users"
         @click="drawer = false">
         <v-list-tile-action>

@@ -7,6 +7,7 @@ import Login from "@/pages/Login";
 import Logout from "@/pages/Logout";
 import Users from "@/pages/Users";
 import Trainings from "@/pages/Trainings";
+import TrainingSeries from "@/pages/TrainingSeries";
 import Profile from "@/pages/Profile";
 import Statistics from "@/pages/Statistics";
 import ApproveUsers from "@/pages/ApproveUsers";
@@ -27,6 +28,15 @@ const router = new Router({
       path: '/trainings',
       name: 'Trainings',
       component: Trainings,
+      meta: {
+        requiresAuth: true,
+        forTrainers: true
+      }
+    },
+    {
+      path: '/trainingSeries',
+      name: 'TrainingSeries',
+      component: TrainingSeries,
       meta: {
         requiresAuth: true,
         forTrainers: true

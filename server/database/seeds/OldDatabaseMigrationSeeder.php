@@ -184,5 +184,6 @@ class OldDatabaseMigrationSeeder extends Seeder
         $user->approved = 1;
         $user->registered = 1;
         $user->save();
+
     }
 }

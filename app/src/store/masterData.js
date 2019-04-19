@@ -82,18 +82,6 @@ const getters = {
   getGroupsByBranchIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.branchId))
   },
-  getTrainersByBranchId: (state, getters) => (id) => {
-    return state.trainers.filter(t => t.trainerGroups.filter(tg => tg.branchId === id).length > 0)
-  },
-  getTrainersByGroupIds: (state, getters) => (ids) => {
-    return state.trainers.filter(g => ids.includes(g.branchId))
-  },
-  getTrainerBranchIdByUser: (state, getters) => (user) => {
-    if (user && (user.isTrainer || user.isAdmin) && user.trainerGroupIds.length > 0) {
-      return getters.getGroupById(user.trainerGroupIds[0]).branchId
-    }
-    return null;
-  },
 }
 
 

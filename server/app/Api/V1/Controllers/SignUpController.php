@@ -39,6 +39,6 @@ class SignUpController extends Controller
 
     public function sendWelcomeEmail($user)
     {
-        Mail::to($user)->send(new Welcome($user));
+        //Mail::to($user)->send(new Welcome($user));
     }
 }

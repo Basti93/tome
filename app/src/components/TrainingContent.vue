@@ -44,16 +44,15 @@
       selectContent: function (content) {
         if (this.selectable) {
           if (this.selectedContentIds.includes(content.id)) {
-            var index = this.selectedContentIds.indexOf(content.id);
+            const index = this.selectedContentIds.indexOf(content.id);
             if (index > -1) {
               this.selectedContentIds.splice(index, 1);
             }
-            this.$emit('contentUnselected', content.id)
 
           } else {
             this.selectedContentIds.push(content.id);
-            this.$emit('contentSelected', content.id)
           }
+          this.$emit('change', this.selectedContentIds)
         }
       },
     },

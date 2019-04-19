@@ -67,6 +67,12 @@ $api->version('v1', function (Router $api) {
             $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
         });
 
+        $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
+            $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
+            $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
+            $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@update');
+        });
+
         $api->group(['prefix' => 'training'], function(Router $api) {
             $api->get('/participationcount', 'App\\Api\\V1\\Controllers\\TrainingController@getParticipationCount');
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingController@index');
@@ -87,6 +93,10 @@ $api->version('v1', function (Router $api) {
                 ]);
             }
         ]);
+    });
+
+    $api->get('/hello',function(){
+        return 'Hello World!';
     });
 
 });
