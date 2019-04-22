@@ -4,6 +4,7 @@ const state = {
   groups: [],
   locations: [],
   trainers: [],
+  simpleTrainers: [],
   contents: [],
 }
 
@@ -19,6 +20,9 @@ const mutations = {
   },
   setTrainers (state, trainers) {
     state.trainers = trainers
+  },
+  setSimpleTrainers (state, trainers) {
+    state.simpleTrainers = trainers
   },
   setContents (state, contents) {
     state.contents = contents
@@ -78,6 +82,9 @@ const getters = {
   },
   getGroupsByIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.id))
+  },
+  getSimpleTrainersByIds: (state, getters) => (ids) => {
+      return state.simpleTrainers.filter(g => ids.includes(g.id))
   },
   getGroupsByBranchIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.branchId))

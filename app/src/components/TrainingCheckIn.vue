@@ -2,15 +2,15 @@
     <div>
         <v-card class="tp-upcoming-training white--text" :class="'ma-3'">
             <v-card-title>
-                <h3>{{ moment(start).format('dddd [den] Do MMMM') }}&nbsp;({{moment(start).fromNow()}})</h3>
+                <h3>{{ start.format('dddd [den] Do MMMM') }}&nbsp;({{start.fromNow()}})</h3>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-container grid-list-md>
                     <v-layout wrap>
                         <v-flex xs5>
-                            <p class="font-weight-bold">Von {{moment(start).format('HH:mm')}} Uhr</p>
-                            <p class="font-weight-bold">Bis {{moment(end).format('HH:mm')}} Uhr</p>
+                            <p class="font-weight-bold">Von {{start.format('HH:mm')}} Uhr</p>
+                            <p class="font-weight-bold">Bis {{end.format('HH:mm')}} Uhr</p>
                         </v-flex>
                         <v-flex xs7 v-if="allowedToCheckIn()">
                             <v-btn
@@ -65,6 +65,17 @@
                 </v-alert>
             </v-card-text>
         </v-card>
+        <v-card :class="'ma-3'">
+            <v-card-title>
+                <h3>Gruppen</h3>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text class="tp-upcoming-training__text">
+                <v-chip v-for="(item) in groups"
+                        :key="item.id">{{item.name}}
+                </v-chip>
+            </v-card-text>
+        </v-card>
         <v-card :class="'ma-3'" v-show="contentIds.length">
             <v-card-title>
                 <h3>Trainingsinhalte</h3>
@@ -80,12 +91,12 @@
         </v-card>
         <v-card :class="'ma-3'">
             <v-card-title>
-                <h3>Gruppen</h3>
+                <h3>Trainer</h3>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
-                <v-chip v-for="(item) in groups"
-                        :key="item.id">{{item.name}}
+                <v-chip v-for="(item) in trainers"
+                        :key="item.id">{{fullName(item)}}
                 </v-chip>
             </v-card-text>
         </v-card>
@@ -147,6 +158,7 @@
 <script>
     import TrainingContent from "./TrainingContent";
     import User from "@/models/User";
+    import Training from "@/models/Training";
     import {mapGetters} from 'vuex'
 
     export default {
@@ -154,7 +166,7 @@
         components: {TrainingContent},
         //from parent
         props: {
-            training: Object,
+            training: Training,
             currentUser: User,
             isCookieUser: Boolean,
             participants: Array,
@@ -162,11 +174,11 @@
         data: function () {
             return {
                 id: null,
-                date: null,
                 start: null,
                 end: null,
                 location: null,
                 groups: [],
+                trainers: [],
                 contentIds: [],
                 comment: null,
                 showCancelDialog: false,
@@ -179,11 +191,11 @@
         },
         created() {
             this.id = this.training.id;
-            this.date = this.moment(this.training.date).toDate();
-            this.start = this.moment(this.training.start).toDate();
-            this.end = this.moment(this.training.end).toDate();
+            this.start = this.training.start;
+            this.end = this.training.end;
             this.location = this.getLocationNameById(this.training.locationId);
             this.groups = this.getGroupsByIds(this.training.groupIds);
+            this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
             this.contentIds = this.training.contentIds;
             this.comment = this.training.comment;
         },
@@ -203,17 +215,18 @@
             },
             ...mapGetters('masterData', {
                 getLocationNameById: 'getLocationNameById',
-                getGroupsByIds: 'getGroupsByIds'
+                getGroupsByIds: 'getGroupsByIds',
+                getSimpleTrainersByIds: 'getSimpleTrainersByIds',
             }),
         },
         watch: {
             training: function () {
                 this.id = this.training.id;
-                this.date = this.moment(this.training.date).toDate();
-                this.start = this.moment(this.training.start).toDate();
-                this.end = this.moment(this.training.end).toDate();
+                this.start = this.training.start;
+                this.end = this.training.end;
                 this.location = this.getLocationNameById(this.training.locationId);
                 this.groups = this.getGroupsByIds(this.training.groupIds);
+                this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
                 this.contentIds = this.training.contentIds;
                 this.comment = this.training.comment;
 
@@ -276,6 +289,7 @@
                     console.error(error);
                 }
             },
+            fullName: item => item.firstName + ' ' + item.familyName,
         },
     }
 </script>

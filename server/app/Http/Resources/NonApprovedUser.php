@@ -18,7 +18,7 @@ class NonApprovedUser extends JsonResource
             'id' => $this->id,
             'firstName' => $this->firstName,
             'familyName' => $this->familyName,
-            'createdAt' => $this->created_at->format('Y-m-d H:i:s'),
+            'createdAt' => DateTime::createFromFormat('Y-m-d H:i:s', $this->created_at)->format(DateTime::ATOM),
         ];
     }
 }

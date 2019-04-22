@@ -70,6 +70,7 @@ class TrainingSeriesController extends Controller
         $training->startTime = $request->input('startTime');
         $training->endTime = $request->input('endTime');
         $training->comment = $request->input('comment');
+        $training->active = $request->input('active') ? 1 : 0;
         $training->weekdays = json_encode($request->input('weekdays'));
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
@@ -91,6 +92,7 @@ class TrainingSeriesController extends Controller
         $training->startTime = $request->input('startTime');
         $training->endTime = $request->input('endTime');
         $training->comment = $request->input('comment');
+        $training->active = $request->input('active') ? 1 : 0;
         $training->weekdays = json_encode($request->input('weekdays'));
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));

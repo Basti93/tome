@@ -24,6 +24,7 @@ class TrainingSeries extends JsonResource
             'trainerIds' => $this->trainer_ids,
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
+            'active' => $this->active,
         ];
     }
 }

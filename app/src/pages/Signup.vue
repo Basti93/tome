@@ -157,7 +157,7 @@
                         firstName: this.firstName,
                         familyName: this.familyName,
                         email: this.email,
-                        birthdate: this.moment(this.birthdate).format("YYYY-MM-DD HH:mm:ss"),
+                        birthdate: this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
                         password: this.password,
                     });
                     this.completed = true;

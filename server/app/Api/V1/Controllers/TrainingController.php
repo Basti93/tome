@@ -308,30 +308,6 @@ class TrainingController extends Controller
     }
 
     /**
-     * Checks all trainings that are tomorrow and automatically assigns all the users who are not yet assigned to them.
-     * Of course only the users which belong the correct training group.
-     * Users which are already actively chosen to attend or not are not touched.
-     */
-    public function automaticAttendService()
-    {
-        $now = date('Y-m-d H:i:s');
-        $tomorrow = date("Y-m-d H:i:s", time() + 86400);
-        $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->get();
-
-        foreach ($closedTrainings as $training) {
-            $groups = $training->groups();
-            $groupMembers = User::whereActive('1')->whereIn('group_id', $groups->pluck('group_id')->toArray())->get();
-
-            foreach ($groupMembers as $groupMember) {
-                //add all users who have not clicked on attending or not-attending
-                if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
-                    $training->participants()->attach($groupMember, ['attend' => 1]);
-                }
-            }
-        }
-    }
-
-    /**
      * @param $groupIds
      * @param $sortBy
      * @param int $per_page

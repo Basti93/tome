@@ -19,6 +19,7 @@ class CreateTrainingSeriesTables extends Migration
             $table->time('endTime');
             $table->text('weekdays');
             $table->text('comment')->nullable();
+            $table->boolean('active')->default(1);
             $table->unsignedInteger('location_id')->nullable();
             $table->foreign('location_id')->references('id')->on('locations');
             $table->timestamps();

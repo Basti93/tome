@@ -10,13 +10,14 @@ export default class TrainingSeries {
     trainerIds: Number[] = [];
     comment: string;
     weekdays: Number[] = [];
+    active: Boolean;
 
     static from(jsonString: string) {
         let jsonObj = JSON.parse(jsonString);
-        return new TrainingSeries(jsonObj.id, jsonObj.startTime, jsonObj.endTime, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.comment, jsonObj.weekdays)
+        return new TrainingSeries(jsonObj.id, jsonObj.startTime, jsonObj.endTime, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.comment, jsonObj.weekdays, jsonObj.active == 1 ? true : false)
     }
 
-    constructor(id: Number, startTime: String, endTime: String, locationId: Number, groupIds: Number[], contentIds: Number[], trainerIds: Number[], comment: string, weekdays: Number[]) {
+    constructor(id: Number, startTime: String, endTime: String, locationId: Number, groupIds: Number[], contentIds: Number[], trainerIds: Number[], comment: string, weekdays: Number[], active: Boolean) {
         this.id = id;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -26,5 +27,6 @@ export default class TrainingSeries {
         this.trainerIds = trainerIds;
         this.comment = comment;
         this.weekdays = weekdays;
+        this.active = active;
     }
 }

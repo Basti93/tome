@@ -3,7 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use DateTime;
 class Training extends JsonResource
 {
     /**
@@ -16,8 +16,8 @@ class Training extends JsonResource
     {
         return [
             'id' => $this->id,
-            'start' => $this->start,
-            'end' => $this->end,
+            'start' => DateTime::createFromFormat('Y-m-d H:i:s', $this->start)->format(DateTime::ATOM),
+            'end' => DateTime::createFromFormat('Y-m-d H:i:s', $this->end)->format(DateTime::ATOM),
             'locationId' => $this->location_id,
             'groupIds' => $this->group_ids,
             'trainerIds' => $this->trainer_ids,

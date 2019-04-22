@@ -20,6 +20,8 @@ class CreateTrainingsTables extends Migration
             $table->text('comment')->nullable();
             $table->unsignedInteger('location_id')->nullable();
             $table->foreign('location_id')->references('id')->on('locations');
+            $table->unsignedInteger('training_series_id')->nullable();
+            $table->foreign('training_series_id')->references('id')->on('training_series');
             $table->timestamps();
         });
 
@@ -49,16 +51,6 @@ class CreateTrainingsTables extends Migration
         $table->foreign('group_id')->references('id')->on('groups');
       });
 
-      Schema::create('contents', function (Blueprint $table) {
-        $table->increments('id');
-        $table->string('name');
-        $table->text('svg_icon')->nullable();
-        $table->unsignedInteger('branch_id')->nullable();
-        $table->foreign('branch_id')->references('id')->on('branches');
-        $table->unsignedInteger('order')->nullable();
-        $table->timestamps();
-      });
-
       Schema::create('training_content', function (Blueprint $table) {
         $table->increments('id');
         $table->unsignedInteger('training_id')->nullable();
@@ -79,7 +71,6 @@ class CreateTrainingsTables extends Migration
         Schema::dropIfExists('training_group');
         Schema::dropIfExists('training_trainer');
         Schema::dropIfExists('training_content');
-        Schema::dropIfExists('contents');
         Schema::dropIfExists('trainings');
     }
 }

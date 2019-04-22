@@ -304,7 +304,7 @@
                         id: userObj.id,
                         firstName: userObj.firstName,
                         familyName: userObj.familyName,
-                        birthdate: self.moment(userObj.birthdate).format('Y-MM-DD'),
+                        birthdate: self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD'),
                         active: userObj.active,
                         groupIds: userObj.groupIds,
                         roleNames: userObj.roleNames,
@@ -357,7 +357,7 @@
             async save() {
                 if (this.editedId) {
                     const self = this;
-                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate).format("YYYY-MM-DD HH:mm:ss"), groupIds: self.editedItem.groupIds, active: self.editedItem.active};
+                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"), groupIds: self.editedItem.groupIds, active: self.editedItem.active};
                     const {data} = await self.$http.put('/user/' + self.editedId, postData);
                     if (data.error) {
                         self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")

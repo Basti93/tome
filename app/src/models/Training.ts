@@ -1,9 +1,10 @@
 import TrainingParticipant from "@/models/TrainingParticipant";
+import * as moment from "moment";
 
 export default class Training {
     id: number;
-    start: Date;
-    end: Date;
+    start: moment.Moment;
+    end: moment.Moment;
     locationId: number;
     groupIds: number[];
     contentIds: number[];
@@ -17,11 +18,11 @@ export default class Training {
         for (let participant of jsonObj.trainingParticipants) {
             participants.push(TrainingParticipant.from(participant));
         }
-        return new Training(jsonObj.id, new Date(jsonObj.start), new Date(jsonObj.end), jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, participants, jsonObj.comment)
+        return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, participants, jsonObj.comment)
     }
 
 
-    constructor(id: number, start: Date, end: Date, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string) {
+    constructor(id: number, start: moment.Moment, end: moment.Moment, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string) {
         this.id = id;
         this.start = start;
         this.end = end;

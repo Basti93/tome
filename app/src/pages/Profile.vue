@@ -194,7 +194,7 @@
         const postData = {
           firstName: self.editUser.firstName,
           familyName: self.editUser.familyName,
-          birthdate: self.moment(self.editUser.birthdate).format("YYYY-MM-DD HH:mm:ss"),
+          birthdate: self.moment(self.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
           groupIds: self.editUser.groupIds,
           trainerGroupIds: self.editUser.trainerGroupIds
         };

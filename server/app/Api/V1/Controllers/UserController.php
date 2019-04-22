@@ -26,9 +26,9 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('jwt.auth', []);
-        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers']]);
-        $this->middleware('permission:create-user', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'approveUsersByIds']]);
+        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getNonApprovedCount', 'getNonApproved', 'getNonRegistered']]);
+        $this->middleware('permission:create-user', ['only' => ['create', 'store', 'createUnregistered']]);
+        $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'approveUsersByIds', 'approveUser']]);
         $this->middleware('permission:delete-user', ['only' => ['destroy']]);
     }
 
@@ -39,7 +39,7 @@ class UserController extends Controller
      */
     public function me()
     {
-        return response()->json(Auth::guard()->user());
+        return response()->json(Auth::guard('api')->user());
     }
 
     /**

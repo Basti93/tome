@@ -12,6 +12,7 @@ class RolesTableSeeder extends Seeder
    */
   public function run()
   {
+      app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
   //roles are granted through the AuthServiceProvider
 

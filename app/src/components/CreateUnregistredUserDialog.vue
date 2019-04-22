@@ -116,7 +116,7 @@
         methods: {
             async createUser() {
                 let self = this;
-                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate).format("YYYY-MM-DD"), groupIds: this.groupIds};
+                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD"), groupIds: this.groupIds};
                 try {
                     const {data} = await this.$http.post('/user/unregistered', postData);
                     if (data.error) {

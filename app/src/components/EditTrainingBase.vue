@@ -63,7 +63,7 @@
                 <v-time-picker v-model="endTime" @input="endMenuOpened = false" format="24hr"></v-time-picker>
             </v-menu>
         </v-flex>
-        <v-flex xs12>
+        <v-flex xs6>
             <v-autocomplete
                     :items="locations"
                     item-text="name"
@@ -74,6 +74,14 @@
                     label="Ort"
                     prepend-icon="add_location"
             ></v-autocomplete>
+        </v-flex>
+        <v-flex xs6>
+            <v-checkbox
+                    v-if="series"
+                    v-model="editedActive"
+                    label="Aktiv"
+                    prepend-icon="active"
+            ></v-checkbox>
         </v-flex>
         <v-flex xs12>
             <v-autocomplete
@@ -150,6 +158,7 @@
             trainers: Array,
             groups: Array,
             comment: String,
+            active: Boolean,
         },
         data: function () {
             return {
@@ -162,6 +171,7 @@
                 selectedGroupIds: [] as Array,
                 selectedContentIds: [] as Array,
                 selectedTrainerIds: [] as Array,
+                editedActive: false as Boolean,
                 editedComment: null as String,
                 dateMenuOpened: false,
                 startMenuOpened: false,
@@ -196,6 +206,7 @@
                     groupIds: this.selectedGroupIds,
                     contentIds: this.selectedContentIds,
                     comment: this.editedComment,
+                    active: this.editedActive,
                 })
             },
             weekdaysChanged(weekdays) {
@@ -265,6 +276,12 @@
                     this.editedComment = newVal;
                 },
             },
+            active: {
+                immediate: true,
+                handler(newVal) {
+                    this.editedActive = newVal;
+                },
+            },
             weekdays: {
                 immediate: true,
                 handler(newVal) {
@@ -293,6 +310,9 @@
                 this.fireChangeEvent();
             },
             editedComment() {
+                this.fireChangeEvent();
+            },
+            editedActive() {
                 this.fireChangeEvent();
             },
         },

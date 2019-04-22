@@ -16,7 +16,7 @@
                             persistent>
                         <v-card>
                             <v-card-title>
-                                <span class="title">Trainingsserie anlegen</span>
+                                <span class="title">Trainingsserie anlegen/bearbeiten</span>
                             </v-card-title>
 
                             <v-card-text>
@@ -35,6 +35,7 @@
                                         :locationId="editedTrainingSeries.locationId"
                                         :comment="editedTrainingSeries.comment"
                                         :branchId="filterBranchId"
+                                        :active="editedTrainingSeries.active"
                                 >
                                 </EditTrainingBase>
                             </v-card-text>
@@ -68,6 +69,15 @@
                 <v-divider></v-divider>
 
                 <v-card-text>
+                    <v-alert
+                            v-bind:value="true"
+                            type="info"
+                            class="text-small"
+                            pa-0
+                            ma-0
+                            outline>
+                        Traings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
+                    </v-alert>
                     <v-data-table
                             :headers="headers"
                             :items="trainingSeriesList"
@@ -84,6 +94,7 @@
                                         {{ group.name }}
                                     </v-chip>
                                 </td>
+                                <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
                             </tr>
                         </template>
 
@@ -120,9 +131,10 @@
                     {text: 'Start', value: 'startTime', sortable: false},
                     {text: 'Ende', value: 'endTime', sortable: false},
                     {text: 'Gruppen', value: 'groupIds', sortable: false},
+                    {text: 'Aktiv', value: 'active', sortable: false},
                 ],
-                defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, []),
-                editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, []) as TrainingSeries,
+                defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true),
+                editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true) as TrainingSeries,
             }
         },
         created() {
@@ -152,7 +164,7 @@
                 this.showCreateDialog = true
             },
             seriesChanged(item) {
-                this.editedTrainingSeries = new TrainingSeries(item.id, item.start, item.end, item.locationId, item.groupIds, item.contentIds, item.trainerIds, item.comment, item.weekdays);;
+                this.editedTrainingSeries = new TrainingSeries(item.id, item.start, item.end, item.locationId, item.groupIds, item.contentIds, item.trainerIds, item.comment, item.weekdays, item.active);
             },
             async fetchData() {
                 try {
@@ -187,6 +199,7 @@
                     trainerIds: this.editedTrainingSeries.trainerIds,
                     contentIds: this.editedTrainingSeries.contentIds,
                     groupIds: this.editedTrainingSeries.groupIds,
+                    active: this.editedTrainingSeries.active,
 
                 };
                 let url = '/trainingSeries';

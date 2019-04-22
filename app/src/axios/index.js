@@ -73,6 +73,11 @@ Vue.axios.interceptors.response.use(response => {
       })
     })
     return retryOriginalRequest
+  } else if (status === 500) {
+    delete localStorage.token
+    delete localStorage.user
+    store.dispatch('logout')
+    router.push('/login')
   }
   return Promise.reject(error)
 });

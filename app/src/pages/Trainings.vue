@@ -49,9 +49,9 @@
             <v-progress-linear slot="progress" color="primary" indeterminate></v-progress-linear>
             <template slot="items" slot-scope="props">
               <tr @click="editItem(props.item)" style="cursor: pointer">
-              <td class="text-xs-left">{{ moment(props.item.start).format('DD.MM.Y') }}</td>
-              <td class="text-xs-left">{{ moment(props.item.start).format('HH:mm') }}</td>
-              <td class="text-xs-left">{{ moment(props.item.end).format('HH:mm') }}</td>
+              <td class="text-xs-left">{{ moment(props.item.start, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}</td>
+              <td class="text-xs-left">{{ moment(props.item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}</td>
+              <td class="text-xs-left">{{ moment(props.item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}</td>
               <td class="text-xs-left">{{ getLocationNameById(props.item.locationId) }}</td>
               <td class="justify-center layout px-0">
                 <v-icon
@@ -351,9 +351,9 @@
         if (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) {
           this.editedId = item.id
           Object.assign(this.editedItem, item)
-          this.editedItemDate = this.moment(item.start).format('Y-MM-DD')
-          this.editedItem.start = this.moment(item.start).format('HH:mm')
-          this.editedItem.end = this.moment(item.end).format('HH:mm')
+          this.editedItemDate = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
+          this.editedItem.start = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+          this.editedItem.end = this.moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
           this.editedItem.participantIds = []
           if (item.participants) {
             for (const participant of item.participants) {
@@ -392,8 +392,8 @@
       save() {
         const self = this;
         const postData = {
-          start: self.moment(self.editedItem.date + ' ' + self.editedItem.start).format(),
-          end: self.moment(self.editedItem.date + ' ' + self.editedItem.end).format(),
+          start: self.moment(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
+          end: self.moment(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
           locationId: self.editedItem.locationId,
           groupIds: self.editedItem.groupIds,
           trainerIds: self.editedItem.trainerIds,

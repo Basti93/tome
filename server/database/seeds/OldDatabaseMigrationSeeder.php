@@ -77,7 +77,7 @@ class OldDatabaseMigrationSeeder extends Seeder
 
     function migrateTrainings()
     {
-        $oldTrainings = DB::connection("mysqlOld")->table('TRAININGS')->get();
+        $oldTrainings = DB::connection("mysqlOld")->table('TRAININGS')->where('CREATED_AUTOMATICLY', '0')->get();
         foreach ($oldTrainings as $ot) {
             $training = new Training();
             $startExploded = explode(":", $ot->START_TIME);

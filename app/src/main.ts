@@ -38,13 +38,15 @@ const init = async () => {
     const groupsPromise = axios.get('/group');
     const locationsPromise = axios.get('/location');
     const contentsPromise = axios.get('/content');
+    const trainersPromise = axios.get('/simpleuser/trainers');
 
-    const [branches, groups, locations, contents] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise]);
+    const [branches, groups, locations, contents, trainers] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise, trainersPromise]);
 
     store.commit('masterData/setBranches', branches.data);
     store.commit('masterData/setGroups', groups.data);
     store.commit('masterData/setLocations', locations.data);
     store.commit('masterData/setContents', contents.data);
+    store.commit('masterData/setSimpleTrainers', trainers.data.data);
   } catch (e) {
     console.error("Could not load initial data")
     Vue.prototype.$isOffline = true;

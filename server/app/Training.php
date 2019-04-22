@@ -35,7 +35,12 @@ class Training extends Model
     return $this->belongsToMany('App\Content','training_content', 'training_id', 'content_id');
   }
 
-  public function getGroupIdsAttribute()
+    public function trainingSeries()
+    {
+        return $this->hasOne('App\TrainingSeries');
+    }
+
+    public function getGroupIdsAttribute()
   {
     return $this->groups->pluck('pivot.group_id');
   }

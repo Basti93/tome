@@ -26,9 +26,9 @@ class LoginController extends Controller
         $credentials = $request->only(['email', 'password']);
 
         try {
-            $token = Auth::guard()->attempt($credentials);
+            $token = Auth::guard('api')->attempt($credentials);
 
-            if (!Auth::user() || !Auth::user()->isApproved()) {
+            if (!Auth::user() || !Auth::user('api')->isApproved()) {
               throw new HttpException(401);
             }
 
@@ -40,8 +40,8 @@ class LoginController extends Controller
             ->json([
                 'status' => 'ok',
                 'token' => $token,
-                'user' => Auth::guard()->user(),
-                'expires_in' => Auth::guard()->factory()->getTTL() * 60
+                'user' => Auth::guard('api')->user(),
+                'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
             ]);
     }
 }

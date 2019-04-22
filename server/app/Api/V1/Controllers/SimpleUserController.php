@@ -32,5 +32,14 @@ class SimpleUserController extends Controller
         return SimpleUserResource::collection($users->get());
     }
 
+    /**
+     * Get users who are trainers.
+     *
+     * @return Response
+     */
+    public function getTrainers()
+    {
+        return SimpleUserResource::collection(User::role('trainer')->get());
+    }
 
 }
