@@ -1,8 +1,8 @@
 # T.O.M.E. - Training Organization Made Easy
 
-This is a webapp to organize training sessions for sport clubs. 
+This is a progressive web app (PWA) to organize training sessions for sport clubs. 
 
-The two main goals are:
+The main goals are:
 - Support the work of trainers
 - Make the attendance process for the users as easy as possible (no account registration needed)
 
@@ -10,9 +10,9 @@ The two main goals are:
 ### Frontend
 - Vue.js with Vue CLI 3
 - Vuetify
-- SASS
 - Vue-Axios, Vuex, Vue-Router 
-- Moment, Apexcharts, Siema
+- Typescript
+- Moment, Apexcharts
 
 #### Project setup
 ```
