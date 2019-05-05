@@ -197,17 +197,19 @@
                         url += '?branchId=' + this.filterBranchId;
                     }
                     //load data
-                    const response = await this.$http.get(url);
-                    //json result to objects
-                    for (let trObj of response.data.data) {
-                        let participants = [] as TrainingParticipant[];
-                        for (let partObj of trObj.participants) {
-                            participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                    const {data} = await this.$http.get(url);
+                    if (data.data && data.data.length > 0) {
+                        //json result to objects
+                        for (let trObj of data.data) {
+                            let participants = [] as TrainingParticipant[];
+                            for (let partObj of trObj.participants) {
+                                participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                            }
+                            this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
                         }
-                        this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
+                        //select first training
+                        this.selectTraining(this.upcomingTrainings[0].id);
                     }
-                    //select first training
-                    this.selectTraining(this.upcomingTrainings[0].id);
                 } catch (error) {
                     console.error(error);
                 } finally {
@@ -326,6 +328,11 @@
         &__navigation {
             display: flex;
             flex-flow: row;
+            justify-content: center;
+
+            &-card {
+                max-width: 12rem;
+            }
         }
 
     }

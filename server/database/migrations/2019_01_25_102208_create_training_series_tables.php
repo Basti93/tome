@@ -21,32 +21,32 @@ class CreateTrainingSeriesTables extends Migration
             $table->text('comment')->nullable();
             $table->boolean('active')->default(1);
             $table->unsignedInteger('location_id')->nullable();
-            $table->foreign('location_id')->references('id')->on('locations');
+            $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
             $table->timestamps();
         });
 
         Schema::create('training_series_trainer', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('training_id')->nullable();
-            $table->foreign('training_id')->references('id')->on('training_series');
+            $table->foreign('training_id')->references('id')->on('training_series')->onDelete('cascade');
             $table->unsignedInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
         Schema::create('training_series_group', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('training_id')->nullable();
-            $table->foreign('training_id')->references('id')->on('training_series');
+            $table->foreign('training_id')->references('id')->on('training_series')->onDelete('cascade');
             $table->unsignedInteger('group_id')->nullable();
-            $table->foreign('group_id')->references('id')->on('groups');
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         });
 
         Schema::create('training_series_content', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('training_id')->nullable();
-            $table->foreign('training_id')->references('id')->on('training_series');
+            $table->foreign('training_id')->references('id')->on('training_series')->onDelete('cascade');
             $table->unsignedInteger('content_id')->nullable();
-            $table->foreign('content_id')->references('id')->on('contents');
+            $table->foreign('content_id')->references('id')->on('contents')->onDelete('cascade');
         });
     }
 

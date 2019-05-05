@@ -371,16 +371,17 @@
       },
       deleteItem(item) {
         if (confirm('Löschen bestätigen')) {
-          this.$http.delete('/user/' + item.id)
-            .then(this.userDeleted(item)).catch(function (err) {
-            console.log(err);
-            this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
+          this.$http.delete('/training/' + item.id)
+            .then(this.trainingDeleted(item))
+            .catch(function (err) {
+              console.error(err);
+              this.$emit("showSnackbar", "Training konnte nicht gelöscht werden", "error")
           })
         }
       },
-      userDeleted(item) {
-        this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")
-        this.users.splice(this.users.indexOf(item), 1)
+      trainingDeleted(item) {
+        this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
+        this.trainings.splice(this.trainings.indexOf(item), 1)
       },
       fullName: item => item.firstName + ' ' + item.familyName,
       close() {

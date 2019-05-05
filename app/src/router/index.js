@@ -2,6 +2,8 @@ import Vue from 'vue'
 import store from '@/store/index'
 import Router from 'vue-router'
 import TrainingsCheckIn from '@/pages/TrainingsCheckIn'
+import TrainingsPrepare from '@/pages/TrainingsPrepare'
+import TrainingsEvaluation from '@/pages/TrainingsEvaluation'
 import Signup from "@/pages/Signup";
 import Login from "@/pages/Login";
 import Logout from "@/pages/Logout";
@@ -16,13 +18,31 @@ import ApproveUsers from "@/pages/ApproveUsers";
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'abstract',
+  mode: 'history',
   base: 'TrainingCheckIn',
   routes: [
     {
       path: '/',
       name: 'TrainingsCheckIn',
-      component: TrainingsCheckIn
+      component: TrainingsCheckIn,
+    },
+    {
+      path: '/trainingsPrepare',
+      name: 'TrainingsPrepare',
+      component: TrainingsPrepare,
+      meta: {
+        requiresAuth: true,
+        forTrainers: true
+      }
+    },
+    {
+      path: '/trainingsEvaluation',
+      name: 'TrainingsEvaluation',
+      component: TrainingsEvaluation,
+      meta: {
+        requiresAuth: true,
+        forTrainers: true
+      }
     },
     {
       path: '/trainings',

@@ -36,6 +36,30 @@
         </v-list-tile-content>
       </v-list-tile>
       <v-list-tile
+              v-show="hasRoles"
+              to="/trainingsPrepare"
+              @click="drawer = false">
+        <v-list-tile-action>
+          <v-icon>new_releases</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+          <v-list-tile-title>Vorbereiten</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile
+              v-show="hasRoles"
+              to="/trainingsEvaluation"
+              @click="drawer = false">
+        <v-list-tile-action>
+          <v-icon>check</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+          <v-list-tile-title>Nachbereiten</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile
         v-show="hasRoles"
         to="/trainingSeries"
         @click="drawer = false">
@@ -44,7 +68,7 @@
         </v-list-tile-action>
 
         <v-list-tile-content>
-          <v-list-tile-title>Trainingsserien</v-list-tile-title>
+          <v-list-tile-title>Serien</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
       <v-list-tile

@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         'App\Console\Commands\TrainingAutomaticAttend',
-        'App\Console\Commands\TrainingSeriesCommand'
+        'App\Console\Commands\TrainingSeriesCommand',
+        'App\Console\Commands\TrainerUpcomingTrainingNotifications'
     ];
 
     /**
@@ -29,6 +30,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('training:automatic-attend')->dailyAt('00:00');
         $schedule->command('training:series')->hourly();
+        $schedule->command('trainer:upcomingTrainingNotifications')->everyThirtyMinutes()->unlessBetween('22:00', '6:00');
     }
 
     /**

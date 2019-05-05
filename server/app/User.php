@@ -84,6 +84,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Group', 'user_group', 'user_id');
     }
 
+    public function notificationTokens()
+    {
+        return $this->hasMany(NotificationToken::class);
+    }
+
     public function trainings()
     {
         return $this->belongsToMany(Training::class, 'training_participation', 'user_id', 'training_id')->withPivot('attend');

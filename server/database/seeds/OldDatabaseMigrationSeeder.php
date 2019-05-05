@@ -128,6 +128,7 @@ class OldDatabaseMigrationSeeder extends Seeder
         $members = DB::connection("mysqlOld")->table('TRAINERS')->get();
         $roleTrainer = Role::findByName('trainer');
         $roleMember = Role::findByName('member');
+        $roleAdmin = Role::findByName('admin');
 
         foreach ($members as $member) {
             $user = new User();
@@ -152,9 +153,7 @@ class OldDatabaseMigrationSeeder extends Seeder
         $user->approved = 1;
         $user->registered = 1;
         $user->save();
-        $roleAdmin = Role::findByName('admin');
         $user->assignRole($roleAdmin);
-        $user->assignRole($roleTrainer);
         $user->trainerGroups()->attach($wettkampfturnerI);
         $user->trainerGroups()->attach($wettkampfturnerII);
 
@@ -162,9 +161,6 @@ class OldDatabaseMigrationSeeder extends Seeder
         $user->password = 'test';
         $user->approved = 1;
         $user->save();
-        $roleAdmin = Role::findByName('admin');
-        $user->assignRole($roleAdmin);
-        $user->assignRole($roleTrainer);
         $user->trainerGroups()->attach($wettkampfturnerI);
         $user->trainerGroups()->attach($wettkampfturnerII);
 
@@ -172,8 +168,13 @@ class OldDatabaseMigrationSeeder extends Seeder
         $user->password = 'test';
         $user->approved = 1;
         $user->save();
-        $roleAdmin = Role::findByName('admin');
-        $user->assignRole($roleAdmin);
+        $user->trainerGroups()->attach($wettkampfturnerI);
+        $user->trainerGroups()->attach($wettkampfturnerII);
+
+        $user = User::whereEmail('hinkel993@web.de')->first();
+        $user->password = 'test';
+        $user->approved = 1;
+        $user->save();
         $user->assignRole($roleTrainer);
         $user->trainerGroups()->attach($wettkampfturnerI);
         $user->trainerGroups()->attach($wettkampfturnerII);

@@ -40,8 +40,8 @@ class TrainingSeriesTableSeeder extends Seeder
       $freitagsTraining1->groups()->attach(Group::whereName('Wettkampfturner II')->first());
 
       $mittwochsTraining = new TrainingSeries();
-      $mittwochsTraining->startTime = '17:30';
-      $mittwochsTraining->endTime = '19:00';
+      $mittwochsTraining->startTime = '18:30';
+      $mittwochsTraining->endTime = '20:00';
       $mittwochsTraining->weekdays = '[3]';
       $mittwochsTraining->active = 1;
       $mittwochsTraining->location_id = Location::whereName('Gymnasium Landau')->first()->id;

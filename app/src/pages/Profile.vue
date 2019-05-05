@@ -124,10 +124,10 @@
                   </v-card-title>
                   <v-card-text>
                     <v-flex md6 offset-md3>
-                  <GroupsSelect
-                          v-bind:groupIds="editUser.trainerGroupIds"
-                          v-on:groupsChanged="trainerGroupsChanged"
-                  ></GroupsSelect>
+                      <GroupsSelect
+                              v-bind:groupIds="editUser.trainerGroupIds"
+                              v-on:groupsChanged="trainerGroupsChanged"
+                      ></GroupsSelect>
                     </v-flex>
                   </v-card-text>
                 </v-card>
@@ -210,7 +210,6 @@
             self.$emit("showSnackbar", "Fehler beim Speichern. Bitte probier es nochmal", "error");
           }
         });
-
       },
       formatDate,
     },

@@ -30,18 +30,27 @@ class CreateUsersTable extends Migration
       Schema::create('user_group', function (Blueprint $table) {
         $table->increments('id');
         $table->unsignedInteger('group_id')->nullable();
-        $table->foreign('group_id')->references('id')->on('groups');
+        $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users');
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
       });
 
       Schema::create('trainer_group', function (Blueprint $table) {
         $table->increments('id');
         $table->unsignedInteger('group_id')->nullable();
-        $table->foreign('group_id')->references('id')->on('groups');
+        $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users');
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
       });
+
+      Schema::create('user_notification_token', function (Blueprint $table) {
+        $table->increments('id');
+        $table->string('token')->unique();
+        $table->unsignedInteger('user_id')->nullable();
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        $table->timestamps();
+      });
+
     }
 
     /**
@@ -51,6 +60,7 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('user_notification_token');
         Schema::dropIfExists('user_group');
         Schema::dropIfExists('trainer_group');
         Schema::dropIfExists('users');

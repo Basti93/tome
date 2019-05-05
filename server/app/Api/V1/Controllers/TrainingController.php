@@ -22,7 +22,7 @@ class TrainingController extends Controller
     {
         $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
         $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'getPastTrainingsForUser']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
         $this->middleware('permission:delete-training', ['only' => ['destroy']]);
     }
@@ -160,6 +160,32 @@ class TrainingController extends Controller
             ->orderBy('month', 'asc')
             ->get();
         return response()->json($result);
+    }
+
+    public function getUpcomingTrainingsForUser($userId)
+    {
+        $trainings = Training::where('start', '>=', DB::raw('NOW()'))
+            ->whereHas('trainers', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->orderBy('start', 'asc')
+            ->limit(5)
+            ->get();
+
+        return TrainingResource::collection($trainings);
+    }
+
+    public function getPastTrainingsForUser($userId)
+    {
+        $trainings = Training::where('start', '<=', DB::raw('NOW()'))
+            ->whereHas('trainers', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->orderBy('start', 'desc')
+            ->limit(5)
+            ->get();
+
+        return TrainingResource::collection($trainings);
     }
 
     /**
@@ -370,5 +396,17 @@ class TrainingController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        $training = Training::findOrFail($id);
+        if ($training) {
+            $training->delete();
+            return response()->json([
+                'status' => 'ok',
+            ], 201);
+        } else {
+            return response()->json(error);
+        }
+    }
 
 }

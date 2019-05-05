@@ -9,7 +9,7 @@ class TrainingParticipation extends Pivot
 {
 
 
-    protected $hidden = ['id', 'cancelreason'];
+    protected $hidden = ['id'];
 
     public function user()
     {

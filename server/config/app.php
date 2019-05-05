@@ -64,7 +64,7 @@ return [
   |
   */
 
-  'timezone' => 'UTC',
+  'timezone' => 'Europe/Berlin',
 
   /*
   |--------------------------------------------------------------------------
@@ -77,7 +77,7 @@ return [
   |
   */
 
-  'locale' => 'en',
+  'locale' => 'de',
 
   /*
   |--------------------------------------------------------------------------
@@ -153,6 +153,7 @@ return [
     Dingo\Api\Provider\LaravelServiceProvider::class,
     Barryvdh\Cors\ServiceProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
+      Kawankoding\Fcm\FcmServiceProvider::class,
 
     /*
      * Application Service Providers...
@@ -212,6 +213,7 @@ return [
     'URL' => Illuminate\Support\Facades\URL::class,
     'Validator' => Illuminate\Support\Facades\Validator::class,
     'View' => Illuminate\Support\Facades\View::class,
+      'Fcm' => Kawankoding\Fcm\FcmFacade::class,
 
     /*
      * Package Facades...

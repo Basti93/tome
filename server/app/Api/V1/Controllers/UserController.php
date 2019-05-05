@@ -6,13 +6,12 @@ use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\NonApprovedUser as NonApprovedUserResource;
-use App\Mail\Approved;
+use App\NotificationToken;
 use App\User;
 use Auth;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -171,6 +170,22 @@ class UserController extends Controller
 
         $user->groups()->sync($request->input('groupIds'));
         $user->trainerGroups()->sync($request->input('trainerGroupIds'));
+
+        return response()->json([
+            'status' => 'ok'
+        ], 201);
+
+    }
+
+    public function subscribeToNotifications(Request $request, $id)
+    {
+        $token = $request->input('token');
+        if (!empty($token) && !NotificationToken::whereToken($token)->exists()) {
+            $newToken = new NotificationToken();
+            $newToken->user_id = $id;
+            $newToken->token = $request->input('token');
+            $newToken->save();
+        }
 
         return response()->json([
             'status' => 'ok'

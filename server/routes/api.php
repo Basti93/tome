@@ -65,6 +65,7 @@ $api->version('v1', function (Router $api) {
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
             $api->post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
             $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
+            $api->post('/{id}/notificationsubscribe', 'App\\Api\\V1\\Controllers\\UserController@subscribeToNotifications');
         });
 
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
@@ -83,6 +84,9 @@ $api->version('v1', function (Router $api) {
             $api->post('{id}/checkout/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOut');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@update');
             $api->get('{id}/trainingscount/{year}', 'App\\Api\\V1\\Controllers\\TrainingController@getTrainingTimeline');
+            $api->get('/upcoming/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainingsForUser');
+            $api->get('/past/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getPastTrainingsForUser');
+            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@destroy');
         });
 
         $api->get('refresh', [

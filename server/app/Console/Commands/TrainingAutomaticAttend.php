@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Training;
 use App\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class TrainingAutomaticAttend extends Command
 {
@@ -43,10 +44,15 @@ class TrainingAutomaticAttend extends Command
         $tomorrow = date("Y-m-d H:i:s", time() + 86400);
         $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->get();
 
+        $this->info('Found  '.count($closedTrainings).' Trainings in the next 24h');
+
         foreach ($closedTrainings as $training) {
             $groups = $training->groups();
-            $groupMembers = User::whereActive('1')->whereIn('group_id', $groups->pluck('group_id')->toArray())->get();
-
+            $groupIds = $groups->pluck('group_id')->toArray();
+            $groupMembers = User::whereActive(1)
+                    ->whereHas('groups', function ($query) use ($groupIds) {
+                        $query->whereIn('group_id', $groupIds);
+                })->get();
             foreach ($groupMembers as $groupMember) {
                 //add all users who have not clicked on attending or not-attending
                 if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
