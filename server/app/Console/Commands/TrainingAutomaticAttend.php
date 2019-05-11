@@ -51,7 +51,7 @@ class TrainingAutomaticAttend extends Command
             $groupIds = $groups->pluck('group_id')->toArray();
             $groupMembers = User::whereActive(1)
                     ->whereHas('groups', function ($query) use ($groupIds) {
-                        $query->whereIn('group_id', $groupIds);
+                        $query->whereIn('groups.id', $groupIds);
                 })->get();
             foreach ($groupMembers as $groupMember) {
                 //add all users who have not clicked on attending or not-attending

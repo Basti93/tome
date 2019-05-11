@@ -1,8 +1,22 @@
 <template>
-  <v-dialog v-model="show" max-width="500px" :propGroupId="groupId" :propUserId="userId" :propBranchId="branchId" persistent>
+  <v-dialog
+          v-model="show"
+          max-width="500px"
+          :propGroupId="groupId"
+          :propUserId="userId"
+          :propBranchId="branchId"
+          persistent>
     <v-card>
-      <v-card-title>
-        <span class="title">Wer bist du?</span>
+      <v-toolbar card>
+        <v-btn icon @click="show=false">
+          <v-icon>close</v-icon>
+        </v-btn>
+        <v-toolbar-title>Wer bist du?</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn flat color="primary" @click="done"><v-icon right>check</v-icon>Auswählen</v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
         <v-spacer></v-spacer>
         <v-card-text>
           <v-alert
@@ -44,12 +58,6 @@
             label="Name"
           ></v-autocomplete>
         </v-card-text>
-      </v-card-title>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="show=false">Abbrechen</v-btn>
-        <v-btn color="primary" @click="done()">Ok</v-btn>
-      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>

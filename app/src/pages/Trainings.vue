@@ -77,12 +77,26 @@
           </v-data-table>
         </v-card-text>
       </v-card>
-      <v-dialog v-model="dialog" v-if="!loading" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly">
-        <v-card>
-          <v-card-title>
-            <span class="title">Training Bearbeiten/Anlegen</span>
-          </v-card-title>
-
+      <v-dialog
+              v-model="dialog"
+              v-if="!loading"
+              fullscreen
+              hide-overlay
+              transition="dialog-bottom-transition"
+              scrollable
+              persistent>
+        <v-card tile>
+            <v-toolbar card>
+              <v-btn icon @click="close">
+                <v-icon>close</v-icon>
+              </v-btn>
+              <v-toolbar-title>Training Bearbeiten/Anlegen</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn flat color="primary" @click="save">Speichern</v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+          <v-divider></v-divider>
           <v-card-text>
             <v-tabs
                     icons-and-text
@@ -147,12 +161,6 @@
               </v-tab-item>
             </v-tabs>
           </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" @click="close">Abbrechen</v-btn>
-            <v-btn color="primary" @click="save">Speichern</v-btn>
-          </v-card-actions>
         </v-card>
       </v-dialog>
     </v-flex>

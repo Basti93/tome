@@ -1,9 +1,16 @@
 <template>
     <v-dialog v-model="show" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
         <v-card>
-            <v-card-title>
-                <span class="title">Vorläufigen Benutzer Anlegen</span>
-            </v-card-title>
+            <v-toolbar card>
+                <v-btn icon @click="show=false">
+                    <v-icon>close</v-icon>
+                </v-btn>
+                <v-toolbar-title>Vorläufigen Benutzer Anlegen</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-toolbar-items>
+                    <v-btn flat color="primary" @click="createUser">Speichern</v-btn>
+                </v-toolbar-items>
+            </v-toolbar>
 
             <v-card-text>
                 <v-alert
@@ -58,18 +65,6 @@
                     </v-layout>
                 </v-container>
             </v-card-text>
-
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="show=false" right>
-                    <v-icon>close</v-icon>
-                    Abbrechen
-                </v-btn>
-                <v-btn color="primary" @click="createUser" right>
-                    <v-icon>save</v-icon>
-                    Speichern
-                </v-btn>
-            </v-card-actions>
         </v-card>
     </v-dialog>
 </template>

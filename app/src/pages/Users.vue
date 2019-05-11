@@ -94,11 +94,24 @@
                     </v-data-table>
                 </v-card-text>
             </v-card>
-            <v-dialog v-model="showDialog" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+            <v-dialog
+                    v-model="showDialog"
+                      max-width="1000px"
+                      :fullscreen="$vuetify.breakpoint.xsOnly"
+                      persistent
+            >
                 <v-card>
-                    <v-card-title>
-                        <span class="title">Benutzer Bearbeiten</span>
-                    </v-card-title>
+                    <v-toolbar card>
+                        <v-btn icon @click="closeDialog">
+                            <v-icon>close</v-icon>
+                        </v-btn>
+                        <v-toolbar-title>Benutzer Bearbeiten</v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-toolbar-items>
+                            <v-btn flat color="primary" @click="save">Speichern</v-btn>
+                        </v-toolbar-items>
+                    </v-toolbar>
+                    <v-divider></v-divider>
 
                     <v-card-text>
                         <v-container grid-list-md>
@@ -151,18 +164,6 @@
                             </v-layout>
                         </v-container>
                     </v-card-text>
-
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="primary" @click="closeDialog()" right>
-                            <v-icon>close</v-icon>
-                            Abbrechen
-                        </v-btn>
-                        <v-btn color="primary" @click="save" right>
-                            <v-icon>save</v-icon>
-                            Speichern
-                        </v-btn>
-                    </v-card-actions>
                 </v-card>
             </v-dialog>
             <CreateUnregistredUserDialog

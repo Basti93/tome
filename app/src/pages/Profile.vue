@@ -3,20 +3,20 @@
     <v-flex xs12 md10 offset-md1 top>
       <v-card>
         <v-toolbar card prominent>
-          <v-toolbar-title>Profileinstellungen</v-toolbar-title>
-          <v-spacer></v-spacer>
+        <v-toolbar-title>Profileinstellungen</v-toolbar-title>
+        <v-spacer></v-spacer>
           <v-btn color="primary" v-bind:disabled="!valid"  @click="save()">
             <v-icon left>save</v-icon>
             Speichern
           </v-btn>
-        </v-toolbar>
+      </v-toolbar>
         <v-form
-          v-model="valid"
+                v-model="valid"
         >
 
           <v-card-text>
             <v-tabs
-              icons-and-text
+                    icons-and-text
             >
               <v-tabs-slider color="yellow"></v-tabs-slider>
 
@@ -36,29 +36,29 @@
                       <v-layout wrap>
                         <v-flex xs12 sm6>
                           <v-text-field
-                            v-model="editUser.firstName"
-                            label="Vorname"
-                            :rules="requiredRule"
-                            prepend-icon="account_circle"
-                            required>
+                                  v-model="editUser.firstName"
+                                  label="Vorname"
+                                  :rules="requiredRule"
+                                  prepend-icon="account_circle"
+                                  required>
                           </v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6>
                           <v-text-field
-                            v-model="editUser.familyName"
-                            label="Nachname"
-                            :rules="requiredRule"
-                            prepend-icon="account_circle"
-                            required>
+                                  v-model="editUser.familyName"
+                                  label="Nachname"
+                                  :rules="requiredRule"
+                                  prepend-icon="account_circle"
+                                  required>
                           </v-text-field>
                         </v-flex>
                         <v-flex xs12 md6>
                           <v-text-field
-                            v-model="editUser.email"
-                            label="E-Mail"
-                            :rules="emailRules"
-                            prepend-icon="email"
-                            required>
+                                  v-model="editUser.email"
+                                  label="E-Mail"
+                                  :rules="emailRules"
+                                  prepend-icon="email"
+                                  required>
                           </v-text-field>
                         </v-flex>
                         <v-flex xs12 md6>
@@ -88,16 +88,16 @@
                             </v-card-title>
                             <v-card-text>
                               <v-flex md10 offset-md1>
-                              <v-alert
-                                v-bind:value="true"
-                                type="info"
-                                outline
-                              >
-                                Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier Gruppen zuweisen
-                              </v-alert>
+                                <v-alert
+                                        v-bind:value="true"
+                                        type="info"
+                                        outline
+                                >
+                                  Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier Gruppen zuweisen
+                                </v-alert>
                                 <GroupsSelect
-                                  v-bind:groupIds="editUser.groupIds"
-                                  v-on:groupsChanged="groupsChanged">
+                                        v-bind:groupIds="editUser.groupIds"
+                                        v-on:groupsChanged="groupsChanged">
                                 </GroupsSelect>
 
                               </v-flex>
@@ -114,9 +114,9 @@
                   <v-card-title>
                     <v-flex md10 offset-md1>
                       <v-alert
-                        v-bind:value="true"
-                        type="info"
-                        outline
+                              v-bind:value="true"
+                              type="info"
+                              outline
                       >
                         Hier kannst du deine Trainingsgruppen auswählen. <br />Sie dienen als Filter und werden für die Trainings- und Benutzerverwaltung benötigt.
                       </v-alert>
@@ -135,7 +135,7 @@
             </v-tabs>
           </v-card-text>
         </v-form>
-      </v-card>
+    </v-card>
     </v-flex>
   </v-layout>
 </template>

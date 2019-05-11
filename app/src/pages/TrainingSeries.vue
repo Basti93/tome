@@ -11,13 +11,18 @@
                     </v-btn>
                     <v-dialog
                             v-model="showCreateDialog"
-                            max-width="1000px"
-                            :fullscreen="$vuetify.breakpoint.xsOnly"
-                            persistent>
+                            fullscreen>
                         <v-card>
-                            <v-card-title>
-                                <span class="title">Trainingsserie anlegen/bearbeiten</span>
-                            </v-card-title>
+                            <v-toolbar card>
+                                <v-btn icon @click="showCreateDialog = false">
+                                    <v-icon>close</v-icon>
+                                </v-btn>
+                                <v-toolbar-title>Trainingsserie Bearbeiten/Anlegen</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-items>
+                                    <v-btn flat color="primary" @click="save()">Speichern</v-btn>
+                                </v-toolbar-items>
+                            </v-toolbar>
 
                             <v-card-text>
                                 <EditTrainingBase
@@ -39,11 +44,6 @@
                                 >
                                 </EditTrainingBase>
                             </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="primary" @click="showCreateDialog = false">Abbrechen</v-btn>
-                                <v-btn color="primary" @click="save()">Speichern</v-btn>
-                            </v-card-actions>
                         </v-card>
                     </v-dialog>
                     <v-spacer></v-spacer>

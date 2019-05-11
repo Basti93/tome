@@ -288,7 +288,7 @@ class UserController extends Controller
 
     public function sendApprovedEmail($user)
     {
-        //Mail::to($user)->send(new Approved($user));
+        Mail::to($user)->send(new Approved($user));
     }
 
 }

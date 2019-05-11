@@ -1,9 +1,17 @@
 <template>
-  <v-dialog v-model="show" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+  <v-dialog v-model="show" max-width="600px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
     <v-card>
-      <v-card-title>
-        <span class="title">Filter ändern</span>
-      </v-card-title>
+      <v-toolbar card>
+        <v-btn icon @click="show=false">
+          <v-icon>close</v-icon>
+        </v-btn>
+        <v-toolbar-title>Filter ändern</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn flat color="primary" @click="done" :disabled="!valid"><v-icon right>done</v-icon>Auswählen</v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+
       <v-card-text>
         <v-form
           v-model="valid">
@@ -33,11 +41,6 @@
         ></v-autocomplete>
         </v-form>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="done()" :disabled="!valid"><v-icon>done</v-icon></v-btn>
-        <v-btn color="primary" @click="show=false"><v-icon>close</v-icon></v-btn>
-      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>

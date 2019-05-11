@@ -15,11 +15,22 @@
                     <v-btn icon color="primary" @click="filterDialogVisible = true">
                         <v-icon>filter_list</v-icon>
                     </v-btn>
-                    <v-dialog v-model="filterDialogVisible" max-width="500px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+                    <v-dialog
+                            v-model="filterDialogVisible"
+                            max-width="500px"
+                              :fullscreen="$vuetify.breakpoint.xsOnly"
+                            persistent>
                         <v-card>
-                            <v-card-title>
-                                <span class="title">Gruppe wechseln</span>
-                            </v-card-title>
+                            <v-toolbar card>
+                                <v-btn icon @click="filterDialogVisible = false">
+                                    <v-icon>close</v-icon>
+                                </v-btn>
+                                <v-toolbar-title>Filter ändern</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-items>
+                                    <v-btn flat color="primary" @click="filterDone"><v-icon>done</v-icon></v-btn>
+                                </v-toolbar-items>
+                            </v-toolbar>
                             <v-card-text>
                                 <GroupSelect
                                         v-bind:groupId="currentUserGroupId"
@@ -28,15 +39,6 @@
                                 >
                                 </GroupSelect>
                             </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="primary" @click="filterDialogVisible = false">
-                                    <v-icon>close</v-icon>
-                                </v-btn>
-                                <v-btn color="primary" @click="filterDone()">
-                                    <v-icon>done</v-icon>
-                                </v-btn>
-                            </v-card-actions>
                         </v-card>
                     </v-dialog>
 
@@ -168,6 +170,9 @@
             if (!this.loggedInUser) {
                 this.cookieUser = User.from(this.getCookie('cookieUser'));
             }
+            if (!this.currentUser) {
+                this.cookieUserDialogVisible = true;
+            }
             this.filterGroupId = this.currentUserGroupId;
             await this.fetchData();
             this.initializing = false;
@@ -203,7 +208,7 @@
                         for (let trObj of data.data) {
                             let participants = [] as TrainingParticipant[];
                             for (let partObj of trObj.participants) {
-                                participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false));
+                                participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
                             }
                             this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
                         }
@@ -223,7 +228,7 @@
                     participant[0].attend = true;
                     this.$set(this.selectedTraining.participants[index], 'attend', true);
                 } else {
-                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, true));
+                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, true, null));
                 }
                 this.$emit("showSnackbar", "Für das Training angemeldet", "success");
             },
@@ -233,7 +238,7 @@
                     const index = this.selectedTraining.participants.indexOf(participant[0]);
                     this.$set(this.selectedTraining.participants[index], 'attend', false);
                 } else {
-                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, false));
+                    this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, false, null));
                 }
                 this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
             },
