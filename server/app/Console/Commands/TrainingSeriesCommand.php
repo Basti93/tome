@@ -45,22 +45,24 @@ class TrainingSeriesCommand extends Command
     {
         //get all training series
         $allSeries = TrainingSeries::whereActive('1')->get();
+        $start    = new DateTime();
+        $start->setTime(00,00);
+        $end      = new DateTime();
+        $end->setTime(00,00);
+        $end->modify('+7 day');
+        $interval = DateInterval::createFromDateString('1 day');
+        $period   = new DatePeriod($start, $interval, $end);
+        $this->info('Creating training series in time period from '.$start->format('Y-m-d H:i:s').' until '.$end->format('Y-m-d H:i:s'));
         foreach ($allSeries as $series) {
             //create all possible trainings for next week
-            $this->processSeries($series);
+            $this->processSeries($series, $start, $end, $period);
 
         }
 
     }
 
-    private function processSeries($series) {
+    private function processSeries($series, $start, $end, $period) {
         $weekdaysArray = json_decode($series->weekdays);
-
-        $start    = new DateTime();
-        $end      = new DateTime();
-        $end->modify('+7 day');
-        $interval = DateInterval::createFromDateString('1 day');
-        $period   = new DatePeriod($start, $interval, $end);
 
         //iterate through the days of the next week
         foreach ($period as $dt) {
@@ -72,7 +74,7 @@ class TrainingSeriesCommand extends Command
                     ->whereBetween('start', array($start, $end))
                     ->where('training_series_id', $series->id)
                     ->exists()) {
-
+                    $this->info('Creating training with series id '.$series->id);
                     //create training from series data
                     $training = new Training();
                     $training->start = $this->toDateAddTime( $dt->format(DateTime::ISO8601), $series->startTime);
@@ -84,8 +86,9 @@ class TrainingSeriesCommand extends Command
                     $training->contents()->attach($series->content_ids);
                     $training->trainers()->attach($series->trainer_ids);
                     $training->groups()->attach($series->group_ids);
+                } else {
+                    $this->info('Training with series id '.$series->id.' already exists');
                 }
-
             }
         }
     }

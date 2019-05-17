@@ -24,6 +24,8 @@ class Training extends JsonResource
             'participants' => $this->trainingParticipation,
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
+            'prepared' => $this->prepared,
+            'evaluated' => $this->evaluated,
         ];
     }
 }

@@ -82,6 +82,10 @@ $api->version('v1', function (Router $api) {
             $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingController@store');
             $api->post('{id}/checkin/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkIn');
             $api->post('{id}/checkout/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOut');
+            $api->post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@removeParticipant');
+            $api->post('{id}/addparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@addParticipant');
+            $api->post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingController@trainingEvaluated');
+            $api->post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingController@trainingPrepared');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@update');
             $api->get('{id}/trainingscount/{year}', 'App\\Api\\V1\\Controllers\\TrainingController@getTrainingTimeline');
             $api->get('/upcoming/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainingsForUser');

@@ -9,15 +9,6 @@
                 </v-toolbar>
                 <v-divider></v-divider>
                 <v-card-text flat>
-                    <v-alert
-                            v-bind:value="true"
-                            type="info"
-                            class="text-small"
-                            pa-0
-                            ma-0
-                            outline>
-                        Diese Seite ist in Arbeit. In Zukunft ist es möglich die Daten hier auch zu bearbeiten. Momentan kann man die Daten nur unter "Trainings" bearbeiten.
-                    </v-alert>
                     <div v-show="dataLoaded">
                         <div class="tp-training-prepare__navigation">
                             <v-card
@@ -26,12 +17,13 @@
                                     hover
                                     @click="selectTraining(item.id)"
                                     class="tp-training-prepare__navigation-card"
-                                    :class="{'tp-training-prepare__navigation-card--active': item === selectedTraining, 'tp-training-prepare__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-prepare__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
+                                    :class="{'tp-training-prepare__navigation-card--evaluated': item.evaluated, 'tp-training-prepare__navigation-card--active': item === selectedTraining, 'tp-training-prepare__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-prepare__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                             >
                                 <v-card-title>
                                     <h2 class="subheading">{{ item.start.format('dddd').slice(0, 2) }}</h2>
                                     <p class="title pt-1">{{ item.start.format('DD')}}</p>
-                                    <v-icon small>new_releases</v-icon>
+                                    <v-icon v-if="item.evaluated" small>check</v-icon>
+                                    <v-icon v-else small>new_releases</v-icon>
                                 </v-card-title>
                             </v-card>
                         </div>
@@ -42,9 +34,26 @@
                                     <v-list>
                                         <v-list-tile>
                                             <v-list-tile-content>
-                                                <v-list-tile-title><h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3></v-list-tile-title>
+                                                <v-list-tile-title>
+                                                    <h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3>
+                                                </v-list-tile-title>
                                             </v-list-tile-content>
                                         </v-list-tile>
+                                        <v-btn v-if="!selectedTraining.evaluated" @click="confirmEvaluationDialog = true" color="primary">Abschließen</v-btn>
+                                        <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
+                                            <v-toolbar card>
+                                                <v-toolbar-title>Training abschließen?</v-toolbar-title>
+                                            </v-toolbar>
+                                            <v-divider></v-divider>
+                                            <v-card>
+                                                <v-card-text>Nachdem das Training abgeschlossen ist, kann es nicht mehr verändert werden.</v-card-text>
+                                                <v-card-actions>
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn color="primary" flat @click="confirmEvaluationDialog = false">Abbrechen</v-btn>
+                                                    <v-btn color="primary" flat @click="evaluated()">Bestätigen</v-btn>
+                                                </v-card-actions>
+                                            </v-card>
+                                        </v-dialog>
                                         <v-list-group
                                                 v-model="participantsListGroupActive"
                                                 prepend-icon="check"
@@ -65,6 +74,7 @@
                                                     avatar
                                                     @click=""
                                             >
+
                                                 <v-list-tile-avatar>
                                                     <v-icon>account_circle</v-icon>
                                                 </v-list-tile-avatar>
@@ -72,6 +82,13 @@
                                                 <v-list-tile-content>
                                                     <v-list-tile-title v-html="fullName(item)"></v-list-tile-title>
                                                 </v-list-tile-content>
+
+                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="removeParticipant(item.id)" outline>
+                                                        <v-icon>remove</v-icon>
+                                                    </v-btn>
+                                                </v-list-tile-action>
+
                                             </v-list-tile>
                                         </v-list-group>
                                         <v-list-group
@@ -102,6 +119,12 @@
                                                     <v-list-tile-title v-html="fullName(item)"></v-list-tile-title>
                                                     <v-list-tile-sub-title class="warning--text" v-html="getCancelReason(item.id)"></v-list-tile-sub-title>
                                                 </v-list-tile-content>
+
+                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="addParticipant(item.id)" outline>
+                                                        <v-icon>add</v-icon>
+                                                    </v-btn>
+                                                </v-list-tile-action>
                                             </v-list-tile>
                                         </v-list-group>
                                     </v-list>
@@ -143,8 +166,9 @@
                 animationTrigger: true,
                 users: [],
                 selectedLocationId: null,
-                participantsListGroupActive: false,
+                participantsListGroupActive: true,
                 canceledUserListGroupActive: false,
+                confirmEvaluationDialog: false,
             }
         },
         computed: {
@@ -209,7 +233,7 @@
                             for (let partObj of trObj.participants) {
                                 participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
                             }
-                            this.pastTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment));
+                            this.pastTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, trObj.prepared === 1 ? true : false, trObj.evaluated === 1 ? true : false));
                         }
                         //select first training
                         this.selectTraining(this.pastTrainings[0].id);
@@ -225,6 +249,28 @@
                     console.error(error);
                 } finally {
                     this.dataLoaded = true;
+                }
+            },
+            async removeParticipant(userId) {
+                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+                if (data.status == 'ok') {
+                    this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
+                    this.$emit("showSnackbar", "Benutzer entfernt", "success");
+                }
+            },
+            async addParticipant(userId) {
+                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/addparticipant/' + userId)
+                if (data.status == 'ok') {
+                    this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
+                    this.$emit("showSnackbar", "Benutzer hinzugefügt", "success");
+                }
+            },
+            async evaluated() {
+                this.confirmEvaluationDialog = false;
+                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/evaluated')
+                if (data.status == 'ok') {
+                    this.selectedTraining.evaluated = true
+                    this.$emit("showSnackbar", "Training abgeschlossen", "success");
                 }
             },
             selectTraining(id) {
@@ -263,6 +309,9 @@
 
             &--active {
                 filter: brightness(80%);
+            }
+            &--evaluated {
+                background-color: #60cc69 !important;
             }
 
         }

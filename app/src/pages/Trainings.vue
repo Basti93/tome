@@ -321,9 +321,6 @@
         if (this.filterGroupIds && this.filterGroupIds.length > 0) {
           url += '&groupIds=' + this.filterGroupIds;
         }
-        if (this.initializing) {
-          url += "&current=1";
-        }
         let p1 = this.$http.get(url).then(function (res) {
           this.trainings = res.data.data;
           this.pagination.page = res.data.meta.currentPage;
