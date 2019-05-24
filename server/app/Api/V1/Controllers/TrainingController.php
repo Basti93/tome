@@ -6,6 +6,7 @@ use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
 use App\Training;
+use App\TrainingTrainer;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class TrainingController extends Controller
     {
         $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
         $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'getPastTrainingsForUser']]);
+        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'getPastTrainingsForUser', 'trainingEvaluated', 'trainingPrepared']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
         $this->middleware('permission:delete-training', ['only' => ['destroy']]);
     }
@@ -197,40 +198,6 @@ class TrainingController extends Controller
         ], 200);
     }
 
-    public function trainingEvaluated($trainingId) {
-        $training = Training::findOrFail($trainingId);
-        $training->evaluated = 1;
-        $training->save();
-        return response()->json([
-            'status' => 'ok'
-        ], 200);
-    }
-
-    public function removeParticipant($trainingId, $userId) {
-        $training = Training::findOrFail($trainingId);
-        if ($training->participants->contains($userId)) {
-            $training->participants()->updateExistingPivot($userId, array('attend' => 0), false);
-            return response()->json([
-                'status' => 'ok'
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'user not assigned to the training'
-        ], 404);
-    }
-
-    public function addParticipant($trainingId, $userId) {
-        $training = Training::findOrFail($trainingId);
-        if ($training->participants->contains($userId)) {
-            $training->participants()->updateExistingPivot($userId, array('attend' => 1), false);
-            return response()->json([
-                'status' => 'ok'
-            ], 200);
-        }
-        return response()->json([
-            'status' => 'user not assigned to the training'
-        ], 404);
-    }
 
     /**
      * Show the form for creating a new resource.

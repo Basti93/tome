@@ -83,6 +83,9 @@ const getters = {
   getGroupsByIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.id))
   },
+  getSimpleTrainerById: (state, getters) => (id) => {
+      return state.simpleTrainers.find(g => id === g.id)
+  },
   getSimpleTrainersByIds: (state, getters) => (ids) => {
       return state.simpleTrainers.filter(g => ids.includes(g.id))
   },

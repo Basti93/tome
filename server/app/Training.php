@@ -25,6 +25,11 @@ class Training extends Model
     return $this->belongsToMany('App\User','training_trainer', 'training_id', 'user_id');
   }
 
+  public function trainerEvaluations()
+  {
+    return $this->hasMany('App\TrainingTrainer');
+  }
+
   public function groups()
   {
     return $this->belongsToMany('App\Group','training_group', 'training_id', 'group_id');

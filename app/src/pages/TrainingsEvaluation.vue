@@ -55,10 +55,48 @@
                                             </v-card>
                                         </v-dialog>
                                         <v-list-group
+                                                v-model="trainersListGroupActive"
+                                                prepend-icon="verified_user"
+                                                group="trainers"
+                                                key="0"
+                                                no-action
+                                        >
+                                            <template slot="activator">
+                                                <v-list-tile>
+                                                    <v-list-tile-content>
+                                                        <v-list-tile-title>{{selectedTraining.trainers.length}} Trainer (Zeiterfassung)</v-list-tile-title>
+                                                    </v-list-tile-content>
+                                                </v-list-tile>
+                                            </template>
+                                            <v-list-tile
+                                                    v-for="(item, index) in selectedTraining.trainers"
+                                                    :key="index"
+                                                    avatar
+                                                    @click=""
+                                            >
+
+                                                <v-list-tile-avatar>
+                                                    <v-icon>account_circle</v-icon>
+                                                </v-list-tile-avatar>
+
+                                                <v-list-tile-content>
+                                                    <v-list-tile-title>{{trainerFullName(item.userId)}}</v-list-tile-title>
+                                                    <v-list-tile-sub-title>Von {{item.accountingTimeStart.format('HH:mm')}} bis {{item.accountingTimeEnd.format('HH:mm')}}</v-list-tile-sub-title>
+                                                </v-list-tile-content>
+
+                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="editTime(item)" outline>
+                                                        <v-icon>edit</v-icon>
+                                                    </v-btn>
+                                                </v-list-tile-action>
+
+                                            </v-list-tile>
+                                        </v-list-group>
+                                        <v-list-group
                                                 v-model="participantsListGroupActive"
                                                 prepend-icon="check"
                                                 group="participants"
-                                                key="0"
+                                                key="1"
                                                 no-action
                                         >
                                             <template slot="activator">
@@ -95,7 +133,7 @@
                                                 v-model="canceledUserListGroupActive"
                                                 prepend-icon="cancel"
                                                 group="canceledusers"
-                                                key="1"
+                                                key="2"
                                                 no-action
                                         >
                                             <template  slot="activator">
@@ -146,6 +184,36 @@
                 </v-card-text>
             </v-card>
         </v-flex>
+        <v-dialog
+                v-model="timeDialogOpened"
+                  max-width="800px"
+                :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+            <v-card>
+                <v-toolbar card>
+                    <v-btn icon @click="timeDialogOpened=false">
+                        <v-icon>close</v-icon>
+                    </v-btn>
+                    <v-toolbar-title>Trainerzeiten ändern</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn flat color="primary" @click="updateAccountingTime">Speichern</v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+
+                <v-card-text>
+                    <v-layout row wrap>
+                        <v-flex xs12 md6>
+                            <h2>Von</h2>
+                            <v-time-picker flat v-model="editStartTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
+                        </v-flex>
+                        <v-flex xs12 md6>
+                            <h2>Bis</h2>
+                            <v-time-picker v-model="editEndTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
+                        </v-flex>
+                    </v-layout>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </v-layout>
 </template>
 
@@ -153,30 +221,34 @@
 
     import Vue from "vue";
     import {mapGetters, mapState} from 'vuex'
-    import Training from "@/models/Training";
     import TrainingParticipant from "@/models/TrainingParticipant";
+    import TrainingTrainer from "@/models/TrainingTrainer";
+    import TrainingEvaluation from "@/models/TrainingEvaluation";
 
     export default Vue.extend({
         name: "TrainingsEvaluation",
         data: function () {
             return {
-                pastTrainings: [] as Training[],
+                pastTrainings: [] as TrainingEvaluation[],
                 dataLoaded: false,
                 selectedTrainingId: null,
+                selectedTrainerId: null,
                 animationTrigger: true,
                 users: [],
                 selectedLocationId: null,
+                trainersListGroupActive: true,
                 participantsListGroupActive: true,
                 canceledUserListGroupActive: false,
                 confirmEvaluationDialog: false,
+                editStartTime: null as String,
+                editEndTime: null as String,
+                timeDialogOpened: false,
             }
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
             ...mapGetters('masterData', {
-                getBranchByGroupId: 'getBranchByGroupId',
-                getGroupById: 'getGroupById',
-                getBranchById: 'getBranchById',
+                getSimpleTrainerById: 'getSimpleTrainerById',
             }),
             ...mapState('masterData', {
                 locations: 'locations',
@@ -225,7 +297,7 @@
                     this.dataLoaded = false;
                     this.pastTrainings = [];
                     //load data
-                    const res = await this.$http.get('/training/past/trainer/' + this.loggedInUser.id);
+                    const res = await this.$http.get('/trainingevaluation/' + this.loggedInUser.id);
                     if (res.data.data && res.data.data.length > 0) {
                         //json result to objects
                         for (let trObj of res.data.data) {
@@ -233,7 +305,25 @@
                             for (let partObj of trObj.participants) {
                                 participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
                             }
-                            this.pastTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, trObj.prepared === 1 ? true : false, trObj.evaluated === 1 ? true : false));
+                            let trainers = [] as TrainingTrainer[];
+                            const trainingStartTime = this.moment(trObj.start, 'YYYY-MM-DDTHH:mm');
+                            const trainingEndTime = this.moment(trObj.end, 'YYYY-MM-DDTHH:mm');
+                            for (let partObj of trObj.trainers) {
+                                let timeStart;
+                                if (partObj.accountingTimeStart != null) {
+                                    timeStart = this.moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
+                                } else {
+                                    timeStart = trainingStartTime
+                                }
+                                let timeEnd;
+                                if (partObj.accountingTimeEnd != null) {
+                                    timeEnd = this.moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
+                                } else {
+                                    timeEnd = trainingEndTime
+                                }
+                                trainers.push(new TrainingTrainer(partObj.trainingId, partObj.userId, timeStart, timeEnd));
+                            }
+                            this.pastTrainings.push(new TrainingEvaluation(trObj.id, trainingStartTime, trainingEndTime, trObj.locationId, trObj.groupIds, trObj.contentIds, trainers, participants, trObj.comment, trObj.prepared === 1 ? true : false, trObj.evaluated === 1 ? true : false));
                         }
                         //select first training
                         this.selectTraining(this.pastTrainings[0].id);
@@ -252,14 +342,14 @@
                 }
             },
             async removeParticipant(userId) {
-                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+                const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
                 if (data.status == 'ok') {
                     this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
                     this.$emit("showSnackbar", "Benutzer entfernt", "success");
                 }
             },
             async addParticipant(userId) {
-                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/addparticipant/' + userId)
+                const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
                 if (data.status == 'ok') {
                     this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
                     this.$emit("showSnackbar", "Benutzer hinzugefügt", "success");
@@ -267,10 +357,33 @@
             },
             async evaluated() {
                 this.confirmEvaluationDialog = false;
-                const {data} = await this.$http.post('/training/' + this.selectedTraining.id + '/evaluated')
+                const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
                 if (data.status == 'ok') {
                     this.selectedTraining.evaluated = true
                     this.$emit("showSnackbar", "Training abgeschlossen", "success");
+                }
+            },
+            editTime(item :TrainingTrainer) {
+                this.selectedTrainerId = item.userId;
+                this.editStartTime = item.accountingTimeStart.format('HH:mm')
+                this.editEndTime = item.accountingTimeEnd.format('HH:mm')
+                this.timeDialogOpened = true;
+            },
+            async updateAccountingTime() {
+                this.timeDialogOpened = false;
+                const selectedTrainer = this.selectedTraining.trainers.find(t => t.userId === this.selectedTrainerId)
+                const startDateTime = selectedTrainer.accountingTimeStart.clone().set({h: this.editStartTime.split(":")[0], m: this.editStartTime.split(":")[1]});
+                const endDateTime = selectedTrainer.accountingTimeEnd.clone().set({h: this.editEndTime.split(":")[0], m: this.editEndTime.split(":")[1]});
+                const postData = {
+                    'trainerId': this.selectedTrainerId,
+                    'start': startDateTime.format(),
+                    'end': endDateTime.format(),
+                };
+                const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
+                if (data.status == 'ok') {
+                    selectedTrainer.accountingTimeStart = startDateTime;
+                    selectedTrainer.accountingTimeEnd = endDateTime;
+                    this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
                 }
             },
             selectTraining(id) {
@@ -284,6 +397,9 @@
                 return this.pastTrainings.filter(ut => ut.id == id)[0];
             },
             fullName: item => item.firstName + ' ' + item.familyName,
+            trainerFullName(id) {
+                return this.fullName(this.getSimpleTrainerById(id))
+            }
         },
     })
 

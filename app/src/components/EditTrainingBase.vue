@@ -64,7 +64,7 @@
             </v-menu>
         </v-flex>
         <v-flex xs6>
-            <v-autocomplete
+            <v-select
                     :items="locations"
                     item-text="name"
                     item-value="id"
@@ -73,7 +73,7 @@
                     required
                     label="Ort"
                     prepend-icon="add_location"
-            ></v-autocomplete>
+            ></v-select>
         </v-flex>
         <v-flex xs6>
             <v-checkbox
@@ -84,7 +84,7 @@
             ></v-checkbox>
         </v-flex>
         <v-flex xs12>
-            <v-autocomplete
+            <v-select
                     v-model="trainerIds"
                     :items="trainers"
                     item-value="id"
@@ -97,10 +97,10 @@
                     prepend-icon="verified_user"
                     multiple
             >
-            </v-autocomplete>
+            </v-select>
         </v-flex>
         <v-flex xs12>
-            <v-autocomplete
+            <v-select
                     :items="groups"
                     v-model="selectedGroupIds"
                     item-value="id"
@@ -111,7 +111,7 @@
                     clearable
                     chips
                     deletable-chips>
-            </v-autocomplete>
+            </v-select>
         </v-flex>
         <v-flex xs12 ml-2 style="text-align: left;">
             <v-label>Trainingsinhalte</v-label>

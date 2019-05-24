@@ -1,0 +1,20 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Relations\Pivot;
+
+class TrainingTrainer extends Pivot
+{
+    protected $hidden = ['id'];
+    public $timestamps = false;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function training()
+    {
+        return $this->belongsTo(Training::class);
+    }
+}

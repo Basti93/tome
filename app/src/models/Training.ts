@@ -11,8 +11,6 @@ export default class Training {
     trainerIds: number[];
     participants: TrainingParticipant[];
     comment: string;
-    evaluated: boolean;
-    prepared: boolean;
 
     static from(jsonString: string) {
         let jsonObj = JSON.parse(jsonString);
@@ -20,11 +18,11 @@ export default class Training {
         for (let participant of jsonObj.trainingParticipants) {
             participants.push(TrainingParticipant.from(participant));
         }
-        return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false)
+        return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, participants, jsonObj.comment)
     }
 
 
-    constructor(id: number, start: moment.Moment, end: moment.Moment, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string, prepared: boolean, evaluated: boolean) {
+    constructor(id: number, start: moment.Moment, end: moment.Moment, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string) {
         this.id = id;
         this.start = start;
         this.end = end;
@@ -34,7 +32,5 @@ export default class Training {
         this.trainerIds = trainerIds;
         this.participants = participants;
         this.comment = comment;
-        this.evaluated = evaluated;
-        this.prepared = prepared;
     }
 }
