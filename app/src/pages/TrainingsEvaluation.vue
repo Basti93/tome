@@ -153,9 +153,9 @@
                                                     <v-icon>account_circle</v-icon>
                                                 </v-list-tile-avatar>
 
-                                                <v-list-tile-content>
-                                                    <v-list-tile-title v-html="fullName(item)"></v-list-tile-title>
-                                                    <v-list-tile-sub-title class="warning--text" v-html="getCancelReason(item.id)"></v-list-tile-sub-title>
+                                                <v-list-tile-content @click="openCancelReasonDialog(item.id)">
+                                                    <v-list-tile-title>{{fullName(item)}}</v-list-tile-title>
+                                                    <v-list-tile-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-tile-sub-title>
                                                 </v-list-tile-content>
 
                                                 <v-list-tile-action v-if="!selectedTraining.evaluated">
@@ -175,7 +175,7 @@
                                             pa-0
                                             ma-0
                                             outline>
-                                        Keine anstehenden Trainings für dich verfügbar
+                                        Keine abgehaltenen Trainings für dich verfügbar
                                     </v-alert>
                                 </div>
                             </div>
@@ -214,6 +214,20 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
+        <v-dialog
+            v-model="showCancelReasonDialog"
+            max-width="800px">
+        <v-card>
+            <v-toolbar card>
+                <v-btn icon @click="showCancelReasonDialog=false">
+                    <v-icon>close</v-icon>
+                </v-btn>
+                <v-toolbar-title>Grund</v-toolbar-title>
+            </v-toolbar>
+
+            <v-card-text class="warning--text">{{cancelReasonDialogText}}</v-card-text>
+        </v-card>
+    </v-dialog>
     </v-layout>
 </template>
 
@@ -243,6 +257,8 @@
                 editStartTime: null as String,
                 editEndTime: null as String,
                 timeDialogOpened: false,
+                showCancelReasonDialog: false,
+                cancelReasonDialogText: null,
             }
         },
         computed: {
@@ -288,9 +304,16 @@
             getCancelReason(userId: Number) {
                 const cancelreason = this.selectedTraining.participants.filter(p => p.userId == userId)[0].cancelreason;
                 if (cancelreason) {
-                    return "Grund: " + cancelreason
+                    return cancelreason
                 }
                 return null;
+            },
+            openCancelReasonDialog(userId: Number) {
+                const cancelReason = this.getCancelReason(userId);
+                if (cancelReason) {
+                    this.cancelReasonDialogText = cancelReason;
+                    this.showCancelReasonDialog = true;
+                }
             },
             async fetchData() {
                 try {
