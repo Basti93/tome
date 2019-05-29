@@ -66,6 +66,7 @@ $api->version('v1', function (Router $api) {
             $api->post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
             $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
             $api->post('/{id}/notificationsubscribe', 'App\\Api\\V1\\Controllers\\UserController@subscribeToNotifications');
+            $api->post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
         });
 
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
@@ -76,6 +77,7 @@ $api->version('v1', function (Router $api) {
 
         $api->group(['prefix' => 'trainingevaluation'], function(Router $api) {
             $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getPastTrainingsForTrainer');
+            $api->post('/exportaccountingtimes', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@exportAccountingTimes');
             $api->post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@removeParticipant');
             $api->post('{id}/addparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@addParticipant');
             $api->post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@trainingEvaluated');

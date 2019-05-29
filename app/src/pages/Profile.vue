@@ -24,7 +24,6 @@
                 Benutzereinstellungen
                 <v-icon>account_circle</v-icon>
               </v-tab>
-
               <v-tab href="#tab-2" v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
                 Trainereinstellungen
                 <v-icon>verified_user</v-icon>
@@ -80,6 +79,20 @@
                             ></v-text-field>
                             <v-date-picker v-model="editUser.birthdate" @input="birthdateMenu = false"></v-date-picker>
                           </v-menu>
+                        </v-flex>
+                        <v-flex xs3>
+                          <ChangePasswordDialog
+                                  :visible="showPasswordDialog"
+                                  v-on:close="showPasswordDialog = false"
+                          >
+                          </ChangePasswordDialog>
+                          <v-btn
+                                  color="primary"
+                                  @click="showPasswordDialog = true"
+                            >
+                            <v-icon left>security</v-icon>
+                            Passwort ändern
+                          </v-btn>
                         </v-flex>
                         <v-flex xs12 v-if="loggedInUser.isTrainer">
                           <v-card flat>
@@ -143,15 +156,17 @@
 <script>
   import {mapGetters} from 'vuex'
   import GroupsSelect from "@/components/GroupsSelect.vue";
+  import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
   import {formatDate} from "../helpers/date-helpers"
 
   export default {
     name: "Profile",
-    components: {GroupsSelect},
+    components: {GroupsSelect, ChangePasswordDialog},
     data: function () {
       return {
         valid: true,
         birthdateMenu: false,
+        showPasswordDialog: false,
         editUser: {
           id: null,
           firstName: null,

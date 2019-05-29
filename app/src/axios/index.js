@@ -46,8 +46,8 @@ Vue.axios.interceptors.response.use(response => {
     //network error
     return Promise.reject(error)
   }
-  const { config, response: { status } } = error
-  const originalRequest = config
+  const status = error.response ? error.response.status : null
+  const originalRequest = error.response ? error.response.config : null
 
   if (status === 401) {
     if (!isAlreadyFetchingAccessToken) {
@@ -63,6 +63,11 @@ Vue.axios.interceptors.response.use(response => {
           store.dispatch('logout')
           router.push('/login')
         }
+      }).catch(function () {
+        delete localStorage.token
+        delete localStorage.user
+        store.dispatch('logout')
+        router.push('/login')
       });
     }
 

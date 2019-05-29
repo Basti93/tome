@@ -3,9 +3,24 @@
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
                 <v-toolbar card prominent>
-                    <v-toolbar-title>Meine kürzlich abgehaltenen Trainings</v-toolbar-title>
+                    <v-toolbar-title>Meine abgehaltenen Trainings</v-toolbar-title>
                     <v-spacer></v-spacer>
+                    <v-menu bottom left>
+                        <v-btn
+                                slot="activator"
+                                dark
+                                icon
+                        >
+                            <v-icon>more_vert</v-icon>
+                        </v-btn>
 
+                        <v-list>
+                            <v-list-tile @click="showAccountingDialog = true">
+                                <v-list-tile-avatar><v-icon>save_alt</v-icon></v-list-tile-avatar>
+                                <v-list-tile-title>ÜL-Abrechnung</v-list-tile-title>
+                            </v-list-tile>
+                        </v-list>
+                    </v-menu>
                 </v-toolbar>
                 <v-divider></v-divider>
                 <v-card-text flat>
@@ -64,7 +79,7 @@
                                             <template slot="activator">
                                                 <v-list-tile>
                                                     <v-list-tile-content>
-                                                        <v-list-tile-title>{{selectedTraining.trainers.length}} Trainer (Zeiterfassung)</v-list-tile-title>
+                                                        <v-list-tile-title>{{selectedTraining.trainers.length}} Trainer (Für ÜL-Abrechnung)</v-list-tile-title>
                                                     </v-list-tile-content>
                                                 </v-list-tile>
                                             </template>
@@ -228,6 +243,10 @@
             <v-card-text class="warning--text">{{cancelReasonDialogText}}</v-card-text>
         </v-card>
     </v-dialog>
+        <TrainingAccountingExportDialog
+            :visible="showAccountingDialog"
+            v-on:close="showAccountingDialog = false"
+        ></TrainingAccountingExportDialog>
     </v-layout>
 </template>
 
@@ -238,9 +257,11 @@
     import TrainingParticipant from "@/models/TrainingParticipant";
     import TrainingTrainer from "@/models/TrainingTrainer";
     import TrainingEvaluation from "@/models/TrainingEvaluation";
+    import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog";
 
     export default Vue.extend({
         name: "TrainingsEvaluation",
+        components: {TrainingAccountingExportDialog},
         data: function () {
             return {
                 pastTrainings: [] as TrainingEvaluation[],
@@ -259,6 +280,7 @@
                 timeDialogOpened: false,
                 showCancelReasonDialog: false,
                 cancelReasonDialogText: null,
+                showAccountingDialog: false,
             }
         },
         computed: {

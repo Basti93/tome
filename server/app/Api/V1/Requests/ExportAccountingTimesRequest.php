@@ -4,12 +4,13 @@ namespace App\Api\V1\Requests;
 
 use Config;
 use Dingo\Api\Http\FormRequest;
+use App\Training;
 
-class StoreTrainingRequest extends FormRequest
+class ExportAccountingTimesRequest extends FormRequest
 {
     public function rules()
     {
-        return Config::get('boilerplate.store_training.validation_rules');
+        return Config::get('boilerplate.export_accounting_times.validation_rules');
     }
 
     public function authorize()

@@ -2,13 +2,19 @@
 
 namespace App\Api\V1\Controllers;
 
+use App\Api\V1\Requests\ExportAccountingTimesRequest;
+use App\Api\V1\Requests\StoreTrainingRequest;
+use App\Exports\TrainingTrainerExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TrainingEvaluation as TrainingEvaluationResource;
 use App\Training;
 use App\TrainingTrainer;
+use App\User;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingEvaluationController extends Controller
 {
@@ -19,7 +25,7 @@ class TrainingEvaluationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant']]);
+        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant']]);
     }
 
     public function getPastTrainingsForTrainer($userId)
@@ -33,6 +39,23 @@ class TrainingEvaluationController extends Controller
             ->get();
 
         return TrainingEvaluationResource::collection($trainings);
+    }
+
+    public function exportAccountingTimes(ExportAccountingTimesRequest $request)
+    {
+        $fromInput = $request->input('from');
+        $toInput = $request->input('to');
+        $from = DateTime::createFromFormat(DateTime::ISO8601, $fromInput);
+        $to = DateTime::createFromFormat(DateTime::ISO8601, $toInput);
+        $userId = $request->input('userId');
+        $user = User::findOrFail($userId);
+
+        $filename = 'ul_abrechnung_'.strtolower($user->firstName).'_'.strtolower($user->familyName).'_'.$from->format("d_m_Y").'_'.$to->format("d_m_Y").'.xlsx';
+        Excel::store(new TrainingTrainerExport($user, $from, $to), $filename, 'public');
+        return response()->json([
+            'status' => 'ok',
+            'url' => Storage::url("{$filename}")
+        ]);
     }
 
     public function trainingEvaluated($trainingId)

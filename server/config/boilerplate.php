@@ -17,6 +17,11 @@ return [
             'password' => 'required'
         ]
     ],
+    'change_password' => [
+        'validation_rules' => [
+            'password' => 'required',
+        ]
+    ],
     // these options are related to store user
     'store_user' => [
 
@@ -34,6 +39,15 @@ return [
         'validation_rules' => [
             'start' => 'required',
             'end' => 'required',
+        ]
+    ],
+    'export_accounting_times' => [
+
+        // here you can specify some validation rules for your sign-in request
+        'validation_rules' => [
+            'userId' => 'required',
+            'from' => 'required',
+            'to' => 'required',
         ]
     ],
     'store_training_series' => [
