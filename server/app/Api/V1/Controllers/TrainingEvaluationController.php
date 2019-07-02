@@ -61,6 +61,18 @@ class TrainingEvaluationController extends Controller
     public function trainingEvaluated($trainingId)
     {
         $training = Training::findOrFail($trainingId);
+        $trainingTrainers = TrainingTrainer::where('training_id', $trainingId)->get();
+        foreach ($trainingTrainers as $tt) {
+            //set the accounting time to the training time if no accounting time was set
+            if (empty($tt->accounting_time_start)) {
+                $tt->accounting_time_start = $training->start;
+            }
+            if (empty($tt->accounting_time_end)) {
+                $tt->accounting_time_end = $training->end;
+            }
+            $tt->save();
+        }
+
         $training->evaluated = 1;
         $training->save();
         return response()->json([
@@ -70,19 +82,27 @@ class TrainingEvaluationController extends Controller
 
     public function updateAccountingTime(Request $request, $trainingId)
     {
-
         $trainerId = $request->input('trainerId');
-        $trainingTrainer = TrainingTrainer::where('training_id', $trainingId)
-            ->where('user_id', $trainerId)
-            ->first();
-
-        $trainingTrainer->accounting_time_start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
-        $trainingTrainer->accounting_time_end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
-        $trainingTrainer->save();
+        $start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
+        $end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
+        $this->updateAccountingTimeInter($trainerId, $trainingId, $start, $end);
 
         return response()->json([
             'status' => 'ok'
         ], 200);
+    }
+
+    private function updateAccountingTimeInter($trainerId, $trainingId, $start, $end)
+    {
+
+        $trainingTrainer = TrainingTrainer::where('training_id', $trainingId)
+            ->where('user_id', $trainerId)
+            ->first();
+
+        $trainingTrainer->accounting_time_start = $start;
+        $trainingTrainer->accounting_time_end = $end;
+
+        $trainingTrainer->save();
     }
 
     public function removeParticipant($trainingId, $userId) {
