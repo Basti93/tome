@@ -84,6 +84,15 @@ $api->version('v1', function (Router $api) {
             $api->post('{id}/updateaccountingtime', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateAccountingTime');
         });
 
+        $api->group(['prefix' => 'trainingprepare'], function(Router $api) {
+            $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@getUpcomingTrainingsForTrainer');
+            $api->post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@trainingEvaluated');
+            $api->post('{id}/updatetrainingtime', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateTrainingTime');
+            $api->post('{id}/updatelocation', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateLocation');
+            $api->post('{id}/updatecomment', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateComment');
+            $api->post('{id}/updatecontent', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateContent');
+        });
+
         $api->group(['prefix' => 'training'], function(Router $api) {
             $api->get('/participationcount', 'App\\Api\\V1\\Controllers\\TrainingController@getParticipationCount');
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingController@index');

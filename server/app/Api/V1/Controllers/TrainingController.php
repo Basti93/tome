@@ -6,7 +6,6 @@ use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
 use App\Training;
-use App\TrainingTrainer;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
@@ -23,7 +22,7 @@ class TrainingController extends Controller
     {
         $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
         $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'getPastTrainingsForUser', 'trainingEvaluated', 'trainingPrepared']]);
+        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'trainingPrepared']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
         $this->middleware('permission:delete-training', ['only' => ['destroy']]);
     }
@@ -161,32 +160,6 @@ class TrainingController extends Controller
             ->orderBy('month', 'asc')
             ->get();
         return response()->json($result);
-    }
-
-    public function getUpcomingTrainingsForUser($userId)
-    {
-        $trainings = Training::where('start', '>=', DB::raw('NOW()'))
-            ->whereHas('trainers', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->orderBy('start', 'asc')
-            ->limit(5)
-            ->get();
-
-        return TrainingResource::collection($trainings);
-    }
-
-    public function getPastTrainingsForUser($userId)
-    {
-        $trainings = Training::where('start', '<=', DB::raw('NOW()'))
-            ->whereHas('trainers', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->orderBy('start', 'desc')
-            ->limit(5)
-            ->get();
-
-        return TrainingResource::collection($trainings);
     }
 
     public function trainingPrepared($trainingId) {

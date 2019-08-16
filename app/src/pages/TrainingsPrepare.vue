@@ -9,15 +9,6 @@
                 </v-toolbar>
                 <v-divider></v-divider>
                 <v-card-text flat>
-                    <v-alert
-                            v-bind:value="true"
-                            type="info"
-                            class="text-small"
-                            pa-0
-                            ma-0
-                            outline>
-                        Diese Seite ist in Arbeit. In Zukunft ist es möglich die Daten hier auch zu bearbeiten. Momentan kann man die Daten nur unter "Trainings" bearbeiten.
-                    </v-alert>
                     <div v-show="dataLoaded">
                         <div class="tp-training-prepare__navigation">
                             <v-card
@@ -45,6 +36,156 @@
                                                 <v-list-tile-title><h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3></v-list-tile-title>
                                             </v-list-tile-content>
                                         </v-list-tile>
+                                        <v-list-group
+                                                v-model="trainingDataGroupActive"
+                                                prepend-icon="verified_user"
+                                                group="trainingData"
+                                                key="0"
+                                                no-action
+                                        >
+                                            <template slot="activator">
+                                                <v-list-tile>
+                                                    <v-list-tile-content>
+                                                        <v-list-tile-title>Trainingsdaten</v-list-tile-title>
+                                                    </v-list-tile-content>
+                                                </v-list-tile>
+                                            </template>
+                                            <v-container text-xs-left>
+                                                <v-layout row align-center>
+                                                    <v-flex shrink fill-height>
+                                                        Von <v-chip>{{selectedTraining.start.format('HH:mm')}}</v-chip> Uhr bis <v-chip>{{selectedTraining.end.format('HH:mm')}}</v-chip> Uhr
+                                                    </v-flex>
+                                                    <v-flex grow>
+                                                        <v-btn @click="editTime()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>edit</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                </v-layout>
+                                            </v-container>
+                                            <v-container text-xs-left :class="{ 'elevation-4' : editingLocation}">
+                                                <v-layout row align-center>
+                                                    <v-flex shrink v-if="editingLocation">
+                                                        <v-select
+                                                                :items="locations"
+                                                                item-text="name"
+                                                                item-value="id"
+                                                                v-model="editLocationId"
+                                                                clearable
+                                                                required
+                                                                label="Ort"
+                                                                prepend-icon="add_location"
+                                                        ></v-select>
+                                                    </v-flex>
+                                                    <v-flex shrink fill-height v-else>
+                                                        <v-chip>{{getLocationNameById(selectedTraining.locationId)}}</v-chip>
+                                                    </v-flex>
+
+                                                    <v-flex grow v-if="editingLocation">
+                                                        <v-btn @click="saveEditLocation()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>check</v-icon>
+                                                        </v-btn>
+                                                        <v-btn @click="cancelEditLocation()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>cancel</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                    <v-flex grow v-else>
+                                                        <v-btn
+                                                               @click="editLocation()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>edit</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                </v-layout>
+                                            </v-container>
+                                            <v-container text-xs-left :class="{ 'elevation-4' : editingComment}">
+                                                <v-layout row align-center>
+                                                    <v-flex grow v-if="editingComment">
+                                                        <v-textarea
+                                                                box
+                                                                label="Kommentar"
+                                                                v-model="editComment"
+                                                        ></v-textarea>
+                                                    </v-flex>
+                                                    <v-flex grow v-else>
+                                                        <v-textarea
+                                                                solo
+                                                                flat
+                                                                outline
+                                                                label="Kommentar"
+                                                                v-model="selectedTraining.comment"
+                                                                readonly
+                                                        ></v-textarea>
+                                                    </v-flex>
+
+                                                    <v-flex shrink v-if="editingComment">
+                                                        <v-btn @click="saveEditComment()"
+                                                           color="primary"
+                                                           flat>
+                                                            <v-icon>check</v-icon>
+                                                        </v-btn>
+                                                        <v-btn @click="cancelEditComment()"
+                                                           color="primary"
+                                                           flat>
+                                                            <v-icon>cancel</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                    <v-flex shrink v-else>
+                                                        <v-btn @click="startEditComment()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>edit</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                </v-layout>
+                                            </v-container>
+                                            <v-container text-xs-left :class="{ 'elevation-4' : editingTrainingContent}">
+                                                <v-layout row align-center>
+                                                    <v-flex shrink fill-height v-if="editingTrainingContent">
+                                                        <TrainingContent
+                                                                :contentIds="branchContentIds"
+                                                                :initContentIds="editTrainingContentIds"
+                                                                @change="editTrainingContentIdsChanged"
+                                                                :selectable="editingTrainingContent"
+                                                        >
+                                                        </TrainingContent>
+                                                    </v-flex>
+                                                    <v-flex shrink fill-height v-else>
+                                                        <TrainingContent
+                                                                :contentIds="branchContentIds"
+                                                                :initContentIds="selectedTraining.contentIds"
+                                                                :selectable="editingTrainingContent"
+                                                        >
+                                                        </TrainingContent>
+                                                    </v-flex>
+                                                    <v-flex grow v-if="editingTrainingContent">
+                                                        <v-btn @click="saveEditTrainingContent()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>check</v-icon>
+                                                        </v-btn>
+                                                        <v-btn @click="cancelEditTrainingContent()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>cancel</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                    <v-flex grow v-else>
+                                                        <v-btn @click="startEditTrainingContent()"
+                                                               color="primary"
+                                                               flat>
+                                                            <v-icon>edit</v-icon>
+                                                        </v-btn>
+                                                    </v-flex>
+                                                </v-layout>
+                                            </v-container>
+                                        </v-list-group>
                                         <v-list-group
                                                 v-model="participantsListGroupActive"
                                                 prepend-icon="check"
@@ -104,6 +245,7 @@
                                                 </v-list-tile-content>
                                             </v-list-tile>
                                         </v-list-group>
+
                                     </v-list>
                             </div>
                                 <div v-else>
@@ -114,7 +256,7 @@
                                             pa-0
                                             ma-0
                                             outline>
-                                        Keine anstehenden Trainings für dich verfügbar
+                                        Keine Trainings für dich verfügbar
                                     </v-alert>
                                 </div>
                             </div>
@@ -137,6 +279,36 @@
                 <v-card-text class="warning--text">{{cancelReasonDialogText}}</v-card-text>
             </v-card>
         </v-dialog>
+        <v-dialog
+                v-model="timeDialogOpened"
+                max-width="800px"
+                :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+            <v-card>
+                <v-toolbar card>
+                    <v-btn icon @click="timeDialogOpened=false">
+                        <v-icon>close</v-icon>
+                    </v-btn>
+                    <v-toolbar-title>Trainingszeit ändern</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn flat color="primary" @click="updateTrainingTime">Speichern</v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+
+                <v-card-text>
+                    <v-layout row wrap>
+                        <v-flex xs12 md6>
+                            <h2>Von</h2>
+                            <v-time-picker flat v-model="editStartTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
+                        </v-flex>
+                        <v-flex xs12 md6>
+                            <h2>Bis</h2>
+                            <v-time-picker v-model="editEndTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
+                        </v-flex>
+                    </v-layout>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </v-layout>
 </template>
 
@@ -146,9 +318,11 @@
     import {mapGetters, mapState} from 'vuex'
     import Training from "@/models/Training";
     import TrainingParticipant from "@/models/TrainingParticipant";
+    import TrainingContent from "../components/TrainingContent"
 
     export default Vue.extend({
         name: "TrainingsPrepare",
+        components: {TrainingContent},
         data: function () {
             return {
                 upcomingTrainings: [] as Training[],
@@ -157,10 +331,21 @@
                 animationTrigger: true,
                 users: [],
                 selectedLocationId: null,
+                trainingDataGroupActive: true,
                 participantsListGroupActive: false,
                 canceledUserListGroupActive: false,
                 showCancelReasonDialog: false,
                 cancelReasonDialogText: null,
+                timeDialogOpened: false,
+                editStartTime: null,
+                editEndTime: null,
+                editingLocation: false,
+                editLocationId: null,
+                editingComment: false,
+                editingTrainingContent: false,
+                editComment: null,
+                editTrainingContentIds: [],
+                branchId: null,
             }
         },
         computed: {
@@ -169,10 +354,15 @@
                 getBranchByGroupId: 'getBranchByGroupId',
                 getGroupById: 'getGroupById',
                 getBranchById: 'getBranchById',
+                getLocationNameById: 'getLocationNameById',
+                getContentIdsByBranchId: 'getContentIdsByBranchId',
             }),
             ...mapState('masterData', {
                 locations: 'locations',
             }),
+            branchContentIds(): Array {
+                return this.getContentIdsByBranchId(this.branchId);
+            },
             selectedTraining() {
                 return this.getUpcomingTrainingById(this.selectedTrainingId);
             },
@@ -224,7 +414,7 @@
                     this.dataLoaded = false;
                     this.upcomingTrainings = [];
                     //load data
-                    const res = await this.$http.get('/training/upcoming/trainer/' + this.loggedInUser.id);
+                    const res = await this.$http.get('/trainingprepare/' + this.loggedInUser.id);
                     if (res.data.data && res.data.data.length > 0) {
                         //json result to objects
                         for (let trObj of res.data.data) {
@@ -253,12 +443,96 @@
             selectTraining(id) {
                 this.animationTrigger = false;
                 this.selectedTrainingId = id;
+                if (this.selectedTraining.groupIds) {
+                    this.branchId =  this.getBranchByGroupId(this.selectedTraining.groupIds[0]).id;
+                }
                 setTimeout(() => {
                     this.animationTrigger = true;
                 }, 100);
             },
             getUpcomingTrainingById(id) {
                 return this.upcomingTrainings.filter(ut => ut.id == id)[0];
+            },
+
+            editTime() {
+                this.editStartTime = this.selectedTraining.start.format('HH:mm')
+                this.editEndTime = this.selectedTraining.end.format('HH:mm')
+                this.timeDialogOpened = true;
+            },
+            editLocation() {
+                this.editingLocation = true;
+                this.editLocationId = this.selectedTraining.locationId;
+            },
+            startEditComment() {
+                this.editingComment = true;
+                this.editComment = this.selectedTraining.comment;
+            },
+            async saveEditComment() {
+                const postData = {
+                    'comment': this.editComment,
+                };
+                const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
+                if (data.status == 'ok') {
+                    this.selectedTraining.comment = this.editComment;
+                    this.cancelEditComment();
+                    this.$emit("showSnackbar", "Kommentar aktualisiert", "success");
+                }
+            },
+            startEditTrainingContent() {
+                this.editingTrainingContent = true;
+                this.editTrainingContentIds = this.selectedTraining.contentIds;
+            },
+            editTrainingContentIdsChanged(contentIds) {
+                this.editTrainingContentIds = contentIds;
+            },
+            cancelEditComment() {
+                this.editComment = null;
+                this.editingComment = false;
+            },
+            async saveEditTrainingContent() {
+                const postData = {
+                    'contentIds': this.editTrainingContentIds,
+                };
+                const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
+                if (data.status == 'ok') {
+                    this.selectedTraining.contentIds = this.editTrainingContentIds;
+                    this.cancelEditTrainingContent();
+                    this.$emit("showSnackbar", "Trainingsinhalte aktualisiert", "success");
+                }
+            },
+            cancelEditTrainingContent() {
+                this.editTrainingContentIds = [];
+                this.editingTrainingContent = false;
+            },
+            async saveEditLocation() {
+                const postData = {
+                    'locationId': this.editLocationId,
+                };
+                const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
+                if (data.status == 'ok') {
+                    this.selectedTraining.locationId = this.editLocationId;
+                    this.cancelEditLocation();
+                    this.$emit("showSnackbar", "Ort aktualisiert", "success");
+                }
+            },
+            cancelEditLocation() {
+                this.editLocationId = null;
+                this.editingLocation = false;
+            },
+            async updateTrainingTime() {
+                this.timeDialogOpened = false;
+                const startDateTime = this.selectedTraining.start.clone().set({h: this.editStartTime.split(":")[0], m: this.editStartTime.split(":")[1]});
+                const endDateTime = this.selectedTraining.end.clone().set({h: this.editEndTime.split(":")[0], m: this.editEndTime.split(":")[1]});
+                const postData = {
+                    'start': startDateTime.format(),
+                    'end': endDateTime.format(),
+                };
+                const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
+                if (data.status == 'ok') {
+                    this.selectedTraining.start = startDateTime;
+                    this.selectedTraining.end = endDateTime;
+                    this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
+                }
             },
             fullName: item => item.firstName + ' ' + item.familyName,
         },

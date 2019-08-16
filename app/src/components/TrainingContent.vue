@@ -1,5 +1,5 @@
 <template>
-  <v-layout justify-start row pt-2 pb-2 class="tp-training-content" :class="{'tp-training-content--selectable' : selectable}">
+  <v-layout justify-start row wrap pt-2 pb-2 class="tp-training-content" :class="{'tp-training-content--selectable' : selectable}">
     <div class="tp-training-content__icon"
          v-for="(item, index) in contents"
          :key="item.id"
@@ -20,6 +20,7 @@
       contentIds: Array,
       selectable: Boolean,
       initContentIds: Array,
+      readonly: Boolean,
     },
     data: function () {
       return {
