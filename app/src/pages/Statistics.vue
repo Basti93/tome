@@ -12,7 +12,7 @@
       <v-flex xs12 md8 offset-md1 top pt-2 v-if="loggedInUser.isTrainer">
         <v-card>
           <v-toolbar card prominent>
-            <v-toolbar-title>Abgehaltene Trainings pro Monat</v-toolbar-title>
+            <v-toolbar-title>Abgehaltene Trainingsstunden pro Monat</v-toolbar-title>
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-card-text>

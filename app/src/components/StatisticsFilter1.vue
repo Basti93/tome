@@ -7,7 +7,6 @@
           item-text="name"
           item-value="id"
           v-model="selectedBranchId"
-          clearable
           label="Sparte"
           prepend-icon="bubble_chart"
         ></v-select>
@@ -23,6 +22,7 @@
           clearable
           chips
           deletable-chips
+          @change="selectedGroupIdsChanged()"
           label="Gruppen"
           prepend-icon="group"
         ></v-autocomplete>
@@ -50,17 +50,22 @@
       'year': Number,
     },
     created() {
+      this.initializing = true;
       this.years = [2019, 2018, 2017]
       this.selectedYear = this.year;
+      this.initialGroupIds = this.groupIds;
       this.initSelect()
+      this.initializing = false;
     },
     data() {
       return {
         selectedBranchId: null,
         selectedGroupIds: [],
+        initialGroupIds: [],
         groupItems: [],
         selectedYear: null,
         years: [],
+        initializing: false,
       }
     },
     computed: {
@@ -71,16 +76,7 @@
       }),
     },
     methods: {
-      fillGroupSelect: function () {
-        this.groupItems = [];
-        this.groups.forEach(function (item) {
-          if (this.selectedBranchId === item.branchId) {
-            this.groupItems.push(item);
-          }
-        }.bind(this));
-      },
       initSelect: function () {
-        this.selectedGroupIds = this.groupIds;
         if (this.groupIds.length > 0) {
           this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
         }
@@ -88,22 +84,32 @@
       selectedYearChanged: function () {
         this.$emit('yearSelected', this.selectedYear)
       },
+      selectedGroupIdsChanged() {
+        this.$emit('groupsSelected', this.selectedGroupIds)
+      }
     },
     watch: {
-      selectedBranchId: function () {
-        if (this.selectedBranchId) {
-          this.fillGroupSelect();
-        } else {
-          this.selectedGroupIds = null;
-          this.groupItems = []
-        }
-        this.$emit('branchSelected', this.selectedBranchId)
-      },
-      branchId: function () {
-        this.initSelect();
-      },
-      selectedGroupIds: function () {
-        this.$emit('groupsSelected', this.selectedGroupIds)
+      selectedBranchId: {
+        immediate: true,
+        handler(newVal, oldVal) {
+          if (newVal && newVal != oldVal) {
+            //reset group data
+            this.selectedGroupIds = [];
+            this.groupItems = [];
+            //add all groups of branch to groupItems
+            for (let group of this.groups) {
+              if (this.selectedBranchId === group.branchId) {
+                this.groupItems.push(group);
+                //pre-select groups from user settings
+                if (this.initialGroupIds.includes(group.id)) {
+                  this.selectedGroupIds.push(group.id);
+                }
+              }
+            }
+            this.$emit('groupsSelected', this.selectedGroupIds)
+          }
+        },
+
       },
     }
   }

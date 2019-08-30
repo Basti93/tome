@@ -23,6 +23,7 @@ class TrainingTrainer extends Pivot
         return $this->belongsTo(Training::class);
     }
 
+
     public function getAccountingHoursAttribute() {
         if (!empty($this->accounting_time_start) && !empty($this->accounting_time_end)) {
             return $this->getAccountingMinutesAttribute() / 45;

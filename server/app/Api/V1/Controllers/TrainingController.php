@@ -129,35 +129,10 @@ class TrainingController extends Controller
                 $query->whereBetween('trainings.start', array($from, $to));
             })
             ->where('training_participation.attend', 1)
+            ->where('users.active', 1)
             ->groupBy('users.id', 'users.firstName', 'users.familyName')
             ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(*) as total'))
             ->orderBy('total', 'desc')
-            ->get();
-        return response()->json($result);
-    }
-
-    public function getTrainingTimeline($userId, $year)
-    {
-        $groupIds = request()->query('groupIds');
-
-        $result = DB::table('training_trainer')
-            ->join('users as trainers', 'training_trainer.user_id', '=', 'trainers.id')
-            ->join('trainings', 'training_trainer.training_id', '=', 'trainings.id')
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->join('training_participation', 'training_participation.training_id', '=', 'trainings.id')
-                    ->join('users', 'training_participation.user_id', '=', 'users.id')
-                    ->join('user_group', 'user_group.user_id', '=', 'users.id')
-                    ->whereIn('user_group.group_id', preg_split('/,/', $groupIds));
-            })
-            ->when($year, function ($query, $year) {
-                $from = date($year . '-01-01');
-                $to = date($year . '-12-31');
-                $query->whereBetween('trainings.start', array($from, $to));
-            })
-            ->where('training_trainer.user_id', $userId)
-            ->groupBy(DB::raw('DATE_FORMAT(trainings.start, \'%m\')'))
-            ->select(DB::raw('count(DISTINCT training_trainer.training_id) as total'), DB::raw('DATE_FORMAT(trainings.start, \'%m\') as \'month\''))
-            ->orderBy('month', 'asc')
             ->get();
         return response()->json($result);
     }

@@ -76,6 +76,7 @@ $api->version('v1', function (Router $api) {
         });
 
         $api->group(['prefix' => 'trainingevaluation'], function(Router $api) {
+            $api->get('/accountingtimestatistics', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getAccountingTimeStatistics');
             $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getPastTrainingsForTrainer');
             $api->post('/exportaccountingtimes', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@exportAccountingTimes');
             $api->post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@removeParticipant');

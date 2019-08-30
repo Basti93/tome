@@ -11,6 +11,7 @@ use App\Training;
 use App\TrainingTrainer;
 use App\User;
 use DateTime;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -129,6 +130,108 @@ class TrainingEvaluationController extends Controller
         return response()->json([
             'status' => 'user not assigned to the training'
         ], 404);
+    }
+
+    /**
+     * Get the account times for the given groups of all trainers.
+     * @param Request $request
+     */
+    public function getAccountingTimeStatistics() {
+        $groupIds = request()->query('groupIds');
+        $year = request()->query('year');
+        $cacheKey = 'accounting_time_statistics'.$year.$groupIds;
+        //if (Cache::has($cacheKey)) {
+        //    return response()->json(Cache::get($cacheKey));
+        //}
+        $series = [];
+
+        $trainerIds = TrainingTrainer::with('training.groups', 'user')
+            ->select('user_id')
+            ->when($year, function ($query, $year) {
+                $from = date($year . '-01-01');
+                $to = date($year . '-12-31');
+                $query->whereBetween('accounting_time_start', array($from, $to));
+            })
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('training.groups', function ($query) use ($groupIds) {
+                    $query->whereIn('groups.id', preg_split('/,/', $groupIds));
+                });
+            })
+            ->whereHas('training', function ($q) {
+                $q->where('evaluated', 1);
+            })
+            ->groupBy('user_id')
+            ->pluck('user_id');
+
+        foreach ($trainerIds as $trainerId) {
+            //get all trainings for this trainer
+            $trainerAccountingTimes = TrainingTrainer::with('training')
+                ->when($year, function ($query, $year) {
+                    $from = date($year . '-01-01');
+                    $to = date($year . '-12-31');
+                    $query->whereBetween('accounting_time_start', array($from, $to));
+                })
+                ->where('user_id', $trainerId)
+                ->whereHas('training', function ($q) {
+                    $q->where('evaluated', 1);
+                })
+                ->select(DB::raw('MONTH(accounting_time_start) as \'month\''), 'accounting_time_start', 'accounting_time_end')
+                ->orderBy('month', 'asc')
+                ->get();
+
+            //if ($trainerId == 28) {
+            //    return response()->json($trainerAccountingTimes);
+            //}
+
+            //sum up the accounting times per month
+            $currentMonthAccountTime = 0;
+            $lastMonth = 0;
+            $monthArray = [];
+            $size = sizeof($trainerAccountingTimes);
+            //sum the accounting hours per month
+            for ($i = 0; $i < $size; $i++) {
+                //the current month
+                $currentMonth = $trainerAccountingTimes[$i]->month;
+                //set initial month from first row
+                if ($i == 0) {
+                    $lastMonth = $currentMonth;
+                }
+                //sum up
+
+
+
+                //check if the month has changed since the last iteration
+                //or if the entry is the last entry
+                if ($currentMonth != $lastMonth || ($i + 1) == ($size - 1)) {
+
+                    $monthSum = new \stdClass();
+                    //if it's the last entry set the month to the month of the current iteration
+                    if (($i + 1) == $size) {
+                        $monthSum->month = $currentMonth;
+                    } else {
+                        //else set the last month
+                        $monthSum->month = $lastMonth;
+                    }
+                    $monthSum->accountingHours = round($currentMonthAccountTime,2);
+
+                    array_push($monthArray, $monthSum);
+                    $currentMonthAccountTime = 0;
+
+                    $lastMonth = $currentMonth;
+                }
+
+                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
+            }
+
+            $result = new \stdClass();
+            $result->trainer = User::where('id', $trainerId)->first();
+            $result->data = $monthArray;
+            array_push($series, $result);
+        }
+
+        Cache::put($cacheKey, $series , 15);
+
+        return response()->json($series);
     }
 
 
