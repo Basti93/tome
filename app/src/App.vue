@@ -13,7 +13,6 @@
                   bottom
                   right
                   :text="text"
-                  :timeout="timeout"
                   :color="color"
                   :value="snackbar"
           >
@@ -124,9 +123,12 @@
     methods: {
       showSnackbar(text, color = "info", timeout = 3000) {
         this.text = text
-        this.timeout = timeout
+        this.timeout =
         this.color = color
+        //snackbar fix
+        //https://github.com/vuetifyjs/vuetify/issues/371
         this.snackbar = true
+        setTimeout(() => {this.snackbar = false}, timeout)
       },
       requestPushPermission() {
         const self = this;

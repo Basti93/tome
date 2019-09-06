@@ -21,7 +21,7 @@ Vue.axios.interceptors.request.use(
     return config
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error.response)
   }
 );
 
@@ -43,7 +43,7 @@ Vue.axios.interceptors.response.use(response => {
   return response;
 }, error => {
   if (!error.response) {
-    //network error
+    //network error or login page
     return Promise.reject(error)
   }
   const status = error.response ? error.response.status : null
@@ -79,7 +79,7 @@ Vue.axios.interceptors.response.use(response => {
     })
     return retryOriginalRequest
   }
-  return Promise.reject(error)
+  return Promise.reject(error.response)
 });
 
 export default axios;

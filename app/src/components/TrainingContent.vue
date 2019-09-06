@@ -1,13 +1,16 @@
 <template>
   <v-layout justify-start row wrap pt-2 pb-2 class="tp-training-content" :class="{'tp-training-content--selectable' : selectable}">
-    <div class="tp-training-content__icon"
-         v-for="(item, index) in contents"
-         :key="item.id"
-         style=""
-         v-bind:style="[ isSelected(item, selectedContentIds) ? {'fill': '#60cc69'} : {}]"
-         @click="selectContent(item)"
-         v-html="item.svgIcon">
-    </div>
+    <figure class="tp-training-content" v-for="(item, index) in contents" :key="item.id">
+      <img class="tp-training-content__icon"
+           v-bind:style="[ isSelected(item, selectedContentIds) ? {'filter': 'invert(100%)'} : {}]"
+           @click="selectContent(item)"
+           :src="getImagePath(item.imageName)"
+           :title="item.name"
+           :alt-text="item.name"
+           height="40"
+      />
+      <figcaption class="caption">{{item.name}}</figcaption>
+    </figure>
   </v-layout>
 </template>
 
@@ -56,6 +59,9 @@
           this.$emit('change', this.selectedContentIds)
         }
       },
+      getImagePath(imageName) {
+        return '/img/contents/' + imageName;
+      }
     },
     watch: {
       initContentIds: function () {
@@ -70,16 +76,15 @@
 
 <style lang="scss" scoped>
   .tp-training-content {
-    &__icon {
-      display: inline-block;
-      margin: 5px;
-      margin: 5px;
-      height: 40px;
-      width: 40px;
+    padding: 5px;
+    text-align: center;
 
-      svg {
-        max-height: 100%;
-      }
+    &__icon {
+      display: block;
+      max-width: 50px;
+      margin-left: auto;
+      margin-right: auto;
+
     }
 
     &--selectable {

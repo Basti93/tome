@@ -6,12 +6,14 @@ use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\NonApprovedUser as NonApprovedUserResource;
+use App\Mail\Approved;
 use App\NotificationToken;
 use App\User;
 use Auth;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -50,7 +52,6 @@ class UserController extends Controller
     {
         $groupIds = request()->query('groupIds');
         $branchId = request()->query('branchId');
-        $unassigned = request()->query('unassigned');
 
         $users = User::latest()
             ->when($groupIds, function ($query, $groupIds) {
@@ -59,15 +60,11 @@ class UserController extends Controller
                 });
             })
             ->when($branchId, function ($query, $branchId) {
-                $query->whereHas('group', function ($query) use ($branchId) {
-                    $query->with(['branch' => function ($query) use ($branchId) {
-                        $query->where('id', $branchId);
-                    }]);
+                $query->whereHas('groups', function ($query) use ($branchId) {
+                    $query->where('groups.branch_id', $branchId);
                 });
             })
-            ->when($unassigned, function ($query) {
-                return $query->doesntHave('groups');
-            });
+            ->orWhereDoesntHave('groups');
 
         if (!empty(request('per_page'))) {
             $users = $users->paginate((int)request('per_page'));
@@ -90,7 +87,6 @@ class UserController extends Controller
         $sortBy = request()->query('sortBy');
         $groupIds = request()->query('groupIds');
         $branchId = request()->query('branchId');
-        $unassigned = request()->query('unassigned');
 
         $users = User::orderBy($sortBy, $direction)
             //get users with group ids
@@ -101,15 +97,11 @@ class UserController extends Controller
             })
             //get users with branch id
             ->when($branchId, function ($query, $branchId) {
-                $query->whereHas('group', function ($query) use ($branchId) {
-                    $query->with(['branch' => function ($query) use ($branchId) {
-                        $query->where('id', $branchId);
-                    }]);
+                $query->whereHas('groups', function ($query) use ($branchId) {
+                    $query->where('groups.branch_id', $branchId);
                 });
             })
-            ->when($unassigned, function ($query) {
-                return $query->doesntHave('groups');
-            })
+            ->orWhereDoesntHave('groups')
             ->paginate($per_page);
 
         return response()->json($users);
@@ -199,22 +191,18 @@ class UserController extends Controller
 
         $user = User::findOrFail(Auth::user()->id);
 
+        //only allow update of groups for users with special rights
         if ($user->can('update-user')) {
-
-            if (!$user->update($request->all())) {
-                throw new HttpException(500);
-            }
-
             $user->groups()->sync($request->input('groupIds'));
             $user->trainerGroups()->sync($request->input('trainerGroupIds'));
-
-        } else {
-            $user->firstName = $request->input('firstName');
-            $user->familyName = $request->input('familyName');
-            $user->email = $request->input('email');
-            $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
-
         }
+
+        $user->firstName = $request->input('firstName');
+        $user->familyName = $request->input('familyName');
+        $user->email = $request->input('email');
+        $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
+        $user->save();
+
         return response()->json([
             'status' => 'ok'
         ], 201);

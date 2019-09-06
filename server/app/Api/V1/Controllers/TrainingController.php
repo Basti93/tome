@@ -100,9 +100,7 @@ class TrainingController extends Controller
             })
             ->when($branchId, function ($query, $branchId) {
                 $query->whereHas('groups', function ($query) use ($branchId) {
-                    $query->with(['branch' => function ($query) use ($branchId) {
-                        $query->where('id', $branchId);
-                    }]);
+                    $query->where('groups.branch_id', $branchId);
                 });
             })
             ->limit(5)

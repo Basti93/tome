@@ -24,7 +24,7 @@ class ContentController extends Controller
 
   public function index()
   {
-    return response()->json(Content::all());
+    return response()->json(Content::orderByRaw("branch_id,  ISNULL(`order`) ASC, `order`")->get());
   }
 
 }

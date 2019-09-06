@@ -65,17 +65,6 @@
                 </v-alert>
             </v-card-text>
         </v-card>
-        <v-card :class="'ma-3'">
-            <v-card-title>
-                <h3>Gruppen</h3>
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text class="tp-upcoming-training__text">
-                <v-chip v-for="(item) in groups"
-                        :key="item.id">{{item.name}}
-                </v-chip>
-            </v-card-text>
-        </v-card>
         <v-card :class="'ma-3'" v-show="contentIds.length">
             <v-card-title>
                 <h3>Trainingsinhalte</h3>
@@ -97,6 +86,17 @@
             <v-card-text class="tp-upcoming-training__text">
                 <v-chip v-for="(item) in trainers"
                         :key="item.id">{{fullName(item)}}
+                </v-chip>
+            </v-card-text>
+        </v-card>
+        <v-card :class="'ma-3'">
+            <v-card-title>
+                <h3>Gruppen</h3>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text class="tp-upcoming-training__text">
+                <v-chip v-for="(item) in groups"
+                        :key="item.id">{{item.name}}
                 </v-chip>
             </v-card-text>
         </v-card>

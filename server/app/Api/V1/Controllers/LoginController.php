@@ -28,8 +28,12 @@ class LoginController extends Controller
         try {
             $token = Auth::guard('api')->attempt($credentials);
 
-            if (!Auth::user() || !Auth::user('api')->isApproved()) {
-              throw new HttpException(401);
+            if (!$token || !Auth::user() || !Auth::user('api')->isApproved()) {
+                return response()
+                    ->json([
+                        'status' => 'error',
+                        'message' => 'Unauthorized',
+                    ]);
             }
 
         } catch (JWTException $e) {

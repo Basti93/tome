@@ -14,28 +14,13 @@
                         <v-chip
                                 small
                                 v-for="(item, index) in filterGroups"
-                                :key="item.id">{{item.name}}
+                                :key="item.id">{{branchAndGroupName(item)}}
                         </v-chip>
                     </div>
 
                     <v-btn title="Liste nach Sparte und Gruppe filtern" icon color="primary" @click="showFilterDialog = true">
                         <v-icon>filter_list</v-icon>
                     </v-btn>
-                    <v-menu bottom left>
-                        <v-btn
-                                slot="activator"
-                                dark
-                                icon
-                        >
-                            <v-icon>more_vert</v-icon>
-                        </v-btn>
-
-                        <v-list>
-                            <v-list-tile @click="onFilterUnassignedUsers">
-                                <v-list-tile-title>Zeige Benutzer ohne Gruppe</v-list-tile-title>
-                            </v-list-tile>
-                        </v-list>
-                    </v-menu>
                     <GroupsSelectDialog
                             v-bind:visible="showFilterDialog"
                             v-on:close="showFilterDialog = false"
@@ -193,7 +178,6 @@
                 showCreateDialog: false,
                 filterBranchId: null,
                 filterGroupIds: [],
-                filterUnassignedUsers: false,
                 editGroups: [],
                 loading: false,
                 total: null,
@@ -230,11 +214,15 @@
             }
         },
         created() {
-            this.filterGroupIds = this.trainerGroupIds;
+            if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
+                this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
+                let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
+                this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
+            }
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
-            ...mapGetters('masterData', {getGroupById: 'getGroupById', getGroupsByIds: 'getGroupsByIds', getGroupsByBranchId: 'getGroupsByBranchId'}),
+            ...mapGetters('masterData', {getGroupById: 'getGroupById', getGroupsByIds: 'getGroupsByIds', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById', getBranchByGroupId: 'getBranchByGroupId'}),
             trainerGroupIds() {
                 return this.loggedInUser.trainerGroupIds
             },
@@ -264,9 +252,11 @@
         },
         methods: {
             filterChanged({branchId: branchId, groupdIds: groupIds}) {
-                this.filterBranchId = branchId;
                 this.filterGroupIds = groupIds;
-                this.filterUnassignedUsers = false;
+                this.filterBranchId = branchId;
+                if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
+                    this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+                }
                 this.fetchData();
             },
             async fetchData() {
@@ -283,8 +273,6 @@
                     url += '&groupIds=' + this.filterGroupIds;
                 } else if (this.filterBranchId) {
                     url += '&branchId=' + this.filterBranchId;
-                } else if (this.filterUnassignedUsers) {
-                    url += '&unassigned=true';
                 }
 
                 try {
@@ -315,12 +303,6 @@
                 self.pagination.page = res.data.currentPage;
                 self.pagination.totalItems = res.data.total;
                 self.total = res.data.total;
-            },
-            onFilterUnassignedUsers() {
-                this.filterBranchId = null;
-                this.filterGroupIds = [];
-                this.filterUnassignedUsers = true;
-                this.fetchData();
             },
             editItem(item) {
                 if ((this.loggedInUser.isAdmin && !item.isAdmin) || (this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin)) {
@@ -368,6 +350,9 @@
                         self.fetchData();
                     }
                 }
+            },
+            branchAndGroupName(item) {
+                return this.getBranchById(item.branchId).shortName + '/' + item.name;
             },
             formatDate,
         },

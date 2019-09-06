@@ -89,6 +89,7 @@
     methods: {
       fillGroupSelect: function () {
         this.groupItems = [];
+        this.selectedGroupIds = [];
         this.groups.forEach(function (item) {
           if (this.selectedBranchId === item.branchId) {
             this.groupItems.push(item);

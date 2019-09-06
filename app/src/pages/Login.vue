@@ -84,24 +84,20 @@
         }
       },
       async login() {
-        try {
           const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password});
           if (!data.token) {
-            throw "Login Failed. No token recieved from server!"
+            this.$emit("showSnackbar", "Falsches Passwort oder E-Mail!", "error");
+            this.$store.dispatch('logout')
+            delete localStorage.token
+            delete localStorage.user
+          } else {
+            localStorage.token = data.token
+            localStorage.user = JSON.stringify(data.user)
+            this.$store.dispatch('login')
+            this.eraseCookie('cookieUser');
+            this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
+            this.$router.replace(this.$route.query.redirect || '/')
           }
-          localStorage.token = data.token
-          localStorage.user = JSON.stringify(data.user)
-          this.$store.dispatch('login')
-          this.eraseCookie('cookieUser');
-          this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
-          this.$router.replace(this.$route.query.redirect || '/')
-        } catch (error) {
-          console.error(error);
-          this.$store.dispatch('logout')
-          delete localStorage.token
-          delete localStorage.user
-          this.$emit("showSnackbar", "Anmelden fehlgeschlagen! Bitte nochmal probieren", "error");
-        }
       },
       eraseCookie,
     },

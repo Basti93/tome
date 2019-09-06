@@ -123,5 +123,10 @@ $api->version('v1', function (Router $api) {
     $api->get('/hello',function(){
         return 'Hello World!';
     });
+    $api->get('/mailtest',function(){
+        \Illuminate\Support\Facades\Mail::raw('Test Mail', function ($message){
+            $message->to('bindersebastian@online.de');
+        });
+    });
 
 });

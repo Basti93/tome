@@ -140,9 +140,9 @@ class TrainingEvaluationController extends Controller
         $groupIds = request()->query('groupIds');
         $year = request()->query('year');
         $cacheKey = 'accounting_time_statistics'.$year.$groupIds;
-        //if (Cache::has($cacheKey)) {
-        //    return response()->json(Cache::get($cacheKey));
-        //}
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
         $series = [];
 
         $trainerIds = TrainingTrainer::with('training.groups', 'user')

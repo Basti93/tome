@@ -15,13 +15,7 @@
               <v-chip
                 small
                 v-for="(item, index) in filterGroups"
-                :key="item.id">{{item.name}}
-              </v-chip>
-            </div>
-            <div v-else-if="filterBranchId">
-              <v-chip
-                small>
-                {{getBranchById(filterBranchId).name}}
+                :key="item.id">{{branchAndGroupName(item)}}
               </v-chip>
             </div>
           </div>
@@ -31,7 +25,7 @@
           <GroupsSelectDialog
             v-bind:visible="showFilterDialog"
             v-on:close="showFilterDialog = false"
-            v-bind:groupIds="trainerGroupIds"
+            v-bind:groupIds="filterGroupIds"
             v-on:done="filterChanged">
           </GroupsSelectDialog>
         </v-toolbar>
@@ -236,13 +230,14 @@
     created() {
       if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
         this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-        this.filterGroupIds = this.trainerGroupIds;
+        let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
+        this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
       }
       this.pagination.rowsPerPage = 10;
     },
     computed: {
       ...mapGetters({loggedInUser: 'loggedInUser'}),
-      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getContentIdsByBranchId: 'getContentIdsByBranchId'}),
+      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getContentIdsByBranchId: 'getContentIdsByBranchId', getBranchById: 'getBranchById'}),
       ...mapState('masterData', {
         locations: 'locations',
       }),
@@ -274,9 +269,6 @@
       trainerGroupIds() {
         return this.loggedInUser.trainerGroupIds
       },
-      branchContentIds() {
-        return this.getContentIdsByBranchId(this.filterBranchId);
-      }
     },
     watch: {
       pagination: {
@@ -306,6 +298,9 @@
       filterChanged({branchId: branchId, groupdIds: groupIds}) {
         this.filterGroupIds = groupIds;
         this.filterBranchId = branchId;
+        if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
+          this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+        }
         this.loadData();
       },
       loadData() {
@@ -447,6 +442,9 @@
               self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
             })
         }
+      },
+      branchAndGroupName(item) {
+        return this.getBranchById(item.branchId).shortName + '/' + item.name;
       },
       formatDate,
       parseDate,

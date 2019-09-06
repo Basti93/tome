@@ -204,27 +204,26 @@
       trainerGroupsChanged: function ({groupIds}) {
         this.editUser.trainerGroupIds = groupIds;
       },
-      save: function () {
-        let self = this;
+      async save() {
         const postData = {
-          firstName: self.editUser.firstName,
-          familyName: self.editUser.familyName,
-          birthdate: self.moment(self.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
-          groupIds: self.editUser.groupIds,
-          trainerGroupIds: self.editUser.trainerGroupIds
+          firstName: this.editUser.firstName,
+          familyName: this.editUser.familyName,
+          email: this.editUser.email,
+          birthdate: this.moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
+          groupIds: this.editUser.groupIds,
+          trainerGroupIds: this.editUser.trainerGroupIds
         };
-        this.$http.put('user/me', postData).then(function (res) {
-          if (res.data.status == 'ok') {
-            self.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
-            self.$http.get('auth/me').then(function (res) {
-              localStorage.user = JSON.stringify(res.data)
-              self.$store.dispatch('login')
-              self.assignCurrentUser();
-            });
-          } else {
-            self.$emit("showSnackbar", "Fehler beim Speichern. Bitte probier es nochmal", "error");
-          }
-        });
+
+        let {data} = await this.$http.put('user/me', postData);
+        if (data.status == 'ok') {
+          this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
+          let {data} = await this.$http.get('auth/me');
+          localStorage.user = JSON.stringify(data)
+          this.$store.dispatch('login')
+          this.assignCurrentUser();
+        } else {
+          this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+        }
       },
       formatDate,
     },

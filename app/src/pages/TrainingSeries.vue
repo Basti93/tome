@@ -25,24 +25,28 @@
                             </v-toolbar>
 
                             <v-card-text>
-                                <EditTrainingBase
-                                        series
-                                        v-on:change="seriesChanged"
-                                        :id="editedTrainingSeries.id"
-                                        :weekdays="editedTrainingSeries.weekdays"
-                                        :start="editedTrainingSeries.startTime"
-                                        :end="editedTrainingSeries.endTime"
-                                        :trainerIds="editedTrainingSeries.trainerIds"
-                                        :groupIds="editedTrainingSeries.groupIds"
-                                        :groups="filterGroups"
-                                        :trainers="trainers"
-                                        :contentIds="editedTrainingSeries.contentIds"
-                                        :locationId="editedTrainingSeries.locationId"
-                                        :comment="editedTrainingSeries.comment"
-                                        :branchId="filterBranchId"
-                                        :active="editedTrainingSeries.active"
-                                >
-                                </EditTrainingBase>
+                                <v-container grid-list-md>
+                                    <v-layout wrap>
+                                        <EditTrainingBase
+                                                series
+                                                v-on:change="seriesChanged"
+                                                :id="editedTrainingSeries.id"
+                                                :weekdays="editedTrainingSeries.weekdays"
+                                                :start="editedTrainingSeries.startTime"
+                                                :end="editedTrainingSeries.endTime"
+                                                :trainerIds="editedTrainingSeries.trainerIds"
+                                                :groupIds="editedTrainingSeries.groupIds"
+                                                :groups="filterGroups"
+                                                :trainers="trainers"
+                                                :contentIds="editedTrainingSeries.contentIds"
+                                                :locationId="editedTrainingSeries.locationId"
+                                                :comment="editedTrainingSeries.comment"
+                                                :branchId="filterBranchId"
+                                                :active="editedTrainingSeries.active"
+                                        >
+                                        </EditTrainingBase>
+                                    </v-layout>
+                                </v-container>
                             </v-card-text>
                         </v-card>
                     </v-dialog>
@@ -52,7 +56,7 @@
                             <v-chip
                                     small
                                     v-for="(item, index) in filterGroups"
-                                    :key="item.id">{{item.name}}
+                                    :key="item.id">{{branchAndGroupName(item)}}
                             </v-chip>
                         </div>
                     </div>
@@ -91,7 +95,7 @@
                                 <td>
                                     <v-chip v-for="(group) in getGroupsByIds(props.item.groupIds)"
                                             :key="group.id">
-                                        {{ group.name }}
+                                        {{ branchAndGroupName(group) }}
                                     </v-chip>
                                 </td>
                                 <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
@@ -140,13 +144,14 @@
         created() {
             if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
                 this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-                this.filterGroupIds = this.trainerGroupIds;
+                let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
+                this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
             }
             this.fetchData();
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
-            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId'}),
+            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById'}),
             filterGroups() {
                 if (this.filterGroupIds.length > 0) {
                     return this.getGroupsByIds(this.filterGroupIds)
@@ -169,7 +174,11 @@
             async fetchData() {
                 try {
                     this.loading = true;
-                    const trRes = await this.$http.get('/trainingSeries');
+                    let seriesUrl = '/trainingSeries';
+                    if (this.filterGroupIds && this.filterGroupIds.length > 0) {
+                        seriesUrl += '?groupIds=' + this.filterGroupIds;
+                    }
+                    const trRes = await this.$http.get(seriesUrl);
                     this.trainingSeriesList = trRes.data.data;
 
                     let trainerUrl = '/user/trainer';
@@ -221,10 +230,17 @@
             },
             filterChanged({branchId: branchId, groupdIds: groupIds}) {
                 this.filterGroupIds = groupIds;
+                this.filterBranchId = branchId;
+                if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
+                    this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+                }
                 this.fetchData();
             },
             removeMilleSec(time :String) {
                 return time ? time.substring(0, time.length - 3) : '';
+            },
+            branchAndGroupName(item) {
+                return this.getBranchById(item.branchId).shortName + '/' + item.name;
             },
             dayArrayToString,
         }
