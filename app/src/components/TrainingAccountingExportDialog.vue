@@ -4,7 +4,7 @@
             max-width="400px"
             persistent>
         <v-card>
-            <v-toolbar card>
+            <v-toolbar flat>
                 <v-btn
                     icon
                     @click="show=false">

@@ -135,7 +135,7 @@
                                 </v-flex>
                                 <v-flex xs12>
                                     <v-textarea
-                                            box
+                                            filled
                                             label="Kommentar"
                                             v-model="editedItem.comment"
                                     ></v-textarea>
@@ -150,30 +150,30 @@
                                     <v-list>
                                         <template v-for="(item, index) in editDialogFilteredUsers">
 
-                                            <v-list-tile>
-                                                <v-list-tile-avatar>
+                                            <v-list-item>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
-                                                <v-list-tile-content>
-                                                    <v-list-tile-title>
+                                                </v-list-item-avatar>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>
                                                         {{ item.firstName }} {{ item.familyName }}
-                                                    </v-list-tile-title>
-                                                </v-list-tile-content>
-                                                <v-list-tile-action>
-                                                    <v-list-tile-action-text v-if="true">
+                                                    </v-list-item-title>
+                                                </v-list-item-content>
+                                                <v-list-item-action>
+                                                    <v-list-item-action-text v-if="true">
                                                         Teilgenommen
-                                                    </v-list-tile-action-text>
-                                                    <v-list-tile-action-text v-else>
+                                                    </v-list-item-action-text>
+                                                    <v-list-item-action-text v-else>
                                                         Abgesagt
-                                                    </v-list-tile-action-text>
+                                                    </v-list-item-action-text>
                                                     <v-icon v-if="true">
                                                         check
                                                     </v-icon>
                                                     <v-icon v-else>
                                                         cancel
                                                     </v-icon>
-                                                </v-list-tile-action>
-                                            </v-list-tile>
+                                                </v-list-item-action>
+                                            </v-list-item>
                                             <v-divider inset></v-divider>
                                         </template>
                                     </v-list>

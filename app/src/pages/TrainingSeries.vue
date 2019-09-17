@@ -2,7 +2,7 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Trainingsserien verwalten</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn title="Neues Training anlegen" color="primary" @click="openCreateDialog()">
@@ -13,14 +13,14 @@
                             v-model="showCreateDialog"
                             fullscreen>
                         <v-card>
-                            <v-toolbar card>
+                            <v-toolbar flat>
                                 <v-btn icon @click="showCreateDialog = false">
                                     <v-icon>close</v-icon>
                                 </v-btn>
                                 <v-toolbar-title>Trainingsserie Bearbeiten/Anlegen</v-toolbar-title>
                                 <v-spacer></v-spacer>
                                 <v-toolbar-items>
-                                    <v-btn flat color="primary" @click="save()">Speichern</v-btn>
+                                    <v-btn text color="primary" @click="save()">Speichern</v-btn>
                                 </v-toolbar-items>
                             </v-toolbar>
 
@@ -74,12 +74,11 @@
 
                 <v-card-text>
                     <v-alert
-                            v-bind:value="true"
                             type="info"
                             class="text-small"
                             pa-0
                             ma-0
-                            outline>
+                            outlined>
                         Traings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                     </v-alert>
                     <v-data-table

@@ -7,22 +7,21 @@
           :propBranchId="branchId"
           persistent>
     <v-card>
-      <v-toolbar card>
+      <v-toolbar flat>
         <v-btn icon @click="show=false">
           <v-icon>close</v-icon>
         </v-btn>
         <v-toolbar-title>Wer bist du?</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat color="primary" @click="done"><v-icon right>check</v-icon>Auswählen</v-btn>
+          <v-btn text color="primary" @click="done"><v-icon left>check</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
-        <v-spacer></v-spacer>
-        <v-card-text>
+        <v-divider></v-divider>
+        <v-card-text class="mt-2">
           <v-alert
-                  :value="true"
                   type="info"
-                  outline
+                  outlined
                   pa-1
                   ma-0
                   class="caption"

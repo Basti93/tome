@@ -2,7 +2,7 @@
   <v-layout align-top>
     <v-flex xs12 md10 offset-md1 top>
       <v-card>
-        <v-toolbar card prominent>
+        <v-toolbar flat>
         <v-toolbar-title>Profileinstellungen</v-toolbar-title>
         <v-spacer></v-spacer>
           <v-btn color="primary" v-bind:disabled="!valid"  @click="save()">
@@ -102,9 +102,8 @@
                             <v-card-text>
                               <v-flex md10 offset-md1>
                                 <v-alert
-                                        v-bind:value="true"
                                         type="info"
-                                        outline
+                                        outlined
                                 >
                                   Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier Gruppen zuweisen
                                 </v-alert>
@@ -127,9 +126,8 @@
                   <v-card-title>
                     <v-flex md10 offset-md1>
                       <v-alert
-                              v-bind:value="true"
                               type="info"
-                              outline
+                              outlined
                       >
                         Hier kannst du deine Trainingsgruppen auswählen. <br />Sie dienen als Filter und werden für die Trainings- und Benutzerverwaltung benötigt.
                       </v-alert>
@@ -197,6 +195,7 @@
     methods: {
       assignCurrentUser: function () {
         this.editUser = {...this.loggedInUser}
+        //this.editUser.birthdate = this.logged
       },
       groupsChanged: function ({groupIds}) {
         this.editUser.groupIds = groupIds;

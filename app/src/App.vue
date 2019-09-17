@@ -1,6 +1,5 @@
 <template>
-  <div id="app">
-    <v-app id="tome" dark>
+  <v-app>
       <Navigation/>
       <v-content
               :class="{'pt-0': $vuetify.breakpoint.smAndDown, 'pt-4': $vuetify.breakpoint.mdAndUp}">
@@ -46,11 +45,10 @@
           </v-slide-y-transition>
         </v-container>
       </v-content>
-      <v-footer app>
+      <v-footer>
         <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - 2019</a></span>
       </v-footer>
-    </v-app>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -156,9 +154,6 @@
 
 <style>
   #app {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
     margin-top: 60px;
   }
 </style>

@@ -4,7 +4,7 @@
             max-width="600px"
             persistent>
         <v-card>
-            <v-toolbar card>
+            <v-toolbar flat>
                 <v-btn
                         icon
                         @click="show=false">
@@ -13,7 +13,7 @@
                 <v-toolbar-title>Passwort ändern</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn flat color="primary" @click="save()" :disabled="!valid">
+                    <v-btn text color="primary" @click="save()" :disabled="!valid">
                         <v-icon right>done</v-icon>
                         Speichern
                     </v-btn>

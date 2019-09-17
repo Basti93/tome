@@ -2,7 +2,7 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Meine abgehaltenen Trainings</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-menu bottom left>
@@ -15,10 +15,10 @@
                         </v-btn>
 
                         <v-list>
-                            <v-list-tile @click="showAccountingDialog = true">
-                                <v-list-tile-avatar><v-icon>save_alt</v-icon></v-list-tile-avatar>
-                                <v-list-tile-title>ÜL-Abrechnung</v-list-tile-title>
-                            </v-list-tile>
+                            <v-list-item @click="showAccountingDialog = true">
+                                <v-list-item-avatar><v-icon>save_alt</v-icon></v-list-item-avatar>
+                                <v-list-item-title>ÜL-Abrechnung</v-list-item-title>
+                            </v-list-item>
                         </v-list>
                     </v-menu>
                 </v-toolbar>
@@ -35,7 +35,7 @@
                                     :class="{'tp-training-prepare__navigation-card--evaluated': item.evaluated, 'tp-training-prepare__navigation-card--active': item === selectedTraining, 'tp-training-prepare__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-prepare__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                             >
                                 <v-card-title>
-                                    <h2 class="subheading">{{ item.start.format('dddd').slice(0, 2) }}</h2>
+                                    <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
                                     <p class="title pt-1">{{ item.start.format('DD')}}</p>
                                     <v-icon v-if="item.evaluated" small>check</v-icon>
                                     <v-icon v-else small>new_releases</v-icon>
@@ -47,16 +47,16 @@
                             <div>
                                 <div v-if="selectedTraining">
                                     <v-list>
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                <v-list-tile-title>
+                                        <v-list-item>
+                                            <v-list-item-content>
+                                                <v-list-item-title>
                                                     <h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3>
-                                                </v-list-tile-title>
-                                            </v-list-tile-content>
-                                        </v-list-tile>
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
                                         <v-btn v-if="!selectedTraining.evaluated" @click="confirmEvaluationDialog = true" color="primary">Abschließen</v-btn>
                                         <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
-                                            <v-toolbar card>
+                                            <v-toolbar flat>
                                                 <v-toolbar-title>Training abschließen?</v-toolbar-title>
                                             </v-toolbar>
                                             <v-divider></v-divider>
@@ -64,8 +64,8 @@
                                                 <v-card-text>Nachdem das Training abgeschlossen ist, kann es nicht mehr verändert werden.</v-card-text>
                                                 <v-card-actions>
                                                     <v-spacer></v-spacer>
-                                                    <v-btn color="primary" flat @click="confirmEvaluationDialog = false">Abbrechen</v-btn>
-                                                    <v-btn color="primary" flat @click="evaluated()">Bestätigen</v-btn>
+                                                    <v-btn color="primary" text @click="confirmEvaluationDialog = false">Abbrechen</v-btn>
+                                                    <v-btn color="primary" test @click="evaluated()">Bestätigen</v-btn>
                                                 </v-card-actions>
                                             </v-card>
                                         </v-dialog>
@@ -77,35 +77,33 @@
                                                 no-action
                                         >
                                             <template slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>{{selectedTraining.trainers.length}} Trainer (Für ÜL-Abrechnung)</v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>{{selectedTraining.trainers.length}} Trainer (Für ÜL-Abrechnung)</v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
-                                            <v-list-tile
+                                            <v-list-item
                                                     v-for="(item, index) in selectedTraining.trainers"
                                                     :key="index"
-                                                    avatar
                                                     @click=""
                                             >
-
-                                                <v-list-tile-avatar>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
+                                                </v-list-item-avatar>
 
-                                                <v-list-tile-content>
-                                                    <v-list-tile-title>{{trainerFullName(item.userId)}}</v-list-tile-title>
-                                                    <v-list-tile-sub-title>Von {{item.accountingTimeStart.format('HH:mm')}} bis {{item.accountingTimeEnd.format('HH:mm')}}</v-list-tile-sub-title>
-                                                </v-list-tile-content>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{trainerFullName(item.userId)}}</v-list-item-title>
+                                                    <v-list-item-sub-title>Von {{item.accountingTimeStart.format('HH:mm')}} bis {{item.accountingTimeEnd.format('HH:mm')}}</v-list-item-sub-title>
+                                                </v-list-item-content>
 
-                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
-                                                    <v-btn color="primary" @click="editTime(item)" outline>
+                                                <v-list-item-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="editTime(item)" outlined>
                                                         <v-icon>edit</v-icon>
                                                     </v-btn>
-                                                </v-list-tile-action>
+                                                </v-list-item-action>
 
-                                            </v-list-tile>
+                                            </v-list-item>
                                         </v-list-group>
                                         <v-list-group
                                                 v-model="participantsListGroupActive"
@@ -115,34 +113,33 @@
                                                 no-action
                                         >
                                             <template slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>{{participatingUsers.length}} Teilnehmer</v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>{{participatingUsers.length}} Teilnehmer</v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
-                                            <v-list-tile
+                                            <v-list-item
                                                     v-for="(item, index) in participatingUsers"
                                                     :key="item.id"
-                                                    avatar
                                                     @click=""
                                             >
 
-                                                <v-list-tile-avatar>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
+                                                </v-list-item-avatar>
 
-                                                <v-list-tile-content>
-                                                    <v-list-tile-title v-html="fullName(item)"></v-list-tile-title>
-                                                </v-list-tile-content>
+                                                <v-list-item-content>
+                                                    <v-list-item-title v-html="fullName(item)"></v-list-item-title>
+                                                </v-list-item-content>
 
-                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
-                                                    <v-btn color="primary" @click="removeParticipant(item.id)" outline>
+                                                <v-list-item-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="removeParticipant(item.id)" outlined>
                                                         <v-icon>remove</v-icon>
                                                     </v-btn>
-                                                </v-list-tile-action>
+                                                </v-list-item-action>
 
-                                            </v-list-tile>
+                                            </v-list-item>
                                         </v-list-group>
                                         <v-list-group
                                                 v-model="canceledUserListGroupActive"
@@ -152,44 +149,42 @@
                                                 no-action
                                         >
                                             <template  slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
-                                            <v-list-tile
+                                            <v-list-item
                                                     v-for="(item, index) in canceledUsers"
                                                     :key="item.id"
-                                                    avatar
                                                     @click=""
                                             >
-                                                <v-list-tile-avatar>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
+                                                </v-list-item-avatar>
 
-                                                <v-list-tile-content @click="openCancelReasonDialog(item.id)">
-                                                    <v-list-tile-title>{{fullName(item)}}</v-list-tile-title>
-                                                    <v-list-tile-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-tile-sub-title>
-                                                </v-list-tile-content>
+                                                <v-list-item-content @click="openCancelReasonDialog(item.id)">
+                                                    <v-list-item-title>{{fullName(item)}}</v-list-item-title>
+                                                    <v-list-item-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-sub-title>
+                                                </v-list-item-content>
 
-                                                <v-list-tile-action v-if="!selectedTraining.evaluated">
-                                                    <v-btn color="primary" @click="addParticipant(item.id)" outline>
+                                                <v-list-item-action v-if="!selectedTraining.evaluated">
+                                                    <v-btn color="primary" @click="addParticipant(item.id)" outlined>
                                                         <v-icon>add</v-icon>
                                                     </v-btn>
-                                                </v-list-tile-action>
-                                            </v-list-tile>
+                                                </v-list-item-action>
+                                            </v-list-item>
                                         </v-list-group>
                                     </v-list>
                             </div>
                                 <div v-else>
                                     <v-alert
-                                            v-bind:value="true"
                                             type="info"
                                             class="text-small"
                                             pa-0
                                             ma-0
-                                            outline>
+                                            outlined>
                                         Keine abgehaltenen Trainings für dich verfügbar
                                     </v-alert>
                                 </div>
@@ -204,14 +199,14 @@
                   max-width="800px"
                 :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
             <v-card>
-                <v-toolbar card>
+                <v-toolbar flat>
                     <v-btn icon @click="timeDialogOpened=false">
                         <v-icon>close</v-icon>
                     </v-btn>
                     <v-toolbar-title>Trainerzeiten ändern</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn flat color="primary" @click="updateAccountingTime">Speichern</v-btn>
+                        <v-btn text color="primary" @click="updateAccountingTime">Speichern</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
 
@@ -233,7 +228,7 @@
             v-model="showCancelReasonDialog"
             max-width="800px">
         <v-card>
-            <v-toolbar card>
+            <v-toolbar flat>
                 <v-btn icon @click="showCancelReasonDialog=false">
                     <v-icon>close</v-icon>
                 </v-btn>

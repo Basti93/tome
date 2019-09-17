@@ -2,10 +2,11 @@
   <v-layout align-top>
     <v-flex xs12 md8 offset-md2 top>
       <v-card>
-        <v-toolbar card prominent>
+        <v-toolbar flat>
           <v-toolbar-title>Benutzer Freischalten</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
+        <v-divider></v-divider>
         <v-card-text>
           <v-stepper v-model="approveWizardStep" v-if="nonApprovedUsers.length > 0">
             <v-stepper-header>
@@ -26,18 +27,18 @@
                       <v-list
                         two-line>
                         <v-radio-group v-model="selectedNonApprovedUserId" :mandatory="false">
-                          <v-list-tile
+                          <v-list-item
                             v-for="(item, index) in nonApprovedUsers"
                             :key="item.id"
                           >
-                            <v-list-tile-content>
-                              <v-list-tile-title>{{fullName(item)}}</v-list-tile-title>
-                              <v-list-tile-sub-title>{{moment(item.createdAt, 'YYYY-MM-DDTHH:mm').fromNow() + " registriert"}}</v-list-tile-sub-title>
-                            </v-list-tile-content>
-                            <v-list-tile-action>
+                            <v-list-item-content>
+                              <v-list-item-title>{{fullName(item)}}</v-list-item-title>
+                              <v-list-item-sub-title>{{moment(item.createdAt, 'YYYY-MM-DDTHH:mm').fromNow() + " registriert"}}</v-list-item-sub-title>
+                            </v-list-item-content>
+                            <v-list-item-action>
                               <v-radio :value="item.id"></v-radio>
-                            </v-list-tile-action>
-                          </v-list-tile>
+                            </v-list-item-action>
+                          </v-list-item>
                         </v-radio-group>
                       </v-list>
                     </v-layout>
@@ -96,7 +97,7 @@
                               <v-alert
                                 v-bind:value="$vuetify.breakpoint.lgAndUp && !nonRegisteredUserId"
                                 type="info"
-                                outline
+                                outlined
                                 pa-1
                                 ma-0
                                 class="caption"
@@ -129,7 +130,7 @@
                                 class="text-small"
                                 pa-0
                                 ma-0
-                                outline
+                                outlined
                               >
                                 Daten von <b>{{nonRegisteredUserFullName}}</b> <i>(vorläufiger Benutzer)</i> werden an <b>{{nonApprovedUserFullName}}</b> <i>(Benutzer zum Freischalten)</i> übertragen.
                               </v-alert>
@@ -217,7 +218,7 @@
           <v-alert
             v-bind:value="nonApprovedUsers.length === 0"
             type="info"
-            outline
+            outlined
           >
             Alle Benutzer freigeschaltet
           </v-alert>
