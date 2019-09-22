@@ -179,48 +179,37 @@ class TrainingEvaluationController extends Controller
                 ->orderBy('month', 'asc')
                 ->get();
 
-            //if ($trainerId == 28) {
-            //    return response()->json($trainerAccountingTimes);
-            //}
-
             //sum up the accounting times per month
             $currentMonthAccountTime = 0;
-            $lastMonth = 0;
+            $lastMonth = 1;
             $monthArray = [];
             $size = sizeof($trainerAccountingTimes);
+
             //sum the accounting hours per month
             for ($i = 0; $i < $size; $i++) {
                 //the current month
                 $currentMonth = $trainerAccountingTimes[$i]->month;
-                //set initial month from first row
-                if ($i == 0) {
+                //set the month from first and last row
+                if ($i === 0) {
                     $lastMonth = $currentMonth;
                 }
-                //sum up
 
-
+                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
 
                 //check if the month has changed since the last iteration
                 //or if the entry is the last entry
-                if ($currentMonth != $lastMonth || ($i + 1) == ($size - 1)) {
-
+                if ($currentMonth != $lastMonth || ($i + 1) === $size) {
                     $monthSum = new \stdClass();
-                    //if it's the last entry set the month to the month of the current iteration
-                    if (($i + 1) == $size) {
-                        $monthSum->month = $currentMonth;
-                    } else {
-                        //else set the last month
-                        $monthSum->month = $lastMonth;
-                    }
+                    $monthSum->month = $lastMonth;
                     $monthSum->accountingHours = round($currentMonthAccountTime,2);
 
                     array_push($monthArray, $monthSum);
+
                     $currentMonthAccountTime = 0;
 
                     $lastMonth = $currentMonth;
                 }
 
-                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
             }
 
             $result = new \stdClass();
