@@ -73,7 +73,7 @@
                 ></v-time-picker>
             </v-menu>
         </v-flex>
-        <v-flex xs6>
+        <v-flex xs10>
             <v-select
                     :items="locations"
                     item-text="name"
@@ -85,7 +85,7 @@
                     prepend-icon="add_location"
             ></v-select>
         </v-flex>
-        <v-flex xs6>
+        <v-flex xs2>
             <v-checkbox
                     v-if="series"
                     v-model="editedActive"

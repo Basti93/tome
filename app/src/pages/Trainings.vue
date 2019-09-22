@@ -46,7 +46,7 @@
           >
             <v-progress-linear slot="progress" color="primary" indeterminate></v-progress-linear>
             <template v-slot:item.date="{ item }">
-              {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}
+              {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
             </template>
             <template v-slot:item.start="{ item }">
               {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
@@ -56,6 +56,12 @@
             </template>
             <template v-slot:item.locationId="{ item }">
               {{ getLocationNameById(item.locationId) }}
+            </template>
+            <template v-slot:item.groupIds="{ item }">
+              <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
+                      :key="group.id">
+                {{ branchAndGroupName(group) }}
+              </v-chip>
             </template>
             <template v-slot:expanded-item="{ headers }">
               <td class="text-right" :colspan="headers.length">
@@ -217,6 +223,7 @@
           {text: 'Von', value: 'start', sortable: false},
           {text: 'Bis', value: 'end', sortable: false},
           {text: 'Ort', value: 'locationId', sortable: true},
+          {text: 'Gruppen', value: 'groupIds', sortable: false},
         ],
         trainings: [],
         trainers: [],
