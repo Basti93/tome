@@ -190,32 +190,34 @@
                     origin="center center"
                     transition="scale-transition"
                     bottom left>
+                <template v-slot:activator="{ on }">
                 <v-btn
-                        text
-                        slot="activator"
-                        v-show="$vuetify.breakpoint.mdAndUp"
+                    text
+                    v-on="on"
+                    v-show="$vuetify.breakpoint.mdAndUp"
                 >
                     <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
                     <v-icon right>account_circle</v-icon>
                 </v-btn>
-                <v-list>
-                    <v-list-item to="/profile">
-                        <v-list-item-action>
-                            <v-icon>settings</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                            <v-list-item-title>Einstellungen</v-list-item-title>
-                        </v-list-item-content>
-                    </v-list-item>
-                    <v-list-item to="/logout">
-                        <v-list-item-action>
-                            <v-icon>exit_to_app</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                            <v-list-item-title>Abmelden</v-list-item-title>
-                        </v-list-item-content>
-                    </v-list-item>
-                </v-list>
+                </template>
+                    <v-list>
+                        <v-list-item to="/profile">
+                            <v-list-item-action>
+                                <v-icon>settings</v-icon>
+                            </v-list-item-action>
+                            <v-list-item-content>
+                                <v-list-item-title>Einstellungen</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                        <v-list-item to="/logout">
+                            <v-list-item-action>
+                                <v-icon>exit_to_app</v-icon>
+                            </v-list-item-action>
+                            <v-list-item-content>
+                                <v-list-item-title>Abmelden</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
             </v-menu>
         </v-app-bar>
     </div>

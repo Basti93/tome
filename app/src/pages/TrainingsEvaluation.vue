@@ -6,14 +6,15 @@
                     <v-toolbar-title>Meine abgehaltenen Trainings</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-menu bottom left>
-                        <v-btn
-                                slot="activator"
-                                dark
-                                icon
-                        >
-                            <v-icon>more_vert</v-icon>
-                        </v-btn>
-
+                        <template v-slot:activator="{ on }">
+                            <v-btn
+                                    dark
+                                    icon
+                                    v-on="on"
+                            >
+                                <v-icon>more_vert</v-icon>
+                            </v-btn>
+                        </template>
                         <v-list>
                             <v-list-item @click="showAccountingDialog = true">
                                 <v-list-item-avatar><v-icon>save_alt</v-icon></v-list-item-avatar>
@@ -24,7 +25,7 @@
                 </v-toolbar>
                 <v-divider></v-divider>
                 <v-card-text flat>
-                    <div v-show="dataLoaded">
+                    <div v-show="dataLoaded" class="tp-training-prepare">
                         <div class="tp-training-prepare__navigation">
                             <v-card
                                     v-for="(item) in pastTrainings"
@@ -54,13 +55,21 @@
                                                 </v-list-item-title>
                                             </v-list-item-content>
                                         </v-list-item>
-                                        <v-btn v-if="!selectedTraining.evaluated" @click="confirmEvaluationDialog = true" color="primary">Abschließen</v-btn>
+                                        <div style="text-align: center">
                                         <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
-                                            <v-toolbar flat>
-                                                <v-toolbar-title>Training abschließen?</v-toolbar-title>
-                                            </v-toolbar>
-                                            <v-divider></v-divider>
-                                            <v-card>
+                                            <template v-slot:activator="{ on }">
+                                                <v-btn
+                                                        v-if="!selectedTraining.evaluated"
+                                                        @click="confirmEvaluationDialog = true"
+                                                        color="primary">
+                                                    Abschließen
+                                                </v-btn>
+                                            </template>
+                                            <v-card tile>
+                                                <v-toolbar flat>
+                                                    <v-toolbar-title>Training abschließen?</v-toolbar-title>
+                                                </v-toolbar>
+                                                <v-divider></v-divider>
                                                 <v-card-text>Nachdem das Training abgeschlossen ist, kann es nicht mehr verändert werden.</v-card-text>
                                                 <v-card-actions>
                                                     <v-spacer></v-spacer>
@@ -69,6 +78,7 @@
                                                 </v-card-actions>
                                             </v-card>
                                         </v-dialog>
+                                        </div>
                                         <v-list-group
                                                 v-model="trainersListGroupActive"
                                                 prepend-icon="verified_user"
@@ -77,11 +87,9 @@
                                                 no-action
                                         >
                                             <template slot="activator">
-                                                <v-list-item>
-                                                    <v-list-item-content>
-                                                        <v-list-item-title>{{selectedTraining.trainers.length}} Trainer (Für ÜL-Abrechnung)</v-list-item-title>
-                                                    </v-list-item-content>
-                                                </v-list-item>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{selectedTraining.trainers.length}} Trainer (Für ÜL-Abrechnung)</v-list-item-title>
+                                                </v-list-item-content>
                                             </template>
                                             <v-list-item
                                                     v-for="(item, index) in selectedTraining.trainers"
@@ -94,7 +102,7 @@
 
                                                 <v-list-item-content>
                                                     <v-list-item-title>{{trainerFullName(item.userId)}}</v-list-item-title>
-                                                    <v-list-item-sub-title>Von {{item.accountingTimeStart.format('HH:mm')}} bis {{item.accountingTimeEnd.format('HH:mm')}}</v-list-item-sub-title>
+                                                    <v-list-item-subtitle>Von {{item.accountingTimeStart.format('HH:mm')}} bis {{item.accountingTimeEnd.format('HH:mm')}}</v-list-item-subtitle>
                                                 </v-list-item-content>
 
                                                 <v-list-item-action v-if="!selectedTraining.evaluated">
@@ -112,12 +120,10 @@
                                                 key="1"
                                                 no-action
                                         >
-                                            <template slot="activator">
-                                                <v-list-item>
-                                                    <v-list-item-content>
-                                                        <v-list-item-title>{{participatingUsers.length}} Teilnehmer</v-list-item-title>
-                                                    </v-list-item-content>
-                                                </v-list-item>
+                                            <template v-slot:activator>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{participatingUsers.length}} Teilnehmer</v-list-item-title>
+                                                </v-list-item-content>
                                             </template>
                                             <v-list-item
                                                     v-for="(item, index) in participatingUsers"
@@ -148,12 +154,10 @@
                                                 key="2"
                                                 no-action
                                         >
-                                            <template  slot="activator">
-                                                <v-list-item>
-                                                    <v-list-item-content>
-                                                        <v-list-item-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-item-title>
-                                                    </v-list-item-content>
-                                                </v-list-item>
+                                            <template v-slot:activator>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-item-title>
+                                                </v-list-item-content>
                                             </template>
                                             <v-list-item
                                                     v-for="(item, index) in canceledUsers"
@@ -166,7 +170,7 @@
 
                                                 <v-list-item-content @click="openCancelReasonDialog(item.id)">
                                                     <v-list-item-title>{{fullName(item)}}</v-list-item-title>
-                                                    <v-list-item-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-sub-title>
+                                                    <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-subtitle>
                                                 </v-list-item-content>
 
                                                 <v-list-item-action v-if="!selectedTraining.evaluated">
@@ -203,22 +207,22 @@
                     <v-btn icon @click="timeDialogOpened=false">
                         <v-icon>close</v-icon>
                     </v-btn>
-                    <v-toolbar-title>Trainerzeiten ändern</v-toolbar-title>
+                    <v-toolbar-title>Abrechnungszeitrum ändern</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                         <v-btn text color="primary" @click="updateAccountingTime">Speichern</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
-
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-layout row wrap>
-                        <v-flex xs12 md6>
+                        <v-flex xs12 md6 pa-1>
                             <h2>Von</h2>
                             <v-time-picker flat v-model="editStartTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
                         </v-flex>
-                        <v-flex xs12 md6>
+                        <v-flex xs12 md6 pa-1>
                             <h2>Bis</h2>
-                            <v-time-picker v-model="editEndTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
+                            <v-time-picker flat v-model="editEndTime" :landscape="$vuetify.breakpoint.xsOnly" format="24hr"></v-time-picker>
                         </v-flex>
                     </v-layout>
                 </v-card-text>
@@ -480,6 +484,7 @@
             display: flex;
             flex-flow: row;
             justify-content: center;
+            text-align: center;
 
             &-card {
                 max-width: 12rem;

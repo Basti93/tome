@@ -23,7 +23,7 @@
                                     <v-btn text color="primary" @click="save()">Speichern</v-btn>
                                 </v-toolbar-items>
                             </v-toolbar>
-
+                            <v-divider></v-divider>
                             <v-card-text>
                                 <v-container grid-list-md>
                                     <v-layout wrap>
@@ -84,23 +84,44 @@
                     <v-data-table
                             :headers="headers"
                             :items="trainingSeriesList"
-                            :loading="loading">
+                            :loading="loading"
+                            hide-default-footer
+                            hide-default-header
+                            :expanded.sync="expanded"
+                            show-expand
+                            single-expand>
                         <v-progress-linear slot="loading" color="primary" indeterminate></v-progress-linear>
-                        <template slot="items" slot-scope="props">
-                            <tr @click="editItem(props.item)" style="cursor: pointer">
-                                <td>{{ dayArrayToString(props.item.weekdays) }}</td>
-                                <td>{{ removeMilleSec(props.item.startTime) }}</td>
-                                <td>{{ removeMilleSec(props.item.endTime) }}</td>
-                                <td>
-                                    <v-chip v-for="(group) in getGroupsByIds(props.item.groupIds)"
-                                            :key="group.id">
-                                        {{ branchAndGroupName(group) }}
-                                    </v-chip>
-                                </td>
-                                <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
-                            </tr>
+                        <template v-slot:item.id="{ item }">
+                            {{ item.id }}
                         </template>
-
+                        <template v-slot:item.weekdays="{ item }">
+                            {{ dayArrayToString(item.weekdays) }}
+                        </template>
+                        <template v-slot:item.startTime="{ item }">
+                            {{ removeMilleSec(item.startTime) }}
+                        </template>
+                        <template v-slot:item.endTime="{ item }">
+                            {{ removeMilleSec(item.endTime) }}
+                        </template>
+                        <template v-slot:item.groupIds="{ item }">
+                            <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
+                                    :key="group.id">
+                                {{ branchAndGroupName(group) }}
+                            </v-chip>
+                        </template>
+                        <template v-slot:item.active="{ item }">
+                            {{ item.active ? 'Ja' : 'Nein' }}
+                        </template>
+                        <template v-slot:expanded-item="{ headers }">
+                            <td class="text-right" :colspan="headers.length">
+                                <v-btn
+                                    outlined
+                                    @click="editItem()"
+                                    color="success">
+                                    <v-icon>edit</v-icon>
+                                </v-btn>
+                            </td>
+                        </template>
                     </v-data-table>
                 </v-card-text>
 
@@ -129,7 +150,9 @@
                 trainingSeriesList: [] as TrainingSeries[],
                 showCreateDialog: false,
                 loading: false,
+                expanded: [],
                 headers: [
+                    {text: 'Seriennummer', value: 'id', sortable: false},
                     {text: 'Wochentage', value: 'weekdays', sortable: false},
                     {text: 'Start', value: 'startTime', sortable: false},
                     {text: 'Ende', value: 'endTime', sortable: false},
@@ -193,7 +216,8 @@
                 }
 
             },
-            editItem(item: TrainingSeries) {
+            editItem() {
+                const item = this.expanded[0];
                 this.editedTrainingSeries = {...item};
                 this.showCreateDialog = true;
             },

@@ -66,12 +66,11 @@
                                 ></v-text-field>
                             </template>
                             <v-date-picker
-                                    ref="birthdatePicker"
                                     v-model="birthdate"
                                     @input="birthdateMenu = false"
+                                    ref="birthdatePicker"
                                     :max="new Date().toISOString().substr(0, 10)"
                                     min="1950-01-01">
-
                             </v-date-picker>
                         </v-menu>
 

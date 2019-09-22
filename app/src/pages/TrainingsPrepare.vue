@@ -58,7 +58,7 @@
                                                     <v-flex grow>
                                                         <v-btn @click="editTime()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -85,12 +85,12 @@
                                                     <v-flex grow v-if="editingLocation">
                                                         <v-btn @click="saveEditLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -98,7 +98,7 @@
                                                         <v-btn
                                                                @click="editLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -127,19 +127,19 @@
                                                     <v-flex shrink v-if="editingComment">
                                                         <v-btn @click="saveEditComment()"
                                                            color="primary"
-                                                           flat>
+                                                           text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditComment()"
                                                            color="primary"
-                                                           flat>
+                                                           text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
                                                     <v-flex shrink v-else>
                                                         <v-btn @click="startEditComment()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -167,19 +167,19 @@
                                                     <v-flex grow v-if="editingTrainingContent">
                                                         <v-btn @click="saveEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
                                                     <v-flex grow v-else>
                                                         <v-btn @click="startEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -239,7 +239,7 @@
 
                                                 <v-list-item-content @click="openCancelReasonDialog(item.id)">
                                                     <v-list-item-title>{{fullName(item)}}</v-list-item-title>
-                                                    <v-list-item-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-sub-title>
+                                                    <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-subtitle>
                                                 </v-list-item-content>
                                             </v-list-item>
                                         </v-list-group>
@@ -288,7 +288,7 @@
                     <v-toolbar-title>Trainingszeit ändern</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn flat color="primary" @click="updateTrainingTime">Speichern</v-btn>
+                        <v-btn text color="primary" @click="updateTrainingTime">Speichern</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
 
@@ -569,6 +569,7 @@
             display: flex;
             flex-flow: row;
             justify-content: center;
+            text-align: center;
 
             &-card {
                 max-width: 12rem;

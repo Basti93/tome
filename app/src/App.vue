@@ -27,14 +27,14 @@
             Benachrichtigungen erlauben?
             <v-btn
                     color="primary"
-                    flat
+                    text
                     @click="requestPushPermission"
             >
               Erlauben
             </v-btn>
             <v-btn
                     color="primary"
-                    flat
+                    text
                     @click="pushPermissionSnackbar = false"
             >
               Nicht jetzt
@@ -84,7 +84,7 @@
         this.$emit("showSnackbar", "Daten konnten nicht geladen werden! Stelle sicher dass du Internet hast.", "error");
       }
 
-      if (self.loggedInUser) {
+      if (self.loggedInUser && process.env.NODE_ENV === 'production') {
         this.getFirebaseToken();
 
         //refresh token
@@ -96,9 +96,7 @@
               // Show permission request.
               self.pushPermissionSnackbar = true;
             }
-          }).catch(function (err) {
-            console.log('An error occurred while retrieving token. ', err);
-          });
+          })
         });
 
         messaging.onMessage(function (payload) {

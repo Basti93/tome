@@ -10,11 +10,12 @@ const config = {
     messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID
 
 }
-
-firebase.initializeApp(config)
-const messaging = firebase.messaging()
-messaging.usePublicVapidKey(process.env.VUE_APP_FIREBASE_VAPID_KEY)
-
+const messaging = null;
+if (process.env.NODE_ENV === 'production') {
+    firebase.initializeApp(config)
+    const messaging = firebase.messaging()
+    messaging.usePublicVapidKey(process.env.VUE_APP_FIREBASE_VAPID_KEY)
+}
 export default {
     messaging
 }

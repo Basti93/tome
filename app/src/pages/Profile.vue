@@ -66,21 +66,27 @@
                                   :close-on-content-click="false"
                                   v-model="birthdateMenu"
                                   :rules="requiredRule"
-                                  required
-                                  lazy
-                                  full-width>
-                            <v-text-field
-                                    slot="activator"
-                                    v-model="birthdateFormatted"
-                                    required
-                                    label="Geburtsdatum"
-                                    prepend-icon="event"
-                                    readonly
-                            ></v-text-field>
-                            <v-date-picker v-model="editUser.birthdate" @input="birthdateMenu = false"></v-date-picker>
+                                  required>
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                      slot="activator"
+                                      v-model="birthdateFormatted"
+                                      required
+                                      label="Geburtsdatum"
+                                      prepend-icon="event"
+                                      readonly
+                                      v-on="on"></v-text-field>
+                            </template>
+                            <v-date-picker
+                                  v-model="editUser.birthdate"
+                                  @input="birthdateMenu = false"
+                                  ref="birthdatePicker"
+                                  :max="new Date().toISOString().substr(0, 10)"
+                                  min="1950-01-01">
+                            </v-date-picker>
                           </v-menu>
                         </v-flex>
-                        <v-flex xs3>
+                        <v-flex xs12>
                           <ChangePasswordDialog
                                   :visible="showPasswordDialog"
                                   v-on:close="showPasswordDialog = false"
@@ -225,6 +231,11 @@
         }
       },
       formatDate,
+    },
+    watch: {
+      birthdateMenu (val) {
+        val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+      },
     },
   }
 </script>

@@ -12,7 +12,7 @@
                 </v-btn>
                 <v-toolbar-title>ÜL-Abrechnung</v-toolbar-title>
             </v-toolbar>
-
+            <v-divider></v-divider>
             <v-card-text>
                 <v-form
                     ref="form"
@@ -21,18 +21,18 @@
                         <v-menu
                                 ref="fromDateMenuOpened"
                                 :close-on-content-click="false"
-                                v-model="fromDateMenuOpened"
-                                lazy
-                                full-width
-                        >
-                            <v-text-field
-                                    slot="activator"
-                                    v-model="fromDateFormatted"
-                                    required
-                                    label="Von"
-                                    prepend-icon="event"
-                                    readonly
-                            ></v-text-field>
+                                v-model="fromDateMenuOpened">
+                            <template v-slot:activator="{ on }">
+                                <v-text-field
+                                        slot="activator"
+                                        v-model="fromDateFormatted"
+                                        required
+                                        label="Von"
+                                        prepend-icon="event"
+                                        readonly
+                                        v-on="on"
+                                ></v-text-field>
+                            </template>
                             <v-date-picker v-model="dateFrom" @input="fromDateMenuOpened = false"></v-date-picker>
                         </v-menu>
                     </v-flex>
@@ -40,18 +40,18 @@
                         <v-menu
                                 ref="toDateMenuOpened"
                                 :close-on-content-click="false"
-                                v-model="toDateMenuOpened"
-                                lazy
-                                full-width
-                        >
-                            <v-text-field
-                                    slot="activator"
-                                    v-model="toDateFormatted"
-                                    required
-                                    label="Bis"
-                                    prepend-icon="event"
-                                    readonly
-                            ></v-text-field>
+                                v-model="toDateMenuOpened">
+                            <template v-slot:activator="{ on }">
+                                <v-text-field
+                                        slot="activator"
+                                        v-model="toDateFormatted"
+                                        required
+                                        label="Bis"
+                                        prepend-icon="event"
+                                        readonly
+                                        v-on="on"
+                                ></v-text-field>
+                            </template>
                             <v-date-picker v-model="dateTo" @input="toDateMenuOpened = false"></v-date-picker>
                         </v-menu>
                     </v-flex>

@@ -33,7 +33,7 @@
                           >
                             <v-list-item-content>
                               <v-list-item-title>{{fullName(item)}}</v-list-item-title>
-                              <v-list-item-sub-title>{{moment(item.createdAt, 'YYYY-MM-DDTHH:mm').fromNow() + " registriert"}}</v-list-item-sub-title>
+                              <v-list-item-subtitle>{{moment(item.createdAt, 'YYYY-MM-DDTHH:mm').fromNow() + " registriert"}}</v-list-item-subtitle>
                             </v-list-item-content>
                             <v-list-item-action>
                               <v-radio :value="item.id"></v-radio>

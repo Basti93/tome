@@ -45,7 +45,6 @@
                 </template>
                 <v-time-picker
                     v-model="startTime"
-                    @input="startMenuOpened = false"
                     @click:minute="$refs.startMenuOpened.save(startTime)"
                     format="24hr">
                 </v-time-picker>
@@ -70,7 +69,6 @@
                 </template>
                 <v-time-picker
                         v-model="endTime"
-                        @input="endMenuOpened = false"
                         format="24hr"
                 ></v-time-picker>
             </v-menu>
