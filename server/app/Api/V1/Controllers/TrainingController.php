@@ -9,6 +9,7 @@ use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class TrainingController extends Controller
@@ -253,6 +254,11 @@ class TrainingController extends Controller
                 ], 201);
             } else {
                 $training->participants()->updateExistingPivot($user->id, array('attend' => 0, 'cancelreason' => $reason), false);
+                Artisan::call('notification:cancelTrainingForTrainer', [
+                    'userId' => $user->id,
+                    'trainingId' => $training->id,
+                    'cancelReason' => $reason,
+                ]);
             }
         } else {
             if ($training->participants->contains($user->id)) {

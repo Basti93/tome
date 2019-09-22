@@ -2,29 +2,26 @@
 
 namespace App\Console\Commands;
 
-use App\NotificationToken;
-use App\TrainingParticipation;
+use App\Location;
 use Illuminate\Console\Command;
 use App\Training;
-use App\UserTrainingNotification;
 use DateTime;
-use LaravelFCM\Facades\FCM;
 
-class TrainerUpcomingTrainingNotifications extends Command
+class UpcomingTrainingNotifications extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'notification:upcomingTrainingForTrainer';
+    protected $signature = 'notification:upcomingTraining';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Send a push notification to trainers 4 hours before a training with the info how many users are attending';
+    protected $description = 'Send a push notification to users 4 hours before a training';
 
     /**
      * Create a new command instance.
@@ -45,17 +42,18 @@ class TrainerUpcomingTrainingNotifications extends Command
     {
         $now = date('Y-m-d H:i:s');
         $in4Hours = date("Y-m-d H:i:s", time() + 14400);
-        $upcomingTrainings = Training::with('trainers', 'trainers.notificationTokens', 'participants')->whereBetween('start', array($now, $in4Hours))->get();
+        $upcomingTrainings = Training::with('participants', 'participants.notificationTokens')->whereBetween('start', array($now, $in4Hours))->get();
         $this->info('Found  ' . count($upcomingTrainings) . ' Trainings in the next 4h (' . $now . ') - (' . $in4Hours . ')');
 
         foreach ($upcomingTrainings as $training) {
+            $location = Location::whereId($training->location_id)->first();
             $this->info('Processing Training at  ' . $training->start);
             $this->call('notification:sendToUsers', [
-                'userIds' => implode("','", $training->trainers()->pluck('user_id')->toArray()),
+                'userIds' => implode("','", $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray()),
                 'trainingId' => $training->id,
-                'title' => 'Dein Training heute um ' . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i"),
-                'data' => 'Es haben sich ' . TrainingParticipation::whereTrainingId($training->id)->whereAttend(1)->count() . ' Sportler angemeldet',
-                'notificationType' => 1,
+                'title' => 'Erinnerung: Dein Training startet in Kürze ',
+                'data' => "Zeit: " . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i") . "\r\nOrt: " . $location->name,
+                'notificationType' => 3,
                 '--storeStatus' => true
             ]);
         }
