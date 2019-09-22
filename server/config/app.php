@@ -153,7 +153,7 @@ return [
     Dingo\Api\Provider\LaravelServiceProvider::class,
     Barryvdh\Cors\ServiceProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
-      Kawankoding\Fcm\FcmServiceProvider::class,
+    LaravelFCM\FCMServiceProvider::class,
 
     /*
      * Application Service Providers...
@@ -213,7 +213,7 @@ return [
     'URL' => Illuminate\Support\Facades\URL::class,
     'Validator' => Illuminate\Support\Facades\Validator::class,
     'View' => Illuminate\Support\Facades\View::class,
-      'Fcm' => Kawankoding\Fcm\FcmFacade::class,
+    'FCM' => LaravelFCM\Facades\FCM::class,
 
     /*
      * Package Facades...

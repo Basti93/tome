@@ -7,8 +7,6 @@ import store from "./store";
 import router from './router'
 import VueApexCharts from 'vue-apexcharts'
 import './registerServiceWorker'
-import firebase from "firebase/app";
-import "firebase/messaging";
 
 
 Vue.prototype.moment = Moment
@@ -18,20 +16,6 @@ Vue.component('apexchart', VueApexCharts)
 
 Vue.config.productionTip = false
 
-// Initialize Firebase
-var config = {
-  apiKey: "AIzaSyCIyjn5HT_cWEZx1V3fuc1wnUUHA2EIHtA",
-  authDomain: "ssc-tome.firebaseapp.com",
-  databaseURL: "https://ssc-tome.firebaseio.com",
-  projectId: "ssc-tome",
-  storageBucket: "ssc-tome.appspot.com",
-  messagingSenderId: "565456517775"
-};
-firebase.initializeApp(config);
-Vue.use(firebase);
-
-
-//load all the base data
 const init = async () => {
   try {
     const branchsPromise = axios.get('/branch');

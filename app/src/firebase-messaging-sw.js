@@ -12,9 +12,11 @@ messaging.setBackgroundMessageHandler(function (payload) {
     const notificationTitle = payload.data.title;
     const notificationOptions = {
         body: payload.data.body,
+        data: { url: payload.data.click_action },
         icon: './img/icons/android-chrome-192x192.png',
         badge: './img/icons/apple-touch-icon-76x-76.png'
     };
+
 
     return self.registration.showNotification(notificationTitle,
         notificationOptions);
