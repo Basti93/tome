@@ -1,25 +1,24 @@
 <template>
     <v-dialog v-model="show" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
         <v-card>
-            <v-toolbar card>
+            <v-toolbar flat>
                 <v-btn icon @click="show=false">
                     <v-icon>close</v-icon>
                 </v-btn>
                 <v-toolbar-title>Vorläufigen Benutzer Anlegen</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn flat color="primary" @click="createUser">Speichern</v-btn>
+                    <v-btn text color="primary" @click="createUser"><v-icon left>check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
-
+            <v-divider class="pb-2"></v-divider>
             <v-card-text>
                 <v-alert
-                        v-bind:value="true"
                         type="info"
                         class="text-small"
                         pa-0
                         ma-0
-                        outline>
+                        outlined>
                     Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
                 </v-alert>
                 <v-container grid-list-md>

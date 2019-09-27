@@ -11,59 +11,69 @@
                     ref="dateMenuOpened"
                     :close-on-content-click="false"
                     v-model="dateMenuOpened"
-                    lazy
-                    full-width
             >
-                <v-text-field
-                        slot="activator"
-                        v-model="trainingDateFormatted"
-                        required
-                        label="Datum"
-                        prepend-icon="event"
-                        readonly
-                ></v-text-field>
+                <template v-slot:activator="{ on }">
+                    <v-text-field
+                            slot="activator"
+                            v-model="trainingDateFormatted"
+                            required
+                            label="Datum"
+                            prepend-icon="event"
+                            readonly
+                            v-on="on"
+                    ></v-text-field>
+                </template>
                 <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
             </v-menu>
         </v-flex>
         <v-flex xs6 md3>
             <v-menu
                     ref="startMenuOpened"
-                    :close-on-content-click="false"
                     v-model="startMenuOpened"
-                    lazy
-                    full-width
-            >
-                <v-text-field
-                        slot="activator"
-                        v-model="startTime"
-                        label="Start"
-                        required
-                        prepend-icon="schedule"
-                        readonly
-                ></v-text-field>
-                <v-time-picker v-model="startTime" @input="startMenuOpened = false" format="24hr"></v-time-picker>
+                    :close-on-content-click="false">
+                <template v-slot:activator="{ on }">
+                    <v-text-field
+                            slot="activator"
+                            v-model="startTime"
+                            label="Start"
+                            required
+                            prepend-icon="schedule"
+                            readonly
+                            lazy
+                            v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-time-picker
+                    v-model="startTime"
+                    @click:minute="$refs.startMenuOpened.save(startTime)"
+                    format="24hr">
+                </v-time-picker>
             </v-menu>
         </v-flex>
         <v-flex xs6 md3>
             <v-menu
                     ref="endMenuOpened"
                     :close-on-content-click="false"
-                    v-model="endMenuOpened"
-                    lazy
-                    full-width
-            >
-                <v-text-field
-                        slot="activator"
+                    v-model="endMenuOpened">
+                <template v-slot:activator="{ on }">
+                    <v-text-field
+                            slot="activator"
+                            v-model="endTime"
+                            required
+                            label="Ende"
+                            prepend-icon="schedule"
+                            readonly
+                            lazy
+                            v-on="on"
+                    ></v-text-field>
+                </template>
+                <v-time-picker
                         v-model="endTime"
-                        required
-                        label="Ende"
-                        prepend-icon="schedule"
-                        readonly
-                ></v-text-field>
-                <v-time-picker v-model="endTime" @input="endMenuOpened = false" format="24hr"></v-time-picker>
+                        format="24hr"
+                ></v-time-picker>
             </v-menu>
         </v-flex>
-        <v-flex xs6>
+        <v-flex xs10>
             <v-select
                     :items="locations"
                     item-text="name"
@@ -75,7 +85,7 @@
                     prepend-icon="add_location"
             ></v-select>
         </v-flex>
-        <v-flex xs6>
+        <v-flex xs2>
             <v-checkbox
                     v-if="series"
                     v-model="editedActive"
@@ -125,7 +135,7 @@
         </v-flex>
         <v-flex xs12>
             <v-textarea
-                    box
+                    filled
                     label="Kommentar"
                     v-model.lazy="editedComment"
             ></v-textarea>

@@ -1,17 +1,17 @@
 <template>
   <v-dialog v-model="show" max-width="600px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
     <v-card>
-      <v-toolbar card>
+      <v-toolbar flat>
         <v-btn icon @click="show=false">
           <v-icon>close</v-icon>
         </v-btn>
         <v-toolbar-title>Filter ändern</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat color="primary" @click="done" :disabled="!valid"><v-icon right>done</v-icon>Auswählen</v-btn>
+          <v-btn text color="primary" @click="done" :disabled="!valid"><v-icon left>done</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
-
+      <v-divider></v-divider>
       <v-card-text>
         <v-form
           v-model="valid">
@@ -26,7 +26,7 @@
           required
           :rules="branchRules"
         ></v-select>
-        <v-autocomplete
+        <v-select
           v-bind:disabled="!selectedBranchId"
           v-bind:items="groupItems"
           v-model="selectedGroupIds"
@@ -38,7 +38,7 @@
           deletable-chips
           label="Gruppen"
           prepend-icon="group"
-        ></v-autocomplete>
+        ></v-select>
         </v-form>
       </v-card-text>
     </v-card>

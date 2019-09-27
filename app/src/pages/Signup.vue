@@ -2,9 +2,8 @@
     <v-layout align-top justify-center>
         <v-flex xs12 sm8>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Registrieren</v-toolbar-title>
-                    <v-spacer></v-spacer>
                 </v-toolbar>
                 <v-divider></v-divider>
                 <div v-if="completed">
@@ -56,15 +55,23 @@
                                 required
                                 lazy
                                 full-width>
-                            <v-text-field
-                                    slot="activator"
-                                    v-model="birthdateFormatted"
-                                    required
-                                    label="Geburtsdatum"
-                                    prepend-icon="event"
-                                    readonly
-                            ></v-text-field>
-                            <v-date-picker v-model="birthdate" @input="birthdateMenu = false"></v-date-picker>
+                            <template v-slot:activator="{ on }">
+                                <v-text-field
+                                        v-model="birthdateFormatted"
+                                        required
+                                        label="Geburtsdatum"
+                                        prepend-icon="event"
+                                        readonly
+                                        v-on="on"
+                                ></v-text-field>
+                            </template>
+                            <v-date-picker
+                                    v-model="birthdate"
+                                    @input="birthdateMenu = false"
+                                    ref="birthdatePicker"
+                                    :max="new Date().toISOString().substr(0, 10)"
+                                    min="1950-01-01">
+                            </v-date-picker>
                         </v-menu>
 
                         <v-text-field
@@ -175,6 +182,11 @@
                 }
             },
             formatDate,
+        },
+        watch: {
+            birthdateMenu (val) {
+                val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+            },
         },
     }
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <v-card>
+    <v-card flat>
         <v-card-title>
             <StatisticsFilter1
                     v-bind:groupIds="filterGroupIds"
@@ -8,6 +8,7 @@
                     v-on:yearSelected="filterYearChanged">
             </StatisticsFilter1>
         </v-card-title>
+        <v-divider></v-divider>
         <v-card-text>
             <apexchart ref="trainerTimeLineChart" type="bar" :options="options" :series="series"/>
         </v-card-text>

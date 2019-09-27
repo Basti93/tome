@@ -6,10 +6,11 @@
           item-value="id"
           v-model="selectedBranchId"
           clearable
+          single-line
           label="Sparte"
           prepend-icon="bubble_chart"
         ></v-select>
-        <v-autocomplete
+        <v-select
           v-bind:disabled="!selectedBranchId"
           v-bind:items="groupItems"
           v-model="selectedGroupId"
@@ -18,7 +19,7 @@
           clearable
           label="Gruppe"
           prepend-icon="group"
-        ></v-autocomplete>
+        ></v-select>
     </v-card>
 </template>
 

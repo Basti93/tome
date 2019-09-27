@@ -2,7 +2,7 @@
   <v-layout align-top>
     <v-flex xs12 md10 offset-md1 top>
       <v-card>
-        <v-toolbar card prominent>
+        <v-toolbar flat>
         <v-toolbar-title>Profileinstellungen</v-toolbar-title>
         <v-spacer></v-spacer>
           <v-btn color="primary" v-bind:disabled="!valid"  @click="save()">
@@ -10,6 +10,7 @@
             Speichern
           </v-btn>
       </v-toolbar>
+        <v-divider></v-divider>
         <v-form
                 v-model="valid"
         >
@@ -66,21 +67,27 @@
                                   :close-on-content-click="false"
                                   v-model="birthdateMenu"
                                   :rules="requiredRule"
-                                  required
-                                  lazy
-                                  full-width>
-                            <v-text-field
-                                    slot="activator"
-                                    v-model="birthdateFormatted"
-                                    required
-                                    label="Geburtsdatum"
-                                    prepend-icon="event"
-                                    readonly
-                            ></v-text-field>
-                            <v-date-picker v-model="editUser.birthdate" @input="birthdateMenu = false"></v-date-picker>
+                                  required>
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                      slot="activator"
+                                      v-model="birthdateFormatted"
+                                      required
+                                      label="Geburtsdatum"
+                                      prepend-icon="event"
+                                      readonly
+                                      v-on="on"></v-text-field>
+                            </template>
+                            <v-date-picker
+                                  v-model="editUser.birthdate"
+                                  @input="birthdateMenu = false"
+                                  ref="birthdatePicker"
+                                  :max="new Date().toISOString().substr(0, 10)"
+                                  min="1950-01-01">
+                            </v-date-picker>
                           </v-menu>
                         </v-flex>
-                        <v-flex xs3>
+                        <v-flex xs12>
                           <ChangePasswordDialog
                                   :visible="showPasswordDialog"
                                   v-on:close="showPasswordDialog = false"
@@ -102,9 +109,8 @@
                             <v-card-text>
                               <v-flex md10 offset-md1>
                                 <v-alert
-                                        v-bind:value="true"
                                         type="info"
-                                        outline
+                                        outlined
                                 >
                                   Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist, kannst du dich hier Gruppen zuweisen
                                 </v-alert>
@@ -127,9 +133,8 @@
                   <v-card-title>
                     <v-flex md10 offset-md1>
                       <v-alert
-                              v-bind:value="true"
                               type="info"
-                              outline
+                              outlined
                       >
                         Hier kannst du deine Trainingsgruppen auswählen. <br />Sie dienen als Filter und werden für die Trainings- und Benutzerverwaltung benötigt.
                       </v-alert>
@@ -197,6 +202,7 @@
     methods: {
       assignCurrentUser: function () {
         this.editUser = {...this.loggedInUser}
+        //this.editUser.birthdate = this.logged
       },
       groupsChanged: function ({groupIds}) {
         this.editUser.groupIds = groupIds;
@@ -226,6 +232,11 @@
         }
       },
       formatDate,
+    },
+    watch: {
+      birthdateMenu (val) {
+        val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+      },
     },
   }
 </script>

@@ -1,29 +1,15 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import Moment from 'moment'
 import App from './App.vue'
+import vuetify from './plugins/vuetify';
+import Moment from 'moment'
 import axios from './axios'
-import Vuetify from 'vuetify'
-import 'material-design-icons-iconfont/dist/material-design-icons.css'
-import 'vuetify/dist/vuetify.min.css'
 import store from "./store";
 import router from './router'
-import de from 'vuetify/src/locale/de'
 import VueApexCharts from 'vue-apexcharts'
 import './registerServiceWorker'
 
-Vue.prototype.moment = Moment
 
-Vue.use(Vuetify, {
-  lang: {
-    locales: {de},
-    current: 'de'
-  },
-  theme: {
-    primary: "#60cc69",
-  }
-})
+Vue.prototype.moment = Moment
 
 Vue.use(VueApexCharts)
 Vue.component('apexchart', VueApexCharts)
@@ -51,6 +37,7 @@ const init = async () => {
   } finally {
     // @ts-ignore
     new Vue({
+      vuetify,
       axios,
       router,
       store,

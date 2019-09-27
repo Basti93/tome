@@ -2,21 +2,28 @@
     <div>
         <v-card class="tp-upcoming-training white--text" :class="'ma-3'">
             <v-card-title>
-                <h3>{{ start.format('dddd [den] Do MMMM') }}&nbsp;({{start.fromNow()}})</h3>
+                <h6>{{ start.format('dddd [den] Do MMMM') }}&nbsp;({{start.fromNow()}})</h6>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-container grid-list-md>
-                    <v-layout wrap>
-                        <v-flex xs5>
-                            <p class="font-weight-bold">Von {{start.format('HH:mm')}} Uhr</p>
-                            <p class="font-weight-bold">Bis {{end.format('HH:mm')}} Uhr</p>
+                    <v-layout wrap row>
+                        <v-flex xs12 md5>
+                            Von
+                            <v-chip class="ml-2 mr-2">
+                                <v-icon left color="primary">query_builder</v-icon>{{start.format('HH:mm')}}
+                            </v-chip>
+                            bis
+                            <v-chip class="ml-2">
+                                <v-icon left color="primary">query_builder</v-icon>{{end.format('HH:mm')}}
+                            </v-chip>
                         </v-flex>
                         <v-flex xs7 v-if="allowedToCheckIn()">
                             <v-btn
                                     style="min-width: 125px"
                                     v-if="!attending || notYet"
                                     color="primary"
+                                    class="ma-2"
                                     @click="currentUser ? participate() : showCookieUserLogin()">
                                 Teilnehmen
                             </v-btn>
@@ -24,15 +31,15 @@
                                     style="min-width: 125px"
                                     v-if="attending || notYet"
                                     color="error"
+                                    class="ma-2"
                                     @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
                                 Absagen
                             </v-btn>
                         </v-flex>
                         <v-flex xs12 md6 v-else>
                             <v-alert
-                                    :value="true"
                                     type="info"
-                                    outline
+                                    outlined
                                     pa-1
                                     ma-0
                                     class="caption"
@@ -41,7 +48,9 @@
                             </v-alert>
                         </v-flex>
                         <v-flex xs12>
-                            <p class="font-weight-bold">{{location}}</p>
+                            <v-chip>
+                                <v-icon left color="primary">room</v-icon>{{location}}
+                            </v-chip>
                         </v-flex>
                     </v-layout>
                 </v-container>
@@ -49,7 +58,7 @@
         </v-card>
         <v-card :class="'ma-3'" v-show="comment">
             <v-card-title>
-                <h3>Zusätzliche Informationen</h3>
+                <h6>Zusätzliche Informationen</h6>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
@@ -59,7 +68,7 @@
                         class="text-small"
                         pa-0
                         ma-0
-                        outline
+                        outlined
                 >
                     {{comment}}
                 </v-alert>
@@ -67,54 +76,73 @@
         </v-card>
         <v-card :class="'ma-3'" v-show="contentIds.length">
             <v-card-title>
-                <h3>Trainingsinhalte</h3>
+                <h6>Trainingsinhalte</h6>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
-                <TrainingContent
-                        :contentIds="contentIds"
-                        :initContentIds="contentIds"
-                >
-                </TrainingContent>
+                <v-container grid-list-md>
+                    <TrainingContent
+                            :contentIds="contentIds"
+                            :initContentIds="contentIds"
+                    >
+                    </TrainingContent>
+                </v-container>
             </v-card-text>
         </v-card>
         <v-card :class="'ma-3'">
             <v-card-title>
-                <h3>Trainer</h3>
+                <h6>Trainer</h6>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-chip v-for="(item) in trainers"
-                        :key="item.id">{{fullName(item)}}
+                        :key="item.id"
+                        class="ma-1">
+                    <v-icon left color="primary">verified_user</v-icon>
+                    {{fullName(item)}}
                 </v-chip>
             </v-card-text>
         </v-card>
         <v-card :class="'ma-3'">
             <v-card-title>
-                <h3>Gruppen</h3>
+                <h6>Gruppen</h6>
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-chip v-for="(item) in groups"
-                        :key="item.id">{{item.name}}
+                        :key="item.id"
+                        class="ma-1">
+                    <v-icon left color="primary">group</v-icon>
+                    {{item.name}}
                 </v-chip>
             </v-card-text>
         </v-card>
         <v-dialog v-model="showCancelDialog" max-width="500px">
             <v-card>
-                <v-card-title>
-                    <span class="title">Kurzfristige Absage</span>
-                </v-card-title>
-
+                <v-toolbar flat>
+                    <v-btn icon @click="showCancelDialog=false">
+                        <v-icon>close</v-icon>
+                    </v-btn>
+                    <v-toolbar-title>Kurzfristige Absage</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn text
+                               color="primary"
+                               @click="cancelParticipation(cancelReason)"
+                               :disabled="!cancelDialogValid">
+                            <v-icon left>check</v-icon>Absage abschicken
+                        </v-btn>
+                    </v-toolbar-items>
+                </v-toolbar>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form v-model="cancelDialogValid">
                         <v-container grid-list-md>
                             <v-layout wrap>
                                 <v-flex xs12>
                                     <v-alert
-                                            :value="true"
                                             type="warning"
-                                            outline
+                                            outlined
                                             pa-1
                                             ma-0
                                             class="caption"
@@ -124,27 +152,13 @@
                                 </v-flex>
                                 <v-flex xs12>
                                     <v-textarea
-                                            box
+                                            filled
                                             label="Gib hier einen Grund an"
                                             required
                                             :rules="cancelReasonRules"
                                             v-model="cancelReason">
 
                                     </v-textarea>
-                                    <v-spacer></v-spacer>
-                                    <v-btn
-                                            @click="showCancelDialog = false"
-                                            color="primary"
-                                    >
-                                        Abbrechen
-                                    </v-btn>
-                                    <v-btn
-                                            :disabled="!cancelDialogValid"
-                                            @click="cancelParticipation(cancelReason)"
-                                            color="primary"
-                                    >
-                                        Absage abschicken
-                                    </v-btn>
                                 </v-flex>
                             </v-layout>
                         </v-container>

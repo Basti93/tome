@@ -2,7 +2,7 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Trainingsserien verwalten</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn title="Neues Training anlegen" color="primary" @click="openCreateDialog()">
@@ -13,17 +13,17 @@
                             v-model="showCreateDialog"
                             fullscreen>
                         <v-card>
-                            <v-toolbar card>
+                            <v-toolbar flat>
                                 <v-btn icon @click="showCreateDialog = false">
                                     <v-icon>close</v-icon>
                                 </v-btn>
                                 <v-toolbar-title>Trainingsserie Bearbeiten/Anlegen</v-toolbar-title>
                                 <v-spacer></v-spacer>
                                 <v-toolbar-items>
-                                    <v-btn flat color="primary" @click="save()">Speichern</v-btn>
+                                    <v-btn text color="primary" @click="save()"><v-icon left>check</v-icon>Speichern</v-btn>
                                 </v-toolbar-items>
                             </v-toolbar>
-
+                            <v-divider></v-divider>
                             <v-card-text>
                                 <v-container grid-list-md>
                                     <v-layout wrap>
@@ -54,9 +54,12 @@
                     <div v-if="$vuetify.breakpoint.lgAndUp">
                         <div v-if="filterGroupIds.length > 0">
                             <v-chip
-                                    small
-                                    v-for="(item, index) in filterGroups"
-                                    :key="item.id">{{branchAndGroupName(item)}}
+                                small
+                                v-for="(item, index) in filterGroups"
+                                :key="item.id"
+                                class="ma-1">
+                                    <v-icon left color="primary">group</v-icon>
+                                {{branchAndGroupName(item)}}
                             </v-chip>
                         </div>
                     </div>
@@ -74,34 +77,48 @@
 
                 <v-card-text>
                     <v-alert
-                            v-bind:value="true"
                             type="info"
                             class="text-small"
                             pa-0
                             ma-0
-                            outline>
+                            outlined>
                         Traings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                     </v-alert>
                     <v-data-table
                             :headers="headers"
                             :items="trainingSeriesList"
-                            :loading="loading">
-                        <v-progress-linear slot="loading" color="primary" indeterminate></v-progress-linear>
-                        <template slot="items" slot-scope="props">
-                            <tr @click="editItem(props.item)" style="cursor: pointer">
-                                <td>{{ dayArrayToString(props.item.weekdays) }}</td>
-                                <td>{{ removeMilleSec(props.item.startTime) }}</td>
-                                <td>{{ removeMilleSec(props.item.endTime) }}</td>
-                                <td>
-                                    <v-chip v-for="(group) in getGroupsByIds(props.item.groupIds)"
-                                            :key="group.id">
-                                        {{ branchAndGroupName(group) }}
-                                    </v-chip>
-                                </td>
-                                <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
-                            </tr>
+                            :loading="loading"
+                            hide-default-footer>
+                        <template v-slot:item.id="{ item }">
+                            {{ item.id }}
                         </template>
-
+                        <template v-slot:item.weekdays="{ item }">
+                            {{ dayArrayToString(item.weekdays) }}
+                        </template>
+                        <template v-slot:item.startTime="{ item }">
+                            {{ item.startTime }}
+                        </template>
+                        <template v-slot:item.endTime="{ item }">
+                            {{ item.endTime }}
+                        </template>
+                        <template v-slot:item.trainerIds="{ item }">
+                            <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
+                                    :key="trainer.id"
+                                    small
+                                    class="ma-1">
+                                {{ trainer.firstName }}</v-chip>
+                        </template>
+                        <template v-slot:item.active="{ item }">
+                            {{ item.active ? 'Ja' : 'Nein' }}
+                        </template>
+                        <template v-slot:item.action="{ item }">
+                            <v-btn
+                                    outlined
+                                    @click="editItem(item)"
+                                    color="success">
+                                <v-icon>edit</v-icon>
+                            </v-btn>
+                        </template>
                     </v-data-table>
                 </v-card-text>
 
@@ -131,11 +148,13 @@
                 showCreateDialog: false,
                 loading: false,
                 headers: [
+                    {text: 'Id', value: 'id', sortable: false},
                     {text: 'Wochentage', value: 'weekdays', sortable: false},
                     {text: 'Start', value: 'startTime', sortable: false},
                     {text: 'Ende', value: 'endTime', sortable: false},
-                    {text: 'Gruppen', value: 'groupIds', sortable: false},
+                    {text: 'Trainer', value: 'trainerIds', sortable: false},
                     {text: 'Aktiv', value: 'active', sortable: false},
+                    {text: 'Actions', value: 'action', sortable: false },
                 ],
                 defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true),
                 editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true) as TrainingSeries,
@@ -151,7 +170,7 @@
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
-            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById'}),
+            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById', getSimpleTrainersByIds: 'getSimpleTrainersByIds'}),
             filterGroups() {
                 if (this.filterGroupIds.length > 0) {
                     return this.getGroupsByIds(this.filterGroupIds)
@@ -194,7 +213,7 @@
                 }
 
             },
-            editItem(item: TrainingSeries) {
+            editItem(item) {
                 this.editedTrainingSeries = {...item};
                 this.showCreateDialog = true;
             },

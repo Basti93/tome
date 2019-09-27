@@ -2,7 +2,7 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Benutzerverwaltung</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="showCreateDialog = true">
@@ -14,7 +14,10 @@
                         <v-chip
                                 small
                                 v-for="(item, index) in filterGroups"
-                                :key="item.id">{{branchAndGroupName(item)}}
+                                :key="item.id"
+                                class="ma-1">
+                            <v-icon left color="primary">group</v-icon>
+                            {{branchAndGroupName(item)}}
                         </v-chip>
                     </div>
 
@@ -35,38 +38,52 @@
                             :items="users"
                             item-key="id"
                             :loading="loading"
-                            :pagination.sync="pagination"
+                            :sort-desc.sync="sortDesc"
+                            :server-items-length="totalItems"
+                            :items-per-page.sync="itemsPerPage"
+                            :page.sync="page"
+                            :sort-by.sync="sortBy"
                             :total-items="total"
                             :rows-per-page-items="rowsPerPageItems"
                     >
-                        <v-progress-linear slot="progress" color="primary" indeterminate></v-progress-linear>
-                        <template slot="items" slot-scope="props">
-                            <tr @click="editItem(props.item)" style="cursor: pointer">
-                                <td>{{ props.item.firstName }}</td>
-                                <td>{{ props.item.familyName }}</td>
-                                <td>
-                                    <v-chip v-for="(group) in getGroupsByIds(props.item.groupIds)"
-                                            :key="group.id">
-                                        {{ group.name }}
-                                    </v-chip>
-
-
-                                </td>
-                                <td>{{ props.item.active ? 'Ja' : 'Nein' }}</td>
-                                <td>{{ props.item.registered ? 'Nein' : 'Ja' }}</td>
-                                <td>
-                                    <v-icon
-                                            small
-                                            v-if="loggedInUser.isAdmin && !props.item.isAdmin"
-                                            @click="deleteItem(props.item)"
-                                    >
-                                        delete
-                                    </v-icon>
-                                </td>
-                            </tr>
+                        <template v-slot:item.firstName="{ item }">
+                            {{ item.firstName }}
                         </template>
-
-                        <template slot="no-data">
+                        <template v-slot:item.familyName="{ item }">
+                            {{ item.familyName }}
+                        </template>
+                        <template v-slot:item.groups="{ item }">
+                            <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
+                                    :key="group.id"
+                                    class="ma-1">
+                                <v-icon left color="primary">group</v-icon>
+                                {{branchAndGroupName(group)}}
+                            </v-chip>
+                        </template>
+                        <template v-slot:item.active="{ item }">
+                            {{ item.active ? 'Ja' : 'Nein' }}
+                        </template>
+                        <template v-slot:item.registered="{ item }">
+                            {{ item.registered ? 'Nein' : 'Ja' }}
+                        </template>
+                        <template v-slot:item.action="{ item }">
+                            <v-btn
+                                    outlined
+                                    v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                                    @click="editItem(item)"
+                                    color="success">
+                                <v-icon>edit</v-icon>
+                            </v-btn>
+                            <v-btn
+                                    outlined
+                                    class="ml-5"
+                                    v-if="canDeleteUser(item)"
+                                    @click="deleteItem(item)"
+                                    color="error">
+                                <v-icon>delete</v-icon>
+                            </v-btn>
+                        </template>
+                        <template v-slot:no-data>
                             <v-container fluid>
                                 <v-layout row justify-center>
                                     <v-btn color="error" :disabled="loading" @click="reset()">
@@ -79,25 +96,29 @@
                     </v-data-table>
                 </v-card-text>
             </v-card>
+            <CreateUnregistredUserDialog
+                    v-bind:visible="showCreateDialog"
+                    v-on:userCreated="loadData()"
+                    v-on:close="showCreateDialog = false">
+            </CreateUnregistredUserDialog>
             <v-dialog
                     v-model="showDialog"
-                      max-width="1000px"
-                      :fullscreen="$vuetify.breakpoint.xsOnly"
-                      persistent
+                    max-width="1000px"
+                    :fullscreen="$vuetify.breakpoint.xsOnly"
+                    persistent
             >
                 <v-card>
-                    <v-toolbar card>
+                    <v-toolbar flat>
                         <v-btn icon @click="closeDialog">
                             <v-icon>close</v-icon>
                         </v-btn>
                         <v-toolbar-title>Benutzer Bearbeiten</v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-toolbar-items>
-                            <v-btn flat color="primary" @click="save">Speichern</v-btn>
+                            <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
                         </v-toolbar-items>
                     </v-toolbar>
                     <v-divider></v-divider>
-
                     <v-card-text>
                         <v-container grid-list-md>
                             <v-layout wrap>
@@ -122,15 +143,24 @@
                                             v-model="birthdateMenu"
                                             lazy
                                             full-width>
-                                        <v-text-field
-                                                slot="activator"
-                                                v-model="birthdateFormatted"
-                                                required
-                                                label="Geburtsdatum"
-                                                prepend-icon="event"
-                                                readonly
-                                        ></v-text-field>
-                                        <v-date-picker v-model="editedItem.birthdate" @input="birthdateMenu = false"></v-date-picker>
+                                        <template v-slot:activator="{ on }">
+                                            <v-text-field
+                                                    slot="activator"
+                                                    v-model="birthdateFormatted"
+                                                    required
+                                                    label="Geburtsdatum"
+                                                    prepend-icon="event"
+                                                    readonly
+                                                    v-on="on"
+                                            ></v-text-field>
+                                        </template>
+                                        <v-date-picker
+                                                ref="birthdatePicker"
+                                                v-model="editedItem.birthdate"
+                                                @input="birthdateMenu = false"
+                                                :max="new Date().toISOString().substr(0, 10)"
+                                                min="1950-01-01">
+                                        </v-date-picker>
                                     </v-menu>
                                 </v-flex>
                                 <v-flex xs12 md6>
@@ -151,11 +181,6 @@
                     </v-card-text>
                 </v-card>
             </v-dialog>
-            <CreateUnregistredUserDialog
-                    v-bind:visible="showCreateDialog"
-                    v-on:userCreated="fetchData()"
-                    v-on:close="showCreateDialog = false">
-            </CreateUnregistredUserDialog>
         </v-flex>
     </v-layout>
 </template>
@@ -181,14 +206,19 @@
                 editGroups: [],
                 loading: false,
                 total: null,
-                rowsPerPageItems: [10, 20, 50, 100],
-                pagination: {},
+                rowsPerPageItems: [5, 10, 20, 50, 100],
+                totalItems: 0,
+                page: 1,
+                itemsPerPage: 10,
+                sortBy: null,
+                sortDesc: null,
                 headers: [
                     {text: 'Vorname', value: 'firstName', sortable: true},
                     {text: 'Nachname', value: 'familyName', sortable: true},
                     {text: 'Gruppen', value: 'groups', sortable: false},
                     {text: 'Aktiv', value: 'active', sortable: true},
                     {text: 'Vorläufiger Benutzer', value: 'registered', sortable: false},
+                    {text: 'Actions', value: 'action', sortable: false },
                 ],
                 users: [],
                 editedId: null,
@@ -219,6 +249,7 @@
                 let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
                 this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
             }
+            this.loadData();
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
@@ -240,16 +271,6 @@
                 return this.formatDate(this.editedItem.birthdate)
             },
         },
-        watch: {
-            pagination: {
-                handler() {
-                    if (!this.loading) {
-                        this.fetchData();
-                    }
-                },
-                deep: true
-            },
-        },
         methods: {
             filterChanged({branchId: branchId, groupdIds: groupIds}) {
                 this.filterGroupIds = groupIds;
@@ -257,17 +278,17 @@
                 if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
                     this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
                 }
-                this.fetchData();
+                this.loadData();
             },
-            async fetchData() {
+            async loadData() {
                 this.loading = true;
                 let url = null;
                 // get by sort option
-                if (this.pagination.sortBy) {
-                    const direction = this.pagination.descending ? 'desc' : 'asc';
-                    url = '/user/sort?direction=' + direction + '&sortBy=' + this.pagination.sortBy + '&page=' + this.pagination.page + '&per_page=' + this.pagination.rowsPerPage
+                if (this.sortBy) {
+                    const direction = this.sortDesc ? 'desc' : 'asc';
+                    url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy + '&page=' + this.page + '&per_page=' + this.itemsPerPage
                 } else {
-                    url = '/user?page=' + this.pagination.page + '&per_page=' + this.pagination.rowsPerPage
+                    url = '/user?page=' + this.page + '&per_page=' + this.itemsPerPage
                 }
                 if (this.filterGroupIds && this.filterGroupIds.length > 0) {
                     url += '&groupIds=' + this.filterGroupIds;
@@ -300,12 +321,12 @@
                         registered: userObj.registered
                     }))
                 }
-                self.pagination.page = res.data.currentPage;
-                self.pagination.totalItems = res.data.total;
+                self.page = res.data.currentPage;
+                self.totalItems = res.data.total;
                 self.total = res.data.total;
             },
             editItem(item) {
-                if ((this.loggedInUser.isAdmin && !item.isAdmin) || (this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin)) {
+                if (this.loggedInUser.isAdmin &&  this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin) {
                     this.editedId = item.id
                     this.editedItem = {...item}
                     this.showDialog = true
@@ -313,18 +334,19 @@
                     this.$emit("showSnackbar", "Trainer und Admins können sich nur selbst bearbeiten.", "info")
                 }
             },
-            deleteItem(item) {
-                if (confirm('Löschen bestätigen')) {
-                    this.$http.delete('/user/' + item.id)
-                        .then(this.userDeleted(item)).catch(function (err) {
-                        console.log(err);
-                        this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
-                    })
-                }
+            canDeleteUser(item) {
+              return this.loggedInUser.isAdmin && !item.isTrainer && !item.isAdmin
             },
-            userDeleted(item) {
-                this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")
-                this.users.splice(this.users.indexOf(item), 1)
+            async deleteItem(item) {
+                if (confirm('Löschen bestätigen')) {
+                    let response = await this.$http.delete('/user/' + item.id);
+                    if (response.data.status === 'ok') {
+                        this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")
+                        this.users.splice(this.users.indexOf(item), 1)
+                    } else {
+                        this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
+                    }
+                }
             },
             editedItemGroupsChanged({groupIds}) {
                 this.editedItem.groupIds = groupIds;
@@ -335,19 +357,18 @@
             },
             reset() {
                 this.filterGroupId = null;
-                this.fetchData();
+                this.loadData();
             },
             async save() {
                 if (this.editedId) {
-                    const self = this;
-                    const postData = {firstName: self.editedItem.firstName, familyName: self.editedItem.familyName, birthdate: self.moment(self.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"), groupIds: self.editedItem.groupIds, active: self.editedItem.active};
-                    const {data} = await self.$http.put('/user/' + self.editedId, postData);
+                    const postData = {firstName: this.editedItem.firstName, familyName: this.editedItem.familyName, birthdate: this.moment(this.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"), groupIds: this.editedItem.groupIds, active: this.editedItem.active};
+                    const {data} = await this.$http.put('/user/' + this.editedId, postData);
                     if (data.error) {
-                        self.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
+                        this.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
                     } else {
-                        self.closeDialog()
-                        self.$emit("showSnackbar", "Benutzer gespeichert", "success")
-                        self.fetchData();
+                        this.closeDialog()
+                        this.$emit("showSnackbar", "Benutzer gespeichert", "success")
+                        this.loadData();
                     }
                 }
             },
@@ -355,6 +376,43 @@
                 return this.getBranchById(item.branchId).shortName + '/' + item.name;
             },
             formatDate,
+        },
+        watch: {
+            page: {
+                handler () {
+                    if (!this.loading) {
+                        this.loadData();
+                    }
+                },
+                deep: true,
+            },
+            itemPerPage: {
+                handler () {
+                    if (!this.loading) {
+                        this.loadData();
+                    }
+                },
+                deep: true,
+            },
+            sortBy: {
+                handler () {
+                    if (!this.loading) {
+                        this.loadData();
+                    }
+                },
+                deep: true,
+            },
+            sortDesc: {
+                handler () {
+                    if (!this.loading) {
+                        this.loadData();
+                    }
+                },
+                deep: true,
+            },
+            birthdateMenu (val) {
+                val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+            },
         },
     }
 </script>

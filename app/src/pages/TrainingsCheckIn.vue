@@ -2,16 +2,16 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Trainingsanmeldung</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-chip v-if="cookieUser" close @input="removeCookieUser()" v-model="cookieUser">{{cookieUser.getFullName()}}</v-chip>
-                    <CookieUserDialog
-                            :visible="cookieUserDialogVisible"
-                            v-on:close="cookieUserDialogClosed()"
-                    ></CookieUserDialog>
+                    <v-chip
+                            v-if="cookieUser"
+                            close @click:close="removeCookieUser()"
+                            v-model="cookieUser">{{cookieUser.getFullName()}}
+                    </v-chip>
                     <v-spacer></v-spacer>
-                    <v-chip>{{filterDisplayValue}}</v-chip>
+                    <v-chip><v-icon left color="primary">group</v-icon>{{filterDisplayValue}}</v-chip>
                     <v-btn icon color="primary" @click="filterDialogVisible = true">
                         <v-icon>filter_list</v-icon>
                     </v-btn>
@@ -21,17 +21,18 @@
                               :fullscreen="$vuetify.breakpoint.xsOnly"
                             persistent>
                         <v-card>
-                            <v-toolbar card>
+                            <v-toolbar flat dense>
                                 <v-btn icon @click="filterDialogVisible = false">
                                     <v-icon>close</v-icon>
                                 </v-btn>
                                 <v-toolbar-title>Filter ändern</v-toolbar-title>
                                 <v-spacer></v-spacer>
                                 <v-toolbar-items>
-                                    <v-btn flat color="primary" @click="filterDone"><v-icon>done</v-icon></v-btn>
+                                    <v-btn text color="primary" @click="filterDone"><v-icon>done</v-icon></v-btn>
                                 </v-toolbar-items>
                             </v-toolbar>
-                            <v-card-text>
+                            <v-divider></v-divider>
+                            <v-card-text flat>
                                 <GroupSelect
                                         v-bind:groupId="currentUserGroupId"
                                         v-on:groupSelected="groupChanged"
@@ -41,11 +42,10 @@
                             </v-card-text>
                         </v-card>
                     </v-dialog>
-
                 </v-toolbar>
                 <v-divider></v-divider>
                 <v-card-text flat>
-                    <div v-show="dataLoaded">
+                    <div v-show="dataLoaded" class="tp-training-check-in">
                         <h3>Aktuelle Trainings</h3>
                         <div class="tp-training-check-in__navigation">
                             <v-card
@@ -57,7 +57,7 @@
                                     :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--canceled': canceled(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                             >
                                 <v-card-title>
-                                    <h2 class="subheading">{{ item.start.format('dddd').slice(0, 2) }}</h2>
+                                    <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
                                     <p class="title pt-1">{{ item.start.format('DD')}}</p>
                                     <v-icon v-if="attending(item.id)" small>check</v-icon>
                                     <v-icon v-else-if="canceled(item.id)" small>not_interested</v-icon>
@@ -83,6 +83,10 @@
                 </v-card-text>
             </v-card>
         </v-flex>
+        <CookieUserDialog
+                :visible="cookieUserDialogVisible"
+                v-on:close="cookieUserDialogClosed()"
+        ></CookieUserDialog>
     </v-layout>
 </template>
 
@@ -297,9 +301,11 @@
 
 <style scoped lang="scss">
     .tp-training-check-in {
+        text-align: center;
 
         &__navigation-card {
             flex-grow: 1;
+
 
             .v-card__title {
                 display: block;

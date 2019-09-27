@@ -2,7 +2,7 @@
   <v-layout align-top justify-center>
     <v-flex xs12 sm8 md6>
       <v-card>
-        <v-toolbar card prominent>
+        <v-toolbar flat>
           <v-toolbar-title>Anmelden</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>

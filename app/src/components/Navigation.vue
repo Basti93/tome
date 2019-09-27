@@ -3,91 +3,89 @@
         <v-navigation-drawer
                 fixed
                 v-model="drawer"
-                app
-                :clipped="$vuetify.breakpoint.lgAndUp"
         >
-            <v-card flat class="pt-4" v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
-                <v-icon x-large center>account_circle</v-icon>
-                <p>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</p>
+            <v-card text class="pt-6 text-center" center v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
+                <v-icon x-large >account_circle</v-icon>
+                <div class="d-block">{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</div>
             </v-card>
             <v-divider></v-divider>
             <v-list dense class="pt-2">
-                <v-list-tile
+                <v-list-item
                         to="/"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>how_to_reg</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Trainingsanmeldung</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Trainingsanmeldung</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/trainings"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>event</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Trainings</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Trainings</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/trainingsPrepare"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>new_releases</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Vorbereiten</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Vorbereiten</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/trainingsEvaluation"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>check</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Nachbereiten</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Nachbereiten</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/trainingSeries"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>update</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Serien</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Serien</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/users"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>person</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Benutzer</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Benutzer</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="hasRoles"
                         to="/approveUsers"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-badge right color="red" v-if="nonApprovedUserCount > 0">
                             <v-icon>
                                 assignment_turned_in
@@ -97,94 +95,92 @@
                         <v-icon v-if="nonApprovedUserCount === 0">
                             assignment_turned_in
                         </v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Benutzer Freischalten</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Benutzer Freischalten</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="loggedInUser"
                         to="/statistics"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>timeline</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Statistiken</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
+                    <v-list-item-content>
+                        <v-list-item-title>Statistiken</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
                 <!--
-                <v-list-tile
+                <v-list-item
                   v-show="loggedInUser"
                   to="/feedback"
                   @click="drawer = false">
-                  <v-list-tile-action>
+                  <v-list-item-action>
                     <v-icon>feedback</v-icon>
-                  </v-list-tile-action>
+                  </v-list-item-action>
 
-                  <v-list-tile-content>
-                    <v-list-tile-title>Kummerkasten</v-list-tile-title>
-                  </v-list-tile-content>
-                </v-list-tile>
+                  <v-list-item-content>
+                    <v-list-item-title>Kummerkasten</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
                 -->
-                <v-list-tile
+                <v-list-item
                         v-show="!loggedInUser"
                         to="/login"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>account_circle</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Anmelden</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Anmelden</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="!loggedInUser"
                         to="/signup"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>person_add</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Registrieren</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Registrieren</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="loggedInUser"
                         to="/profile"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>settings</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Profileinstellungen</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile
+                    <v-list-item-content>
+                        <v-list-item-title>Profileinstellungen</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="loggedInUser"
                         to="/logout"
                         @click="drawer = false">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                         <v-icon>exit_to_app</v-icon>
-                    </v-list-tile-action>
+                    </v-list-item-action>
 
-                    <v-list-tile-content>
-                        <v-list-tile-title>Abmelden</v-list-tile-title>
-                    </v-list-tile-content>
-                </v-list-tile>
+                    <v-list-item-content>
+                        <v-list-item-title>Abmelden</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
             </v-list>
         </v-navigation-drawer>
-        <v-toolbar
-                :clipped-left="$vuetify.breakpoint.lgAndUp"
-                app
+        <v-app-bar
                 color="primary"
                 fixed>
-            <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
             <v-toolbar-title class="tome-title">
                 <router-link to="/">{{title}}</router-link>
             </v-toolbar-title>
@@ -194,34 +190,36 @@
                     origin="center center"
                     transition="scale-transition"
                     bottom left>
+                <template v-slot:activator="{ on }">
                 <v-btn
-                        flat
-                        slot="activator"
-                        v-show="$vuetify.breakpoint.mdAndUp"
+                    text
+                    v-on="on"
+                    v-show="$vuetify.breakpoint.mdAndUp"
                 >
                     <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
                     <v-icon right>account_circle</v-icon>
                 </v-btn>
-                <v-list>
-                    <v-list-tile to="/profile">
-                        <v-list-tile-action>
-                            <v-icon>settings</v-icon>
-                        </v-list-tile-action>
-                        <v-list-tile-content>
-                            <v-list-tile-title>Einstellungen</v-list-tile-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
-                    <v-list-tile to="/logout">
-                        <v-list-tile-action>
-                            <v-icon>exit_to_app</v-icon>
-                        </v-list-tile-action>
-                        <v-list-tile-content>
-                            <v-list-tile-title>Abmelden</v-list-tile-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
-                </v-list>
+                </template>
+                    <v-list>
+                        <v-list-item to="/profile">
+                            <v-list-item-action>
+                                <v-icon>settings</v-icon>
+                            </v-list-item-action>
+                            <v-list-item-content>
+                                <v-list-item-title>Einstellungen</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                        <v-list-item to="/logout">
+                            <v-list-item-action>
+                                <v-icon>exit_to_app</v-icon>
+                            </v-list-item-action>
+                            <v-list-item-content>
+                                <v-list-item-title>Abmelden</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
             </v-menu>
-        </v-toolbar>
+        </v-app-bar>
     </div>
 </template>
 

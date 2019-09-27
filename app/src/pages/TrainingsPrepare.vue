@@ -2,7 +2,7 @@
     <v-layout align-top>
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
-                <v-toolbar card prominent>
+                <v-toolbar flat>
                     <v-toolbar-title>Meine kommenden Trainings</v-toolbar-title>
                     <v-spacer></v-spacer>
 
@@ -20,7 +20,7 @@
                                     :class="{'tp-training-prepare__navigation-card--active': item === selectedTraining, 'tp-training-prepare__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-prepare__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
                             >
                                 <v-card-title>
-                                    <h2 class="subheading">{{ item.start.format('dddd').slice(0, 2) }}</h2>
+                                    <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
                                     <p class="title pt-1">{{ item.start.format('DD')}}</p>
                                     <v-icon small>new_releases</v-icon>
                                 </v-card-title>
@@ -31,11 +31,11 @@
                             <div>
                                 <div v-if="selectedTraining">
                                     <v-list>
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                <v-list-tile-title><h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3></v-list-tile-title>
-                                            </v-list-tile-content>
-                                        </v-list-tile>
+                                        <v-list-item>
+                                            <v-list-item-content>
+                                                <v-list-item-title><h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3></v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
                                         <v-list-group
                                                 v-model="trainingDataGroupActive"
                                                 prepend-icon="verified_user"
@@ -44,11 +44,11 @@
                                                 no-action
                                         >
                                             <template slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>Trainingsdaten</v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>Trainingsdaten</v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
                                             <v-container text-xs-left>
                                                 <v-layout row align-center>
@@ -58,7 +58,7 @@
                                                     <v-flex grow>
                                                         <v-btn @click="editTime()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -85,12 +85,12 @@
                                                     <v-flex grow v-if="editingLocation">
                                                         <v-btn @click="saveEditLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -98,7 +98,7 @@
                                                         <v-btn
                                                                @click="editLocation()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -108,7 +108,7 @@
                                                 <v-layout row align-center>
                                                     <v-flex grow v-if="editingComment">
                                                         <v-textarea
-                                                                box
+                                                                filled
                                                                 label="Kommentar"
                                                                 v-model="editComment"
                                                         ></v-textarea>
@@ -117,7 +117,7 @@
                                                         <v-textarea
                                                                 solo
                                                                 flat
-                                                                outline
+                                                                outlined
                                                                 label="Kommentar"
                                                                 v-model="selectedTraining.comment"
                                                                 readonly
@@ -127,19 +127,19 @@
                                                     <v-flex shrink v-if="editingComment">
                                                         <v-btn @click="saveEditComment()"
                                                            color="primary"
-                                                           flat>
+                                                           text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditComment()"
                                                            color="primary"
-                                                           flat>
+                                                           text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
                                                     <v-flex shrink v-else>
                                                         <v-btn @click="startEditComment()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -167,19 +167,19 @@
                                                     <v-flex grow v-if="editingTrainingContent">
                                                         <v-btn @click="saveEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>check</v-icon>
                                                         </v-btn>
                                                         <v-btn @click="cancelEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>cancel</v-icon>
                                                         </v-btn>
                                                     </v-flex>
                                                     <v-flex grow v-else>
                                                         <v-btn @click="startEditTrainingContent()"
                                                                color="primary"
-                                                               flat>
+                                                               text>
                                                             <v-icon>edit</v-icon>
                                                         </v-btn>
                                                     </v-flex>
@@ -194,26 +194,25 @@
                                                 no-action
                                         >
                                             <template slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>{{participatingUsers.length}} Teilnehmer bis jetzt</v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>{{participatingUsers.length}} Teilnehmer bis jetzt</v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
-                                            <v-list-tile
+                                            <v-list-item
                                                     v-for="(item, index) in participatingUsers"
                                                     :key="item.id"
-                                                    avatar
                                                     @click=""
                                             >
-                                                <v-list-tile-avatar>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
+                                                </v-list-item-avatar>
 
-                                                <v-list-tile-content>
-                                                    <v-list-tile-title v-html="fullName(item)"></v-list-tile-title>
-                                                </v-list-tile-content>
-                                            </v-list-tile>
+                                                <v-list-item-content>
+                                                    <v-list-item-title v-html="fullName(item)"></v-list-item-title>
+                                                </v-list-item-content>
+                                            </v-list-item>
                                         </v-list-group>
                                         <v-list-group
                                                 v-model="canceledUserListGroupActive"
@@ -223,39 +222,37 @@
                                                 no-action
                                         >
                                             <template  slot="activator">
-                                                <v-list-tile>
-                                                    <v-list-tile-content>
-                                                        <v-list-tile-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-tile-title>
-                                                    </v-list-tile-content>
-                                                </v-list-tile>
+                                                <v-list-item>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>{{canceledUsers.length}} <span v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
                                             </template>
-                                            <v-list-tile
+                                            <v-list-item
                                                     v-for="(item, index) in canceledUsers"
                                                     :key="item.id"
-                                                    avatar
                                                     @click=""
                                             >
-                                                <v-list-tile-avatar>
+                                                <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
-                                                </v-list-tile-avatar>
+                                                </v-list-item-avatar>
 
-                                                <v-list-tile-content @click="openCancelReasonDialog(item.id)">
-                                                    <v-list-tile-title>{{fullName(item)}}</v-list-tile-title>
-                                                    <v-list-tile-sub-title v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-tile-sub-title>
-                                                </v-list-tile-content>
-                                            </v-list-tile>
+                                                <v-list-item-content @click="openCancelReasonDialog(item.id)">
+                                                    <v-list-item-title>{{fullName(item)}}</v-list-item-title>
+                                                    <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-list-item>
                                         </v-list-group>
 
                                     </v-list>
                             </div>
                                 <div v-else>
                                     <v-alert
-                                            v-bind:value="true"
                                             type="info"
                                             class="text-small"
                                             pa-0
                                             ma-0
-                                            outline>
+                                            outlined>
                                         Keine Trainings für dich verfügbar
                                     </v-alert>
                                 </div>
@@ -269,7 +266,7 @@
                 v-model="showCancelReasonDialog"
                 max-width="800px">
             <v-card>
-                <v-toolbar card>
+                <v-toolbar flat>
                     <v-btn icon @click="showCancelReasonDialog=false">
                         <v-icon>close</v-icon>
                     </v-btn>
@@ -284,14 +281,14 @@
                 max-width="800px"
                 :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
             <v-card>
-                <v-toolbar card>
+                <v-toolbar flat>
                     <v-btn icon @click="timeDialogOpened=false">
                         <v-icon>close</v-icon>
                     </v-btn>
                     <v-toolbar-title>Trainingszeit ändern</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn flat color="primary" @click="updateTrainingTime">Speichern</v-btn>
+                        <v-btn text color="primary" @click="updateTrainingTime"><v-icon left>check</v-icon>Speichern</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
 
@@ -572,6 +569,7 @@
             display: flex;
             flex-flow: row;
             justify-content: center;
+            text-align: center;
 
             &-card {
                 max-width: 12rem;
