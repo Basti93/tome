@@ -288,7 +288,7 @@
                     <v-toolbar-title>Trainingszeit ändern</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn text color="primary" @click="updateTrainingTime">Speichern</v-btn>
+                        <v-btn text color="primary" @click="updateTrainingTime"><v-icon left>check</v-icon>Speichern</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
 

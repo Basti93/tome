@@ -15,7 +15,10 @@
               <v-chip
                 small
                 v-for="(item, index) in filterGroups"
-                :key="item.id">{{branchAndGroupName(item)}}
+                :key="item.id"
+                class="ma-1">
+                <v-icon left color="primary">group</v-icon>
+                {{branchAndGroupName(item)}}
               </v-chip>
             </div>
           </div>
@@ -40,11 +43,7 @@
             :items-per-page.sync="itemsPerPage"
             :page.sync="page"
             :sort-by.sync="sortBy"
-            :expanded.sync="expanded"
-            show-expand
-            single-expand
           >
-            <v-progress-linear slot="progress" color="primary" indeterminate></v-progress-linear>
             <template v-slot:item.date="{ item }">
               {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
             </template>
@@ -57,130 +56,126 @@
             <template v-slot:item.locationId="{ item }">
               {{ getLocationNameById(item.locationId) }}
             </template>
-            <template v-slot:item.groupIds="{ item }">
-              <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
-                      :key="group.id">
-                {{ branchAndGroupName(group) }}
-              </v-chip>
+            <template v-slot:item.trainerIds="{ item }">
+              <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
+                      :key="trainer.id"
+                      small
+                      class="ma-1">
+                {{ trainer.firstName }}</v-chip>
             </template>
-            <template v-slot:expanded-item="{ headers }">
-              <td class="text-right" :colspan="headers.length">
-                <v-dialog
-                        v-model="dialog"
-                        hide-overlay
-                        transition="dialog-bottom-transition"
-                        persistent
-                        fullscreen>
-                  <template v-slot:activator="{ on }">
-                    <v-btn
-                            outlined
-                            v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                            @click="editItem()"
-                            color="success">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card tile>
-                    <v-toolbar flat>
-                      <v-btn icon @click="close">
-                        <v-icon>close</v-icon>
-                      </v-btn>
-                      <v-toolbar-title>Training Bearbeiten/Anlegen</v-toolbar-title>
-                      <v-spacer></v-spacer>
-                      <v-toolbar-items>
-                        <v-btn text color="primary" @click="save">Speichern</v-btn>
-                      </v-toolbar-items>
-                    </v-toolbar>
-                    <v-divider></v-divider>
-                    <v-card-text>
-                      <v-tabs
-                              icons-and-text
-                      >
-                        <v-tabs-slider color="yellow"></v-tabs-slider>
+            <template v-slot:item.action="{ item }">
+              <v-btn
+                      outlined
+                      v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                      @click="editItem(item)"
+                      small
+                      color="success">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn
+                      outlined
+                      class="ml-5"
+                      color="error"
+                      small
+                      v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                      @click="deleteItem(item)">
+                <v-icon>delete</v-icon>
+              </v-btn>
 
-                        <v-tab href="#tab-1">
-                          Allgemein
-                          <v-icon>event</v-icon>
-                        </v-tab>
-
-                        <v-tab href="#tab-2">
-                          Teilnehmer
-                          <v-icon>groups</v-icon>
-                        </v-tab>
-                        <v-tab-item :value="'tab-1'">
-                          <v-container grid-list-md>
-                            <v-layout wrap>
-                              <EditTrainingBase
-                                      :branchId="filterBranchId"
-                                      :date="editedItem.date"
-                                      :start="editedItem.start"
-                                      :end="editedItem.end"
-                                      :locationId="editedItem.locationId"
-                                      :trainerIds="editedItem.trainerIds"
-                                      :groupIds="editedItem.groupIds"
-                                      :contentIds="editedItem.contentIds"
-                                      :comment="editedItem.comment"
-                                      :trainers="trainers"
-                                      :groups="filterGroups"
-                                      v-on:change="trainingBaseChanged"
-                              ></EditTrainingBase>
-                            </v-layout>
-                          </v-container>
-                        </v-tab-item>
-                        <v-tab-item :value="'tab-2'">
-                          <v-container grid-list-md>
-                            <v-layout wrap>
-                              <v-flex xs12>
-                                <v-autocomplete
-                                        :disabled="!editDialogFilteredUsers"
-                                        :items="editDialogFilteredUsers"
-                                        v-model="editedItem.participantIds"
-                                        item-value="id"
-                                        :item-text="fullName"
-                                        label="Teilnehmer"
-                                        prepend-icon="how_to_reg"
-                                        multiple
-                                        clearable>
-                                  <template
-                                          slot="selection"
-                                          slot-scope="{ item, index }"
-                                  >
-                                    <v-chip>
-                                      <span>{{ item.firstName }}</span>
-                                    </v-chip>
-                                  </template>
-                                </v-autocomplete>
-                              </v-flex>
-                            </v-layout>
-                          </v-container>
-                        </v-tab-item>
-                      </v-tabs>
-                    </v-card-text>
-                  </v-card>
-                </v-dialog>
-                <v-btn
-                    outlined
-                    class="ml-5"
-                    v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                    @click="deleteItem()"
-                    color="error">
-                  <v-icon>delete</v-icon>
-                </v-btn>
-              </td>
             </template>
-            <template slot="no-data">
-              <v-container fluid>
-                <v-layout row justify-center>
-                  <v-btn color="error" :disabled="loading" @click="reset()">
-                    <v-icon left>cached</v-icon>
-                    Keine Daten gefunden
-                  </v-btn>
-                </v-layout>
-              </v-container>
+            <template v-slot:no-data>
+              <v-btn color="primary" :disabled="loading" @click="reset()">
+                <v-icon left>cached</v-icon>
+                Keine Daten gefunden
+              </v-btn>
             </template>
           </v-data-table>
         </v-card-text>
       </v-card>
+      <v-dialog
+              v-model="editDialog"
+              hide-overlay
+              transition="dialog-bottom-transition"
+              persistent
+              fullscreen>
+        <v-card tile>
+          <v-toolbar flat>
+            <v-btn icon @click="close">
+              <v-icon>close</v-icon>
+            </v-btn>
+            <v-toolbar-title>Training Bearbeiten/Anlegen</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-divider></v-divider>
+          <v-card-text>
+            <v-tabs
+                    icons-and-text
+            >
+              <v-tabs-slider color="yellow"></v-tabs-slider>
+
+              <v-tab href="#tab-1">
+                Allgemein
+                <v-icon>event</v-icon>
+              </v-tab>
+
+              <v-tab href="#tab-2">
+                Teilnehmer
+                <v-icon>groups</v-icon>
+              </v-tab>
+              <v-tab-item :value="'tab-1'">
+                <v-container grid-list-md>
+                  <v-layout wrap>
+                    <EditTrainingBase
+                            :branchId="filterBranchId"
+                            :date="editedItem.date"
+                            :start="editedItem.start"
+                            :end="editedItem.end"
+                            :locationId="editedItem.locationId"
+                            :trainerIds="editedItem.trainerIds"
+                            :groupIds="editedItem.groupIds"
+                            :contentIds="editedItem.contentIds"
+                            :comment="editedItem.comment"
+                            :trainers="trainers"
+                            :groups="filterGroups"
+                            v-on:change="trainingBaseChanged"
+                    ></EditTrainingBase>
+                  </v-layout>
+                </v-container>
+              </v-tab-item>
+              <v-tab-item :value="'tab-2'">
+                <v-container grid-list-md>
+                  <v-layout wrap>
+                    <v-flex xs12>
+                      <v-autocomplete
+                              :disabled="!editDialogFilteredUsers"
+                              :items="editDialogFilteredUsers"
+                              v-model="editedItem.participantIds"
+                              item-value="id"
+                              :item-text="fullName"
+                              label="Teilnehmer"
+                              prepend-icon="how_to_reg"
+                              multiple
+                              clearable>
+                        <template
+                                slot="selection"
+                                slot-scope="{ item, index }"
+                        >
+                          <v-chip>
+                            <span>{{ item.firstName }}</span>
+                          </v-chip>
+                        </template>
+                      </v-autocomplete>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-tab-item>
+            </v-tabs>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-flex>
   </v-layout>
 </template>
@@ -203,7 +198,7 @@
         showFilterDialog: false,
         filterGroupIds: [],
         filterBranchId: null,
-        dialog: false,
+        editDialog: false,
         loading: false,
         total: null,
         rowsPerPageItems: [5, 10, 20, 50, 100],
@@ -212,7 +207,6 @@
         itemsPerPage: 10,
         sortBy: null,
         sortDesc: null,
-        expanded: [],
         initializing: true,
         editDialogDateMenu: false,
         editDialogStartMenu: false,
@@ -223,7 +217,8 @@
           {text: 'Von', value: 'start', sortable: false},
           {text: 'Bis', value: 'end', sortable: false},
           {text: 'Ort', value: 'locationId', sortable: true},
-          {text: 'Gruppen', value: 'groupIds', sortable: false},
+          {text: 'Trainer', value: 'trainerIds', sortable: false},
+          {text: 'Actions', value: 'action', sortable: false },
         ],
         trainings: [],
         trainers: [],
@@ -265,7 +260,7 @@
     },
     computed: {
       ...mapGetters({loggedInUser: 'loggedInUser'}),
-      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getContentIdsByBranchId: 'getContentIdsByBranchId', getBranchById: 'getBranchById'}),
+      ...mapGetters('masterData', {getBranchById: 'getBranchById', getGroupsByBranchId: 'getGroupsByBranchId', getBranchByGroupId: 'getBranchByGroupId', getLocationNameById: 'getLocationNameById', getGroupsByIds: 'getGroupsByIds', getContentIdsByBranchId: 'getContentIdsByBranchId', getBranchById: 'getBranchById', getSimpleTrainersByIds: 'getSimpleTrainersByIds'}),
       ...mapState('masterData', {
         locations: 'locations',
       }),
@@ -396,19 +391,18 @@
       trainingBaseChanged(item) {
         Object.assign(this.editedItem, item)
       },
-      deleteItem() {
+      async deleteItem(item) {
         if (confirm('Löschen bestätigen')) {
-          const item = this.expanded[0];
-          this.$http.delete('/training/' + item.id)
-                  .then(this.trainingDeleted(item))
-                  .catch(function (err) {
-                    console.error(err);
-                    this.$emit("showSnackbar", "Training konnte nicht gelöscht werden", "error")
-                  })
+          const {data} = await this.$http.delete('/training/' + item.id);
+          if (data.status == 'ok') {
+            this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
+            this.loadData();
+          } else {
+            this.$emit("showSnackbar", "Training konnte nicht gelöscht werden", "error")
+          }
         }
       },
-      editItem() {
-        const item = this.expanded[0];
+      editItem(item) {
         this.editedId = item.id;
         Object.assign(this.editedItem, item)
         this.editedItemDate = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
@@ -422,19 +416,15 @@
             }
           }
         }
-        this.dialog = true
+        this.editDialog = true
       },
       create() {
         this.editedItem = {...this.defaultItem}
-        this.dialog = true
-      },
-      trainingDeleted(item) {
-        this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
-        this.trainings.splice(this.trainings.indexOf(item), 1)
+        this.editDialog = true
       },
       fullName: item => item.firstName + ' ' + item.familyName,
       close() {
-        this.dialog = false
+        this.editDialog = false
         setTimeout(() => {
           this.editedItem = {...this.defaultItem}
         }, 300)

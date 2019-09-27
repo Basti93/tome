@@ -7,10 +7,16 @@
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-container grid-list-md>
-                    <v-layout wrap>
-                        <v-flex xs5>
-                            <p class="font-weight-bold">Von {{start.format('HH:mm')}} Uhr</p>
-                            <p class="font-weight-bold">Bis {{end.format('HH:mm')}} Uhr</p>
+                    <v-layout wrap row>
+                        <v-flex xs12 md5>
+                            Von
+                            <v-chip class="ml-2 mr-2">
+                                <v-icon left color="primary">query_builder</v-icon>{{start.format('HH:mm')}}
+                            </v-chip>
+                            bis
+                            <v-chip class="ml-2">
+                                <v-icon left color="primary">query_builder</v-icon>{{end.format('HH:mm')}}
+                            </v-chip>
                         </v-flex>
                         <v-flex xs7 v-if="allowedToCheckIn()">
                             <v-btn
@@ -42,7 +48,9 @@
                             </v-alert>
                         </v-flex>
                         <v-flex xs12>
-                            <p class="font-weight-bold">{{location}}</p>
+                            <v-chip>
+                                <v-icon left color="primary">room</v-icon>{{location}}
+                            </v-chip>
                         </v-flex>
                     </v-layout>
                 </v-container>
@@ -72,11 +80,13 @@
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
-                <TrainingContent
-                        :contentIds="contentIds"
-                        :initContentIds="contentIds"
-                >
-                </TrainingContent>
+                <v-container grid-list-md>
+                    <TrainingContent
+                            :contentIds="contentIds"
+                            :initContentIds="contentIds"
+                    >
+                    </TrainingContent>
+                </v-container>
             </v-card-text>
         </v-card>
         <v-card :class="'ma-3'">
@@ -86,7 +96,10 @@
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-chip v-for="(item) in trainers"
-                        :key="item.id">{{fullName(item)}}
+                        :key="item.id"
+                        class="ma-1">
+                    <v-icon left color="primary">verified_user</v-icon>
+                    {{fullName(item)}}
                 </v-chip>
             </v-card-text>
         </v-card>
@@ -97,7 +110,10 @@
             <v-divider></v-divider>
             <v-card-text class="tp-upcoming-training__text">
                 <v-chip v-for="(item) in groups"
-                        :key="item.id">{{item.name}}
+                        :key="item.id"
+                        class="ma-1">
+                    <v-icon left color="primary">group</v-icon>
+                    {{item.name}}
                 </v-chip>
             </v-card-text>
         </v-card>

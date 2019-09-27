@@ -206,7 +206,7 @@
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" @click="close">Abbrechen</v-btn>
-                <v-btn color="primary" @click="save">Speichern</v-btn>
+                <v-btn color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

@@ -8,10 +8,10 @@
                 <v-toolbar-title>Vorläufigen Benutzer Anlegen</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="createUser">Speichern</v-btn>
+                    <v-btn text color="primary" @click="createUser"><v-icon left>check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
-
+            <v-divider class="pb-2"></v-divider>
             <v-card-text>
                 <v-alert
                         type="info"

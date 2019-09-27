@@ -20,7 +20,7 @@
                                 <v-toolbar-title>Trainingsserie Bearbeiten/Anlegen</v-toolbar-title>
                                 <v-spacer></v-spacer>
                                 <v-toolbar-items>
-                                    <v-btn text color="primary" @click="save()">Speichern</v-btn>
+                                    <v-btn text color="primary" @click="save()"><v-icon left>check</v-icon>Speichern</v-btn>
                                 </v-toolbar-items>
                             </v-toolbar>
                             <v-divider></v-divider>
@@ -54,9 +54,12 @@
                     <div v-if="$vuetify.breakpoint.lgAndUp">
                         <div v-if="filterGroupIds.length > 0">
                             <v-chip
-                                    small
-                                    v-for="(item, index) in filterGroups"
-                                    :key="item.id">{{branchAndGroupName(item)}}
+                                small
+                                v-for="(item, index) in filterGroups"
+                                :key="item.id"
+                                class="ma-1">
+                                    <v-icon left color="primary">group</v-icon>
+                                {{branchAndGroupName(item)}}
                             </v-chip>
                         </div>
                     </div>
@@ -85,12 +88,7 @@
                             :headers="headers"
                             :items="trainingSeriesList"
                             :loading="loading"
-                            hide-default-footer
-                            hide-default-header
-                            :expanded.sync="expanded"
-                            show-expand
-                            single-expand>
-                        <v-progress-linear slot="loading" color="primary" indeterminate></v-progress-linear>
+                            hide-default-footer>
                         <template v-slot:item.id="{ item }">
                             {{ item.id }}
                         </template>
@@ -98,29 +96,28 @@
                             {{ dayArrayToString(item.weekdays) }}
                         </template>
                         <template v-slot:item.startTime="{ item }">
-                            {{ removeMilleSec(item.startTime) }}
+                            {{ item.startTime }}
                         </template>
                         <template v-slot:item.endTime="{ item }">
-                            {{ removeMilleSec(item.endTime) }}
+                            {{ item.endTime }}
                         </template>
-                        <template v-slot:item.groupIds="{ item }">
-                            <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
-                                    :key="group.id">
-                                {{ branchAndGroupName(group) }}
-                            </v-chip>
+                        <template v-slot:item.trainerIds="{ item }">
+                            <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
+                                    :key="trainer.id"
+                                    small
+                                    class="ma-1">
+                                {{ trainer.firstName }}</v-chip>
                         </template>
                         <template v-slot:item.active="{ item }">
                             {{ item.active ? 'Ja' : 'Nein' }}
                         </template>
-                        <template v-slot:expanded-item="{ headers }">
-                            <td class="text-right" :colspan="headers.length">
-                                <v-btn
+                        <template v-slot:item.action="{ item }">
+                            <v-btn
                                     outlined
-                                    @click="editItem()"
+                                    @click="editItem(item)"
                                     color="success">
-                                    <v-icon>edit</v-icon>
-                                </v-btn>
-                            </td>
+                                <v-icon>edit</v-icon>
+                            </v-btn>
                         </template>
                     </v-data-table>
                 </v-card-text>
@@ -150,14 +147,14 @@
                 trainingSeriesList: [] as TrainingSeries[],
                 showCreateDialog: false,
                 loading: false,
-                expanded: [],
                 headers: [
-                    {text: 'Seriennummer', value: 'id', sortable: false},
+                    {text: 'Id', value: 'id', sortable: false},
                     {text: 'Wochentage', value: 'weekdays', sortable: false},
                     {text: 'Start', value: 'startTime', sortable: false},
                     {text: 'Ende', value: 'endTime', sortable: false},
-                    {text: 'Gruppen', value: 'groupIds', sortable: false},
+                    {text: 'Trainer', value: 'trainerIds', sortable: false},
                     {text: 'Aktiv', value: 'active', sortable: false},
+                    {text: 'Actions', value: 'action', sortable: false },
                 ],
                 defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true),
                 editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], true) as TrainingSeries,
@@ -173,7 +170,7 @@
         },
         computed: {
             ...mapGetters({loggedInUser: 'loggedInUser'}),
-            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById'}),
+            ...mapGetters('masterData', {getGroupsByIds: 'getGroupsByIds', getBranchByGroupId: 'getBranchByGroupId', getGroupsByBranchId: 'getGroupsByBranchId', getBranchById: 'getBranchById', getSimpleTrainersByIds: 'getSimpleTrainersByIds'}),
             filterGroups() {
                 if (this.filterGroupIds.length > 0) {
                     return this.getGroupsByIds(this.filterGroupIds)
@@ -216,8 +213,7 @@
                 }
 
             },
-            editItem() {
-                const item = this.expanded[0];
+            editItem(item) {
                 this.editedTrainingSeries = {...item};
                 this.showCreateDialog = true;
             },

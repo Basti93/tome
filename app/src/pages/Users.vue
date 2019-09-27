@@ -14,7 +14,10 @@
                         <v-chip
                                 small
                                 v-for="(item, index) in filterGroups"
-                                :key="item.id">{{branchAndGroupName(item)}}
+                                :key="item.id"
+                                class="ma-1">
+                            <v-icon left color="primary">group</v-icon>
+                            {{branchAndGroupName(item)}}
                         </v-chip>
                     </div>
 
@@ -40,13 +43,9 @@
                             :items-per-page.sync="itemsPerPage"
                             :page.sync="page"
                             :sort-by.sync="sortBy"
-                            :expanded.sync="expanded"
                             :total-items="total"
                             :rows-per-page-items="rowsPerPageItems"
-                            show-expand
-                            single-expand
                     >
-                        <v-progress-linear slot="progress" color="primary" indeterminate></v-progress-linear>
                         <template v-slot:item.firstName="{ item }">
                             {{ item.firstName }}
                         </template>
@@ -55,8 +54,10 @@
                         </template>
                         <template v-slot:item.groups="{ item }">
                             <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
-                                    :key="group.id">
-                                {{ group.name }}
+                                    :key="group.id"
+                                    class="ma-1">
+                                <v-icon left color="primary">group</v-icon>
+                                {{branchAndGroupName(group)}}
                             </v-chip>
                         </template>
                         <template v-slot:item.active="{ item }">
@@ -65,110 +66,24 @@
                         <template v-slot:item.registered="{ item }">
                             {{ item.registered ? 'Nein' : 'Ja' }}
                         </template>
-                        <template v-slot:expanded-item="{ headers }">
-                            <td :colspan="headers.length">
-                                <v-dialog
-                                        v-model="showDialog"
-                                        max-width="1000px"
-                                        :fullscreen="$vuetify.breakpoint.xsOnly"
-                                        persistent
-                                >
-                                    <template v-slot:activator="{ on }">
-                                        <v-btn
-                                                outlined
-                                                v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                                                @click="editItem()"
-                                                color="success">
-                                            <v-icon>edit</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <v-card>
-                                        <v-toolbar flat>
-                                            <v-btn icon @click="closeDialog">
-                                                <v-icon>close</v-icon>
-                                            </v-btn>
-                                            <v-toolbar-title>Benutzer Bearbeiten</v-toolbar-title>
-                                            <v-spacer></v-spacer>
-                                            <v-toolbar-items>
-                                                <v-btn text color="primary" @click="save">Speichern</v-btn>
-                                            </v-toolbar-items>
-                                        </v-toolbar>
-                                        <v-divider></v-divider>
-
-                                        <v-card-text>
-                                            <v-container grid-list-md>
-                                                <v-layout wrap>
-                                                    <v-flex xs12 sm6>
-                                                        <v-text-field
-                                                                v-model="editedItem.firstName"
-                                                                label="Vorname"
-                                                                prepend-icon="account_circle"
-                                                        ></v-text-field>
-                                                    </v-flex>
-                                                    <v-flex xs12 sm6>
-                                                        <v-text-field
-                                                                v-model="editedItem.familyName"
-                                                                label="Nachname"
-                                                                prepend-icon="account_circle"
-                                                        ></v-text-field>
-                                                    </v-flex>
-                                                    <v-flex xs12 md6>
-                                                        <v-menu
-                                                                ref="birthdateMenu"
-                                                                :close-on-content-click="false"
-                                                                v-model="birthdateMenu"
-                                                                lazy
-                                                                full-width>
-                                                            <template v-slot:activator="{ on }">
-                                                                <v-text-field
-                                                                        slot="activator"
-                                                                        v-model="birthdateFormatted"
-                                                                        required
-                                                                        label="Geburtsdatum"
-                                                                        prepend-icon="event"
-                                                                        readonly
-                                                                        v-on="on"
-                                                                ></v-text-field>
-                                                            </template>
-                                                            <v-date-picker
-                                                                    ref="birthdatePicker"
-                                                                    v-model="editedItem.birthdate"
-                                                                    @input="birthdateMenu = false"
-                                                                    :max="new Date().toISOString().substr(0, 10)"
-                                                                    min="1950-01-01">
-                                                            </v-date-picker>
-                                                        </v-menu>
-                                                    </v-flex>
-                                                    <v-flex xs12 md6>
-                                                        <GroupsSelect
-                                                                v-bind:groupIds="editedItem.groupIds"
-                                                                v-on:groupsChanged="editedItemGroupsChanged">
-                                                        </GroupsSelect>
-                                                    </v-flex>
-                                                    <v-flex xs12>
-                                                        <v-checkbox
-                                                                v-model="editedItem.active"
-                                                                label="Aktiv"
-                                                                prepend-icon="active"
-                                                        ></v-checkbox>
-                                                    </v-flex>
-                                                </v-layout>
-                                            </v-container>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-dialog>
-                                <v-btn
-                                        outlined
-                                        class="ml-5"
-                                        v-if="canDeleteUser"
-                                        @click="deleteItem()"
-                                        color="error">
-                                    <v-icon>delete</v-icon>
-                                </v-btn>
-                            </td>
+                        <template v-slot:item.action="{ item }">
+                            <v-btn
+                                    outlined
+                                    v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                                    @click="editItem(item)"
+                                    color="success">
+                                <v-icon>edit</v-icon>
+                            </v-btn>
+                            <v-btn
+                                    outlined
+                                    class="ml-5"
+                                    v-if="canDeleteUser(item)"
+                                    @click="deleteItem(item)"
+                                    color="error">
+                                <v-icon>delete</v-icon>
+                            </v-btn>
                         </template>
-
-                        <template slot="no-data">
+                        <template v-slot:no-data>
                             <v-container fluid>
                                 <v-layout row justify-center>
                                     <v-btn color="error" :disabled="loading" @click="reset()">
@@ -186,6 +101,86 @@
                     v-on:userCreated="loadData()"
                     v-on:close="showCreateDialog = false">
             </CreateUnregistredUserDialog>
+            <v-dialog
+                    v-model="showDialog"
+                    max-width="1000px"
+                    :fullscreen="$vuetify.breakpoint.xsOnly"
+                    persistent
+            >
+                <v-card>
+                    <v-toolbar flat>
+                        <v-btn icon @click="closeDialog">
+                            <v-icon>close</v-icon>
+                        </v-btn>
+                        <v-toolbar-title>Benutzer Bearbeiten</v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-toolbar-items>
+                            <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
+                        </v-toolbar-items>
+                    </v-toolbar>
+                    <v-divider></v-divider>
+                    <v-card-text>
+                        <v-container grid-list-md>
+                            <v-layout wrap>
+                                <v-flex xs12 sm6>
+                                    <v-text-field
+                                            v-model="editedItem.firstName"
+                                            label="Vorname"
+                                            prepend-icon="account_circle"
+                                    ></v-text-field>
+                                </v-flex>
+                                <v-flex xs12 sm6>
+                                    <v-text-field
+                                            v-model="editedItem.familyName"
+                                            label="Nachname"
+                                            prepend-icon="account_circle"
+                                    ></v-text-field>
+                                </v-flex>
+                                <v-flex xs12 md6>
+                                    <v-menu
+                                            ref="birthdateMenu"
+                                            :close-on-content-click="false"
+                                            v-model="birthdateMenu"
+                                            lazy
+                                            full-width>
+                                        <template v-slot:activator="{ on }">
+                                            <v-text-field
+                                                    slot="activator"
+                                                    v-model="birthdateFormatted"
+                                                    required
+                                                    label="Geburtsdatum"
+                                                    prepend-icon="event"
+                                                    readonly
+                                                    v-on="on"
+                                            ></v-text-field>
+                                        </template>
+                                        <v-date-picker
+                                                ref="birthdatePicker"
+                                                v-model="editedItem.birthdate"
+                                                @input="birthdateMenu = false"
+                                                :max="new Date().toISOString().substr(0, 10)"
+                                                min="1950-01-01">
+                                        </v-date-picker>
+                                    </v-menu>
+                                </v-flex>
+                                <v-flex xs12 md6>
+                                    <GroupsSelect
+                                            v-bind:groupIds="editedItem.groupIds"
+                                            v-on:groupsChanged="editedItemGroupsChanged">
+                                    </GroupsSelect>
+                                </v-flex>
+                                <v-flex xs12>
+                                    <v-checkbox
+                                            v-model="editedItem.active"
+                                            label="Aktiv"
+                                            prepend-icon="active"
+                                    ></v-checkbox>
+                                </v-flex>
+                            </v-layout>
+                        </v-container>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
         </v-flex>
     </v-layout>
 </template>
@@ -217,13 +212,13 @@
                 itemsPerPage: 10,
                 sortBy: null,
                 sortDesc: null,
-                expanded: [],
                 headers: [
                     {text: 'Vorname', value: 'firstName', sortable: true},
                     {text: 'Nachname', value: 'familyName', sortable: true},
                     {text: 'Gruppen', value: 'groups', sortable: false},
                     {text: 'Aktiv', value: 'active', sortable: true},
                     {text: 'Vorläufiger Benutzer', value: 'registered', sortable: false},
+                    {text: 'Actions', value: 'action', sortable: false },
                 ],
                 users: [],
                 editedId: null,
@@ -330,8 +325,7 @@
                 self.totalItems = res.data.total;
                 self.total = res.data.total;
             },
-            editItem() {
-                const item = this.expanded[0];
+            editItem(item) {
                 if (this.loggedInUser.isAdmin &&  this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin) {
                     this.editedId = item.id
                     this.editedItem = {...item}
@@ -340,12 +334,11 @@
                     this.$emit("showSnackbar", "Trainer und Admins können sich nur selbst bearbeiten.", "info")
                 }
             },
-            canDeleteUser() {
-              return this.loggedInUser.isAdmin && !this.expanded[0].isTrainer && !this.expanded[0].isAdmin
+            canDeleteUser(item) {
+              return this.loggedInUser.isAdmin && !item.isTrainer && !item.isAdmin
             },
-            async deleteItem() {
+            async deleteItem(item) {
                 if (confirm('Löschen bestätigen')) {
-                    const item = this.expanded[0];
                     let response = await this.$http.delete('/user/' + item.id);
                     if (response.data.status === 'ok') {
                         this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")

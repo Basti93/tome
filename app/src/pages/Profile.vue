@@ -10,6 +10,7 @@
             Speichern
           </v-btn>
       </v-toolbar>
+        <v-divider></v-divider>
         <v-form
                 v-model="valid"
         >
