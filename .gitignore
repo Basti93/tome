@@ -9,6 +9,7 @@
 /app/yarn-error.log*
 /app/package-lock.json
 /app/.env
+/app/.env.test
 /app/.env.production
 /app/public/manifest.json
 
