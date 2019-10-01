@@ -87,7 +87,13 @@
                             </v-date-picker>
                           </v-menu>
                         </v-flex>
-                        <v-flex xs12>
+                        <v-flex xs12 md6>
+                          <UploadProfileImage
+                                  v-on:imageChanged="imageChanged"
+                                  :imagePath="editUser.profileImageName"
+                          ></UploadProfileImage>
+                        </v-flex>
+                        <v-flex xs12 md6>
                           <ChangePasswordDialog
                                   :visible="showPasswordDialog"
                                   v-on:close="showPasswordDialog = false"
@@ -162,22 +168,25 @@
   import {mapGetters} from 'vuex'
   import GroupsSelect from "@/components/GroupsSelect.vue";
   import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
+  import UploadProfileImage from "@/components/UploadProfileImage.vue";
   import {formatDate} from "../helpers/date-helpers"
 
   export default {
     name: "Profile",
-    components: {GroupsSelect, ChangePasswordDialog},
+    components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
     data: function () {
       return {
         valid: true,
         birthdateMenu: false,
         showPasswordDialog: false,
+        imageToUpload: null,
         editUser: {
           id: null,
           firstName: null,
           familyName: null,
           email: null,
           birthdate: null,
+          profileImageName: null,
           trainerGroupIds: [],
           groupIds: [],
         },
@@ -210,7 +219,30 @@
       trainerGroupsChanged: function ({groupIds}) {
         this.editUser.trainerGroupIds = groupIds;
       },
+      imageChanged(file) {
+        this.imageToUpload = file;
+      },
+      async uploadProfileImage() {
+        let formData = new FormData();
+        formData.append('profile_image', this.imageToUpload);
+        const {data} = await this.$http.post('/user/me/uploadprofileimage',
+                formData,
+                {
+                  headers: {
+                    'Content-Type': 'multipart/form-data'
+                  }
+                });
+        if (data.status === 'ok') {
+          console.log("Image uploaded")
+          return data.imageUrl;
+        }
+        this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
+        throw "Image upload error";
+      },
       async save() {
+        if (this.imageToUpload) {
+          await this.uploadProfileImage();
+        }
         const postData = {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,

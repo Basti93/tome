@@ -145,7 +145,6 @@
                                             full-width>
                                         <template v-slot:activator="{ on }">
                                             <v-text-field
-                                                    slot="activator"
                                                     v-model="birthdateFormatted"
                                                     required
                                                     label="Geburtsdatum"

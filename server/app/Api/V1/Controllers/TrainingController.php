@@ -253,7 +253,11 @@ class TrainingController extends Controller
                     'message' => 'The training is in the next 24 hours and needs a reason for cancellation',
                 ], 201);
             } else {
-                $training->participants()->updateExistingPivot($user->id, array('attend' => 0, 'cancelreason' => $reason), false);
+                if ($training->participants->contains($user->id)) {
+                    $training->participants()->updateExistingPivot($user->id, array('attend' => 0, 'cancelreason' => $reason), false);
+                } else {
+                    $training->participants()->attach($user, ['attend' => 0, 'cancelreason' => $reason]);
+                }
                 Artisan::call('notification:cancelTrainingForTrainer', [
                     'userId' => $user->id,
                     'trainingId' => $training->id,

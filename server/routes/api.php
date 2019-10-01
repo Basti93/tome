@@ -67,6 +67,7 @@ $api->version('v1', function (Router $api) {
             $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
             $api->post('/{id}/notificationsubscribe', 'App\\Api\\V1\\Controllers\\UserController@subscribeToNotifications');
             $api->post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
+            $api->post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\UserController@uploadProfilePic');
         });
 
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {

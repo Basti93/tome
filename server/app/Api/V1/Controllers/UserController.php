@@ -14,6 +14,7 @@ use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -277,6 +278,19 @@ class UserController extends Controller
     public function sendApprovedEmail($user)
     {
         Mail::to($user)->send(new Approved($user));
+    }
+
+    public function uploadProfilePic(Request $request)
+    {
+        $user = User::findOrFail(Auth::user()->id);
+        $path = Storage::disk('public')->putFile('profile_images', $request->file("profile_image"));
+        $user->profile_image_name = $path;
+        $user->save();
+
+        return response()->json([
+            'status' => 'ok',
+            'imageUrl' => Storage::disk('public')->url($path)
+        ], 201);
     }
 
 }

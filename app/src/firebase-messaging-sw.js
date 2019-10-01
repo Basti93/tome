@@ -55,8 +55,5 @@ workbox.routing.registerRoute(
     new RegExp('/img/.*'),
     new workbox.strategies.CacheFirst()
 );
-workbox.routing.registerRoute(
-    new RegExp('/index.html'),
-    workbox.strategies.networkFirst(),
-)
+
 

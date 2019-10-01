@@ -27,6 +27,11 @@ const router = new Router({
       component: TrainingsCheckIn,
     },
     {
+      path: '/index.html',
+      name: 'TrainingsCheckIn',
+      component: TrainingsCheckIn,
+    },
+    {
       path: '/trainingsPrepare',
       name: 'TrainingsPrepare',
       component: TrainingsPrepare,

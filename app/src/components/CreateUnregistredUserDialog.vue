@@ -27,6 +27,7 @@
                             <v-text-field
                                     v-model="firstName"
                                     label="Vorname"
+                                    required
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-flex>
@@ -34,6 +35,7 @@
                             <v-text-field
                                     v-model="familyName"
                                     label="Nachname"
+                                    required
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-flex>
@@ -44,15 +46,22 @@
                                     v-model="birthdateMenu"
                                     lazy
                                     full-width>
-                                <v-text-field
-                                        slot="activator"
-                                        v-model="birthdateFormatted"
-                                        required
-                                        label="Geburtsdatum"
-                                        prepend-icon="event"
-                                        readonly
-                                ></v-text-field>
-                                <v-date-picker v-model="birthdate" @input="birthdateMenu = false"></v-date-picker>
+                                <template v-slot:activator="{ on }">
+                                    <v-text-field
+                                            v-model="birthdateFormatted"
+                                            label="Geburtsdatum"
+                                            prepend-icon="event"
+                                            readonly
+                                            v-on="on"
+                                    ></v-text-field>
+                                </template>
+                                <v-date-picker
+                                    ref="birthdatePicker"
+                                    v-model="birthdate"
+                                    @input="birthdateMenu = false"
+                                    :max="new Date().toISOString().substr(0, 10)"
+                                    min="1950-01-01">
+                                </v-date-picker>
                             </v-menu>
                         </v-flex>
                         <v-flex xs12 md6>
@@ -109,16 +118,22 @@
         },
         methods: {
             async createUser() {
-                let self = this;
-                const postData = {firstName: this.firstName, familyName: this.familyName, birthdate: self.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD"), groupIds: this.groupIds};
+                const postData = {
+                    firstName: this.firstName,
+                    familyName: this.familyName,
+                    groupIds: this.groupIds
+                };
+                if (this.birthdate) {
+                    postData.birthdate = this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
+                }
                 try {
                     const {data} = await this.$http.post('/user/unregistered', postData);
                     if (data.error) {
-                        self.$emit("showSnackbar", "Benutzer konnte nicht angelegt werden", "error")
+                        this.$emit("showSnackbar", "Benutzer konnte nicht angelegt werden", "error")
                     } else {
-                        self.$emit("showSnackbar", "Benutzer angelegt", "success")
-                        self.$emit("userCreated")
-                        self.show = false;
+                        this.$emit("showSnackbar", "Benutzer angelegt", "success")
+                        this.$emit("userCreated")
+                        this.show = false;
                     }
                 } catch (error) {
                     console.error(error);
@@ -130,6 +145,11 @@
             formatDate,
             parseDate,
         },
+        watch: {
+            birthdateMenu(val) {
+                val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+            },
+        }
     }
 </script>
 

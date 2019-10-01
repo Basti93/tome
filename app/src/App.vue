@@ -84,7 +84,7 @@
         this.$emit("showSnackbar", "Daten konnten nicht geladen werden! Stelle sicher dass du Internet hast.", "error");
       }
 
-      if (self.loggedInUser && process.env.NODE_ENV === 'production') {
+      if (self.loggedInUser && messaging && process.env.NODE_ENV === 'production') {
         this.getFirebaseToken();
 
         //refresh token
