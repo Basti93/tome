@@ -9,7 +9,7 @@ The main goals are:
 ## Technologies
 ### Frontend
 - Vue.js with Vue CLI 3
-- Vuetify
+- Vuetify 2
 - Vue-Axios, Vuex, Vue-Router 
 - Typescript
 - Moment, Apexcharts
@@ -31,7 +31,7 @@ npm run build
 
 ##### Run your tests
 ```
-npm run test
+npm run tests-are-for-losers
 ```
 
 ##### Lints and fixes files
