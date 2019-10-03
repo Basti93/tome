@@ -145,5 +145,7 @@
 </script>
 
 <style scoped>
-
+  .v-dialog__container {
+    display: unset;
+  }
 </style>

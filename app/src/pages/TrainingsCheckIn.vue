@@ -300,6 +300,7 @@
 </script>
 
 <style scoped lang="scss">
+
     .tp-training-check-in {
         text-align: center;
 

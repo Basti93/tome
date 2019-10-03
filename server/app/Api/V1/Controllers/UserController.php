@@ -13,6 +13,7 @@ use Auth;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
@@ -156,6 +157,7 @@ class UserController extends Controller
         if ($request->has('active')) {
             $user['active'] = $request->input('active') == 'true' ? 1 : 0;
         }
+
         if (!$user->update($request->all())) {
             throw new HttpException(500);
         }
@@ -202,6 +204,15 @@ class UserController extends Controller
         $user->familyName = $request->input('familyName');
         $user->email = $request->input('email');
         $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
+
+        //delete old image because there is a new one
+        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info("delete profile image " . "/" . $user->profile_image_name);
+            Storage::disk('public')->delete("/" . $user->profile_image_name);
+        }
+        //set new profile image
+        $user->profile_image_name = $request->input('profileImageName');
+
         $user->save();
 
         return response()->json([
@@ -278,19 +289,6 @@ class UserController extends Controller
     public function sendApprovedEmail($user)
     {
         Mail::to($user)->send(new Approved($user));
-    }
-
-    public function uploadProfilePic(Request $request)
-    {
-        $user = User::findOrFail(Auth::user()->id);
-        $path = Storage::disk('public')->putFile('profile_images', $request->file("profile_image"));
-        $user->profile_image_name = $path;
-        $user->save();
-
-        return response()->json([
-            'status' => 'ok',
-            'imageUrl' => Storage::disk('public')->url($path)
-        ], 201);
     }
 
 }

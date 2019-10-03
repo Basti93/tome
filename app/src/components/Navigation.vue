@@ -4,10 +4,14 @@
                 fixed
                 v-model="drawer"
         >
-            <v-card text class="pt-6 text-center" center v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
-                <v-icon x-large >account_circle</v-icon>
+            <v-container fluid text class="pt-6 text-center" center v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
+                <ProfileImage :firstName="loggedInUser.firstName"
+                              :familyName="loggedInUser.familyName"
+                              :imagePath="loggedInUser.profileImageName"
+                              size="50"
+                ></ProfileImage>
                 <div class="d-block">{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</div>
-            </v-card>
+            </v-container>
             <v-divider></v-divider>
             <v-list dense class="pt-2">
                 <v-list-item
@@ -197,7 +201,11 @@
                     v-show="$vuetify.breakpoint.mdAndUp"
                 >
                     <span>{{loggedInUser.firstName}}&nbsp;{{loggedInUser.familyName}}</span>
-                    <v-icon right>account_circle</v-icon>
+                    <ProfileImage :firstName="loggedInUser.firstName"
+                                  :familyName="loggedInUser.familyName"
+                                  :imagePath="loggedInUser.profileImageName"
+                                  right
+                    ></ProfileImage>
                 </v-btn>
                 </template>
                     <v-list>
@@ -225,9 +233,11 @@
 
 <script>
     import {mapGetters} from 'vuex'
+    import ProfileImage from "@/components/ProfileImage.vue";
 
     export default {
         name: "Navigation",
+        components: {ProfileImage},
         data() {
             return {
                 drawer: false,

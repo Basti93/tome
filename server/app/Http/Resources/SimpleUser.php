@@ -19,6 +19,7 @@ class SimpleUser extends JsonResource
             'firstName' => $this->firstName,
             'familyName' => $this->familyName,
             'groupIds' => $this->group_ids,
+            'profileImageName' => $this->profile_image_name,
             'active' => $this->active,
         ];
     }

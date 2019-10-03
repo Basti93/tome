@@ -98,7 +98,11 @@
                 <v-chip v-for="(item) in trainers"
                         :key="item.id"
                         class="ma-1">
-                    <v-icon left color="primary">verified_user</v-icon>
+                    <ProfileImage :firstName="item.firstName"
+                                  :familyName="item.familyName"
+                                  :imagePath="item.profileImageName"
+                                  left
+                    ></ProfileImage>
                     {{fullName(item)}}
                 </v-chip>
             </v-card-text>
@@ -171,13 +175,14 @@
 
 <script>
     import TrainingContent from "./TrainingContent";
+    import ProfileImage from "@/components/ProfileImage";
     import User from "@/models/User";
     import Training from "@/models/Training";
     import {mapGetters} from 'vuex'
 
     export default {
         name: "TrainingCheckIn",
-        components: {TrainingContent},
+        components: {TrainingContent, ProfileImage},
         //from parent
         props: {
             training: Training,

@@ -36,6 +36,7 @@ const init = async () => {
     Vue.prototype.$isOffline = true;
   } finally {
     // @ts-ignore
+
     new Vue({
       vuetify,
       axios,
@@ -43,7 +44,6 @@ const init = async () => {
       store,
       render: h => h(App),
     }).$mount('#app')
-    router.replace('/')
   }
 };
 

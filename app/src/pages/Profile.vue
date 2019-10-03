@@ -90,6 +90,7 @@
                         <v-flex xs12 md6>
                           <UploadProfileImage
                                   v-on:imageChanged="imageChanged"
+                                  v-on:imageRemoved="imageRemoved"
                                   :imagePath="editUser.profileImageName"
                           ></UploadProfileImage>
                         </v-flex>
@@ -220,7 +221,15 @@
         this.editUser.trainerGroupIds = groupIds;
       },
       imageChanged(file) {
-        this.imageToUpload = file;
+        if (file && file.size) {
+          this.imageToUpload = file;
+        } else {
+          this.imageRemoved();
+        }
+      },
+      imageRemoved() {
+        this.imageToUpload = null;
+        this.editUser.profileImageName = null;
       },
       async uploadProfileImage() {
         let formData = new FormData();
@@ -240,26 +249,37 @@
         throw "Image upload error";
       },
       async save() {
-        if (this.imageToUpload) {
-          await this.uploadProfileImage();
-        }
-        const postData = {
-          firstName: this.editUser.firstName,
-          familyName: this.editUser.familyName,
-          email: this.editUser.email,
-          birthdate: this.moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
-          groupIds: this.editUser.groupIds,
-          trainerGroupIds: this.editUser.trainerGroupIds
-        };
+        try {
+          const postData = {
+            firstName: this.editUser.firstName,
+            familyName: this.editUser.familyName,
+            email: this.editUser.email,
+            birthdate: this.moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
+            groupIds: this.editUser.groupIds,
+            trainerGroupIds: this.editUser.trainerGroupIds
+          };
 
-        let {data} = await this.$http.put('user/me', postData);
-        if (data.status == 'ok') {
-          this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
-          let {data} = await this.$http.get('auth/me');
-          localStorage.user = JSON.stringify(data)
-          this.$store.dispatch('login')
-          this.assignCurrentUser();
-        } else {
+          let imageName = null;
+          if (this.imageToUpload) {
+            imageName = await this.uploadProfileImage();
+          } else if (this.editUser.profileImageName) {
+            imageName = this.editUser.profileImageName;
+          }
+          if (imageName) {
+            postData.profileImageName = imageName;
+          }
+
+          let {data} = await this.$http.put('user/me', postData);
+          if (data.status == 'ok') {
+            this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
+            let {data} = await this.$http.get('auth/me');
+            localStorage.user = JSON.stringify(data)
+            this.$store.dispatch('login')
+            this.assignCurrentUser();
+          } else {
+            this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+          }
+        } catch {
           this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
         }
       },
