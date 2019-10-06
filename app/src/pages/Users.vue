@@ -140,9 +140,7 @@
                                     <v-menu
                                             ref="birthdateMenu"
                                             :close-on-content-click="false"
-                                            v-model="birthdateMenu"
-                                            lazy
-                                            full-width>
+                                            v-model="birthdateMenu">
                                         <template v-slot:activator="{ on }">
                                             <v-text-field
                                                     v-model="birthdateFormatted"
@@ -313,7 +311,7 @@
                         id: userObj.id,
                         firstName: userObj.firstName,
                         familyName: userObj.familyName,
-                        birthdate: self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD'),
+                        birthdate: userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null,
                         active: userObj.active,
                         groupIds: userObj.groupIds,
                         roleNames: userObj.roleNames,
@@ -360,7 +358,7 @@
             },
             async save() {
                 if (this.editedId) {
-                    const postData = {firstName: this.editedItem.firstName, familyName: this.editedItem.familyName, birthdate: this.moment(this.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"), groupIds: this.editedItem.groupIds, active: this.editedItem.active};
+                    const postData = {firstName: this.editedItem.firstName, familyName: this.editedItem.familyName, birthdate: this.editedItem.birthdate ? this.moment(this.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss") : null, groupIds: this.editedItem.groupIds, active: this.editedItem.active};
                     const {data} = await this.$http.put('/user/' + this.editedId, postData);
                     if (data.error) {
                         this.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")

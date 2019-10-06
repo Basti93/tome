@@ -55,9 +55,7 @@
   import {mapGetters} from 'vuex'
   import Navigation from "@/components/Navigation.vue";
   import SnackbarStore from '@/components/SnackbarStore.vue'
-  import firebase from './firebase-config'
-
-  const { messaging } = firebase;
+  import messaging from './firebase-config'
 
   export default {
     name: 'App',
@@ -132,7 +130,7 @@
         messaging.getToken().then(function (token) {
           if (token) {
             self.sendTokenToServer(self.loggedInUser.id, token);
-            self.pushPermissionSnackbar = true;
+            self.pushPermissionSnackbar = false;
           } else {
             // Show permission request.
             self.pushPermissionSnackbar = true;

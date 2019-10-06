@@ -11,12 +11,11 @@ const config = {
 
 }
 
-const messaging = null;
+let messaging = null;
 if (firebase.messaging.isSupported() && process.env.NODE_ENV === 'production') {
+    console.log("Firebase messaging is supported")
     firebase.initializeApp(config)
-    const messaging = firebase.messaging()
+    messaging = firebase.messaging()
     messaging.usePublicVapidKey(process.env.VUE_APP_FIREBASE_VAPID_KEY)
 }
-export default {
-    messaging
-}
+export default messaging;
