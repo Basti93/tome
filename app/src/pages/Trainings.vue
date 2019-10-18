@@ -33,8 +33,12 @@
           </GroupsSelectDialog>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card-text>
+        <v-card-text style="padding-bottom: 100px;">
+            <TrainingCalendar
+                    v-if="activeView == 1">
+            </TrainingCalendar>
           <v-data-table
+            v-if="activeView == 0"
             :headers="headers"
             :items="trainings"
             :loading="loading"
@@ -177,6 +181,21 @@
         </v-card>
       </v-dialog>
     </v-flex>
+   <!--<v-bottom-navigation
+            v-model="activeView"
+            hide-on-scroll
+            scroll-threshold="50"
+            fixed
+    >
+      <v-btn>
+        <span>Listenansicht</span>
+        <v-icon>list</v-icon>
+      </v-btn>
+      <v-btn>
+        <span>Kalendaransicht</span>
+        <v-icon>event</v-icon>
+      </v-btn>
+    </v-bottom-navigation>-->
   </v-layout>
 </template>
 
@@ -184,6 +203,7 @@
   import Vue from 'vue'
   import {mapGetters, mapState} from 'vuex'
   import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
+  import TrainingCalendar from "../components/TrainingCalendar.vue";
   import TrainingContent from "../components/TrainingContent";
   import EditTrainingBase from "../components/EditTrainingBase";
   import Training from "@/models/Training";
@@ -192,7 +212,7 @@
 
   export default Vue.extend({
     name: "Trainings",
-    components: {TrainingContent, GroupsSelectDialog, EditTrainingBase},
+    components: {TrainingContent, GroupsSelectDialog, EditTrainingBase, TrainingCalendar},
     data: function () {
       return {
         showFilterDialog: false,
@@ -248,6 +268,7 @@
           contentIds: [] as Array,
           comment: null,
         },
+        activeView: 0,
       }
     },
     created() {

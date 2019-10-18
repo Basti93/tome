@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import Logout from "@/pages/Logout";
 import Users from "@/pages/Users";
 import Trainings from "@/pages/Trainings";
+import Calendar from "@/pages/Calendar";
 import TrainingSeries from "@/pages/TrainingSeries";
 import Profile from "@/pages/Profile";
 import Statistics from "@/pages/Statistics";
@@ -30,6 +31,11 @@ const router = new Router({
       path: '/index.html',
       name: 'TrainingsCheckIn',
       component: TrainingsCheckIn,
+    },
+    {
+      path: '/calendar',
+      name: 'Calendar',
+      component: Calendar,
     },
     {
       path: '/trainingsPrepare',

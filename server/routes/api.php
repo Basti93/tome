@@ -9,6 +9,7 @@ $api->version('v1', function (Router $api) {
 
     //free for all
     $api->group(['prefix' => 'training'], function(Router $api) {
+        $api->get('/simplecalendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getSimpleTrainings');
         $api->get('/upcoming', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainings');
         $api->post('{id}/checkinunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkInUnregistered');
         $api->post('{id}/checkoutunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOutUnregistered');
@@ -60,6 +61,7 @@ $api->version('v1', function (Router $api) {
             $api->get('/nonapproved', 'App\\Api\\V1\\Controllers\\UserController@getNonapproved');
             $api->get('/nonregistered', 'App\\Api\\V1\\Controllers\\UserController@getNonRegistered');
             $api->get('/nonapprovedcount', 'App\\Api\\V1\\Controllers\\UserController@getNonApprovedCount');
+            $api->get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
             $api->delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
             $api->put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
@@ -97,6 +99,7 @@ $api->version('v1', function (Router $api) {
 
         $api->group(['prefix' => 'training'], function(Router $api) {
             $api->get('/participationcount', 'App\\Api\\V1\\Controllers\\TrainingController@getParticipationCount');
+            $api->get('/calendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getTrainings');
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingController@index');
             $api->get('/sort', 'App\\Api\\V1\\Controllers\\TrainingController@getBySort');
             $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getById');

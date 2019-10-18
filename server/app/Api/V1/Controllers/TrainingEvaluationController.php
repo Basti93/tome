@@ -138,6 +138,7 @@ class TrainingEvaluationController extends Controller
      * @param Request $request
      */
     public function getAccountingTimeStatistics() {
+        Log::info("getAccountingTimeStatistics");
         $groupIds = request()->query('groupIds');
         $year = request()->query('year');
         $cacheKey = 'accounting_time_statistics'.$year.$groupIds;

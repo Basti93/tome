@@ -29,7 +29,7 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('jwt.auth', []);
-        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getNonApprovedCount', 'getNonApproved', 'getNonRegistered']]);
+        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getNonApprovedCount', 'getNonApproved', 'getNonRegistered', 'getBirthdayUsers']]);
         $this->middleware('permission:create-user', ['only' => ['create', 'store', 'createUnregistered']]);
         $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'approveUsersByIds', 'approveUser']]);
         $this->middleware('permission:delete-user', ['only' => ['destroy']]);
@@ -147,6 +147,24 @@ class UserController extends Controller
         return response()->json([
             'data' => $count
         ]);
+    }
+
+    public function getBirthdayUsers() {
+        $groupIds = request()->query('groupIds');
+        $start = new DateTime(request()->query('start'));
+        $end = new DateTime(request()->query('end'));
+
+        $birthdayUser = User::select('firstName', 'familyName', 'birthdate')
+            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') >= ?", array($start->format('m-d')))
+            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') <= ?", array($end->format('m-d')))
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })
+            ->get();
+
+        return response()->json($birthdayUser);
     }
 
     public function update(StoreUserRequest $request, $id)

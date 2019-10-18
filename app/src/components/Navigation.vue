@@ -30,11 +30,22 @@
                         to="/trainings"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>event</v-icon>
+                        <v-icon>list</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>
                         <v-list-item-title>Trainings</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
+                        to="/calendar"
+                        @click="drawer = false">
+                    <v-list-item-action>
+                        <v-icon>event</v-icon>
+                    </v-list-item-action>
+
+                    <v-list-item-content>
+                        <v-list-item-title>Kalendar</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item
