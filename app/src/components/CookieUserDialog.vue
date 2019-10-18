@@ -47,7 +47,7 @@
             clearable
             label="Gruppe"
           ></v-select>
-          <v-autocomplete
+          <v-select
             :disabled="!groupId"
             :items="groupUsers"
             v-model="userId"
@@ -55,7 +55,7 @@
             item-value="id"
             clearable
             label="Name"
-          ></v-autocomplete>
+          ></v-select>
         </v-card-text>
     </v-card>
   </v-dialog>

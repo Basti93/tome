@@ -14,6 +14,7 @@ use DateTime;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -163,6 +164,7 @@ class TrainingEvaluationController extends Controller
             ->groupBy('user_id')
             ->pluck('user_id');
 
+
         foreach ($trainerIds as $trainerId) {
             //get all trainings for this trainer
             $trainerAccountingTimes = TrainingTrainer::with('training')
@@ -184,6 +186,7 @@ class TrainingEvaluationController extends Controller
             $lastMonth = 1;
             $monthArray = [];
             $size = sizeof($trainerAccountingTimes);
+            $last = sizeof($trainerAccountingTimes) - 1;
 
             //sum the accounting hours per month
             for ($i = 0; $i < $size; $i++) {
@@ -194,21 +197,26 @@ class TrainingEvaluationController extends Controller
                     $lastMonth = $currentMonth;
                 }
 
-                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
-
                 //check if the month has changed since the last iteration
                 //or if the entry is the last entry
-                if ($currentMonth != $lastMonth || ($i + 1) === $size) {
+                if ($currentMonth != $lastMonth || $i == $last) {
+
+                    //if it's the last entry add the last account hours
+                    if ($i == $last) {
+                        $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
+                    }
+
                     $monthSum = new \stdClass();
                     $monthSum->month = $lastMonth;
                     $monthSum->accountingHours = round($currentMonthAccountTime,2);
-
                     array_push($monthArray, $monthSum);
 
                     $currentMonthAccountTime = 0;
 
                     $lastMonth = $currentMonth;
                 }
+
+                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
 
             }
 

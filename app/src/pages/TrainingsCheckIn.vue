@@ -3,8 +3,6 @@
         <v-flex xs12 md10 offset-md1 top>
             <v-card>
                 <v-toolbar flat>
-                    <v-toolbar-title>Trainingsanmeldung</v-toolbar-title>
-                    <v-spacer></v-spacer>
                     <v-chip
                             v-if="cookieUser"
                             close @click:close="removeCookieUser()"
