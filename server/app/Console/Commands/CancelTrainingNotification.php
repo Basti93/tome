@@ -49,13 +49,15 @@ class CancelTrainingNotification extends Command
 
         $training = Training::findOrFail($trainingId);
         $user = User::findOrFail($userId);
-
+        $trainerArrayString = implode(",", $training->trainers()->pluck('user_id')->toArray());
+        $this->info('Trainers with ids  ' . $trainerArrayString);
         $this->call('notification:sendToUsers', [
-            'userIds' => implode("','", $training->trainers()->pluck('user_id')->toArray()),
+            'userIds' => $trainerArrayString,
             'trainingId' => $training->id,
             'title' => 'Absage für das Training um ' . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i").' Uhr',
             'data' => "Sportler: ".$user->firstName . " " . $user->familyName  ."\r\nGrund: " . $cancelReason . "\r\nBis jetzt angemeldet: " . TrainingParticipation::whereTrainingId($training->id)->whereAttend(1)->count() . " Sportler",
-            'notificationType' => 2
+            'notificationType' => 2,
+            '--url' => config('app.vue_url').'/#/trainingsPrepare',
         ]);
 
 

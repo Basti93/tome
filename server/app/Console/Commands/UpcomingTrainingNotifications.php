@@ -48,10 +48,12 @@ class UpcomingTrainingNotifications extends Command
         foreach ($upcomingTrainings as $training) {
             $location = Location::whereId($training->location_id)->first();
             $this->info('Processing Training at  ' . $training->start);
+            $participantIds = implode(",", $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray());
+            $this->info('Sending to users with ids ' . $participantIds);
             $this->call('notification:sendToUsers', [
-                'userIds' => implode("','", $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray()),
+                'userIds' => $participantIds,
                 'trainingId' => $training->id,
-                'title' => 'Erinnerung: Dein Training startet in Kürze ',
+                'title' => 'Erinnerung: Dein Training startet in Kürze',
                 'data' => "Zeit: " . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i") . "\r\nOrt: " . $location->name,
                 'notificationType' => 3,
                 '--storeStatus' => true

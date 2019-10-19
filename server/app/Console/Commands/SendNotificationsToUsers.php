@@ -16,7 +16,7 @@ class SendNotificationsToUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'notification:sendToUsers {userIds} {trainingId} {title} {data} {notificationType} {--storeStatus}';
+    protected $signature = 'notification:sendToUsers {userIds} {trainingId} {title} {data} {notificationType} {--storeStatus} {--url}';
 
     /**
      * The console command description.
@@ -47,6 +47,7 @@ class SendNotificationsToUsers extends Command
         $notificationType = $this->argument('notificationType');
         $title = $this->argument('title');
         $data = $this->argument('data');
+        $url = $this->option('url');
         $storeStatus = $this->option('storeStatus');
 
         $this->info('storeStatus '.$this->option('storeStatus'));
@@ -74,7 +75,7 @@ class SendNotificationsToUsers extends Command
         $dataBuilder->addData([
             'title' => $title,
             'body' => $data,
-            'click_action' => 'https://training.ssc-landau.de',
+            'click_action' => empty($url) ? config('app.vue_url') : $url,
         ]);
         $data = $dataBuilder->build();
         $downstreamResponse = FCM::sendTo($recipientTokens, null, null, $data);

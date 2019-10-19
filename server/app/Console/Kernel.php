@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\TrainingAutomaticAttend',
         'App\Console\Commands\TrainingSeriesCommand',
         'App\Console\Commands\SendNotificationsToUsers',
+        'App\Console\Commands\TestNotification',
         'App\Console\Commands\CancelTrainingNotification',
         'App\Console\Commands\TrainerUpcomingTrainingNotifications',
         'App\Console\Commands\UpcomingTrainingNotifications',
@@ -34,8 +35,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('training:automatic-attend')->dailyAt('00:00')->sendOutputTo(storage_path('logs/com_automatic_attend.log'));
         $schedule->command('training:series')->hourly()->sendOutputTo(storage_path('logs/com_series.log'));
-        $schedule->command('notification:upcomingTrainingForTrainer')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->sendOutputTo(storage_path('logs/com_ucoming_trainings_for_trainers.log'));
-        $schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->sendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
+        $schedule->command('notification:upcomingTrainingForTrainer')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings_for_trainers.log'));
+        $schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
     }
 
     /**

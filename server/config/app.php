@@ -52,6 +52,7 @@ return [
   */
 
   'url' => env('APP_URL', 'http://localhost'),
+    'vue_url' => env('VUE_APP_URL', 'http://localhost'),
 
   /*
   |--------------------------------------------------------------------------
