@@ -1,40 +1,53 @@
 <template>
     <v-sheet
             height="600">
-        <v-toolbar flat>
-            <v-btn outlined class="mr-4" @click="setToday">
-                Heute
-            </v-btn>
+        <v-toolbar flat class="mb-2">
             <v-btn fab text small @click="prev">
                 <v-icon small>chevron_left</v-icon>
             </v-btn>
+            <v-toolbar-title>{{ title }}</v-toolbar-title>
             <v-btn fab text small @click="next">
                 <v-icon small>chevron_right</v-icon>
             </v-btn>
-            <v-toolbar-title>{{ title }}</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-menu bottom right>
-                <template v-slot:activator="{ on }">
-                    <v-btn
-                            outlined
-                            v-on="on"
-                    >
-                        <span>{{ typeToLabel[type] }}</span>
-                        <v-icon right>arrow_drop_down</v-icon>
+
+
+            <template #extension>
+                <v-spacer></v-spacer>
+                <v-toolbar-items>
+                    <v-menu >
+                        <template v-slot:activator="{ on }">
+                            <v-btn
+                                    small
+                                    color="primary"
+                                    outlined
+                                    v-on="on"
+                            >
+                                <span>{{ typeToLabel[type] }}</span>
+                                <v-icon right>arrow_drop_down</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="type = 'day'">
+                                <v-list-item-title>Tag</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="type = 'week'">
+                                <v-list-item-title>Woche</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="type = 'month'">
+                                <v-list-item-title>Monat</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <v-btn text
+                           color="primary"
+                           small
+                           class="mr-4 ml-4"
+                           @click="setToday">
+                        <v-icon left>adjust</v-icon>Heute
                     </v-btn>
-                </template>
-                <v-list>
-                    <v-list-item @click="type = 'day'">
-                        <v-list-item-title>Tag</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="type = 'week'">
-                        <v-list-item-title>Woche</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="type = 'month'">
-                        <v-list-item-title>Monat</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
+                </v-toolbar-items>
+            </template>
         </v-toolbar>
         <v-calendar
                 ref="calendar"
@@ -88,6 +101,16 @@
                         <v-icon left color="primary">group</v-icon>
                         {{getGroupById(groupId).name}}
                     </v-chip>
+                    <h4>Trainer</h4>
+                    <v-chip
+                            small
+                            v-for="(trainerId) in selectedEvent.trainerIds"
+                            :key="trainerId"
+                            class="ma-1">
+                        <v-icon left color="primary">person</v-icon>
+                        {{getFullName(trainerId)}}
+                    </v-chip>
+                    <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
                 </v-card-text>
             </v-card>
         </v-menu>
@@ -127,6 +150,7 @@
             ...mapGetters('masterData', {
                 getBranchByGroupId: 'getBranchByGroupId',
                 getGroupById: 'getGroupById',
+                getSimpleTrainerById: 'getSimpleTrainerById',
                 getBranchById: 'getBranchById',
             }),
             title() {
@@ -174,11 +198,11 @@
                 }
                 const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
                 for (let trainingData of data.data) {
-                    let branchName = null;
+                    let branch = null;
                     if (trainingData.groupIds && trainingData.groupIds.length > 0) {
-                        branchName = this.getBranchByGroupId(trainingData.groupIds[0]).shortName;
+                        branch = this.getBranchByGroupId(trainingData.groupIds[0]);
                     }
-                    if (branchName) {
+                    if (branch) {
                         let training = new Training(trainingData.id,
                             this.moment(trainingData.start),
                             this.moment(trainingData.end),
@@ -186,7 +210,7 @@
                             trainingData.groupIds,
                             trainingData.contentIds,
                             trainingData.trainerIds,
-                            trainingData.participantIds,
+                            trainingData.participants,
                             trainingData.comment,
                             trainingData.prepared === 1 ? true : false,
                             trainingData.evaluated === 1 ? true : false,
@@ -194,12 +218,14 @@
                         this.trainings.push(training)
 
                         this.events.push({
-                            name: branchName,
+                            name: branch.shortName,
                             start: training.start.format('YYYY-MM-DD HH:mm'),
                             end: training.end.format('YYYY-MM-DD HH:mm'),
                             groupIds:  training.groupIds,
+                            trainerIds:  training.trainerIds,
+                            participantCount: training.participants.filter(p => p.attend).length,
                             type: 'training',
-                            color: '#03A9F4',
+                            color: branch.colorHex,
                             evaluated: training.evaluated,
                         })
                     }
@@ -256,6 +282,10 @@
             formatDayTime(timeObj) {
                 return timeObj.time;
             },
+            getFullName(trainerId) {
+                let trainer = this.getSimpleTrainerById(trainerId);
+                return trainer.firstName + " " + trainer.familyName;
+            }
         },
     })
 </script>

@@ -59,7 +59,7 @@
                                     <p class="title pt-1">{{ item.start.format('DD')}}</p>
                                     <v-icon v-if="attending(item.id)" small>check</v-icon>
                                     <v-icon v-else-if="canceled(item.id)" small>not_interested</v-icon>
-                                    <v-icon v-else small>new_releases</v-icon>
+                                    <v-icon v-else :color="findBranch(item.groupIds).colorHex" small >new_releases</v-icon>
                                 </v-card-title>
                             </v-card>
                         </div>
@@ -191,6 +191,13 @@
                 this.filterGroupId = this.tempFilterGroupId;
                 this.fetchData();
                 this.filterDialogVisible = false;
+            },
+            findBranch(groupIds) {
+                let branch = null;
+                if (groupIds && groupIds.length > 0) {
+                    return this.getBranchByGroupId(groupIds[0]);
+                }
+                return null;
             },
             async fetchData() {
                 try {
