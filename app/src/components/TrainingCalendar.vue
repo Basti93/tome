@@ -80,8 +80,9 @@
                     <v-btn icon>
                         <v-icon>event</v-icon>
                     </v-btn>
-                    <v-toolbar-title v-if="selectedEvent.type == 'birthday'">Geburtstag {{selectedEvent.name}}</v-toolbar-title>
-                    <v-toolbar-title v-if="selectedEvent.type == 'training'">Training für {{selectedEvent.name}}</v-toolbar-title>
+                    <v-toolbar-title v-if="selectedEvent.type == 'training'">Training {{selectedEvent.branchName}}</v-toolbar-title>
+                    <v-toolbar-title v-else-if="selectedEvent.type == 'planed-training'">Training {{selectedEvent.branchName}}</v-toolbar-title>
+                    <v-toolbar-title v-else-if="selectedEvent.type == 'birthday'">Geburtstag {{selectedEvent.name}}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn @click="selectedOpen = false"
                            text>
@@ -111,6 +112,32 @@
                         {{getFullName(trainerId)}}
                     </v-chip>
                     <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
+                </v-card-text>
+                <v-card-text v-else-if="selectedEvent.type == 'planed-training'">
+                    <v-label ><v-icon left color="info">info</v-icon>Geplantes Training</v-label>
+                    <br />
+                    <h4>Gruppen</h4>
+                    <v-chip
+                            small
+                            v-for="(groupId) in selectedEvent.groupIds"
+                            :key="groupId"
+                            class="ma-1">
+                        <v-icon left color="primary">group</v-icon>
+                        {{getGroupById(groupId).name}}
+                    </v-chip>
+                    <h4>Trainer</h4>
+                    <v-chip
+                            small
+                            v-for="(trainerId) in selectedEvent.trainerIds"
+                            :key="trainerId"
+                            class="ma-1">
+                        <v-icon left color="primary">person</v-icon>
+                        {{getFullName(trainerId)}}
+                    </v-chip>
+                    <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
+                </v-card-text>
+                <v-card-text v-else-if="selectedEvent.type == 'birthday'">
+                    Happy Birthday
                 </v-card-text>
             </v-card>
         </v-menu>
@@ -185,6 +212,7 @@
                 this.trainings = [];
                 this.events = [];
                 this.loadTrainingEvents();
+                this.loadPlannedTrainingEvents();
                 if (this.privateMode) {
                     this.loadBirthdayEvents();
                 }
@@ -219,14 +247,51 @@
 
                         this.events.push({
                             name: branch.shortName,
+                            branchName: branch.name,
                             start: training.start.format('YYYY-MM-DD HH:mm'),
                             end: training.end.format('YYYY-MM-DD HH:mm'),
                             groupIds:  training.groupIds,
                             trainerIds:  training.trainerIds,
-                            participantCount: training.participants.filter(p => p.attend).length,
+                            participantCount: training.participants ? training.participants.filter(p => p.attend).length : null,
                             type: 'training',
                             color: branch.colorHex,
                             evaluated: training.evaluated,
+                        })
+                    }
+                }
+            },
+            async loadPlannedTrainingEvents() {
+                let url = '/training/simplecalendar/planned'
+                const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+                for (let trainingData of data.data) {
+                    let branch = null;
+                    if (trainingData.groupIds && trainingData.groupIds.length > 0) {
+                        branch = this.getBranchByGroupId(trainingData.groupIds[0]);
+                    }
+                    if (branch) {
+                        let training = new Training(trainingData.id,
+                            this.moment(trainingData.start),
+                            this.moment(trainingData.end),
+                            trainingData.locationId,
+                            trainingData.groupIds,
+                            trainingData.contentIds,
+                            trainingData.trainerIds,
+                            [],
+                            trainingData.comment,
+                            false,
+                            false,
+                            );
+                        this.trainings.push(training)
+
+                        this.events.push({
+                            name: branch.shortName,
+                            branchName: branch.name,
+                            start: training.start.format('YYYY-MM-DD HH:mm'),
+                            end: training.end.format('YYYY-MM-DD HH:mm'),
+                            groupIds:  training.groupIds,
+                            trainerIds:  training.trainerIds,
+                            type: 'planed-training',
+                            color: branch.colorHex,
                         })
                     }
                 }

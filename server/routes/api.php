@@ -10,6 +10,7 @@ $api->version('v1', function (Router $api) {
     //free for all
     $api->group(['prefix' => 'training'], function(Router $api) {
         $api->get('/simplecalendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getSimpleTrainings');
+        $api->get('/simplecalendar/planned', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getPlannedTrainings');
         $api->get('/upcoming', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainings');
         $api->post('{id}/checkinunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkInUnregistered');
         $api->post('{id}/checkoutunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOutUnregistered');

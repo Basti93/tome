@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use DateTime;
+use Illuminate\Support\Facades\Log;
+
 class TrainingCalendar extends JsonResource
 {
     /**
@@ -14,6 +16,8 @@ class TrainingCalendar extends JsonResource
      */
     public function toArray($request)
     {
+        if ($this->id < 0)
+        Log::info($request);
         return [
             'id' => $this->id,
             'start' => DateTime::createFromFormat('Y-m-d H:i:s', $this->start)->format(DateTime::ATOM),
