@@ -1,26 +1,32 @@
 <template>
     <div>
-        <v-card class="tp-upcoming-training white--text" :class="'ma-3'">
-            <v-card-title>
-                <h6>{{ start.format('dddd [den] Do MMMM') }}&nbsp;({{start.fromNow()}})</h6>
+        <v-card class="tp-upcoming-training white--text ma-1">
+            <v-card-title class="justify-center">
+                {{ start.format('dddd, Do MMMM') }}
             </v-card-title>
+            <v-card-subtitle>{{start.fromNow()}}</v-card-subtitle>
             <v-divider></v-divider>
-            <v-card-text class="tp-upcoming-training__text">
+            <v-card-text class="text-center">
                 <v-container grid-list-md>
-                    <v-layout wrap row>
-                        <v-flex xs12 md5>
-                            Von
-                            <v-chip class="ml-2 mr-2">
+                    <v-layout wrap row >
+                        <v-flex xs12>
+                            <span class="label text-small">Von</span>
+                            <v-chip small class="ma-1">
                                 <v-icon left color="primary">query_builder</v-icon>{{start.format('HH:mm')}}
                             </v-chip>
-                            bis
-                            <v-chip class="ml-2">
+                            <span class="label text-small">bis</span>
+                            <v-chip small class="ml-1">
                                 <v-icon left color="primary">query_builder</v-icon>{{end.format('HH:mm')}}
                             </v-chip>
                         </v-flex>
-                        <v-flex xs7 v-if="allowedToCheckIn()">
+                        <v-flex xs12>
+                            <v-chip small class="ma-1">
+                                <v-icon left color="primary">room</v-icon>{{location}}
+                            </v-chip>
+                        </v-flex>
+                        <v-flex xs12 v-if="allowedToCheckIn()">
                             <v-btn
-                                    style="min-width: 125px"
+                                    style="min-width: 150px"
                                     v-if="!attending || notYet"
                                     color="primary"
                                     class="ma-2"
@@ -28,7 +34,7 @@
                                 Teilnehmen
                             </v-btn>
                             <v-btn
-                                    style="min-width: 125px"
+                                    style="min-width: 150px"
                                     v-if="attending || notYet"
                                     color="error"
                                     class="ma-2"
@@ -36,45 +42,40 @@
                                 Absagen
                             </v-btn>
                         </v-flex>
-                        <v-flex xs12 md6 v-else>
+                        <v-flex xs12 v-else>
                             <v-alert
-                                    type="info"
+                                    type="warning"
                                     outlined
                                     pa-1
                                     ma-0
                                     class="caption"
+                                    dense
                             >
-                                Teilnehmen nicht möglich! Du bist keiner dieser Gruppen zugeordnet.
+                                Teilnehmen nicht möglich. Du bist keiner dieser Gruppen zugeordnet. Frage einen Trainer bei Problemen.
                             </v-alert>
                         </v-flex>
                         <v-flex xs12>
-                            <v-chip>
-                                <v-icon left color="primary">room</v-icon>{{location}}
-                            </v-chip>
+                            <h4>{{participantCount}} Teilnehmer bis jetzt</h4>
                         </v-flex>
                     </v-layout>
                 </v-container>
             </v-card-text>
         </v-card>
-        <v-card :class="'ma-3'" v-show="comment">
-            <v-card-title>
-                <h6>Zusätzliche Informationen</h6>
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text class="tp-upcoming-training__text">
+        <v-card v-show="comment" class="ma-1">
+            <v-card-text>
                 <v-alert
-                        v-bind:value="comment"
+                        class="tp-upcoming-training__text ma-1"
+                        text
+                        style="white-space: pre-line;"
                         type="info"
-                        class="text-small"
-                        pa-0
-                        ma-0
+                        dense
                         outlined
                 >
-                    {{comment}}
+                    <div v-html="comment"></div>
                 </v-alert>
             </v-card-text>
         </v-card>
-        <v-card :class="'ma-3'" v-show="contentIds.length">
+        <v-card class="ma-1" v-show="contentIds.length">
             <v-card-title>
                 <h6>Trainingsinhalte</h6>
             </v-card-title>
@@ -89,7 +90,7 @@
                 </v-container>
             </v-card-text>
         </v-card>
-        <v-card :class="'ma-3'">
+        <v-card class="ma-1">
             <v-card-title>
                 <h6>Trainer</h6>
             </v-card-title>
@@ -107,7 +108,7 @@
                 </v-chip>
             </v-card-text>
         </v-card>
-        <v-card :class="'ma-3'">
+        <v-card class="ma-1">
             <v-card-title>
                 <h6>Gruppen</h6>
             </v-card-title>
@@ -231,6 +232,9 @@
                     return (!found || found.length === 0 || found[0].attend === null);
                 }
                 return false;
+            },
+            participantCount: function () {
+                return this.training.participants ? this.training.participants.filter(p => p.attend).length : null;
             },
             ...mapGetters('masterData', {
                 getLocationNameById: 'getLocationNameById',

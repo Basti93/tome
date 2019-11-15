@@ -1,25 +1,18 @@
 <template>
-    <v-avatar :size="dSize" :class="{'mr-2': left, 'ml-2': right}">
-        <v-img v-if="imageUrl"
-               :src="imageUrl"
-               :alt="fullName"
-        ></v-img>
+    <v-list-item-avatar>
+        <v-img v-if="imageUrl" :size="dSize" :src="imageUrl"></v-img>
         <v-icon v-else :size="dSize">account_circle</v-icon>
-    </v-avatar>
+    </v-list-item-avatar>
 </template>
 
 <script lang="ts">
     import Vue from 'vue'
 
     export default Vue.extend({
-        name: "ProfileImage",
+        name: "tome-list-item-profile-image",
         props: {
             imagePath: String,
-            firstName: String,
-            familyName: String,
             size: String,
-            right: Boolean,
-            left: Boolean,
         },
         data: function () {
             return {
@@ -39,10 +32,6 @@
                 }
                 return null;
             },
-            fullName() {
-                return this.firstName + " " + this.familyName;
-            }
         },
     });
 </script>
-

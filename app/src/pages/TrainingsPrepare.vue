@@ -33,7 +33,8 @@
                                     <v-list>
                                         <v-list-item>
                                             <v-list-item-content>
-                                                <v-list-item-title><h3>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}&nbsp;({{selectedTraining.start.fromNow()}})</h3></v-list-item-title>
+                                                <v-list-item-title>{{ selectedTraining.start.format('dddd [den] Do MMMM') }}</v-list-item-title>
+                                                <v-list-item-subtitle>{{selectedTraining.start.fromNow()}}</v-list-item-subtitle>
                                             </v-list-item-content>
                                         </v-list-item>
                                         <v-list-group
@@ -205,12 +206,15 @@
                                                     :key="item.id"
                                                     @click=""
                                             >
-                                                <v-list-item-avatar>
-                                                    <v-icon>account_circle</v-icon>
-                                                </v-list-item-avatar>
+                                                <tome-list-item-profile-image
+                                                        :image-path="item.profileImageName">
+                                                </tome-list-item-profile-image>
 
                                                 <v-list-item-content>
-                                                    <v-list-item-title v-html="fullName(item)"></v-list-item-title>
+                                                    <v-list-item-title>{{fullName(item)}}</v-list-item-title>
+                                                    <v-list-item-subtitle>
+                                                        <span class="label">{{getGroupsByIds(item.groupIds).map(g => g.name).join(', ')}}</span>
+                                                    </v-list-item-subtitle>
                                                 </v-list-item-content>
                                             </v-list-item>
                                         </v-list-group>
@@ -233,12 +237,15 @@
                                                     :key="item.id"
                                                     @click=""
                                             >
-                                                <v-list-item-avatar>
-                                                    <v-icon>account_circle</v-icon>
-                                                </v-list-item-avatar>
+                                                <tome-list-item-profile-image
+                                                        :image-path="item.profileImageName">
+                                                </tome-list-item-profile-image>
 
                                                 <v-list-item-content @click="openCancelReasonDialog(item.id)">
                                                     <v-list-item-title>{{fullName(item)}}</v-list-item-title>
+                                                    <v-list-item-subtitle>
+                                                        <span class="label">{{getGroupsByIds(item.groupIds).map(g => g.name).join(', ')}}</span>
+                                                    </v-list-item-subtitle>
                                                     <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund: {{getCancelReason(item.id)}}</v-list-item-subtitle>
                                                 </v-list-item-content>
                                             </v-list-item>
@@ -316,10 +323,14 @@
     import Training from "@/models/Training";
     import TrainingParticipant from "@/models/TrainingParticipant";
     import TrainingContent from "../components/TrainingContent"
+    import ListItemProfileImage from "../components/ListItemProfileImage"
 
     export default Vue.extend({
         name: "TrainingsPrepare",
-        components: {TrainingContent},
+        components: {
+            TrainingContent,
+            "tome-list-item-profile-image": ListItemProfileImage
+        },
         data: function () {
             return {
                 upcomingTrainings: [] as Training[],
@@ -353,6 +364,7 @@
                 getBranchById: 'getBranchById',
                 getLocationNameById: 'getLocationNameById',
                 getContentIdsByBranchId: 'getContentIdsByBranchId',
+                getGroupsByIds: 'getGroupsByIds',
             }),
             ...mapState('masterData', {
                 locations: 'locations',

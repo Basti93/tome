@@ -5,20 +5,23 @@
                 <v-btn icon @click="show=false">
                     <v-icon>close</v-icon>
                 </v-btn>
-                <v-toolbar-title>Vorläufigen Benutzer Anlegen</v-toolbar-title>
+                <v-toolbar-title v-if="!editUserId">Vorläufigen Benutzer Anlegen</v-toolbar-title>
+                <v-toolbar-title v-else>Benutzer Bearbeiten</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="createUser"><v-icon left>check</v-icon>Speichern</v-btn>
+                    <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
             <v-divider class="pb-2"></v-divider>
             <v-card-text>
                 <v-alert
+                        v-if="!editUserId"
                         type="info"
                         class="text-small"
                         pa-0
                         ma-0
-                        outlined>
+                        outlined
+                        dismissible>
                     Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
                 </v-alert>
                 <v-container grid-list-md>
@@ -43,9 +46,7 @@
                             <v-menu
                                     ref="birthdateMenu"
                                     :close-on-content-click="false"
-                                    v-model="birthdateMenu"
-                                    lazy
-                                    full-width>
+                                    v-model="birthdateMenu">
                                 <template v-slot:activator="{ on }">
                                     <v-text-field
                                             v-model="birthdateFormatted"
@@ -70,6 +71,20 @@
                                     v-on:groupsChanged="groupsChanged">
                             </GroupsSelect>
                         </v-flex>
+                        <v-flex xs12 md6>
+                            <UploadProfileImage
+                                    v-on:imageChanged="imageChanged"
+                                    v-on:imageRemoved="imageRemoved"
+                                    :imagePath="profileImageName"
+                            ></UploadProfileImage>
+                        </v-flex>
+                        <v-flex xs12 md6>
+                            <v-checkbox
+                                    v-model="active"
+                                    label="Aktiv"
+                                    prepend-icon="active"
+                            ></v-checkbox>
+                        </v-flex>
                     </v-layout>
                 </v-container>
             </v-card-text>
@@ -79,35 +94,51 @@
 
 <script>
     import GroupsSelect from "./GroupsSelect";
+    import UploadProfileImage from "./UploadProfileImage";
     import {formatDate, parseDate} from "../helpers/date-helpers"
 
     export default {
-        name: "CreateUnregistredUserDialog",
-        components: {GroupsSelect},
-        props: ['visible'],
+        name: "EditUserDialog",
+        components: {GroupsSelect, UploadProfileImage},
+        props: [
+            'visible',
+            'editUserId',
+            'editFirstName',
+            'editFamilyName',
+            'editBirthdate',
+            'editProfileImageName',
+            'editGroupIds',
+            'editActive',
+        ],
         data: function () {
             return {
                 firstName: null,
                 familyName: null,
                 birthdate: null,
                 groupIds: [],
+                profileImageName: null,
+                active: true,
                 editGroups: [],
                 birthdateMenu: false,
+                imageToUpload: null,
             }
         },
         computed: {
             show: {
                 get() {
+                    if (this.visible) {
+                        this.firstName = this.editFirstName;
+                        this.familyName = this.editFamilyName;
+                        this.birthdate = this.editBirthdate;
+                        this.groupIds = this.editGroupIds;
+                        this.active = this.editActive;
+                        this.profileImageName = this.editProfileImageName;
+                        this.imageToUpload = null;
+                    }
                     return this.visible;
                 },
                 set(value) {
                     if (!value) {
-                        this.firstName = null;
-                        this.familyName = null;
-                        this.birthdate = null;
-                        this.groupIds = [];
-                        this.editGroups = [];
-                        this.birthdateMenu = false;
                         this.$emit('close')
                     }
                 }
@@ -117,27 +148,73 @@
             },
         },
         methods: {
-            async createUser() {
-                const postData = {
-                    firstName: this.firstName,
-                    familyName: this.familyName,
-                    groupIds: this.groupIds
-                };
-                if (this.birthdate) {
-                    postData.birthdate = this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
-                }
+            async save() {
                 try {
-                    const {data} = await this.$http.post('/user/unregistered', postData);
-                    if (data.error) {
-                        this.$emit("showSnackbar", "Benutzer konnte nicht angelegt werden", "error")
+                    let postData = {
+                        firstName: this.firstName,
+                        familyName: this.familyName,
+                        groupIds: this.groupIds,
+                        profileImageName: this.profileImageName,
+                        active: this.active,
+                    }
+
+                    let imageName = null;
+                    if (this.imageToUpload) {
+                        imageName = await this.uploadProfileImage();
+                    } else if (this.profileImageName) {
+                        imageName = this.profileImageName;
+                    }
+                    if (imageName) {
+                        postData.profileImageName = imageName;
+                    }
+
+                    let response = null;
+                    if (this.birthdate) {
+                        postData.birthdate = this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
+                    }
+                    if (this.editUserId) {
+                        response = await this.$http.put('/user/' + this.editUserId, postData);
                     } else {
-                        this.$emit("showSnackbar", "Benutzer angelegt", "success")
-                        this.$emit("userCreated")
+                        response = await this.$http.post('/user/unregistered', postData);
+                    }
+                    if (response && response.data.error) {
+                        this.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
+                    } else {
+                        this.$emit("showSnackbar", "Benutzer gespeichert", "success")
+                        this.$emit("saved")
                         this.show = false;
                     }
                 } catch (error) {
                     console.error(error);
                 }
+            },
+            imageChanged(file) {
+                if (file && file.size) {
+                    this.imageToUpload = file;
+                } else {
+                    this.imageRemoved();
+                }
+            },
+            imageRemoved() {
+                this.imageToUpload = null;
+                this.profileImageName = null;
+            },
+            async uploadProfileImage() {
+                let formData = new FormData();
+                formData.append('profile_image', this.imageToUpload);
+                const {data} = await this.$http.post('/user/me/uploadprofileimage',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                if (data.status === 'ok') {
+                    console.log("Image uploaded")
+                    return data.imageUrl;
+                }
+                this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
+                throw "Image upload error";
             },
             groupsChanged({groupIds}) {
                 this.groupIds = groupIds;

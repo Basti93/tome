@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('training:automatic-attend')->dailyAt('00:00')->sendOutputTo(storage_path('logs/com_automatic_attend.log'));
+        $schedule->command('training:automatic-attend')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->sendOutputTo(storage_path('logs/com_automatic_attend.log'));
         $schedule->command('training:series')->hourly()->sendOutputTo(storage_path('logs/com_series.log'));
         $schedule->command('notification:upcomingTrainingForTrainer')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings_for_trainers.log'));
         $schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->unlessBetween('22:00', '6:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));

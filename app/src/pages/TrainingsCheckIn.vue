@@ -4,12 +4,13 @@
             <v-card>
                 <v-toolbar flat>
                     <v-chip
-                            v-if="cookieUser"
-                            close @click:close="removeCookieUser()"
-                            v-model="cookieUser">{{cookieUser.getFullName()}}
+                        v-if="cookieUser"
+                        close
+                        @click:close="removeCookieUser()"
+                        v-model="cookieUser">{{cookieUser.getFullName()}}
                     </v-chip>
                     <v-spacer></v-spacer>
-                    <v-chip><v-icon left color="primary">group</v-icon>{{filterDisplayValue}}</v-chip>
+                    <v-chip v-if="$vuetify.breakpoint.lgAndUp"><v-icon left color="primary">group</v-icon>{{filterDisplayValue}}</v-chip>
                     <v-btn icon color="primary" @click="filterDialogVisible = true">
                         <v-icon>filter_list</v-icon>
                     </v-btn>

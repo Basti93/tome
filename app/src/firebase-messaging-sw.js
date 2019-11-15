@@ -38,6 +38,8 @@ self.addEventListener("message", msg=>{
     }
 })
 
+workbox.routing.registerNavigationRoute('/index.html');
+
 workbox.routing.registerRoute(
     new RegExp('/js/.*\.js'),
     new workbox.strategies.CacheFirst()
@@ -55,5 +57,6 @@ workbox.routing.registerRoute(
     new RegExp('/img/.*'),
     new workbox.strategies.CacheFirst()
 );
+
 
 

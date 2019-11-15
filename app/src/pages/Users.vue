@@ -5,7 +5,7 @@
                 <v-toolbar flat>
                     <v-toolbar-title>Benutzerverwaltung</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="showCreateDialog = true">
+                    <v-btn title="Vorläufigen Benutzer anlegen" color="primary" @click="editItem()">
                         <v-icon left>add_circle</v-icon>
                         Anlegen
                     </v-btn>
@@ -39,13 +39,23 @@
                             item-key="id"
                             :loading="loading"
                             :sort-desc.sync="sortDesc"
-                            :server-items-length="totalItems"
-                            :items-per-page.sync="itemsPerPage"
+                            :server-items-length="total"
+                            :footer-props="{
+                                itemsPerPageOptions: rowsPerPageItems,
+                            }"
+                            :itemsPerPage.sync="itemsPerPage"
                             :page.sync="page"
                             :sort-by.sync="sortBy"
-                            :total-items="total"
-                            :rows-per-page-items="rowsPerPageItems"
+                            :search="searchText"
                     >
+                        <template v-slot:top>
+                            <v-text-field
+                                    v-model="searchText"
+                                    label="Suchen"
+                                    class="mx-4"
+                                    clearable
+                            ></v-text-field>
+                        </template>
                         <template v-slot:item.firstName="{ item }">
                             {{ item.firstName }}
                         </template>
@@ -53,12 +63,7 @@
                             {{ item.familyName }}
                         </template>
                         <template v-slot:item.groups="{ item }">
-                            <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
-                                    :key="group.id"
-                                    class="ma-1">
-                                <v-icon left color="primary">group</v-icon>
-                                {{branchAndGroupName(group)}}
-                            </v-chip>
+                            {{getGroupsByIds(item.groupIds).map(g => branchAndGroupName(g)).join(', ')}}
                         </template>
                         <template v-slot:item.active="{ item }">
                             {{ item.active ? 'Ja' : 'Nein' }}
@@ -69,7 +74,7 @@
                         <template v-slot:item.action="{ item }">
                             <v-btn
                                     outlined
-                                    v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                                    v-if="canEditUser(item)"
                                     @click="editItem(item)"
                                     color="success">
                                 <v-icon>edit</v-icon>
@@ -96,88 +101,18 @@
                     </v-data-table>
                 </v-card-text>
             </v-card>
-            <CreateUnregistredUserDialog
-                    v-bind:visible="showCreateDialog"
-                    v-on:userCreated="loadData()"
-                    v-on:close="showCreateDialog = false">
-            </CreateUnregistredUserDialog>
-            <v-dialog
-                    v-model="showDialog"
-                    max-width="1000px"
-                    :fullscreen="$vuetify.breakpoint.xsOnly"
-                    persistent
-            >
-                <v-card>
-                    <v-toolbar flat>
-                        <v-btn icon @click="closeDialog">
-                            <v-icon>close</v-icon>
-                        </v-btn>
-                        <v-toolbar-title>Benutzer Bearbeiten</v-toolbar-title>
-                        <v-spacer></v-spacer>
-                        <v-toolbar-items>
-                            <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
-                        </v-toolbar-items>
-                    </v-toolbar>
-                    <v-divider></v-divider>
-                    <v-card-text>
-                        <v-container grid-list-md>
-                            <v-layout wrap>
-                                <v-flex xs12 sm6>
-                                    <v-text-field
-                                            v-model="editedItem.firstName"
-                                            label="Vorname"
-                                            prepend-icon="account_circle"
-                                    ></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 sm6>
-                                    <v-text-field
-                                            v-model="editedItem.familyName"
-                                            label="Nachname"
-                                            prepend-icon="account_circle"
-                                    ></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 md6>
-                                    <v-menu
-                                            ref="birthdateMenu"
-                                            :close-on-content-click="false"
-                                            v-model="birthdateMenu">
-                                        <template v-slot:activator="{ on }">
-                                            <v-text-field
-                                                    v-model="birthdateFormatted"
-                                                    required
-                                                    label="Geburtsdatum"
-                                                    prepend-icon="event"
-                                                    readonly
-                                                    v-on="on"
-                                            ></v-text-field>
-                                        </template>
-                                        <v-date-picker
-                                                ref="birthdatePicker"
-                                                v-model="editedItem.birthdate"
-                                                @input="birthdateMenu = false"
-                                                :max="new Date().toISOString().substr(0, 10)"
-                                                min="1950-01-01">
-                                        </v-date-picker>
-                                    </v-menu>
-                                </v-flex>
-                                <v-flex xs12 md6>
-                                    <GroupsSelect
-                                            v-bind:groupIds="editedItem.groupIds"
-                                            v-on:groupsChanged="editedItemGroupsChanged">
-                                    </GroupsSelect>
-                                </v-flex>
-                                <v-flex xs12>
-                                    <v-checkbox
-                                            v-model="editedItem.active"
-                                            label="Aktiv"
-                                            prepend-icon="active"
-                                    ></v-checkbox>
-                                </v-flex>
-                            </v-layout>
-                        </v-container>
-                    </v-card-text>
-                </v-card>
-            </v-dialog>
+            <EditUserDialog
+                    v-bind:visible="showDialog"
+                    v-on:saved="loadData()"
+                    v-on:close="showDialog = false"
+                    :edit-user-id="editedItem.id"
+                    :edit-active="editedItem.active"
+                    :edit-birthdate="editedItem.birthdate"
+                    :edit-family-name="editedItem.familyName"
+                    :edit-group-ids="editedItem.groupIds"
+                    :edit-profile-image-name="editedItem.profileImageName"
+                    :edit-first-name="editedItem.firstName">
+            </EditUserDialog>
         </v-flex>
     </v-layout>
 </template>
@@ -186,29 +121,28 @@
     import {mapGetters} from 'vuex'
     import GroupsSelectDialog from "../components/GroupsSelectDialog";
     import User from "../models/User";
-    import CreateUnregistredUserDialog from "../components/CreateUnregistredUserDialog";
+    import EditUserDialog from "../components/EditUserDialog";
     import GroupsSelect from "../components/GroupsSelect";
     import {formatDate} from "../helpers/date-helpers"
 
     export default {
         name: "Users",
-        components: {GroupsSelect, CreateUnregistredUserDialog, GroupsSelectDialog},
+        components: {GroupsSelect, EditUserDialog, GroupsSelectDialog},
         data: function () {
             return {
                 showDialog: false,
                 showFilterDialog: false,
-                showCreateDialog: false,
                 filterBranchId: null,
                 filterGroupIds: [],
                 editGroups: [],
                 loading: false,
                 total: null,
                 rowsPerPageItems: [5, 10, 20, 50, 100],
-                totalItems: 0,
                 page: 1,
                 itemsPerPage: 10,
-                sortBy: null,
-                sortDesc: null,
+                sortBy: [],
+                sortDesc: [],
+                searchText: '',
                 headers: [
                     {text: 'Vorname', value: 'firstName', sortable: true},
                     {text: 'Nachname', value: 'familyName', sortable: true},
@@ -218,12 +152,12 @@
                     {text: 'Actions', value: 'action', sortable: false },
                 ],
                 users: [],
-                editedId: null,
                 editedItem: {
                     id: null,
                     firstName: null,
                     familyName: null,
                     birthdate: null,
+                    profileImageName: null,
                     groupIds: [],
                     isTrainer: false,
                     active: false,
@@ -233,9 +167,10 @@
                     firstName: '',
                     familyName: '',
                     birthdate: null,
+                    profileImageName: null,
                     groupIds: [],
                     isTrainer: false,
-                    active: false,
+                    active: true,
                 },
                 birthdateMenu: false,
             }
@@ -281,9 +216,9 @@
                 this.loading = true;
                 let url = null;
                 // get by sort option
-                if (this.sortBy) {
-                    const direction = this.sortDesc ? 'desc' : 'asc';
-                    url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy + '&page=' + this.page + '&per_page=' + this.itemsPerPage
+                if (this.sortBy[0]) {
+                    const direction = this.sortDesc[0] ? 'desc' : 'asc';
+                    url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0] + '&page=' + this.page + '&per_page=' + this.itemsPerPage
                 } else {
                     url = '/user?page=' + this.page + '&per_page=' + this.itemsPerPage
                 }
@@ -291,6 +226,9 @@
                     url += '&groupIds=' + this.filterGroupIds;
                 } else if (this.filterBranchId) {
                     url += '&branchId=' + this.filterBranchId;
+                }
+                if (this.searchText && this.searchText.trim().length > 0) {
+                    url += '&searchText=' + this.searchText;
                 }
 
                 try {
@@ -313,26 +251,28 @@
                         familyName: userObj.familyName,
                         birthdate: userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null,
                         active: userObj.active,
+                        profileImageName: userObj.profileImageName,
                         groupIds: userObj.groupIds,
                         roleNames: userObj.roleNames,
                         registered: userObj.registered
                     }))
                 }
                 self.page = res.data.currentPage;
-                self.totalItems = res.data.total;
                 self.total = res.data.total;
             },
             editItem(item) {
-                if (this.loggedInUser.isAdmin &&  this.loggedInUser.isTrainer && !item.isTrainer && !item.isAdmin) {
-                    this.editedId = item.id
+                if (item) {
                     this.editedItem = {...item}
-                    this.showDialog = true
                 } else {
-                    this.$emit("showSnackbar", "Trainer und Admins können sich nur selbst bearbeiten.", "info")
+                    this.editedItem = {...this.defaultItem}
                 }
+                this.showDialog = true
             },
             canDeleteUser(item) {
               return this.loggedInUser.isAdmin && !item.isTrainer && !item.isAdmin
+            },
+            canEditUser(item) {
+              return (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) && !item.isTrainer && !item.isAdmin
             },
             async deleteItem(item) {
                 if (confirm('Löschen bestätigen')) {
@@ -345,29 +285,9 @@
                     }
                 }
             },
-            editedItemGroupsChanged({groupIds}) {
-                this.editedItem.groupIds = groupIds;
-            },
-            closeDialog() {
-                this.showDialog = false
-                this.editedItem = {...this.defaultItem}
-            },
             reset() {
                 this.filterGroupId = null;
                 this.loadData();
-            },
-            async save() {
-                if (this.editedId) {
-                    const postData = {firstName: this.editedItem.firstName, familyName: this.editedItem.familyName, birthdate: this.editedItem.birthdate ? this.moment(this.editedItem.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss") : null, groupIds: this.editedItem.groupIds, active: this.editedItem.active};
-                    const {data} = await this.$http.put('/user/' + this.editedId, postData);
-                    if (data.error) {
-                        this.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
-                    } else {
-                        this.closeDialog()
-                        this.$emit("showSnackbar", "Benutzer gespeichert", "success")
-                        this.loadData();
-                    }
-                }
             },
             branchAndGroupName(item) {
                 return this.getBranchById(item.branchId).shortName + '/' + item.name;
@@ -375,6 +295,14 @@
             formatDate,
         },
         watch: {
+            searchText: {
+                handler () {
+                    if (!this.loading) {
+                        this.loadData();
+                    }
+                },
+                deep: true,
+            },
             page: {
                 handler () {
                     if (!this.loading) {
@@ -383,7 +311,7 @@
                 },
                 deep: true,
             },
-            itemPerPage: {
+            itemsPerPage: {
                 handler () {
                     if (!this.loading) {
                         this.loadData();

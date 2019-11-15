@@ -54,11 +54,15 @@ class UserController extends Controller
     {
         $groupIds = request()->query('groupIds');
         $branchId = request()->query('branchId');
+        $searchText = request()->query('searchText');
 
         $users = User::latest()
             ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('groups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                $query->where(function ($query) use ($groupIds) {
+                    $query->whereHas('groups', function ($query) use ($groupIds) {
+                        $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                    })
+                        ->orWhereDoesntHave('groups');
                 });
             })
             ->when($branchId, function ($query, $branchId) {
@@ -66,7 +70,12 @@ class UserController extends Controller
                     $query->where('groups.branch_id', $branchId);
                 });
             })
-            ->orWhereDoesntHave('groups');
+            ->when($searchText, function ($query, $searchText) {
+                $query->where(function ($query) use ($searchText) {
+                    $query->where('firstName', 'like', '%' . $searchText . '%')
+                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
+                });
+            });
 
         if (!empty(request('per_page'))) {
             $users = $users->paginate((int)request('per_page'));
@@ -89,21 +98,28 @@ class UserController extends Controller
         $sortBy = request()->query('sortBy');
         $groupIds = request()->query('groupIds');
         $branchId = request()->query('branchId');
+        $searchText = request()->query('searchText');
 
         $users = User::orderBy($sortBy, $direction)
-            //get users with group ids
             ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('groups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                $query->where(function ($query) use ($groupIds) {
+                    $query->whereHas('groups', function ($query) use ($groupIds) {
+                        $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                    })
+                        ->orWhereDoesntHave('groups');
                 });
             })
-            //get users with branch id
             ->when($branchId, function ($query, $branchId) {
                 $query->whereHas('groups', function ($query) use ($branchId) {
                     $query->where('groups.branch_id', $branchId);
                 });
             })
-            ->orWhereDoesntHave('groups')
+            ->when($searchText, function ($query, $searchText) {
+                $query->where(function ($query) use ($searchText) {
+                    $query->where('firstName', 'like', '%' . $searchText . '%')
+                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
+                });
+            })
             ->paginate($per_page);
 
         return response()->json($users);
@@ -167,29 +183,6 @@ class UserController extends Controller
         return response()->json($birthdayUser);
     }
 
-    public function update(StoreUserRequest $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        //active boolean to 0 and 1
-        if ($request->has('active')) {
-            $user['active'] = $request->input('active') == 'true' ? 1 : 0;
-        }
-
-        if (!$user->update($request->all())) {
-            throw new HttpException(500);
-        }
-
-
-        $user->groups()->sync($request->input('groupIds'));
-        $user->trainerGroups()->sync($request->input('trainerGroupIds'));
-
-        return response()->json([
-            'status' => 'ok'
-        ], 201);
-
-    }
-
     public function subscribeToNotifications(Request $request, $id)
     {
         $token = $request->input('token');
@@ -240,6 +233,37 @@ class UserController extends Controller
     }
 
 
+    public function update(StoreUserRequest $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        //active boolean to 0 and 1
+        if ($request->has('active')) {
+            $user->active = $request->input('active') == 'true' ? 1 : 0;
+        }
+
+        //delete old image because there is a new one
+        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info("delete profile image " . "/" . $user->profile_image_name);
+            Storage::disk('public')->delete("/" . $user->profile_image_name);
+        }
+        //set new profile image
+        $user->profile_image_name = $request->input('profileImageName');
+
+
+        if (!$user->update($request->all())) {
+            throw new HttpException(500);
+        }
+
+        $user->groups()->sync($request->input('groupIds'));
+        $user->trainerGroups()->sync($request->input('trainerGroupIds'));
+
+        return response()->json([
+            'status' => 'ok'
+        ], 201);
+
+    }
+
     public function createUnregistered(CreateUnregisteredUserRequest $request)
     {
         $user = new User();
@@ -248,6 +272,17 @@ class UserController extends Controller
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
         $user->birthdate = $request->input('birthdate');
+        //active boolean to 0 and 1
+        if ($request->has('active')) {
+            $user->active = $request->input('active') == 'true' ? 1 : 0;
+        }
+        //delete old image because there is a new one
+        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info("delete profile image " . "/" . $user->profile_image_name);
+            Storage::disk('public')->delete("/" . $user->profile_image_name);
+        }
+        //set new profile image
+        $user->profile_image_name = $request->input('profileImageName');
         $user->save();
 
         $user->groups()->sync($request->input('groupIds'));

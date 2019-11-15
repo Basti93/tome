@@ -1,6 +1,5 @@
 <template>
-    <v-sheet
-            height="600">
+    <v-sheet>
         <v-toolbar flat class="mb-2">
             <v-btn fab text small @click="prev">
                 <v-icon small>chevron_left</v-icon>
@@ -93,6 +92,7 @@
                     <v-label v-if="privateMode && selectedEvent.evaluated"><v-icon left color="primary">check</v-icon>Abgeschlossen</v-label>
                     <v-label v-if="privateMode && !selectedEvent.evaluated"><v-icon left color="error">cancel</v-icon>Nicht Abgeschlossen</v-label>
                     <br />
+                    <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
                     <h4>Gruppen</h4>
                     <v-chip
                             small
@@ -111,10 +111,9 @@
                         <v-icon left color="primary">person</v-icon>
                         {{getFullName(trainerId)}}
                     </v-chip>
-                    <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
                 </v-card-text>
                 <v-card-text v-else-if="selectedEvent.type == 'planed-training'">
-                    <v-label ><v-icon left color="info">info</v-icon>Geplantes Training</v-label>
+                    <v-label ><v-icon left color="info">info</v-icon>Geplantes Training, noch nicht bestätigt</v-label>
                     <br />
                     <h4>Gruppen</h4>
                     <v-chip
@@ -134,7 +133,6 @@
                         <v-icon left color="primary">person</v-icon>
                         {{getFullName(trainerId)}}
                     </v-chip>
-                    <h4>{{selectedEvent.participantCount}} Teilnehmer</h4>
                 </v-card-text>
                 <v-card-text v-else-if="selectedEvent.type == 'birthday'">
                     Happy Birthday

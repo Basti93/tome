@@ -82,8 +82,7 @@
         },
         methods: {
             removeImage() {
-                this.files = null;
-                this.files = [];
+                this.resetLocalFile();
                 this.editImagePath = null;
                 this.$emit('imageRemoved')
             },
@@ -93,7 +92,20 @@
                 } else {
                     this.$emit('imageChanged', null)
                 }
+            },
+            resetLocalFile() {
+                this.files = null;
+                this.files = [];
             }
+        },
+        watch: {
+            imagePath: {
+                immediate: true,
+                handler(newVal) {
+                    this.resetLocalFile();
+                    this.editImagePath = newVal;
+                },
+            },
         }
     });
 </script>
