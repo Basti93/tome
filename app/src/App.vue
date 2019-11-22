@@ -18,7 +18,7 @@
             {{text}}
           </v-snackbar>
           <v-snackbar
-                  v-if="loggedInUser"
+                  v-if="currentUser"
                   :value="pushPermissionSnackbarComputed"
                   bottom
                   right
@@ -70,24 +70,35 @@
       }
     },
     computed: {
-      ...mapGetters({loggedInUser: 'loggedInUser'}),
+      ...mapGetters({
+        loggedInUser: 'loggedInUser',
+        cookieUser: 'cookieUser'
+      }),
+      currentUser() {
+        if (this.loggedInUser) {
+          return this.loggedInUser;
+        } else if (this.cookieUser) {
+          return this.cookieUser;
+        }
+        return null;
+      },
       pushPermissionSnackbarComputed() {
         return this.pushPermissionSnackbar && Notification.permission !== 'granted' && Notification.permission !== 'denied';
-      }
+      },
     },
     created() {
       this.moment.locale('de')
       if (this.$isOffline) {
         this.$emit("showSnackbar", "Daten konnten nicht geladen werden! Stelle sicher dass du Internet hast.", "error");
       }
-      if (this.loggedInUser && messaging && process.env.NODE_ENV === 'production') {
+      if (this.currentUser && messaging && process.env.NODE_ENV === 'production') {
         this.getFirebaseToken();
         //refresh token
         let self = this;
         messaging.onTokenRefresh(function() {
           messaging.getToken().then(function (token) {
             if (token) {
-              self.sendTokenToServer(self.loggedInUser.id, token);
+              self.sendTokenToServer(self.currentUser.id, token);
             } else {
               // Show permission request.
               self.pushPermissionSnackbar = true;
@@ -125,7 +136,7 @@
         let self = this;
         messaging.getToken().then(function (token) {
           if (token) {
-            self.sendTokenToServer(self.loggedInUser.id, token);
+            self.sendTokenToServer(self.currentUser.id, token);
             self.pushPermissionSnackbar = false;
           } else {
             // Show permission request.
@@ -134,7 +145,7 @@
         });
       },
       sendTokenToServer(userId, token) {
-        this.$http.post('/user/' + userId + '/notificationsubscribe', {token: token});
+        this.$http.post('/notifications/subscribe', {firebaseToken: token, userId: userId});
       },
     }
 

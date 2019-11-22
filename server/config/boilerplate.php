@@ -32,6 +32,13 @@ return [
             'email' => 'email',
         ]
     ],
+    'notification_subscribe' => [
+
+        'validation_rules' => [
+            'userId' => 'required',
+            'firebaseToken' => 'required',
+        ]
+    ],
     // these options are related to store a training
     'store_training' => [
 

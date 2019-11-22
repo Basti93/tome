@@ -129,7 +129,7 @@
                     if (this.visible) {
                         this.firstName = this.editFirstName;
                         this.familyName = this.editFamilyName;
-                        this.birthdate = this.editBirthdate;
+                        this.birthdate = this.editBirthdate ? this.moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
                         this.groupIds = this.editGroupIds;
                         this.active = this.editActive;
                         this.profileImageName = this.editProfileImageName;

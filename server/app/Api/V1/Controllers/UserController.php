@@ -183,23 +183,6 @@ class UserController extends Controller
         return response()->json($birthdayUser);
     }
 
-    public function subscribeToNotifications(Request $request, $id)
-    {
-        $token = $request->input('token');
-        if (!empty($token) && !NotificationToken::whereToken($token)->exists()) {
-            $newToken = new NotificationToken();
-            $newToken->user_id = $id;
-            $newToken->token = $request->input('token');
-            $newToken->save();
-        }
-
-        return response()->json([
-            'status' => 'ok'
-        ], 201);
-
-    }
-
-
     public function updateMe(StoreUserRequest $request)
     {
 

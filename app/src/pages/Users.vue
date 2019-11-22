@@ -62,6 +62,9 @@
                         <template v-slot:item.familyName="{ item }">
                             {{ item.familyName }}
                         </template>
+                        <template v-slot:item.birthdate="{ item }">
+                            {{ item.birthdate ? moment().diff(item.birthdate, 'years') + ' (Jg. ' + item.birthdate.format('YY') + ')' : 'NA' }}
+                        </template>
                         <template v-slot:item.groups="{ item }">
                             {{getGroupsByIds(item.groupIds).map(g => branchAndGroupName(g)).join(', ')}}
                         </template>
@@ -69,7 +72,7 @@
                             {{ item.active ? 'Ja' : 'Nein' }}
                         </template>
                         <template v-slot:item.registered="{ item }">
-                            {{ item.registered ? 'Nein' : 'Ja' }}
+                            {{ item.registered ? 'Ja' : 'Nein' }}
                         </template>
                         <template v-slot:item.action="{ item }">
                             <v-btn
@@ -146,9 +149,10 @@
                 headers: [
                     {text: 'Vorname', value: 'firstName', sortable: true},
                     {text: 'Nachname', value: 'familyName', sortable: true},
+                    {text: 'Alter', value: 'birthdate', sortable: true},
                     {text: 'Gruppen', value: 'groups', sortable: false},
                     {text: 'Aktiv', value: 'active', sortable: true},
-                    {text: 'Vorläufiger Benutzer', value: 'registered', sortable: false},
+                    {text: 'Registriert', value: 'registered', sortable: false},
                     {text: 'Actions', value: 'action', sortable: false },
                 ],
                 users: [],
@@ -249,7 +253,7 @@
                         id: userObj.id,
                         firstName: userObj.firstName,
                         familyName: userObj.familyName,
-                        birthdate: userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null,
+                        birthdate: userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
                         active: userObj.active,
                         profileImageName: userObj.profileImageName,
                         groupIds: userObj.groupIds,

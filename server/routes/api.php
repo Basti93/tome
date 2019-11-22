@@ -20,6 +20,10 @@ $api->version('v1', function (Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\BranchController@index');
     });
 
+    $api->group(['prefix' => 'notifications'], function(Router $api) {
+        $api->post('/subscribe', 'App\\Api\\V1\\Controllers\\NotificationController@subscribe');
+    });
+
     $api->group(['prefix' => 'content'], function(Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\ContentController@index');
     });
@@ -68,7 +72,6 @@ $api->version('v1', function (Router $api) {
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
             $api->post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
             $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
-            $api->post('/{id}/notificationsubscribe', 'App\\Api\\V1\\Controllers\\UserController@subscribeToNotifications');
             $api->post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
             $api->post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
         });
