@@ -49,7 +49,6 @@
 <script lang="ts">
   import Vue from "vue";
   import {mapGetters} from 'vuex'
-  import { eraseCookie } from "@/helpers/cookie-helper";
 
   export default Vue.extend({
     name: "Login",
@@ -90,12 +89,11 @@
             this.$store.dispatch('logout')
           } else {
             this.$store.dispatch('login', {token: data.token, user: JSON.stringify(data.user)})
-            this.eraseCookie('cookieUser');
+            this.$store.dispatch('eraseCookieUser');
             this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
             this.$router.replace(this.$route.query.redirect || '/')
           }
       },
-      eraseCookie,
     },
   })
 </script>

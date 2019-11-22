@@ -84,7 +84,7 @@
         </v-flex>
         <CookieUserDialog
                 :visible="cookieUserDialogVisible"
-                v-on:close="cookieUserDialogClosed()"
+                v-on:close="cookieUserDialogVisible = false"
         ></CookieUserDialog>
     </v-layout>
 </template>
@@ -99,7 +99,6 @@
     import User from "../models/User";
     import Training from "@/models/Training";
     import TrainingParticipant from "@/models/TrainingParticipant";
-    import { getCookie, eraseCookie } from "@/helpers/cookie-helper";
 
     export default Vue.extend({
         name: "TrainingsCheckIn",
@@ -115,13 +114,12 @@
                 filterDialogVisible: false,
                 cookieUserDialogVisible: false,
                 selectedTrainingId: null,
-                cookieUser: null,
                 animationTrigger: true,
                 initializing: false,
             }
         },
         computed: {
-            ...mapGetters({loggedInUser: 'loggedInUser'}),
+            ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
             ...mapGetters('masterData', {
                 getBranchByGroupId: 'getBranchByGroupId',
                 getGroupById: 'getGroupById',
@@ -170,9 +168,6 @@
         },
         async created() {
             this.initializing = true;
-            if (!this.loggedInUser) {
-                this.cookieUser = User.from(this.getCookie('cookieUser'));
-            }
             if (!this.currentUser) {
                 this.cookieUserDialogVisible = true;
             }
@@ -266,12 +261,7 @@
                 return this.upcomingTrainings.filter(ut => ut.id == id)[0];
             },
             removeCookieUser() {
-                this.eraseCookie('cookieUser');
-                this.cookieUser = null;
-            },
-            cookieUserDialogClosed() {
-                this.cookieUser = User.from(this.getCookie('cookieUser'));
-                this.cookieUserDialogVisible = false;
+                this.$store.dispatch('eraseCookieUser')
             },
             attendingStatus(trainingId) {
                 const training = this.getUpcomingTrainingById(trainingId);
@@ -290,8 +280,6 @@
                 const status = this.attendingStatus(trainingId);
                 return (status !== null && !status) ? true : false;
             },
-            getCookie,
-            eraseCookie,
         },
         watch: {
             currentUser() {

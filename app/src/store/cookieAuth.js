@@ -1,34 +1,35 @@
-/* global localStorage */
-
 import User from '@/models/User'
 import * as MutationTypes from './mutation-types'
+import { setCookie, getCookie, eraseCookie } from "../helpers/cookie-helper"
 
 const state = {
-  user: User.from(localStorage.user)
+  cookieUser: User.from(getCookie('cookieUser'))
 }
 
 const mutations = {
-  [MutationTypes.LOGIN] (state) {
-    state.user = User.from(localStorage.user)
+  [MutationTypes.SELECT_COOKIE_USER] (state, { cookieUser }) {
+    state.cookieUser = User.from(cookieUser)
+    setCookie('cookieUser', cookieUser)
   },
-  [MutationTypes.LOGOUT] (state) {
-    state.user = null
+  [MutationTypes.ERASE_COOKIE_USER] (state) {
+    state.cookieUser = null
+    eraseCookie('cookieUser')
   }
 }
 
 const getters = {
-  loggedInUser (state) {
-    return state.user
+  cookieUser (state) {
+    return state.cookieUser
   }
 }
 
 const actions = {
-  login ({ commit }) {
-    commit(MutationTypes.LOGIN)
+  selectCookieUser ({ commit }, payload) {
+    commit(MutationTypes.SELECT_COOKIE_USER, payload)
   },
 
-  logout ({ commit }) {
-    commit(MutationTypes.LOGOUT)
+  eraseCookieUser ({ commit }) {
+    commit(MutationTypes.ERASE_COOKIE_USER)
   }
 }
 

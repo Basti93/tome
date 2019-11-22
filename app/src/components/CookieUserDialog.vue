@@ -63,7 +63,7 @@
 
 <script>
   import User from "@/models/User";
-  import { setCookie } from  "../helpers/cookie-helper"
+  import {mapGetters} from 'vuex'
 
   export default {
     name: "CookieUserDialog",
@@ -75,6 +75,19 @@
         userId: null,
         branchId: null,
         groupId: null,
+      }
+    },
+    computed: {
+      ...mapGetters({cookieUser: 'cookieUser'}),
+      show: {
+        get() {
+          return this.visible;
+        },
+        set(value) {
+          if (!value) {
+            this.$emit('close')
+          }
+        }
       }
     },
     methods: {
@@ -110,12 +123,10 @@
             }
           });
       },
-      setCookie,
       fullName: item => item.firstName + ' ' + item.familyName,
       done: function () {
         if (this.userId) {
-          this.setCookie('cookieUser', JSON.stringify(this.groupUsers.filter(u => u.id === this.userId)[0]));
-          this.$emit('cookieUserChanged', this.userId)
+          this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.groupUsers.filter(u => u.id === this.userId)[0])})
           this.$emit('close')
         }
       },
@@ -129,18 +140,6 @@
         this.groupSelect(id);
       },
     },
-    computed: {
-      show: {
-        get() {
-          return this.visible;
-        },
-        set(value) {
-          if (!value) {
-            this.$emit('close')
-          }
-        }
-      }
-    }
   }
 </script>
 
