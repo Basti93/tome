@@ -42,6 +42,8 @@ class TrainingAutomaticAttend extends Command
     {
         $now = date('Y-m-d H:i:s');
         $tomorrow = date("Y-m-d H:i:s", time() + 86400);
+        $this->info('Startet at '.$now);
+        $this->info('Check until '.$tomorrow);
         $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->get();
 
         $this->info('Found  '.count($closedTrainings).' Trainings in the next 24h');
@@ -53,10 +55,14 @@ class TrainingAutomaticAttend extends Command
                     ->whereHas('groups', function ($query) use ($groupIds) {
                         $query->whereIn('groups.id', $groupIds);
                 })->get();
+            $this->info('Found '.count($groupMembers).' possible attendies for training at '.$training->start);
             foreach ($groupMembers as $groupMember) {
                 //add all users who have not clicked on attending or not-attending
                 if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
+                    $this->info('User with id '.$groupMember->id.' will automatically attend the training');
                     $training->participants()->attach($groupMember, ['attend' => 1]);
+                } else {
+                    $this->info('User with id '.$groupMember->id.' is already assigned to the training');
                 }
             }
         }

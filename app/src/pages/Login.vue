@@ -88,12 +88,8 @@
           if (!data.token) {
             this.$emit("showSnackbar", "Falsches Passwort oder E-Mail!", "error");
             this.$store.dispatch('logout')
-            delete localStorage.token
-            delete localStorage.user
           } else {
-            localStorage.token = data.token
-            localStorage.user = JSON.stringify(data.user)
-            this.$store.dispatch('login')
+            this.$store.dispatch('login', {token: data.token, user: JSON.stringify(data.user)})
             this.eraseCookie('cookieUser');
             this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
             this.$router.replace(this.$route.query.redirect || '/')

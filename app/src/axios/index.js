@@ -58,14 +58,10 @@ Vue.axios.interceptors.response.use(response => {
           localStorage.token = response.data.token
           onAccessTokenFetched(response.data.token)
         } else {
-          delete localStorage.token
-          delete localStorage.user
           store.dispatch('logout')
           router.push('/login')
         }
       }).catch(function () {
-        delete localStorage.token
-        delete localStorage.user
         store.dispatch('logout')
         router.push('/login')
       });

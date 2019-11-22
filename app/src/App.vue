@@ -76,16 +76,14 @@
       }
     },
     created() {
-      const self = this;
       this.moment.locale('de')
       if (this.$isOffline) {
         this.$emit("showSnackbar", "Daten konnten nicht geladen werden! Stelle sicher dass du Internet hast.", "error");
       }
-
-      if (self.loggedInUser && messaging && process.env.NODE_ENV === 'production') {
+      if (this.loggedInUser && messaging && process.env.NODE_ENV === 'production') {
         this.getFirebaseToken();
-
         //refresh token
+        let self = this;
         messaging.onTokenRefresh(function() {
           messaging.getToken().then(function (token) {
             if (token) {
@@ -101,8 +99,6 @@
           console.log(payload);
         });
       }
-
-
     },
     methods: {
       showSnackbar(text, color = "info", timeout = 3000) {

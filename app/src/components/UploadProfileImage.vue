@@ -62,7 +62,7 @@
                 files: [],
                 serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
                 imageRule: [
-                    value => !value.size || value.size < 3000000 || 'Bildgröße muss kleiner wie 3 MB sein!',
+                    value => !value.size || value.size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
                 ],
             }
         },

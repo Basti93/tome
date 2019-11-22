@@ -1,2 +1,5 @@
 export const LOGIN = 'LOGIN'
+export const UPDATE_USER = 'UPDATE_USER'
 export const LOGOUT = 'LOGOUT'
+export const ERASE_COOKIE_USER = 'ERASE_COOKIE_USER'
+export const SELECT_COOKIE_USER = 'SELECT_COOKIE_USER'

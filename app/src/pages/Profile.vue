@@ -273,8 +273,7 @@
           if (data.status == 'ok') {
             this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
             let {data} = await this.$http.get('auth/me');
-            localStorage.user = JSON.stringify(data)
-            this.$store.dispatch('login')
+            this.$store.dispatch('updateUser', { user: JSON.stringify(data) })
             this.assignCurrentUser();
           } else {
             this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
