@@ -58,7 +58,7 @@
                                         <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
                                             <template v-slot:activator="{ on }">
                                                 <v-btn
-                                                        v-if="!selectedTraining.evaluated"
+                                                        v-show="!selectedTraining.evaluated"
                                                         @click="confirmEvaluationDialog = true"
                                                         color="primary">
                                                     Abschließen

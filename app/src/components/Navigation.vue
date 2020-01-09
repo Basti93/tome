@@ -179,6 +179,17 @@
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item
+                        to="/info"
+                        @click="drawer = false">
+                    <v-list-item-action>
+                        <v-icon>info</v-icon>
+                    </v-list-item-action>
+
+                    <v-list-item-content>
+                        <v-list-item-title>Informationen</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item
                         v-show="loggedInUser"
                         to="/logout"
                         @click="drawer = false">

@@ -12,6 +12,7 @@ import Trainings from "@/pages/Trainings";
 import Calendar from "@/pages/Calendar";
 import TrainingSeries from "@/pages/TrainingSeries";
 import Profile from "@/pages/Profile";
+import Infos from "@/pages/Infos";
 import Statistics from "@/pages/Statistics";
 import ApproveUsers from "@/pages/ApproveUsers";
 
@@ -95,6 +96,11 @@ const router = new Router({
       path: '/signup',
       name: 'Signup',
       component: Signup
+    },
+    {
+      path: '/info',
+      name: 'Informationen',
+      component: Infos
     },
     {
       path: '/login',

@@ -70,6 +70,7 @@
                                 v-if="creatingExcelReport || url"
                                 :loading="creatingExcelReport"
                                :href="url"
+                                download
                                 color="primary"
                                 >
                             <v-icon left>save_alt</v-icon>
@@ -101,6 +102,7 @@
                 toDateMenuOpened: false,
                 url: null,
                 creatingExcelReport: false,
+                serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
             }
         },
         computed: {
@@ -130,14 +132,14 @@
             async createExcelReport(): void {
                 this.creatingExcelReport = true;
                 try {
-                    const response = await this.$http.post('/trainingevaluation/exportaccountingtimes',
+                    const {data} = await this.$http.post('/trainingevaluation/exportaccountingtimes',
                         {
                             userId: this.loggedInUser.id,
                             from: this.moment(this.dateFrom, 'YYYY-MM-DD').format(),
                             to: this.moment(this.dateTo, 'YYYY-MM-DD').format(),
                         });
-                    if (response.data.status == 'ok') {
-                        this.url = process.env.VUE_APP_URL + response.data.url;
+                    if (data.status == 'ok') {
+                        this.url = this.serverUrl + "/" + data.fileName;
                     }
                 } catch (error) {
                     console.error(error);

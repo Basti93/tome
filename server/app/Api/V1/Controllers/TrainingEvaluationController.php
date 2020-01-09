@@ -52,11 +52,11 @@ class TrainingEvaluationController extends Controller
         $userId = $request->input('userId');
         $user = User::findOrFail($userId);
 
-        $filename = 'ul_abrechnung_'.strtolower($user->firstName).'_'.strtolower($user->familyName).'_'.$from->format("d_m_Y").'_'.$to->format("d_m_Y").'.xlsx';
-        Excel::store(new TrainingTrainerExport($user, $from, $to), $filename, 'public');
+        $filename = '/accounting_times/ul_abrechnung_'.strtolower($user->firstName).'_'.strtolower($user->familyName).'_'.$from->format("d_m_Y").'_'.$to->format("d_m_Y").'.xls';
+        Excel::store(new TrainingTrainerExport($user, $from, $to), $filename, 'public', \Maatwebsite\Excel\Excel::XLS);
         return response()->json([
             'status' => 'ok',
-            'url' => Storage::url("{$filename}")
+            'fileName' => $filename
         ]);
     }
 

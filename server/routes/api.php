@@ -20,6 +20,11 @@ $api->version('v1', function (Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\BranchController@index');
     });
 
+    $api->group(['prefix' => 'faq'], function(Router $api) {
+        $api->get('/', 'App\\Api\\V1\\Controllers\\FaqController@index');
+        $api->get('/files', 'App\\Api\\V1\\Controllers\\FaqController@getAllInfoDocuments');
+    });
+
     $api->group(['prefix' => 'notifications'], function(Router $api) {
         $api->post('/subscribe', 'App\\Api\\V1\\Controllers\\NotificationController@subscribe');
     });

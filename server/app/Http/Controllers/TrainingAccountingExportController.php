@@ -17,7 +17,7 @@ class TrainingAccountingExportController extends Controller
         $userId = $request->input('userId');
         $user = User::findOrFail($userId);
 
-        return Excel::download(new TrainingTrainerExport($userId, $from, $to), 'ul_abrechnung_'.$user.firstName.'_'.$user.familyName.'_'.$from.'_'.$to.'.xlsx');
+        return Excel::download(new TrainingTrainerExport($userId, $from, $to), 'ul_abrechnung_'.$user.firstName.'_'.$user.familyName.'_'.$from.'_'.$to.'.xls', Excel::XLS);
     }
 
 }
