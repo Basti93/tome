@@ -1,13 +1,7 @@
 <template>
     <v-layout wrap>
-        <v-flex xs12 md6>
-            <WeekdaysComponent
-                    v-if="series"
-                    :weekdays="selectedWeekdays"
-                    v-on:change="weekdaysChanged"
-            ></WeekdaysComponent>
+        <v-flex xs12 md6 v-if="!showOnlyGeneralInfo">
             <v-menu
-                    v-else
                     ref="dateMenuOpened"
                     :close-on-content-click="false"
                     v-model="dateMenuOpened"
@@ -73,7 +67,7 @@
                 ></v-time-picker>
             </v-menu>
         </v-flex>
-        <v-flex xs10>
+        <v-flex xs10 md6>
             <v-select
                     :items="locations"
                     item-text="name"
@@ -85,14 +79,7 @@
                     prepend-icon="add_location"
             ></v-select>
         </v-flex>
-        <v-flex xs2>
-            <v-checkbox
-                    v-if="series"
-                    v-model="editedActive"
-                    label="Aktiv"
-                    prepend-icon="active"
-            ></v-checkbox>
-        </v-flex>
+
         <v-flex xs12>
             <v-select
                     v-model="trainerIds"
@@ -146,16 +133,14 @@
 <script lang="ts">
     import Vue from "vue";
     import TrainingContent from "./TrainingContent"
-    import WeekdaysComponent from "./WeekdaysComponent"
     import {formatDate, parseDate} from "../helpers/date-helpers"
     import {mapGetters, mapState} from 'vuex'
 
     export default Vue.extend({
         name: "EditTrainingBase",
-        components: {TrainingContent, WeekdaysComponent},
+        components: {TrainingContent},
         props: {
-            series: Boolean,
-            weekdays: Array,
+            showOnlyGeneralInfo: Boolean,
             id: Number,
             date: String,
             start: String,
@@ -168,12 +153,10 @@
             trainers: Array,
             groups: Array,
             comment: String,
-            active: Boolean,
         },
         data: function () {
             return {
                 trainingDate: new Date().toISOString().substr(0, 10) as Date,
-                selectedWeekdays: [] as Array,
                 dataId: null as Number,
                 endTime: '12:00' as String,
                 startTime: '09:00' as String,
@@ -181,7 +164,6 @@
                 selectedGroupIds: [] as Array,
                 selectedContentIds: [] as Array,
                 selectedTrainerIds: [] as Array,
-                editedActive: false as Boolean,
                 editedComment: null as String,
                 dateMenuOpened: false,
                 startMenuOpened: false,
@@ -208,7 +190,6 @@
                 this.$emit("change", {
                     id: this.dataId,
                     date: this.trainingDate,
-                    weekdays: this.selectedWeekdays,
                     start: this.startTime,
                     end: this.endTime,
                     locationId: this.selectedLocationId,
@@ -216,12 +197,7 @@
                     groupIds: this.selectedGroupIds,
                     contentIds: this.selectedContentIds,
                     comment: this.editedComment,
-                    active: this.editedActive,
                 })
-            },
-            weekdaysChanged(weekdays) {
-                this.selectedWeekdays = weekdays;
-                this.fireChangeEvent();
             },
             fullName: item => item.firstName + ' ' + item.familyName,
             formatDate,
@@ -286,18 +262,6 @@
                     this.editedComment = newVal;
                 },
             },
-            active: {
-                immediate: true,
-                handler(newVal) {
-                    this.editedActive = newVal;
-                },
-            },
-            weekdays: {
-                immediate: true,
-                handler(newVal) {
-                    this.selectedWeekdays = newVal;
-                },
-            },
             trainingDate() {
                 this.fireChangeEvent();
             },
@@ -320,9 +284,6 @@
                 this.fireChangeEvent();
             },
             editedComment() {
-                this.fireChangeEvent();
-            },
-            editedActive() {
                 this.fireChangeEvent();
             },
         },

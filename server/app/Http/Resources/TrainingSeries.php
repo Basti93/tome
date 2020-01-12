@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use DateTime;
 
 class TrainingSeries extends JsonResource
 {
@@ -24,7 +25,7 @@ class TrainingSeries extends JsonResource
             'trainerIds' => $this->trainer_ids,
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
-            'active' => $this->active,
+            'defer_until' => $this->defer_until ? DateTime::createFromFormat('Y-m-d H:i:s', $this->defer_until)->format(DateTime::ATOM) : null,
         ];
     }
 }

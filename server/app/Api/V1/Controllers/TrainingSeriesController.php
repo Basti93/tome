@@ -9,6 +9,7 @@ use App\TrainingSeries;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class TrainingSeriesController extends Controller
@@ -23,6 +24,7 @@ class TrainingSeriesController extends Controller
         $this->middleware('permission:read-training-series', ['only' => ['index', 'getById']]);
         $this->middleware('permission:create-training-series', ['only' => ['create', 'store']]);
         $this->middleware('permission:update-training-series', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:delete-training-series', ['only' => ['destroy']]);
     }
 
     /**
@@ -70,12 +72,14 @@ class TrainingSeriesController extends Controller
         $training->startTime = $request->input('startTime');
         $training->endTime = $request->input('endTime');
         $training->comment = $request->input('comment');
-        $training->active = $request->input('active') ? 1 : 0;
+        $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
         $training->weekdays = json_encode($request->input('weekdays'));
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
+
+        Artisan::call('training:series');
 
         return response()->json([
             'status' => 'ok'
@@ -92,17 +96,33 @@ class TrainingSeriesController extends Controller
         $training->startTime = $request->input('startTime');
         $training->endTime = $request->input('endTime');
         $training->comment = $request->input('comment');
-        $training->active = $request->input('active') ? 1 : 0;
+        $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
         $training->weekdays = json_encode($request->input('weekdays'));
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
         $training->contents()->sync($request->input('contentIds'));
 
+        Artisan::call('training:series');
+
         return response()->json([
             'status' => 'ok'
         ], 201);
 
     }
+
+    public function destroy($id)
+    {
+        $series = TrainingSeries::findOrFail($id);
+        if ($series) {
+            $series->delete();
+            return response()->json([
+                'status' => 'ok',
+            ], 201);
+        } else {
+            return response()->json(error);
+        }
+    }
+
 
 }

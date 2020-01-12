@@ -51,7 +51,7 @@
     },
     created() {
       this.initializing = true;
-      this.years = [2019, 2018, 2017]
+      this.years = [2020, 2019, 2018, 2017]
       this.selectedYear = this.year;
       this.initialGroupIds = this.groupIds;
       this.initSelect()

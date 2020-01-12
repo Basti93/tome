@@ -85,6 +85,7 @@ $api->version('v1', function (Router $api) {
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
             $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@update');
+            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@destroy');
         });
 
         $api->group(['prefix' => 'trainingevaluation'], function(Router $api) {
