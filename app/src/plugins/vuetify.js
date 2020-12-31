@@ -7,19 +7,22 @@ import de from "vuetify/src/locale/de";
 Vue.use(Vuetify);
 
 export default new Vuetify({
-  lang: {
-    locales: {de},
-    current: 'de'
-  },
-  icons: {
-    iconfont: 'md'
-  },
-  theme: {
-    dark: true,
-    themes: {
-      dark: {
-        primary: '#60cc69',
-      }
+    lang: {
+        locales: {de},
+        current: 'de'
+    },
+    icons: {
+        iconfont: 'md'
+    },
+    theme: {
+        themes: {
+            options: {customProperties: true},
+            light: {
+                primary: '#60cc69',
+                secondary: '#efefef',
+                accent: '#000000',
+
+            }
+        }
     }
-  }
 });

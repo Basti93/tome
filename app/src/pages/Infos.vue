@@ -11,7 +11,7 @@
                     <v-list>
                         <v-list-item
                                 v-for="(item, index) in filePaths"
-                                v-key="index">
+                                :key="index">
                             <v-list-item-content><a :href="serverUrl + '/' + item" download target="_blank">{{item.split('\\').pop().split('/').pop()}}</a></v-list-item-content>
                         </v-list-item>
                     </v-list>
@@ -22,7 +22,7 @@
                             accordion>
                         <v-expansion-panel
                             v-for="(item, index) in faqs"
-                            v-key="index">
+                            :key="index">
                             <v-expansion-panel-header>{{item.headline}}</v-expansion-panel-header>
                             <v-expansion-panel-content v-html="item.content" class="ma-2"></v-expansion-panel-content>
                         </v-expansion-panel>

@@ -1,5 +1,3 @@
-/* global localStorage */
-
 const state = {
   snackbar: {
     visible: false,

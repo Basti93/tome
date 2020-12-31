@@ -1,41 +1,53 @@
 <template>
-    <v-layout align-top>
-        <v-flex xs12 md10 offset-md1 top>
+  <v-container>
+    <v-row>
+      <v-col>
+        <v-card color="secondary">
+          <v-toolbar flat>
+            <v-toolbar-title>Kalender</v-toolbar-title>
+          </v-toolbar>
+          <v-divider></v-divider>
+          <v-card-text flat class="pa-2 pa-md-4">
             <v-card>
-                <v-toolbar flat>
-                    <v-toolbar-title>Kalendar</v-toolbar-title>
-                </v-toolbar>
-                <v-divider></v-divider>
-                <v-card-text flat style="padding-bottom: 100px;">
-                    <TrainingCalendar
-                        :privateMode="userLoggedIn">
-                    </TrainingCalendar>
-                </v-card-text>
+              <v-card-text class="pa-0 pa-md-4">
+                <v-container>
+                  <v-row no-gutters>
+                    <v-col>
+                      <TrainingCalendar
+                          :privateMode="userLoggedIn">
+                      </TrainingCalendar>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
             </v-card>
-        </v-flex>
-    </v-layout>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
 
-    import Vue from "vue";
-    import {mapGetters} from 'vuex'
-    import TrainingCalendar from "../components/TrainingCalendar.vue";
+import Vue from "vue";
+import {mapGetters} from 'vuex'
+import TrainingCalendar from "../components/TrainingCalendar.vue";
 
-    export default Vue.extend({
-        name: "Calendar",
-        components: {TrainingCalendar},
+export default Vue.extend({
+  name: "Calendar",
+  components: {TrainingCalendar},
 
-        computed: {
-            ...mapGetters({loggedInUser: 'loggedInUser'}),
-            userLoggedIn() {
-                if (this.loggedInUser) {
-                    return true;
-                }
-                return false;
-            }
-        }
-    })
+  computed: {
+    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    userLoggedIn() {
+      if (this.loggedInUser) {
+        return true;
+      }
+      return false;
+    }
+  }
+})
 
 </script>
 

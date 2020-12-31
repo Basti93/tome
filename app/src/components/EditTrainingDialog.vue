@@ -148,9 +148,9 @@
                             <v-layout wrap>
                                 <v-flex xs12>
                                     <v-list>
-                                        <template v-for="(item, index) in editDialogFilteredUsers">
+                                        <template v-for="(item) in editDialogFilteredUsers">
 
-                                            <v-list-item>
+                                            <v-list-item :key="item.id">
                                                 <v-list-item-avatar>
                                                     <v-icon>account_circle</v-icon>
                                                 </v-list-item-avatar>
@@ -174,7 +174,7 @@
                                                     </v-icon>
                                                 </v-list-item-action>
                                             </v-list-item>
-                                            <v-divider inset></v-divider>
+                                            <v-divider :key="item.id" inset></v-divider>
                                         </template>
                                     </v-list>
                                     <v-autocomplete
@@ -189,7 +189,7 @@
                                             clearable>
                                         <template
                                                 slot="selection"
-                                                slot-scope="{ item, index }"
+                                                slot-scope="{ item }"
                                         >
                                             <v-chip>
                                                 <span>{{ item.firstName }}</span>

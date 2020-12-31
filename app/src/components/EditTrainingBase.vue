@@ -133,7 +133,7 @@
 <script lang="ts">
     import Vue from "vue";
     import TrainingContent from "./TrainingContent"
-    import {formatDate, parseDate} from "../helpers/date-helpers"
+    import {formatDate, parseDate} from "@/helpers/date-helpers"
     import {mapGetters, mapState} from 'vuex'
 
     export default Vue.extend({
@@ -161,9 +161,9 @@
                 endTime: '12:00' as String,
                 startTime: '09:00' as String,
                 selectedLocationId: null as Number,
-                selectedGroupIds: [] as Array,
-                selectedContentIds: [] as Array,
-                selectedTrainerIds: [] as Array,
+                selectedGroupIds: [] as Array<Number>,
+                selectedContentIds: [] as Array<Number>,
+                selectedTrainerIds: [] as Array<Number>,
                 editedComment: null as String,
                 dateMenuOpened: false,
                 startMenuOpened: false,
@@ -178,12 +178,12 @@
             trainingDateFormatted(): String {
                 return this.formatDate(this.trainingDate)
             },
-            branchContentIds(): Array {
+            branchContentIds(): Array<Number> {
                 return this.getContentIdsByBranchId(this.branchId);
             },
         },
         methods: {
-            contentIdsChanged(contentIds: Array): void {
+            contentIdsChanged(contentIds: Array<Number>): void {
                 this.selectedContentIds = contentIds;
             },
             fireChangeEvent() {

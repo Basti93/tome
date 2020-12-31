@@ -88,8 +88,7 @@ class TrainingPrepareController extends Controller
     {
 
         $training = Training::findOrFail($trainingId);
-
-        $training->contents()->attach($request->input('contentIds'));
+        $training->contents()->sync($request->input('contentIds'));
         $training->save();
 
         return response()->json([

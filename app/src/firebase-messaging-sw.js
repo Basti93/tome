@@ -41,11 +41,11 @@ self.addEventListener("message", msg=>{
 workbox.routing.registerNavigationRoute('/index.html');
 
 workbox.routing.registerRoute(
-    new RegExp('/js/.*\.js'),
+    new RegExp('/js/.*\\.js'),
     new workbox.strategies.CacheFirst()
 );
 workbox.routing.registerRoute(
-    new RegExp('/css/.*\.css'),
+    new RegExp('/css/.*\\.css'),
     new workbox.strategies.CacheFirst()
 );
 

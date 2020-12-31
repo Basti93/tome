@@ -91,7 +91,7 @@
     export default Vue.extend({
         name: "TrainingAccountingExportDialog",
         props: {
-            'visible': false,
+            'visible': Boolean,
         },
         data: function () {
             return {

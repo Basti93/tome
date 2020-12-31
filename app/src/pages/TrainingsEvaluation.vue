@@ -93,7 +93,6 @@
                                             <v-list-item
                                                     v-for="(item, index) in selectedTraining.trainers"
                                                     :key="index"
-                                                    @click=""
                                             >
                                                 <tome-list-item-profile-image
                                                         :image-path="item.profileImageName">
@@ -125,9 +124,8 @@
                                                 </v-list-item-content>
                                             </template>
                                             <v-list-item
-                                                    v-for="(item, index) in participatingUsers"
+                                                    v-for="(item) in participatingUsers"
                                                     :key="item.id"
-                                                    @click=""
                                             >
 
                                                 <tome-list-item-profile-image
@@ -162,9 +160,8 @@
                                                 </v-list-item-content>
                                             </template>
                                             <v-list-item
-                                                    v-for="(item, index) in canceledUsers"
+                                                    v-for="(item) in canceledUsers"
                                                     :key="item.id"
-                                                    @click=""
                                             >
                                                 <tome-list-item-profile-image
                                                         :image-path="item.profileImageName">
@@ -255,7 +252,6 @@
 </template>
 
 <script lang="ts">
-
     import Vue from "vue";
     import {mapGetters, mapState} from 'vuex'
     import TrainingParticipant from "@/models/TrainingParticipant";

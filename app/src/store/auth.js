@@ -1,5 +1,3 @@
-/* global localStorage */
-
 import User from '@/models/User'
 import * as MutationTypes from './mutation-types'
 

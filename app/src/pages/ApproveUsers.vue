@@ -28,7 +28,7 @@
                         two-line>
                         <v-radio-group v-model="selectedNonApprovedUserId" :mandatory="false">
                           <v-list-item
-                            v-for="(item, index) in nonApprovedUsers"
+                            v-for="(item) in nonApprovedUsers"
                             :key="item.id"
                           >
                             <v-list-item-content>
@@ -259,11 +259,13 @@
         if (this.nonRegisteredUserId) {
           return this.fullName(this.nonRegisteredUsers.filter(u => u.id === this.nonRegisteredUserId)[0]);
         }
+        return null;
       },
       nonApprovedUserFullName: function () {
         if (this.selectedNonApprovedUserId) {
           return this.fullName(this.nonApprovedUsers.filter(u => u.id === this.selectedNonApprovedUserId)[0]);
         }
+        return null;
       },
     },
     methods: {

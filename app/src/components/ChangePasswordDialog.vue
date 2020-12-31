@@ -56,7 +56,7 @@
     export default Vue.extend({
         name: "ChangePasswordDialog",
         props: {
-            'visible': false,
+            'visible': Boolean,
         },
         data: function () {
             return {

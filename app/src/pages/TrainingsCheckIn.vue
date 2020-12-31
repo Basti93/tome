@@ -1,92 +1,94 @@
 <template>
-    <v-layout align-top>
-        <v-flex xs12 md10 offset-md1 top>
-            <v-card>
-                <v-toolbar flat>
-                    <v-chip
-                        v-if="cookieUser"
-                        close
-                        @click:close="removeCookieUser()"
-                        v-model="cookieUser">{{cookieUser.getFullName()}}
-                    </v-chip>
-                    <v-spacer></v-spacer>
-                    <v-chip v-if="$vuetify.breakpoint.lgAndUp"><v-icon left color="primary">group</v-icon>{{filterDisplayValue}}</v-chip>
-                    <v-btn icon color="primary" @click="filterDialogVisible = true">
-                        <v-icon>filter_list</v-icon>
+    <v-container >
+      <v-row>
+        <v-col>
+          <v-card color="secondary">
+            <v-toolbar flat>
+              <v-chip
+                  outlined
+                  v-if="cookieUser"
+                  close
+                  @click:close="removeCookieUser()"
+                  v-model="cookieUser">{{cookieUser.getFullName()}}
+              </v-chip>
+              <v-spacer></v-spacer>
+              <v-chip v-if="$vuetify.breakpoint.lgAndUp" outlined><v-icon left color="primary">group</v-icon>{{filterDisplayValue}}</v-chip>
+              <v-btn icon color="primary" @click="filterDialogVisible = true">
+                <v-icon>filter_list</v-icon>
+              </v-btn>
+              <v-dialog
+                  v-model="filterDialogVisible"
+                  max-width="500px"
+                  :fullscreen="$vuetify.breakpoint.xsOnly"
+                  persistent>
+                <v-card>
+                  <v-toolbar flat dense>
+                    <v-btn icon @click="filterDialogVisible = false">
+                      <v-icon>close</v-icon>
                     </v-btn>
-                    <v-dialog
-                            v-model="filterDialogVisible"
-                            max-width="500px"
-                              :fullscreen="$vuetify.breakpoint.xsOnly"
-                            persistent>
-                        <v-card>
-                            <v-toolbar flat dense>
-                                <v-btn icon @click="filterDialogVisible = false">
-                                    <v-icon>close</v-icon>
-                                </v-btn>
-                                <v-toolbar-title>Filter ändern</v-toolbar-title>
-                                <v-spacer></v-spacer>
-                                <v-toolbar-items>
-                                    <v-btn text color="primary" @click="filterDone"><v-icon>done</v-icon></v-btn>
-                                </v-toolbar-items>
-                            </v-toolbar>
-                            <v-divider></v-divider>
-                            <v-card-text flat>
-                                <GroupSelect
-                                        v-bind:groupId="currentUserGroupId"
-                                        v-on:groupSelected="groupChanged"
-                                        v-on:branchSelected="branchChanged"
-                                >
-                                </GroupSelect>
-                            </v-card-text>
-                        </v-card>
-                    </v-dialog>
-                </v-toolbar>
-                <v-divider></v-divider>
-                <v-card-text flat>
-                    <div v-show="dataLoaded" class="tp-training-check-in">
-                        <h3>Aktuelle Trainings</h3>
-                        <div class="tp-training-check-in__navigation">
-                            <v-card
-                                    v-for="(item) in upcomingTrainings"
-                                    :key="item.id"
-                                    hover
-                                    @click="selectTraining(item.id)"
-                                    class="tp-training-check-in__navigation-card"
-                                    :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--canceled': canceled(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
-                            >
-                                <v-card-title>
-                                    <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
-                                    <p class="title pt-1">{{ item.start.format('DD')}}</p>
-                                    <v-icon v-if="attending(item.id)" small>check</v-icon>
-                                    <v-icon v-else-if="canceled(item.id)" small>not_interested</v-icon>
-                                    <v-icon v-else :color="findBranch(item.groupIds).colorHex" small >new_releases</v-icon>
-                                </v-card-title>
-                            </v-card>
-                        </div>
-                        <v-divider></v-divider>
-                        <v-slide-x-transition>
-                            <TrainingCheckIn
-                                    v-if="selectedTraining && animationTrigger"
-                                    :currentUser="currentUser"
-                                    :isCookieUser="isCookieUser"
-                                    :training="selectedTraining"
-                                    :participants="selectedTraining.participants"
-                                    v-on:checkedIn="updateCheckedIn()"
-                                    v-on:checkedOut="updateCheckedOut()"
-                                    v-on:showCookieUserLogin="showCookieUserLogin()"
-                                    class="tp-training-check-in__card">
-                            </TrainingCheckIn>
-                        </v-slide-x-transition>
-                    </div>
-                </v-card-text>
-            </v-card>
-        </v-flex>
+                    <v-toolbar-title>Filter ändern</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                      <v-btn text color="primary" @click="filterDone"><v-icon>done</v-icon></v-btn>
+                    </v-toolbar-items>
+                  </v-toolbar>
+                  <v-divider></v-divider>
+                  <v-card-text flat>
+                    <GroupSelect
+                        v-bind:groupId="currentUserGroupId"
+                        v-on:groupSelected="groupChanged"
+                        v-on:branchSelected="branchChanged"
+                    >
+                    </GroupSelect>
+                  </v-card-text>
+                </v-card>
+              </v-dialog>
+            </v-toolbar>
+            <v-divider></v-divider>
+            <v-card-text class="pa-0 pa-md-4">
+              <div v-show="dataLoaded" class="tp-training-check-in">
+                <h3>Aktuelle Trainings</h3>
+                <div class="tp-training-check-in__navigation">
+                  <v-card
+                      v-for="(item) in upcomingTrainings"
+                      :key="item.id"
+                      hover
+                      @click="selectTraining(item.id)"
+                      class="tp-training-check-in__navigation-card"
+                      :class="{'tp-training-check-in__navigation-card--attending': attending(item.id), 'tp-training-check-in__navigation-card--canceled': canceled(item.id), 'tp-training-check-in__navigation-card--active': item === selectedTraining, 'tp-training-check-in__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-check-in__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
+                  >
+                    <v-card-title>
+                      <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
+                      <p class="title pt-1">{{ item.start.format('DD')}}</p>
+                      <v-icon v-if="attending(item.id)" small>check</v-icon>
+                      <v-icon v-else-if="canceled(item.id)" small>not_interested</v-icon>
+                      <v-icon v-else small >new_releases</v-icon>
+                    </v-card-title>
+                  </v-card>
+                </div>
+                <v-slide-x-transition>
+                  <TrainingCheckIn
+                      v-if="selectedTraining && animationTrigger"
+                      :currentUser="currentUser"
+                      :isCookieUser="isCookieUser"
+                      :training="selectedTraining"
+                      :participants="selectedTraining.participants"
+                      v-on:checkedIn="updateCheckedIn()"
+                      v-on:checkedOut="updateCheckedOut()"
+                      v-on:showCookieUserLogin="showCookieUserLogin()"
+                      class="tp-training-check-in__card">
+                  </TrainingCheckIn>
+                </v-slide-x-transition>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
         <CookieUserDialog
                 :visible="cookieUserDialogVisible"
                 v-on:close="cookieUserDialogVisible = false"
         ></CookieUserDialog>
-    </v-layout>
+    </v-container>
 </template>
 
 <script lang="ts">
@@ -319,7 +321,7 @@
             }
 
             &--attending {
-                background-color: #60cc69 !important;
+                background-color: #60cb69 !important;
             }
 
             &--canceled {

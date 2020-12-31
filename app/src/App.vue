@@ -1,7 +1,7 @@
 <template>
   <v-app>
       <Navigation/>
-      <v-content
+      <v-main
               :class="{'pt-0': $vuetify.breakpoint.smAndDown, 'pt-4': $vuetify.breakpoint.mdAndUp}">
         <v-container
                 fluid
@@ -11,7 +11,6 @@
           <v-snackbar
                   bottom
                   right
-                  :text="text"
                   :color="color"
                   :value="snackbar"
           >
@@ -22,7 +21,7 @@
                   :value="pushPermissionSnackbarComputed"
                   bottom
                   right
-                  :timeout="0"
+                  :timeout="-1"
           >
             Benachrichtigungen erlauben?
             <v-btn
@@ -44,9 +43,9 @@
             <router-view v-on:showSnackbar="showSnackbar"/>
           </v-slide-y-transition>
         </v-container>
-      </v-content>
+      </v-main>
       <v-footer>
-        <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - 2019</a></span>
+        <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - 2021</a></span>
       </v-footer>
   </v-app>
 </template>

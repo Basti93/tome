@@ -52,7 +52,7 @@
 
     name: "GroupsSelectDialog",
     props: {
-      'visible': false,
+      'visible': Boolean,
       'groupIds': Array,
     },
     created() {

@@ -30,7 +30,7 @@
                         to="/trainings"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>list</v-icon>
+                        <v-icon>sports</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>
@@ -45,7 +45,7 @@
                     </v-list-item-action>
 
                     <v-list-item-content>
-                        <v-list-item-title>Kalendar</v-list-item-title>
+                        <v-list-item-title>Kalender</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item
@@ -53,7 +53,7 @@
                         to="/trainingsPrepare"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>new_releases</v-icon>
+                        <v-icon>emoji_events</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>
@@ -65,7 +65,7 @@
                         to="/trainingsEvaluation"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>check</v-icon>
+                        <v-icon>fact_check</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>
@@ -89,7 +89,7 @@
                         to="/users"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>person</v-icon>
+                        <v-icon>group</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>
@@ -186,7 +186,7 @@
                     </v-list-item-action>
 
                     <v-list-item-content>
-                        <v-list-item-title>Informationen</v-list-item-title>
+                        <v-list-item-title>Über die App</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
                 <v-list-item

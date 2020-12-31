@@ -127,13 +127,7 @@
             show: {
                 get() {
                     if (this.visible) {
-                        this.firstName = this.editFirstName;
-                        this.familyName = this.editFamilyName;
-                        this.birthdate = this.editBirthdate ? this.moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
-                        this.groupIds = this.editGroupIds;
-                        this.active = this.editActive;
-                        this.profileImageName = this.editProfileImageName;
-                        this.imageToUpload = null;
+                      this.assignValues()
                     }
                     return this.visible;
                 },
@@ -198,6 +192,15 @@
             imageRemoved() {
                 this.imageToUpload = null;
                 this.profileImageName = null;
+            },
+            assignValues() {
+              this.firstName = this.editFirstName;
+              this.familyName = this.editFamilyName;
+              this.birthdate = this.editBirthdate ? this.moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
+              this.groupIds = this.editGroupIds;
+              this.active = this.editActive;
+              this.profileImageName = this.editProfileImageName;
+              this.imageToUpload = null;
             },
             async uploadProfileImage() {
                 let formData = new FormData();
