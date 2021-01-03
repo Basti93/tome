@@ -130,6 +130,7 @@
         hide-overlay
         transition="dialog-bottom-transition"
         persistent
+        scrollable
         fullscreen>
       <v-card tile>
         <v-toolbar flat>
@@ -163,7 +164,6 @@
             </v-tab>
             <v-tab-item :value="'tab-1'">
               <v-container grid-list-md>
-                <v-layout wrap>
                   <EditTrainingBase
                       :branchId="filterBranchId"
                       :date="editedItem.date"
@@ -178,41 +178,39 @@
                       :groups="filterGroups"
                       v-on:change="trainingBaseChanged"
                   ></EditTrainingBase>
-                </v-layout>
               </v-container>
             </v-tab-item>
             <v-tab-item :value="'tab-2'">
-              <v-container grid-list-md>
-                <v-layout wrap>
-                  <v-flex xs12>
-                    <v-autocomplete
-                        :disabled="!editDialogFilteredUsers"
-                        :items="editDialogFilteredUsers"
-                        v-model="editedItem.participantIds"
-                        item-value="id"
-                        :item-text="fullName"
-                        label="Teilnehmer"
-                        prepend-icon="how_to_reg"
-                        multiple
-                        clearable>
-                      <template
-                          slot="selection"
-                          slot-scope="{ item }"
-                      >
-                        <v-chip outlined>
-                          <span>{{ item.firstName }}</span>
-                        </v-chip>
-                      </template>
-                    </v-autocomplete>
-                  </v-flex>
-                </v-layout>
+                <v-container>
+                  <v-row>
+                    <v-col>
+                      <v-autocomplete
+                          :disabled="!editDialogFilteredUsers"
+                          :items="editDialogFilteredUsers"
+                          v-model="editedItem.participantIds"
+                          item-value="id"
+                          :item-text="fullName"
+                          label="Teilnehmer"
+                          prepend-icon="how_to_reg"
+                          multiple
+                          clearable>
+                        <template
+                            slot="selection"
+                            slot-scope="{ item }"
+                        >
+                          <v-chip outlined>
+                            <span>{{ item.firstName }}</span>
+                          </v-chip>
+                        </template>
+                      </v-autocomplete>
+                    </v-col>
+                  </v-row>
               </v-container>
             </v-tab-item>
           </v-tabs>
         </v-card-text>
       </v-card>
     </v-dialog>
-    </v-flex>
     <!--<v-bottom-navigation
              v-model="activeView"
              hide-on-scroll

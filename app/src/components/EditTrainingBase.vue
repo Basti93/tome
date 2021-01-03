@@ -1,133 +1,134 @@
 <template>
-    <v-layout wrap>
-        <v-flex xs12 md6 v-if="!showOnlyGeneralInfo">
-            <v-menu
-                    ref="dateMenuOpened"
-                    :close-on-content-click="false"
-                    v-model="dateMenuOpened"
-            >
-                <template v-slot:activator="{ on }">
-                    <v-text-field
-                            slot="activator"
-                            v-model="trainingDateFormatted"
-                            required
-                            label="Datum"
-                            prepend-icon="event"
-                            readonly
-                            v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
-            </v-menu>
-        </v-flex>
-        <v-flex xs6 md3>
-            <v-menu
-                    ref="startMenuOpened"
-                    v-model="startMenuOpened"
-                    :close-on-content-click="false">
-                <template v-slot:activator="{ on }">
-                    <v-text-field
-                            slot="activator"
-                            v-model="startTime"
-                            label="Start"
-                            required
-                            prepend-icon="schedule"
-                            readonly
-                            lazy
-                            v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-time-picker
-                    v-model="startTime"
-                    @click:minute="$refs.startMenuOpened.save(startTime)"
-                    format="24hr">
-                </v-time-picker>
-            </v-menu>
-        </v-flex>
-        <v-flex xs6 md3>
-            <v-menu
-                    ref="endMenuOpened"
-                    :close-on-content-click="false"
-                    v-model="endMenuOpened">
-                <template v-slot:activator="{ on }">
-                    <v-text-field
-                            slot="activator"
-                            v-model="endTime"
-                            required
-                            label="Ende"
-                            prepend-icon="schedule"
-                            readonly
-                            lazy
-                            v-on="on"
-                    ></v-text-field>
-                </template>
-                <v-time-picker
-                        v-model="endTime"
-                        format="24hr"
-                ></v-time-picker>
-            </v-menu>
-        </v-flex>
-        <v-flex xs10 md6>
-            <v-select
-                    :items="locations"
-                    item-text="name"
-                    item-value="id"
-                    v-model="selectedLocationId"
-                    clearable
-                    required
-                    label="Ort"
-                    prepend-icon="add_location"
-            ></v-select>
-        </v-flex>
-
-        <v-flex xs12>
-            <v-select
-                    v-model="trainerIds"
-                    :items="trainers"
-                    item-value="id"
-                    :item-text="fullName"
-                    attach
-                    clearable
-                    chips
-                    deletable-chips
-                    label="Trainer"
-                    prepend-icon="verified_user"
-                    multiple
-            >
-            </v-select>
-        </v-flex>
-        <v-flex xs12>
-            <v-select
-                    :items="groups"
-                    v-model="selectedGroupIds"
-                    item-value="id"
-                    item-text="name"
-                    label="Gruppen"
-                    prepend-icon="groups"
-                    multiple
-                    clearable
-                    chips
-                    deletable-chips>
-            </v-select>
-        </v-flex>
-        <v-flex xs12 ml-2 style="text-align: left;">
-            <v-label>Trainingsinhalte</v-label>
-            <TrainingContent
-                    :contentIds="branchContentIds"
-                    :initContentIds="selectedContentIds"
-                    selectable
-                    v-on:change="contentIdsChanged"
-            >
-            </TrainingContent>
-        </v-flex>
-        <v-flex xs12>
-            <v-textarea
-                    filled
-                    label="Kommentar"
-                    v-model.lazy="editedComment"
-            ></v-textarea>
-        </v-flex>
-    </v-layout>
+  <v-container>
+    <v-row>
+      <v-col cols="12" md="6" v-if="!showOnlyGeneralInfo">
+        <v-menu
+            ref="dateMenuOpened"
+            :close-on-content-click="false"
+            v-model="dateMenuOpened"
+        >
+          <template v-slot:activator="{ on }">
+            <v-text-field
+                slot="activator"
+                v-model="trainingDateFormatted"
+                required
+                label="Datum"
+                prepend-icon="event"
+                readonly
+                v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
+        </v-menu>
+      </v-col>
+      <v-col cols="6" md="3">
+        <v-menu
+            ref="startMenuOpened"
+            v-model="startMenuOpened"
+            :close-on-content-click="false">
+          <template v-slot:activator="{ on }">
+            <v-text-field
+                slot="activator"
+                v-model="startTime"
+                label="Start"
+                required
+                prepend-icon="schedule"
+                readonly
+                lazy
+                v-on="on"
+            ></v-text-field>
+          </template>
+          <v-time-picker
+              v-model="startTime"
+              @click:minute="$refs.startMenuOpened.save(startTime)"
+              format="24hr">
+          </v-time-picker>
+        </v-menu>
+      </v-col>
+      <v-col cols="6" md="3">
+        <v-menu
+            ref="endMenuOpened"
+            :close-on-content-click="false"
+            v-model="endMenuOpened">
+          <template v-slot:activator="{ on }">
+            <v-text-field
+                slot="activator"
+                v-model="endTime"
+                required
+                label="Ende"
+                prepend-icon="schedule"
+                readonly
+                lazy
+                v-on="on"
+            ></v-text-field>
+          </template>
+          <v-time-picker
+              v-model="endTime"
+              format="24hr"
+          ></v-time-picker>
+        </v-menu>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-select
+            :items="locations"
+            item-text="name"
+            item-value="id"
+            v-model="selectedLocationId"
+            clearable
+            required
+            label="Ort"
+            prepend-icon="add_location"
+        ></v-select>
+      </v-col>
+      <v-col cols="12">
+        <v-select
+            v-model="trainerIds"
+            :items="trainers"
+            item-value="id"
+            :item-text="fullName"
+            attach
+            clearable
+            chips
+            deletable-chips
+            label="Trainer"
+            prepend-icon="verified_user"
+            multiple
+        >
+        </v-select>
+      </v-col>
+      <v-col cols="12">
+        <v-select
+            :items="groups"
+            v-model="selectedGroupIds"
+            item-value="id"
+            item-text="name"
+            label="Gruppen"
+            prepend-icon="groups"
+            multiple
+            clearable
+            chips
+            deletable-chips>
+        </v-select>
+      </v-col>
+      <v-col cols="12" class="ml-2">
+        <v-label>Trainingsinhalte</v-label>
+        <TrainingContent
+            :contentIds="branchContentIds"
+            :initContentIds="selectedContentIds"
+            selectable
+            v-on:change="contentIdsChanged"
+        >
+        </TrainingContent>
+      </v-col>
+      <v-col cols="12">
+        <v-textarea
+            filled
+            label="Kommentar"
+            v-model.lazy="editedComment"
+        ></v-textarea>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">

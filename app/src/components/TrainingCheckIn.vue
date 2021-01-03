@@ -1,10 +1,8 @@
 <template>
   <div>
     <v-card class="tp-upcoming-training ma-1">
-      <v-card-title class="justify-center">
-        {{ start.format('dddd, Do MMMM') }}
-      </v-card-title>
-      <v-card-subtitle>{{ start.fromNow() }}</v-card-subtitle>
+      <v-card-title class="justify-center">{{ start.format('dddd, Do MMMM') }}</v-card-title>
+      <v-card-subtitle class="text-center">{{ start.fromNow() }}</v-card-subtitle>
       <v-divider></v-divider>
       <v-card-text class="text-center">
         <v-container>
@@ -43,7 +41,7 @@
               <v-btn
                   style="min-width: 150px"
                   v-if="attending || notYet"
-                  color="error"
+                  color="red lighten-2"
                   class="ma-2"
                   @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
                 Absagen

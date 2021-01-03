@@ -7,257 +7,254 @@
             <v-toolbar-title>Trainingsvorbereitung</v-toolbar-title>
           </v-toolbar>
           <v-card-text class="mt-8 pa-0 pa-md-4" v-show="dataLoaded">
-            <div class="tp-training-prepare__navigation">
-              <v-card
-                  v-for="(item) in upcomingTrainings"
-                  :key="item.id"
-                  hover
-                  @click="selectTraining(item.id)"
-                  class="tp-training-prepare__navigation-card"
-                  :class="{'tp-training-prepare__navigation-card--active': item === selectedTraining, 'tp-training-prepare__navigation-card--mobile': $vuetify.breakpoint.smAndDown, 'tp-training-prepare__navigation-card--desktop': $vuetify.breakpoint.mdAndUp}"
-              >
-                <v-card-title>
-                  <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) }}</h2>
-                  <p class="title pt-1">{{ item.start.format('DD') }}</p>
-                  <v-icon small>new_releases</v-icon>
-                </v-card-title>
-              </v-card>
-            </div>
-            <v-slide-x-transition v-if="selectedTraining">
-              <div>
-                <v-card class="ma-1">
-                  <v-card-title>Trainingsdaten {{ selectedTraining.start.format('dddd [den] Do MMMM') }}</v-card-title>
-                  <v-card-subtitle>{{ selectedTraining.start.fromNow() }}</v-card-subtitle>
-                  <v-divider></v-divider>
-                  <v-card-text class="text-center pa-0 pa-md-4">
-                    <v-container>
-                      <v-row>
-                        <v-col>
-                          Von
-                          <v-chip
-                              outlined
-                              @click="editTime()"
+            <v-container>
+              <v-row no-gutters>
+                <v-col md="3" cols="0">
+                  <TrainingSelector
+                      :trainings="upcomingTrainings"
+                      :selectedTrainingId="selectedTrainingId"
+                      v-on:change="selectTraining"
+                  ></TrainingSelector>
+                </v-col>
+                <v-col md="9">
+                  <v-slide-x-transition v-if="selectedTraining">
+                    <div v-if="animationTrigger">
+                      <v-card class="ma-1">
+                        <v-card-title class="justify-center">Trainingsdaten {{ selectedTraining.start.format('dddd [den] Do MMMM') }}</v-card-title>
+                        <v-card-subtitle class="text-center">{{ selectedTraining.start.fromNow() }}</v-card-subtitle>
+                        <v-divider></v-divider>
+                        <v-card-text class="text-center pa-0 pa-md-4">
+                          <v-container>
+                            <v-row>
+                              <v-col>
+                                Von
+                                <v-chip
+                                    outlined
+                                    @click="editTime()"
+                                >
+                                  <v-icon
+                                      small
+                                      color="primary"
+                                      left>
+                                    edit
+                                  </v-icon>
+                                  {{ selectedTraining.start.format('HH:mm') }}
+                                </v-chip>
+                                Uhr bis
+                                <v-chip
+                                    outlined
+                                    @click="editTime()"
+                                >
+                                  <v-icon
+                                      small
+                                      color="primary"
+                                      left>
+                                    edit
+                                  </v-icon>
+                                  {{ selectedTraining.end.format('HH:mm') }}
+                                </v-chip>
+                                Uhr
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col md="6" v-if="editingLocation">
+                                <v-select
+                                    :items="locations"
+                                    item-text="name"
+                                    item-value="id"
+                                    v-model="editLocationId"
+                                    clearable
+                                    required
+                                    label="Ort"
+                                    prepend-icon="add_location"
+                                ></v-select>
+                                <v-btn @click="saveEditLocation()"
+                                       color="primary"
+                                       text>
+                                  <v-icon>check</v-icon>
+                                </v-btn>
+                                <v-btn @click="cancelEditLocation()"
+                                       color="primary"
+                                       text>
+                                  <v-icon>cancel</v-icon>
+                                </v-btn>
+                              </v-col>
+                              <v-col v-else>
+                                <v-chip
+                                    outlined
+                                    @click="editLocation()"
+                                >
+                                  <v-icon
+                                      small
+                                      color="primary"
+                                      left>
+                                    edit
+                                  </v-icon>
+                                  {{ getLocationNameById(selectedTraining.locationId) }}
+                                </v-chip>
+                              </v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="ma-1">
+                        <v-card-text class="pa-0 pa-md-4">
+                          <v-container no-gutters>
+                            <v-row v-if="editingComment">
+                              <v-col
+                                  cols="9"
+                              >
+                                <v-textarea
+                                    filled
+                                    label="Kommentar"
+                                    rows="3"
+                                    v-model="editComment"
+                                ></v-textarea>
+                              </v-col>
+                              <v-col
+                                  cols="3"
+                              >
+                                <v-btn
+                                    class="ma-2"
+                                    @click="saveEditComment()"
+                                    color="primary"
+                                >
+                                  <v-icon>check</v-icon>
+                                </v-btn>
+                                <v-btn
+                                    class="ma-2"
+                                    @click="cancelEditComment()"
+                                    color="error"
+                                >
+                                  <v-icon>cancel</v-icon>
+                                </v-btn>
+                              </v-col>
+                            </v-row>
+                            <v-row v-else>
+                              <v-col
+                                  cols="12"
+                                  sm="12"
+                                  md="10"
+                              >
+                                <v-textarea
+                                    filled
+                                    @click="startEditComment()"
+                                    label="Kommentar"
+                                    v-model="selectedTraining.comment"
+                                    readonly
+                                    rows="3"
+                                    append-icon="edit"
+                                ></v-textarea>
+                              </v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="ma-1">
+                        <v-card-title>Trainingsinhalte</v-card-title>
+                        <v-card-text class="pa-0 pa-md-4">
+                          <v-container>
+                            <v-row>
+                              <v-col
+                                  cols="12"
+                              >
+                                <TrainingContent
+                                    :contentIds="branchContentIds"
+                                    :initContentIds="selectedTraining.contentIds"
+                                    selectable
+                                    v-on:change="saveEditTrainingContent"
+                                >
+                                </TrainingContent>
+                              </v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="ma-1">
+                        <v-card-title>Teilnehmer</v-card-title>
+                        <v-card-text class="pa-0 pa-md-4">
+                          <v-list-group
+                              v-model="participantsListGroupActive"
+                              prepend-icon="check"
+                              group="participants"
+                              key="0"
+                              no-action
                           >
-                            <v-icon
-                                small
-                                color="primary"
-                                left>
-                              edit
-                            </v-icon>
-                            {{ selectedTraining.start.format('HH:mm') }}
-                          </v-chip>
-                          Uhr bis
-                          <v-chip
-                              outlined
-                              @click="editTime()"
-                          >
-                            <v-icon
-                                small
-                                color="primary"
-                                left>
-                              edit
-                            </v-icon>
-                            {{ selectedTraining.end.format('HH:mm') }}
-                          </v-chip>
-                          Uhr
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col md="6" v-if="editingLocation">
-                          <v-select
-                              :items="locations"
-                              item-text="name"
-                              item-value="id"
-                              v-model="editLocationId"
-                              clearable
-                              required
-                              label="Ort"
-                              prepend-icon="add_location"
-                          ></v-select>
-                          <v-btn @click="saveEditLocation()"
-                                 color="primary"
-                                 text>
-                            <v-icon>check</v-icon>
-                          </v-btn>
-                          <v-btn @click="cancelEditLocation()"
-                                 color="primary"
-                                 text>
-                            <v-icon>cancel</v-icon>
-                          </v-btn>
-                        </v-col>
-                        <v-col v-else>
-                          <v-chip
-                              outlined
-                              @click="editLocation()"
-                          >
-                            <v-icon
-                                small
-                                color="primary"
-                                left>
-                              edit
-                            </v-icon>
-                            {{ getLocationNameById(selectedTraining.locationId) }}
-                          </v-chip>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-                </v-card>
-                <v-card class="ma-1">
-                  <v-card-text class="pa-0 pa-md-4">
-                    <v-container no-gutters>
-                      <v-row v-if="editingComment">
-                        <v-col
-                            cols="9"
-                        >
-                          <v-textarea
-                              filled
-                              label="Kommentar"
-                              rows="3"
-                              v-model="editComment"
-                          ></v-textarea>
-                        </v-col>
-                        <v-col
-                            cols="3"
-                        >
-                          <v-btn
-                              class="ma-2"
-                              @click="saveEditComment()"
-                              color="primary"
-                          >
-                            <v-icon>check</v-icon>
-                          </v-btn>
-                          <v-btn
-                              class="ma-2"
-                              @click="cancelEditComment()"
-                              color="error"
-                          >
-                            <v-icon>cancel</v-icon>
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                      <v-row v-else>
-                        <v-col
-                            cols="12"
-                            sm="12"
-                            md="10"
-                        >
-                          <v-textarea
-                              filled
-                              @click="startEditComment()"
-                              label="Kommentar"
-                              v-model="selectedTraining.comment"
-                              readonly
-                              rows="3"
-                              append-icon="edit"
-                          ></v-textarea>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-                </v-card>
-                <v-card class="ma-1">
-                  <v-card-title>Trainingsinhalte</v-card-title>
-                  <v-card-text class="pa-0 pa-md-4">
-                    <v-container>
-                      <v-row>
-                        <v-col
-                            cols="12"
-                        >
-                          <TrainingContent
-                              :contentIds="branchContentIds"
-                              :initContentIds="selectedTraining.contentIds"
-                              selectable
-                              v-on:change="saveEditTrainingContent"
-                          >
-                          </TrainingContent>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-                </v-card>
-                <v-card class="ma-1">
-                  <v-card-title>Teilnehmer</v-card-title>
-                  <v-card-text class="pa-0 pa-md-4">
-                    <v-list-group
-                        v-model="participantsListGroupActive"
-                        prepend-icon="check"
-                        group="participants"
-                        key="0"
-                        no-action
-                    >
-                      <template slot="activator">
-                        <v-list-item>
-                          <v-list-item-content>
-                            <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt
-                            </v-list-item-title>
-                          </v-list-item-content>
-                        </v-list-item>
-                      </template>
-                      <v-list-item
-                          v-for="(item) in participatingUsers"
-                          :key="item.id"
-                      >
-                        <tome-list-item-profile-image
-                            :image-path="item.profileImageName">
-                        </tome-list-item-profile-image>
+                            <template slot="activator">
+                              <v-list-item>
+                                <v-list-item-content>
+                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt
+                                  </v-list-item-title>
+                                </v-list-item-content>
+                              </v-list-item>
+                            </template>
+                            <v-list-item
+                                v-for="(item) in participatingUsers"
+                                :key="item.id"
+                            >
+                              <tome-list-item-profile-image
+                                  :image-path="item.profileImageName">
+                              </tome-list-item-profile-image>
 
-                        <v-list-item-content>
-                          <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                          <v-list-item-subtitle>
-                            <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-list-group>
-                    <v-list-group
-                        v-model="canceledUserListGroupActive"
-                        prepend-icon="cancel"
-                        group="canceledusers"
-                        key="1"
-                        no-action
-                    >
-                      <template slot="activator">
-                        <v-list-item>
-                          <v-list-item-content>
-                            <v-list-item-title>{{ canceledUsers.length }} <span
-                                v-if="canceledUsers.length == 1">Absage</span><span
-                                v-else>Absagen</span></v-list-item-title>
-                          </v-list-item-content>
-                        </v-list-item>
-                      </template>
-                      <v-list-item
-                          v-for="(item) in canceledUsers"
-                          :key="item.id"
-                      >
-                        <tome-list-item-profile-image
-                            :image-path="item.profileImageName">
-                        </tome-list-item-profile-image>
+                              <v-list-item-content>
+                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                <v-list-item-subtitle>
+                                  <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
+                                </v-list-item-subtitle>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list-group>
+                          <v-list-group
+                              v-model="canceledUserListGroupActive"
+                              prepend-icon="cancel"
+                              group="canceledusers"
+                              key="1"
+                              no-action
+                          >
+                            <template slot="activator">
+                              <v-list-item>
+                                <v-list-item-content>
+                                  <v-list-item-title>{{ canceledUsers.length }} <span
+                                      v-if="canceledUsers.length == 1">Absage</span><span
+                                      v-else>Absagen</span></v-list-item-title>
+                                </v-list-item-content>
+                              </v-list-item>
+                            </template>
+                            <v-list-item
+                                v-for="(item) in canceledUsers"
+                                :key="item.id"
+                            >
+                              <tome-list-item-profile-image
+                                  :image-path="item.profileImageName">
+                              </tome-list-item-profile-image>
 
-                        <v-list-item-content @click="openCancelReasonDialog(item.id)">
-                          <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                          <v-list-item-subtitle>
-                            <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
-                          </v-list-item-subtitle>
-                          <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
-                            {{ getCancelReason(item.id) }}
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-list-group>
-                  </v-card-text>
-                </v-card>
-              </div>
-            </v-slide-x-transition>
-            <v-alert
-                v-else
-                type="info"
-                class="text-small"
-                pa-0
-                ma-0
-                outlined>
-              Keine Trainings für dich verfügbar
-            </v-alert>
+                              <v-list-item-content @click="openCancelReasonDialog(item.id)">
+                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                <v-list-item-subtitle>
+                                  <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
+                                </v-list-item-subtitle>
+                                <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
+                                  {{ getCancelReason(item.id) }}
+                                </v-list-item-subtitle>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list-group>
+                        </v-card-text>
+                      </v-card>
+                    </div>
+                  </v-slide-x-transition>
+                  <v-alert
+                      v-else
+                      type="info"
+                      class="text-small"
+                      pa-0
+                      ma-0
+                      outlined>
+                    Keine Trainings für dich verfügbar
+                  </v-alert>
+                </v-col>
+              </v-row>
+            </v-container>
           </v-card-text>
         </v-card>
       </v-col>
@@ -332,10 +329,12 @@ import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingContent from "@/components/TrainingContent"
 import ListItemProfileImage from "@/components/ListItemProfileImage"
+import TrainingSelector from "../components/TrainingSelector.vue";
 
 export default Vue.extend({
   name: "TrainingsPrepare",
   components: {
+    TrainingSelector,
     TrainingContent,
     "tome-list-item-profile-image": ListItemProfileImage
   },
@@ -553,43 +552,5 @@ export default Vue.extend({
 </script>
 
 <style scoped lang="scss">
-.tp-training-prepare {
 
-  &__navigation-card {
-    flex-grow: 1;
-
-    .v-card__title {
-      display: block;
-    }
-
-    &--desktop {
-      margin: 2rem;
-    }
-
-    &--mobile {
-      margin: 0.5rem;
-    }
-
-    &--active {
-      filter: brightness(80%);
-    }
-
-  }
-
-  &__card {
-    margin-bottom: 2rem;
-  }
-
-  &__navigation {
-    display: flex;
-    flex-flow: row;
-    justify-content: center;
-    text-align: center;
-
-    &-card {
-      max-width: 12rem;
-    }
-  }
-
-}
 </style>

@@ -53,7 +53,7 @@
                         to="/trainingsPrepare"
                         @click="drawer = false">
                     <v-list-item-action>
-                        <v-icon>emoji_events</v-icon>
+                        <v-icon>schedule</v-icon>
                     </v-list-item-action>
 
                     <v-list-item-content>

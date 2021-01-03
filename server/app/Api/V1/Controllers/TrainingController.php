@@ -104,7 +104,7 @@ class TrainingController extends Controller
                     $query->where('groups.branch_id', $branchId);
                 });
             })
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         return TrainingResource::collection($trainings);
