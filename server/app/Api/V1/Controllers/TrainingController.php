@@ -168,9 +168,17 @@ class TrainingController extends Controller
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
-        $training->contents()->sync($request->input('contentIds'));
 
-        $this->updateParticipants($request->input('participantIds'), $training);
+
+        $contents = $request->input('contentIds');
+        if (!empty($contents)) {
+            $training->contents()->sync();
+        }
+
+        $participantIds = $request->input('participantIds');
+        if (!empty($participantIds)) {
+            $this->updateParticipants($participantIds, $training);
+        }
 
         return response()->json([
             'status' => 'ok'
@@ -290,9 +298,16 @@ class TrainingController extends Controller
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
-        $training->contents()->sync($request->input('contentIds'));
 
-        $this->updateParticipants($request->input('participantIds'), $training);
+        $contents = $request->input('contentIds');
+        if (!empty($contents)) {
+            $training->contents()->sync();
+        }
+
+        $participantIds = $request->input('participantIds');
+        if (!empty($participantIds)) {
+            $this->updateParticipants($participantIds, $training);
+        }
 
         return response()->json([
             'status' => 'ok'

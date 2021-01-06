@@ -32,7 +32,7 @@ class BranchController extends Controller
    */
   public function index()
   {
-    return response()->json(Branch::all());
+    return response()->json(Branch::orderBy('name')->get());
   }
 
 }

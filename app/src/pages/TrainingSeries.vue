@@ -3,28 +3,31 @@
     <v-row>
       <v-col>
         <v-card color="secondary">
-          <v-toolbar extension-height="100">
-            <v-toolbar-title>Trainingsserien</v-toolbar-title>
+          <v-toolbar >
+            <v-container fluid>
+              <v-row align="center">
+                <v-col cols="6">
+                  <v-toolbar-title>Trainingsserien</v-toolbar-title>
+                </v-col>
+                <v-col cols="6">
+                  <v-select
+                      class="pt-6"
+                      :items="filterBranches"
+                      v-model="filterBranchId"
+                      v-on:change="filterChanged()"
+                      item-text="name"
+                      item-value="id"
+                      flat
+                      dense
+                      label="Sparte auswählen"
+                      prepend-icon="bubble_chart"
+                  >
+                  </v-select>
+                </v-col>
+              </v-row>
+            </v-container>
             <v-spacer></v-spacer>
             <template v-slot:extension>
-              <v-container>
-                <v-row no-gutters>
-                  <v-col
-                      class="text-right"
-                      cols="6"
-                      md="2"
-                      v-for="(item) in filterGroups"
-                      :key="item.id">
-                    <v-chip
-                        small
-                        outlined
-                        class="ma-1">
-                      <v-icon left color="primary">group</v-icon>
-                      {{ branchAndGroupName(item) }}
-                    </v-chip>
-                  </v-col>
-                </v-row>
-              </v-container>
               <v-btn
                   title="Neue Trainingsserie anlegen"
                   fab
@@ -46,7 +49,7 @@
                   <v-btn icon @click="showCreateDialog = false">
                     <v-icon>close</v-icon>
                   </v-btn>
-                  <v-toolbar-title>Trainingsserie Bearbeiten/Anlegen</v-toolbar-title>
+                  <v-toolbar-title>{{editDialogTitle}}</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn text color="primary" @click="save()">
@@ -82,7 +85,7 @@
                                 pa-0
                                 ma-0
                                 outlined>
-                              Traings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
+                              Trainings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                             </v-alert>
                           </v-flex>
                           <v-flex xs12 md9 offset-md-1>
@@ -118,24 +121,26 @@
                     </v-tab-item>
                     <v-tab-item :value="'tab-2'">
                       <v-container grid-list-md>
-                        <v-layout wrap>
-                          <EditTrainingBase
-                              showOnlyGeneralInfo
-                              v-on:change="seriesChanged"
-                              :id="editedTrainingSeries.id"
-                              :start="editedTrainingSeries.startTime"
-                              :end="editedTrainingSeries.endTime"
-                              :trainerIds="editedTrainingSeries.trainerIds"
-                              :groupIds="editedTrainingSeries.groupIds"
-                              :groups="filterGroups"
-                              :trainers="trainers"
-                              :contentIds="editedTrainingSeries.contentIds"
-                              :locationId="editedTrainingSeries.locationId"
-                              :comment="editedTrainingSeries.comment"
-                              :branchId="filterBranchId"
-                              :active="editedTrainingSeries.active"
-                          ></EditTrainingBase>
-                        </v-layout>
+                        <v-row>
+                          <v-col>
+                            <EditTrainingBase
+                                hide-date
+                                hide-contents
+                                v-on:change="seriesChanged"
+                                :id="editedTrainingSeries.id"
+                                :start="editedTrainingSeries.startTime"
+                                :end="editedTrainingSeries.endTime"
+                                :trainerIds="editedTrainingSeries.trainerIds"
+                                :groupIds="editedTrainingSeries.groupIds"
+                                :groups="groups"
+                                :trainers="trainers"
+                                :locationId="editedTrainingSeries.locationId"
+                                :comment="editedTrainingSeries.comment"
+                                :branchId="filterBranchId"
+                                :active="editedTrainingSeries.active"
+                            ></EditTrainingBase>
+                          </v-col>
+                        </v-row>
                       </v-container>
                     </v-tab-item>
                   </v-tabs>
@@ -143,15 +148,6 @@
               </v-card>
             </v-dialog>
             <v-spacer></v-spacer>
-            <v-btn title="Liste nach Gruppen filtern" icon color="primary" @click="showFilterDialog = true">
-              <v-icon>filter_list</v-icon>
-            </v-btn>
-            <GroupsSelectDialog
-                :visible="showFilterDialog"
-                v-on:close="showFilterDialog = false"
-                :groupIds="filterGroupIds"
-                v-on:done="filterChanged">
-            </GroupsSelectDialog>
           </v-toolbar>
           <v-divider></v-divider>
 
@@ -224,24 +220,24 @@
 <script lang="ts">
 import Vue from "vue";
 import EditTrainingBase from "../components/EditTrainingBase";
-import GroupsSelectDialog from "../components/GroupsSelectDialog";
 import TrainingSeries from "@/models/TrainingSeries";
-import {mapGetters} from 'vuex'
+import {mapGetters, mapState} from 'vuex'
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 
 export default Vue.extend({
   name: "TrainingSeries",
-  components: {EditTrainingBase, GroupsSelectDialog, WeekdaysComponent},
+  components: {EditTrainingBase, WeekdaysComponent},
   data() {
     return {
       showFilterDialog: false,
-      filterGroupIds: [],
+      filterBranches: [{id: -1, name: 'Alle'}],
       filterBranchId: null,
       trainers: [],
       trainingSeriesList: [] as TrainingSeries[],
       showCreateDialog: false,
       loading: false,
+      editDialogTitle: "",
       deferUntilMenuOpened: false,
       headers: [
         {text: 'Id', value: 'id', sortable: false},
@@ -257,11 +253,10 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
-      this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
+    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
+      this.filterBranchId = this.getBranchByGroupId(this.trainerBranchIds[0]).id;
     }
+    this.filterBranches = this.filterBranches.concat(this.branches)
     this.fetchData();
   },
   computed: {
@@ -273,23 +268,24 @@ export default Vue.extend({
       getBranchById: 'getBranchById',
       getSimpleTrainersByIds: 'getSimpleTrainersByIds'
     }),
-    filterGroups() {
-      if (this.filterGroupIds.length > 0) {
-        return this.getGroupsByIds(this.filterGroupIds)
-      }
-      return [];
-    },
+    ...mapState('masterData', {
+      groups: 'groups',
+      branches: 'branches',
+    }),
     trainerGroupIds() {
       return this.loggedInUser.trainerGroupIds
     },
     deferUntilFormatted(): String {
       return this.formatDate(this.editedTrainingSeries.deferUntil)
     },
+    trainerBranchIds() {
+      return this.loggedInUser.trainerBranchIds
+    },
   },
   methods: {
     openCreateDialog() {
+      this.editDialogTitle = 'Serie anlegen'
       this.editedTrainingSeries = {...this.defaultTrainingSeries};
-      this.editedTrainingSeries.groupIds = this.filterGroupIds;
       this.showCreateDialog = true
     },
     seriesChanged(item) {
@@ -298,7 +294,6 @@ export default Vue.extend({
       this.editedTrainingSeries.endTime = item.end;
       this.editedTrainingSeries.locationId = item.locationId;
       this.editedTrainingSeries.groupIds = item.groupIds;
-      this.editedTrainingSeries.contentIds = item.contentIds;
       this.editedTrainingSeries.trainerIds = item.trainerIds;
       this.editedTrainingSeries.comment = item.comment;
       this.editedTrainingSeries.trainerIds = item.trainerIds;
@@ -307,16 +302,13 @@ export default Vue.extend({
       try {
         this.loading = true;
         let seriesUrl = '/trainingSeries';
-        if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-          seriesUrl += '?groupIds=' + this.filterGroupIds;
+        // Don't set filter with the general item 'Allgemein'
+        if (this.filterBranchId > 0) {
+          seriesUrl += '?groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
         }
         const trRes = await this.$http.get(seriesUrl);
         this.trainingSeriesList = trRes.data.data;
 
-        let trainerUrl = '/user/trainer';
-        if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-          trainerUrl += '?groupIds=' + this.filterGroupIds;
-        }
         const trainerRes = await this.$http.get('/user/trainer');
         this.trainers = trainerRes.data;
       } finally {
@@ -325,6 +317,7 @@ export default Vue.extend({
 
     },
     editItem(item) {
+      this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
       let momDeferUntil = this.moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
       if (momDeferUntil.isValid()) {
@@ -352,7 +345,6 @@ export default Vue.extend({
         comment: this.editedTrainingSeries.comment,
         locationId: this.editedTrainingSeries.locationId,
         trainerIds: this.editedTrainingSeries.trainerIds,
-        contentIds: this.editedTrainingSeries.contentIds,
         groupIds: this.editedTrainingSeries.groupIds,
         deferUntil: momDeferUntil.isValid() ? momDeferUntil.format() : null,
 
@@ -374,19 +366,14 @@ export default Vue.extend({
       }
 
     },
-    filterChanged({branchId: branchId, groupdIds: groupIds}) {
-      this.filterGroupIds = groupIds;
-      this.filterBranchId = branchId;
-      if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
-        this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-      }
+    filterChanged() {
       this.fetchData();
     },
     removeMilleSec(time: String) {
       return time ? time.substring(0, time.length - 3) : '';
     },
     branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + '/' + item.name;
+      return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
       const momDeferUntil = this.moment(item.deferUntil);

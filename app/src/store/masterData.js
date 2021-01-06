@@ -51,6 +51,10 @@ const getters = {
   getContentIdsByBranchId: (state, getters) => (branchId) => {
     return getters.getContentsByBranchId(branchId).map(c => c.id);
   },
+  getContentIdsByGroupIds: (state, getters) => (groupIds) => {
+    let groups = getters.getGroupsByIds(groupIds);
+    return state.contents.filter(c => groups.map(g => g.branchId).indexOf(c.branchId) >= 0).map(c => c.id);
+  },
   getContentsByIds: (state) => (ids) => {
     return state.contents.filter(c => ids.includes(c.id))
   },

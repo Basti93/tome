@@ -31,7 +31,7 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token', 'updated_at', 'created_at', 'roles'
     ];
 
-    protected $appends = ['roleNames', 'group_ids', 'trainer_group_ids', 'name'];
+    protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];
 
     public function getNameAttribute() {
         return $this->firstName." ".$this->familyName;
@@ -74,9 +74,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne('App\Group', 'id', 'group_id');
     }
 
-    public function trainerGroups()
+    public function trainerBranches()
     {
-        return $this->belongsToMany('App\Group', 'trainer_group', 'user_id');
+        return $this->belongsToMany('App\Branch', 'trainer_branch', 'user_id');
     }
 
     public function groups()
@@ -94,9 +94,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Training::class, 'training_participation', 'user_id', 'training_id')->withPivot('attend');
     }
 
-    public function getTrainerGroupIdsAttribute()
+    public function getTrainerBranchIdsAttribute()
     {
-        return $this->trainerGroups->pluck('pivot.group_id');
+        return $this->trainerBranches->pluck('pivot.branch_id');
     }
 
     public function getGroupIdsAttribute()

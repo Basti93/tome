@@ -3,28 +3,30 @@
     <v-row>
       <v-col>
         <v-card color="secondary">
-          <v-toolbar flat extension-height="100">
-            <v-toolbar-title>Trainingsverwaltung</v-toolbar-title>
-            <v-spacer></v-spacer>
+          <v-toolbar>
+            <v-container fluid>
+              <v-row align="center">
+                <v-col cols="6">
+                  <v-toolbar-title>Trainingsverwaltung</v-toolbar-title>
+                </v-col>
+                <v-col cols="6">
+                  <v-select
+                      class="pt-6"
+                      :items="filterBranches"
+                      v-model="filterBranchId"
+                      v-on:change="filterChanged()"
+                      item-text="name"
+                      item-value="id"
+                      flat
+                      dense
+                      label="Sparte auswählen"
+                      prepend-icon="bubble_chart"
+                  >
+                  </v-select>
+                </v-col>
+              </v-row>
+            </v-container>
             <template v-slot:extension>
-              <v-container>
-                <v-row no-gutters>
-                  <v-col
-                      class="text-right"
-                      cols="6"
-                      md="2"
-                      v-for="(item) in filterGroups"
-                      :key="item.id">
-                    <v-chip
-                        small
-                        outlined
-                        class="ma-1">
-                      <v-icon left color="primary">group</v-icon>
-                      {{ branchAndGroupName(item) }}
-                    </v-chip>
-                  </v-col>
-                </v-row>
-              </v-container>
               <v-btn
                   title="Neues Training anlegen"
                   fab
@@ -37,20 +39,12 @@
                 <v-icon>add</v-icon>
               </v-btn>
             </template>
-            <v-btn title="Liste nach Sparte und Gruppe filtern" icon color="primary" @click="showFilterDialog = true">
-              <v-icon>filter_list</v-icon>
-            </v-btn>
-            <GroupsSelectDialog
-                v-bind:visible="showFilterDialog"
-                v-on:close="showFilterDialog = false"
-                v-bind:groupIds="filterGroupIds"
-                v-on:done="filterChanged">
-            </GroupsSelectDialog>
           </v-toolbar>
+
           <v-divider></v-divider>
           <v-card-text class="mt-8 pa-0 pa-md-4">
             <v-card>
-              <v-card-text  class="pa-0 pa-md-4">
+              <v-card-text class="pa-0 pa-md-4">
                 <v-container>
                   <v-row no-gutters>
                     <v-col>
@@ -137,7 +131,7 @@
           <v-btn icon @click="close">
             <v-icon>close</v-icon>
           </v-btn>
-          <v-toolbar-title>Training Bearbeiten/Anlegen</v-toolbar-title>
+          <v-toolbar-title>{{ editDialogTitle }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="save">
@@ -148,66 +142,20 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card-text>
-          <v-tabs
-              icons-and-text
-          >
-            <v-tabs-slider color="yellow"></v-tabs-slider>
-
-            <v-tab href="#tab-1">
-              Allgemein
-              <v-icon>event</v-icon>
-            </v-tab>
-
-            <v-tab href="#tab-2">
-              Teilnehmer
-              <v-icon>groups</v-icon>
-            </v-tab>
-            <v-tab-item :value="'tab-1'">
-              <v-container grid-list-md>
-                  <EditTrainingBase
-                      :branchId="filterBranchId"
-                      :date="editedItem.date"
-                      :start="editedItem.start"
-                      :end="editedItem.end"
-                      :locationId="editedItem.locationId"
-                      :trainerIds="editedItem.trainerIds"
-                      :groupIds="editedItem.groupIds"
-                      :contentIds="editedItem.contentIds"
-                      :comment="editedItem.comment"
-                      :trainers="trainers"
-                      :groups="filterGroups"
-                      v-on:change="trainingBaseChanged"
-                  ></EditTrainingBase>
-              </v-container>
-            </v-tab-item>
-            <v-tab-item :value="'tab-2'">
-                <v-container>
-                  <v-row>
-                    <v-col>
-                      <v-autocomplete
-                          :disabled="!editDialogFilteredUsers"
-                          :items="editDialogFilteredUsers"
-                          v-model="editedItem.participantIds"
-                          item-value="id"
-                          :item-text="fullName"
-                          label="Teilnehmer"
-                          prepend-icon="how_to_reg"
-                          multiple
-                          clearable>
-                        <template
-                            slot="selection"
-                            slot-scope="{ item }"
-                        >
-                          <v-chip outlined>
-                            <span>{{ item.firstName }}</span>
-                          </v-chip>
-                        </template>
-                      </v-autocomplete>
-                    </v-col>
-                  </v-row>
-              </v-container>
-            </v-tab-item>
-          </v-tabs>
+          <EditTrainingBase
+              hide-contents
+              :date="editedItem.date"
+              :start="editedItem.start"
+              :end="editedItem.end"
+              :locationId="editedItem.locationId"
+              :trainerIds="editedItem.trainerIds"
+              :groupIds="editedItem.groupIds"
+              :contentIds="editedItem.contentIds"
+              :comment="editedItem.comment"
+              :trainers="trainers"
+              :groups="groups"
+              v-on:change="trainingBaseChanged"
+          ></EditTrainingBase>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -232,20 +180,20 @@
 <script lang="ts">
 import Vue from 'vue'
 import {mapGetters, mapState} from 'vuex'
-import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 
 export default Vue.extend({
   name: "Trainings",
-  components: {GroupsSelectDialog, EditTrainingBase, TrainingCalendar},
+  components: {EditTrainingBase, TrainingCalendar},
   data: function () {
     return {
       showFilterDialog: false,
-      filterGroupIds: [],
-      filterBranchId: null,
+      filterBranchId: Number,
+      filterBranches: [{id: -1, name: 'Alle'}],
       editDialog: false,
+      editDialogTitle: String,
       loading: false,
       total: null,
       rowsPerPageItems: [5, 10, 20, 50, 100],
@@ -269,7 +217,6 @@ export default Vue.extend({
       ],
       trainings: [],
       trainers: [],
-      users: [] as Array<any>,
       editedId: null,
       editedItem: {
         id: null,
@@ -279,7 +226,6 @@ export default Vue.extend({
         locationId: null,
         trainerIds: [] as Array<Number>,
         groupIds: [] as Array<Number>,
-        participantIds: [] as Array<Number>,
         contentIds: [] as Array<Number>,
         comment: null,
       },
@@ -291,7 +237,6 @@ export default Vue.extend({
         locationId: null,
         trainerIds: [] as Array<Number>,
         groupIds: [] as Array<Number>,
-        participantIds: [] as Array<Number>,
         contentIds: [] as Array<Number>,
         comment: null,
       },
@@ -299,11 +244,11 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
-      this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
+    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
+      this.filterBranchId = this.getBranchByGroupId(this.trainerBranchIds[0]).id;
     }
+    this.filterBranches = this.filterBranches.concat(this.branches)
+
     this.loadData();
   },
   computed: {
@@ -319,6 +264,8 @@ export default Vue.extend({
     }),
     ...mapState('masterData', {
       locations: 'locations',
+      branches: 'branches',
+      groups: 'groups'
     }),
     editedItemDateFormatted() {
       return this.formatDate(this.editedItemDate)
@@ -331,22 +278,8 @@ export default Vue.extend({
         Vue.set(this.editedItem, 'date', newValue)
       }
     },
-    filterGroups() {
-      if (this.filterGroupIds.length > 0) {
-        return this.getGroupsByIds(this.filterGroupIds)
-      }
-      return [];
-    },
-    filterTrainers() {
-      if (this.filterGroupIds.length > 0) {
-        return this.trainers.filter(t => t.trainerGroups.filter(tg => tg.branchId === this.filterGroupIds))
-      } else if (this.filterBranchId) {
-        return this.trainers.filter(g => this.filterBranchId.includes(g.branchId))
-      }
-      return [];
-    },
-    trainerGroupIds() {
-      return this.loggedInUser.trainerGroupIds
+    trainerBranchIds() {
+      return this.loggedInUser.trainerBranchIds
     },
   },
   watch: {
@@ -385,22 +318,9 @@ export default Vue.extend({
     editedItemDate() {
       this.editedItem.dateFormatted = this.formatDate(this.editedItem.date)
     },
-    'editedItem.groupIds'() {
-      //change filtered user list on selected groups
-      this.editDialogFilteredUsers = this.users.filter(u => this.editedItem.groupIds.find(gId => u.groupIds.includes(gId)));
-      if (this.editedItem.participantIds) {
-        //clean list from users which are not in the selected groups
-        this.editedItem.participantIds = this.editedItem.participantIds.filter(pId => this.editDialogFilteredUsers.find(u => u.id === pId))
-      }
-    },
   },
   methods: {
-    filterChanged({branchId: branchId, groupdIds: groupIds}) {
-      this.filterGroupIds = groupIds;
-      this.filterBranchId = branchId;
-      if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
-        this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-      }
+    filterChanged() {
       this.loadData();
     },
     loadData() {
@@ -413,8 +333,9 @@ export default Vue.extend({
       } else {
         url += '?page=' + this.page + '&per_page=' + this.itemsPerPage
       }
-      if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        url += '&groupIds=' + this.filterGroupIds;
+      // Don't set filter with the general item 'Allgemein'
+      if (this.filterBranchId > 0) {
+        url += '&groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
       let p1 = this.$http.get(url).then(function (res) {
         this.trainings = res.data.data;
@@ -422,23 +343,12 @@ export default Vue.extend({
         this.totalItems = res.data.meta.total;
         this.total = res.data.meta.total;
       }.bind(this));
-      let userUrl = '/user';
-      if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        userUrl += '?groupIds=' + this.filterGroupIds;
-      }
-      let p2 = this.$http.get(userUrl).then(function (res) {
-        this.users = res.data;
-      }.bind(this));
 
-      let trainerUrl = '/user/trainer';
-      if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        trainerUrl += '?groupIds=' + this.filterGroupIds;
-      }
-      let p3 = this.$http.get(trainerUrl).then(function (res) {
+      let p2 = this.$http.get('/user/trainer').then(function (res) {
         this.trainers = res.data;
       }.bind(this));
 
-      Promise.all([p1, p2, p3]).then(() => {
+      Promise.all([p1, p2]).then(() => {
         this.loading = false
       }).finally(() => {
         this.initializing = false;
@@ -459,23 +369,17 @@ export default Vue.extend({
       }
     },
     editItem(item) {
+      this.editDialogTitle = 'Training bearbeiten'
       this.editedId = item.id;
       Object.assign(this.editedItem, item)
       this.editedItemDate = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
       this.editedItem.start = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
       this.editedItem.end = this.moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
-      this.editedItem.participantIds = []
-      if (item.participants) {
-        for (const participant of item.participants) {
-          if (participant.attend === 1) {
-            this.editedItem.participantIds.push(participant.userId);
-          }
-        }
-      }
       this.editDialog = true
     },
     create() {
       this.editedItem = {...this.defaultItem}
+      this.editDialogTitle = 'Training erstellen'
       this.editDialog = true
     },
     fullName: item => item.firstName + ' ' + item.familyName,
@@ -494,7 +398,6 @@ export default Vue.extend({
         locationId: self.editedItem.locationId,
         groupIds: self.editedItem.groupIds,
         trainerIds: self.editedItem.trainerIds,
-        participantIds: self.editedItem.participantIds,
         contentIds: self.editedItem.contentIds,
         comment: self.editedItem.comment,
       }
@@ -540,7 +443,7 @@ export default Vue.extend({
       }
     },
     branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + '/' + item.name;
+      return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
     },
     formatDate,
     parseDate,

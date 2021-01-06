@@ -2,7 +2,7 @@
   <v-card flat>
     <v-card-title>
       <StatisticsFilter1
-          v-bind:groupIds="filterGroupIds"
+          v-bind:branchIds="filterBranchIds"
           v-bind:year="filterYear"
           v-on:groupsSelected="filterGroupIdsChanged"
           v-on:yearSelected="filterYearChanged">
@@ -25,7 +25,7 @@ export default {
   components: {StatisticsFilter1},
   data: function () {
     return {
-      filterGroupIds: [],
+      filterBranchIds: [],
       filterYear: null,
       options: {
         chart: {
@@ -60,16 +60,19 @@ export default {
   },
   created() {
     if (this.loggedInUser.isTrainer) {
-      this.filterGroupIds = this.loggedInUser.trainerGroupIds;
+      this.filterBranchIds = this.loggedInUser.trainerBranchIds;
     } else {
-      this.filterGroupIds.push(this.loggedInUser.groupIds);
+      if (this.loggedInUser.groupIds && this.loggedInUser.groupIds.length > 0) {
+        this.filterBranchIds.push(this.getBranchByGroupId(this.loggedInUser.groupIds[0].id));
+      }
     }
     this.filterYear = this.moment().year();
   },
   computed: {
     ...mapGetters('masterData', {
       getGroupColorById: 'getGroupColorById',
-      getGroupIdsByBranchId: 'getGroupIdsByBranchId'
+      getGroupIdsByBranchId: 'getGroupIdsByBranchId',
+      getBranchByGroupId: 'getBranchByGroupId',
     }),
     ...mapGetters({loggedInUser: 'loggedInUser'}),
   },

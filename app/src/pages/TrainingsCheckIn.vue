@@ -102,7 +102,6 @@ import GroupSelect from "../components/GroupSelect.vue";
 import CookieUserDialog from "../components/CookieUserDialog.vue";
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
-import goTo from 'vuetify/es5/services/goto'
 import TrainingSelector from "../components/TrainingSelector.vue";
 
 export default Vue.extend({
@@ -259,7 +258,6 @@ export default Vue.extend({
     selectTraining(id) {
       this.animationTrigger = false;
       this.selectedTrainingId = id;
-      goTo(0)
       setTimeout(() => {
         this.animationTrigger = true;
       }, 100);

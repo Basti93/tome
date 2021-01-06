@@ -133,12 +133,12 @@ class UserController extends Controller
      */
     public function getTrainers()
     {
-        $groupIds = request()->query('groupIds');
+        $branchIds = request()->query('branchIds');
 
         $trainers = User::role('trainer')
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('trainerGroups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+            ->when($branchIds, function ($query, $branchIds) {
+                $query->whereHas('trainerBranches', function ($query) use ($branchIds) {
+                    $query->whereIn('branch_id', preg_split('/,/', $branchIds));
                 });
             })->get();
 
@@ -191,7 +191,7 @@ class UserController extends Controller
         //only allow update of groups for users with special rights
         if ($user->can('update-user')) {
             $user->groups()->sync($request->input('groupIds'));
-            $user->trainerGroups()->sync($request->input('trainerGroupIds'));
+            $user->trainerBranches()->sync($request->input('trainerBranchIds'));
         }
 
         $user->firstName = $request->input('firstName');

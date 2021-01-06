@@ -41,7 +41,7 @@
         },
         methods: {
             branchAndGroupName(item) {
-               return this.getBranchById(item.branchId).shortName + ' / ' + item.name;
+               return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
             }
         },
         watch: {

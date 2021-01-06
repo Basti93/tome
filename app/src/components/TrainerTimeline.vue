@@ -2,7 +2,7 @@
   <v-card flat>
     <v-card-title>
       <StatisticsFilter1
-          v-bind:groupIds="filterGroupIds"
+          v-bind:branchIds="filterBranchIds"
           v-bind:year="filterYear"
           v-on:groupsSelected="filterGroupIdsChanged"
           v-on:yearSelected="filterYearChanged">
@@ -26,7 +26,7 @@ export default {
   props: ['trainerId'],
   data: function () {
     return {
-      filterGroupIds: [],
+      filterBranchIds: [],
       filterYear: null,
       options: {
         chart: {
@@ -70,10 +70,8 @@ export default {
     }
   },
   created() {
-    if (this.loggedInUser.isTrainer || this.loggedInUser.isTrainer) {
-      this.filterGroupIds = this.loggedInUser.trainerGroupIds;
-    } else {
-      this.filterGroupIds.push(this.loggedInUser.groupId);
+    if (this.loggedInUser.isTrainer) {
+      this.filterBranchIds = this.loggedInUser.trainerBranchIds;
     }
     this.filterYear = this.moment().year();
   },

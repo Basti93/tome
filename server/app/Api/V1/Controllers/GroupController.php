@@ -33,7 +33,7 @@ class GroupController extends Controller
    */
   public function index()
   {
-    return response()->json(Group::all());
+    return response()->json(Group::orderBy('branch_id')->orderBy('name')->get());
   }
   /**
    * Get users with pagination.

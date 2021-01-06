@@ -20,7 +20,9 @@
                   <v-slide-x-transition v-if="selectedTraining">
                     <div v-if="animationTrigger">
                       <v-card class="ma-1">
-                        <v-card-title class="justify-center">Trainingsdaten {{ selectedTraining.start.format('dddd [den] Do MMMM') }}</v-card-title>
+                        <v-card-title class="justify-center">Trainingsdaten
+                          {{ selectedTraining.start.format('dddd [den] Do MMMM') }}
+                        </v-card-title>
                         <v-card-subtitle class="text-center">{{ selectedTraining.start.fromNow() }}</v-card-subtitle>
                         <v-divider></v-divider>
                         <v-card-text class="text-center pa-0 pa-md-4">
@@ -98,6 +100,21 @@
                         </v-card-text>
                       </v-card>
                       <v-card class="ma-1">
+                        <v-card-title>
+                          <h6>Gruppen</h6>
+                        </v-card-title>
+                        <v-divider></v-divider>
+                        <v-card-text>
+                          <v-chip v-for="(item) in groups"
+                                  :key="item.id"
+                                  class="ma-1"
+                                  outlined>
+                            <v-icon left color="primary">group</v-icon>
+                            {{ branchAndGroupName(item) }}
+                          </v-chip>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="ma-1">
                         <v-card-text class="pa-0 pa-md-4">
                           <v-container no-gutters>
                             <v-row v-if="editingComment">
@@ -150,7 +167,7 @@
                           </v-container>
                         </v-card-text>
                       </v-card>
-                      <v-card class="ma-1">
+                      <v-card class="ma-1" v-if="branchContentIds.length > 0">
                         <v-card-title>Trainingsinhalte</v-card-title>
                         <v-card-text class="pa-0 pa-md-4">
                           <v-container>
@@ -199,7 +216,9 @@
                               <v-list-item-content>
                                 <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
                                 <v-list-item-subtitle>
-                                  <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
                                 </v-list-item-subtitle>
                               </v-list-item-content>
                             </v-list-item>
@@ -231,7 +250,9 @@
                               <v-list-item-content @click="openCancelReasonDialog(item.id)">
                                 <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
                                 <v-list-item-subtitle>
-                                  <span class="label">{{ getGroupsByIds(item.groupIds).map(g => g.name).join(', ') }}</span>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
                                 </v-list-item-subtitle>
                                 <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
                                   {{ getCancelReason(item.id) }}
@@ -372,15 +393,24 @@ export default Vue.extend({
       getLocationNameById: 'getLocationNameById',
       getContentIdsByBranchId: 'getContentIdsByBranchId',
       getGroupsByIds: 'getGroupsByIds',
+      getContentIdsByGroupIds: 'getContentIdsByGroupIds',
     }),
     ...mapState('masterData', {
       locations: 'locations',
     }),
     branchContentIds(): Array<Number> {
-      return this.getContentIdsByBranchId(this.branchId);
+      //check if multiple branches are in the play
+      let groupBranchIds = this.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
+      if (groupBranchIds.every( v => v === groupBranchIds[0] )) {
+        return this.getContentIdsByGroupIds(this.selectedTraining.groupIds);
+      }
+      return [];
     },
     selectedTraining() {
       return this.getUpcomingTrainingById(this.selectedTrainingId);
+    },
+    groups() {
+      return this.getGroupsByIds(this.selectedTraining.groupIds);
     },
     participatingUsers() {
       if (this.selectedTraining.participants) {
@@ -469,7 +499,9 @@ export default Vue.extend({
     getUpcomingTrainingById(id) {
       return this.upcomingTrainings.filter(ut => ut.id == id)[0];
     },
-
+    branchAndGroupName(group) {
+      return this.getBranchById(group.branchId).shortName + ' | ' + group.name;
+    },
     editTime() {
       this.editStartTime = this.selectedTraining.start.format('HH:mm')
       this.editEndTime = this.selectedTraining.end.format('HH:mm')

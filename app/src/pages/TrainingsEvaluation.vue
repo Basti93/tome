@@ -63,6 +63,7 @@
                                 <template v-slot:activator="{ on }">
                                   <v-btn
                                       class="mt-2 mb-2"
+                                      elevation="1"
                                       v-show="!selectedTraining.evaluated"
                                       @click="confirmEvaluationDialog = true"
                                       color="primary">

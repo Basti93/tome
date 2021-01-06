@@ -32,18 +32,22 @@
             <v-col>
               <v-btn
                   style="min-width: 150px"
+                  elevation="1"
                   v-if="!attending || notYet"
                   color="primary"
                   class="ma-2"
                   @click="currentUser ? participate() : showCookieUserLogin()">
                 Teilnehmen
+                <v-icon right>thumb_up</v-icon>
               </v-btn>
               <v-btn
                   style="min-width: 150px"
+                  outlined
                   v-if="attending || notYet"
                   color="red lighten-2"
                   class="ma-2"
                   @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
+                <v-icon left>thumb_down</v-icon>
                 Absagen
               </v-btn>
             </v-col>
@@ -98,7 +102,7 @@
             dense
             outlined
         >
-          <div v-html="comment"></div>
+          <div v-html="urlify(comment)"></div>
         </v-alert>
       </v-card-text>
     </v-card>
@@ -147,7 +151,7 @@
                 class="ma-1"
                 outlined>
           <v-icon left color="primary">group</v-icon>
-          {{ item.name }}
+          {{ branchAndGroupName(item) }}
         </v-chip>
       </v-card-text>
     </v-card>
@@ -215,7 +219,6 @@ import {mapGetters} from 'vuex'
 export default {
   name: "TrainingCheckIn",
   components: {TrainingContent, ProfileImage},
-  //from parent
   props: {
     training: Training,
     currentUser: User,
@@ -270,6 +273,7 @@ export default {
     ...mapGetters('masterData', {
       getLocationNameById: 'getLocationNameById',
       getGroupsByIds: 'getGroupsByIds',
+      getBranchById: 'getBranchById',
       getSimpleTrainersByIds: 'getSimpleTrainersByIds',
     }),
   },
@@ -343,7 +347,18 @@ export default {
         console.error(error);
       }
     },
+    branchAndGroupName(group) {
+      return this.getBranchById(group.branchId).shortName + ' | ' + group.name;
+    },
     fullName: item => item.firstName + ' ' + item.familyName,
+    urlify(text) {
+      if (text) {
+        var urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, function (url) {
+          return '<a target="_blank" href="' + url + '">' + url + '</a>';
+        })
+      }
+    },
   },
 }
 </script>

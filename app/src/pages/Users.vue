@@ -332,7 +332,7 @@ export default {
       this.loadData();
     },
     branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + '/' + item.name;
+      return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
     },
     formatDate,
   },

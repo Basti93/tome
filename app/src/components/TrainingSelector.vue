@@ -20,8 +20,8 @@
           <p>{{ item.start.format('DD') + '. ' + item.start.format('MMM') }}</p>
           <template v-slot:icon>
             <v-avatar>
-              <v-icon v-if="checkStatusDone(item)" small>check</v-icon>
-              <v-icon v-else-if="isCheckIn &&canceled(item)" small>not_interested</v-icon>
+              <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
+              <v-icon v-else-if="isCheckIn && canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
               <v-icon v-else small>new_releases</v-icon>
             </v-avatar>
           </template>
@@ -52,8 +52,8 @@
         <p>{{ item.start.format('DD') + '. ' + item.start.format('MMM') }}</p>
         <template v-slot:icon>
           <v-avatar>
-            <v-icon v-if="checkStatusDone(item)" small>check</v-icon>
-            <v-icon v-else-if="isCheckIn && canceled(item)" small>not_interested</v-icon>
+            <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
+            <v-icon v-else-if="isCheckIn &&canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
             <v-icon v-else small>new_releases</v-icon>
           </v-avatar>
         </template>
@@ -142,7 +142,7 @@ export default Vue.extend({
     },
     canceled(training: Training): Boolean {
       const status = this.attendingStatus(training);
-      return (status !== null && !status) ? true : false;
+      return (status !== null && !status);
     },
     attendingStatus(training: Training): Boolean {
       if (this.currentUser) {
@@ -151,7 +151,7 @@ export default Vue.extend({
           return tp[0].attend;
         }
       }
-      return false;
+      return null;
     },
     getTrainingById(id): Training {
       return this.trainings.filter(ut => ut.id == id)[0];

@@ -47,7 +47,7 @@ export default {
 
   name: "StatisticsFilter1",
   props: {
-    'groupIds': Array,
+    'branchIds': Array,
     'year': Number,
   },
   created() {
@@ -78,8 +78,8 @@ export default {
   },
   methods: {
     initSelect: function () {
-      if (this.groupIds.length > 0) {
-        this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
+      if (this.branchIds && this.branchIds.length > 0) {
+        this.selectedBranchId = this.branchIds[0];
       }
     },
     selectedYearChanged: function () {
@@ -111,10 +111,7 @@ export default {
           for (let group of this.groups) {
             if (this.selectedBranchId === group.branchId) {
               this.groupItems.push(group);
-              //pre-select groups from user settings
-              if (this.initialGroupIds.includes(group.id)) {
-                this.selectedGroupIds.push(group.id);
-              }
+              this.selectedGroupIds.push(group.id);
             }
           }
           this.$emit('groupsSelected', this.selectedGroupIds)
