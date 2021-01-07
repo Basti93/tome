@@ -9,7 +9,7 @@
       </StatisticsFilter1>
     </v-card-title>
     <v-divider></v-divider>
-    <v-card-text>
+    <v-card-text class="pa-0">
       <apexchart ref="trainingParticipationBarChart" height="600" type="bar" :options="options"
                  :series="series"></apexchart>
     </v-card-text>

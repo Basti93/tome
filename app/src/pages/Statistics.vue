@@ -14,7 +14,7 @@
                       <v-toolbar-title>Teilnahmen am Training pro Jahr</v-toolbar-title>
                       <v-spacer></v-spacer>
                     </v-toolbar>
-                    <v-card-text>
+                    <v-card-text class="pa-0 pa-lg-4">
                       <TrainingParticipationBarChart></TrainingParticipationBarChart>
                     </v-card-text>
                   </v-card>
@@ -27,7 +27,7 @@
                       <v-toolbar-title>Abgehaltene Trainingsstunden (45 min) pro Monat</v-toolbar-title>
                       <v-spacer></v-spacer>
                     </v-toolbar>
-                    <v-card-text>
+                    <v-card-text class="pa-0 pa-lg-4">
                       <TrainerTimeline></TrainerTimeline>
                     </v-card-text>
                   </v-card>

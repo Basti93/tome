@@ -9,8 +9,8 @@
       </StatisticsFilter1>
     </v-card-title>
     <v-divider></v-divider>
-    <v-card-text>
-      <apexchart ref="trainerTimeLineChart" type="bar" :options="options" :series="series"/>
+    <v-card-text class="pa-0">
+      <apexchart ref="trainerTimeLineChart" type="bar" height="600" :options="options" :series="series"/>
     </v-card-text>
   </v-card>
 </template>

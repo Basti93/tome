@@ -35,8 +35,9 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
+                  elevation="1"
                   :disabled="!valid"
-                  @click="login()"
+                  v-on:click="login()"
                   color="primary"
               >
                 Anmelden

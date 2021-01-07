@@ -82,7 +82,7 @@ export default {
       return null;
     },
     pushPermissionSnackbarComputed() {
-      return this.pushPermissionSnackbar && Notification.permission !== 'granted' && Notification.permission !== 'denied';
+      return this.isFirebaseSupported() && this.pushPermissionSnackbar && Notification.permission !== 'granted' && Notification.permission !== 'denied';
     },
   },
   created() {
@@ -148,6 +148,9 @@ export default {
     sendTokenToServer(userId, token) {
       this.$http.post('/notifications/subscribe', {firebaseToken: token, userId: userId});
     },
+    isFirebaseSupported() {
+      return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+    }
   }
 
 }

@@ -40,6 +40,7 @@
           </template>
           <v-time-picker
               v-model="startTime"
+              :max="endTime"
               @click:minute="$refs.startMenuOpened.save(startTime)"
               format="24hr">
           </v-time-picker>
@@ -54,6 +55,7 @@
             <v-text-field
                 slot="activator"
                 v-model="endTime"
+                :min="startTime"
                 required
                 label="Ende"
                 prepend-icon="schedule"

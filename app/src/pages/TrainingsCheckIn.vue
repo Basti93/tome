@@ -77,6 +77,16 @@
                           v-on:showCookieUserLogin="showCookieUserLogin()"
                           class="tp-training-check-in__card">
                       </TrainingCheckIn>
+                      <v-alert
+                          v-else
+                          type="info"
+                          outlined
+                          pa-1
+                          ma-0
+                          class="caption"
+                      >
+                        Momentan gibt es keine kommenden Trainings für deine Gruppe ☹️
+                      </v-alert>
                     </v-slide-x-transition>
                   </div>
                 </v-col>

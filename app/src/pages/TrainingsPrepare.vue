@@ -20,7 +20,7 @@
                   <v-slide-x-transition v-if="selectedTraining">
                     <div v-if="animationTrigger">
                       <v-card class="ma-1">
-                        <v-card-title class="justify-center">Trainingsdaten
+                        <v-card-title class="justify-center">
                           {{ selectedTraining.start.format('dddd [den] Do MMMM') }}
                         </v-card-title>
                         <v-card-subtitle class="text-center">{{ selectedTraining.start.fromNow() }}</v-card-subtitle>

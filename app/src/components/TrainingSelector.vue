@@ -66,6 +66,7 @@
         class="hidden-md-and-up"
         v-on:click="showOverlay = true"
         fab
+        elevation="6"
         dark
         fixed
         bottom
@@ -172,6 +173,8 @@ export default Vue.extend({
 
   .v-overlay__content {
     height: 100%;
+    padding-top: 100px;
+    padding-bottom: 100px;
   }
 
   &__item {

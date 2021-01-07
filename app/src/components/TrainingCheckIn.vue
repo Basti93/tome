@@ -50,6 +50,16 @@
                 <v-icon left>thumb_down</v-icon>
                 Absagen
               </v-btn>
+              <v-alert
+                  v-if="notYet"
+                  type="info"
+                  outlined
+                  pa-1
+                  ma-0
+                  class="caption"
+                  dense>
+                Du wirst 24 Stunden vor dem Training automatisch angemeldet.
+              </v-alert>
             </v-col>
           </v-row>
           <v-row v-else>
@@ -66,24 +76,6 @@
               </v-alert>
             </v-col>
           </v-row>
-          <v-row
-              v-if="notYet"
-              align="center"
-              justify="center">
-            <v-col
-                md="6"
-            >
-              <v-alert
-                  type="info"
-                  outlined
-                  pa-1
-                  ma-0
-                  class="caption"
-                  dense>
-                Du wirst 24 Stunden vor dem Training automatisch angemeldet.
-              </v-alert>
-            </v-col>
-          </v-row>
           <v-row>
             <v-col>
               <h4>{{ participantCount }} Teilnehmer bis jetzt</h4>
@@ -97,7 +89,7 @@
         <v-alert
             class="tp-upcoming-training__text ma-1"
             text
-            style="white-space: pre-line;"
+            style="white-space: pre-line;word-break: break-all;"
             type="info"
             dense
             outlined
