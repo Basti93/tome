@@ -78,7 +78,7 @@
                           class="tp-training-check-in__card">
                       </TrainingCheckIn>
                       <v-alert
-                          v-else
+                          v-if="!initializing && !selectedTraining"
                           type="info"
                           outlined
                           pa-1
@@ -119,6 +119,7 @@ export default Vue.extend({
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
   data: function () {
     return {
+      initalSelectedTrainingId: null,
       filterGroupId: null,
       filterBranchId: null,
       tempFilterGroupId: null,
@@ -187,7 +188,16 @@ export default Vue.extend({
       this.cookieUserDialogVisible = true;
     }
     this.filterGroupId = this.currentUserGroupId;
+
+    this.initalSelectedTrainingId = this.$route.params.id;
     await this.fetchData();
+
+    if (this.initalSelectedTrainingId) {
+      this.selectTraining(this.upcomingTrainings.filter(t => t.id == this.initalSelectedTrainingId)[0].id);
+    } else if (this.upcomingTrainings.length > 0) {
+      this.selectTraining(this.upcomingTrainings[0].id);
+    }
+
     this.initializing = false;
   },
   methods: {
@@ -197,10 +207,13 @@ export default Vue.extend({
     branchChanged(branchId) {
       this.tempFilterBranchId = branchId;
     },
-    filterDone() {
+    async filterDone() {
       this.filterBranchId = this.tempFilterBranchId;
       this.filterGroupId = this.tempFilterGroupId;
-      this.fetchData();
+      await this.fetchData();
+      if (this.upcomingTrainings.length > 0) {
+        this.selectTraining(this.upcomingTrainings[0].id);
+      }
       this.filterDialogVisible = false;
     },
     findBranch(groupIds) {
@@ -210,10 +223,23 @@ export default Vue.extend({
       }
       return null;
     },
+    async fetchSingleTraining(trainingId: Number) {
+      const {data} = await this.$http.get('/training/upcoming/' + trainingId);
+      if (data.data) {
+        this.addToUpcomingTrainings(data.data);
+      } else {
+        console.log('Training with id ' + trainingId + ' could not be found or is in the past')
+      }
+    },
     async fetchData() {
       try {
         this.dataLoaded = false;
         this.upcomingTrainings = [];
+
+        if (this.initalSelectedTrainingId) {
+          await this.fetchSingleTraining(this.initalSelectedTrainingId);
+        }
+
         //build fetch url
         let url = '/training/upcoming';
         if (this.filterGroupId) {
@@ -224,22 +250,27 @@ export default Vue.extend({
         //load data
         const {data} = await this.$http.get(url);
         if (data.data && data.data.length > 0) {
-          //json result to objects
           for (let trObj of data.data) {
-            let participants = [] as TrainingParticipant[];
-            for (let partObj of trObj.participants) {
-              participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
-            }
-            this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false));
+            this.addToUpcomingTrainings(trObj);
           }
-          //select first training
-          this.selectTraining(this.upcomingTrainings[0].id);
         }
       } catch (error) {
         console.error(error);
       } finally {
         this.dataLoaded = true;
       }
+    },
+    addToUpcomingTrainings(trainingJson) {
+      let participants = [] as TrainingParticipant[];
+      for (let partObj of trainingJson.participants) {
+        participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
+      }
+      if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
+        this.upcomingTrainings.push(new Training(trainingJson.id, this.moment(trainingJson.start, 'YYYY-MM-DDTHH:mm'), this.moment(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false));
+      }
+      this.upcomingTrainings.sort(function (a: Training, b: Training) {
+        return a.start - b.start;
+      });
     },
     updateCheckedIn() {
       let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
@@ -273,7 +304,10 @@ export default Vue.extend({
       }, 100);
     },
     getUpcomingTrainingById(id) {
-      return this.upcomingTrainings.filter(ut => ut.id == id)[0];
+      if (this.upcomingTrainings.length > 0) {
+        return this.upcomingTrainings.filter(ut => ut.id == id)[0];
+      }
+      return null;
     },
     removeCookieUser() {
       this.$store.dispatch('eraseCookieUser')
@@ -309,6 +343,9 @@ export default Vue.extend({
       this.filterGroupId = this.currentUserGroupId;
       if (!this.initializing) {
         this.fetchData();
+        if (this.upcomingTrainings.length > 0) {
+          this.selectTraining(this.upcomingTrainings[0].id);
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
-import Branch from "@/models/Branch";
+import Branch from "./Branch";
+
 
 export default class Group {
     id: number;
@@ -13,7 +14,7 @@ export default class Group {
         this.branch = branch;
     }
 
-    getWithBranchName() {
+    getWithBranchName = function() {
         return this.branch.shortName + " | " + this.name;
     }
 }

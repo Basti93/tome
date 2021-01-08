@@ -22,8 +22,10 @@
           <v-list-item-content>
             <v-list-item-title>Trainer {{ group.branch.name }}</v-list-item-title>
             <v-list>
-              <v-list-item v-for="item in getSimpleTrainersByBranchId(group.branchId)"
-                           :key="item.id">
+              <v-list-item
+                  v-for="item in getSimpleTrainersByBranchId(group.branchId)"
+                  :key="item.id"
+              >
                 <v-list-item-avatar left>
                   <v-img
                       :src="imageUrl(item.profileImageName)"

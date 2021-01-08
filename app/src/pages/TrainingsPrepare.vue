@@ -96,6 +96,17 @@
                                 </v-chip>
                               </v-col>
                             </v-row>
+                            <v-row>
+                              <v-col>
+                                <v-btn
+                                    :href="sharelink"
+                                    target="_blank"
+                                    color="primary">
+                                  <v-icon left>share</v-icon>
+                                  Mit Whatsapp teilen
+                                </v-btn>
+                              </v-col>
+                            </v-row>
                           </v-container>
                         </v-card-text>
                       </v-card>
@@ -393,6 +404,7 @@ export default Vue.extend({
       getContentIdsByBranchId: 'getContentIdsByBranchId',
       getGroupsByIds: 'getGroupsByIds',
       getContentIdsByGroupIds: 'getContentIdsByGroupIds',
+      getSimpleTrainersByIds: 'getSimpleTrainersByIds',
     }),
     ...mapState('masterData', {
       locations: 'locations',
@@ -434,6 +446,29 @@ export default Vue.extend({
         return this.currentUser.groupIds[0]
       }
       return null
+    },
+    sharelink() {
+      let trainers = this.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
+      let trainerText = "";
+      for (let i = 0; i < trainers.length; i++) {
+        trainerText += trainers[i].firstName + " " + trainers[i].familyName
+        if (i < trainers.length - 1) {
+          trainerText += ", "
+        }
+      }
+      const link = "https://wa.me/?text=" + encodeURIComponent(
+          "Training am " + this.selectedTraining.start.format('dddd [den] DD.MM.YYYY')
+          + "\r\n"
+          + "\r\n"
+          + "Uhrzeit: " + this.selectedTraining.start.format('HH:mm') + " - " + this.selectedTraining.end.format('HH:mm') + " Uhr"
+          + "\r\n"
+          + "Ort: " + this.getLocationNameById(this.selectedTraining.locationId)
+          + "\r\n"
+          + "Trainer: " + trainerText
+          + "\r\n"
+          + "\r\n"
+          + "Anmelden und weitere Informationen unter " + window.location.origin + "/#/training/" + this.selectedTraining.id)
+      return link;
     },
   },
   created() {

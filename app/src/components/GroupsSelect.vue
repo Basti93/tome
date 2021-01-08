@@ -18,7 +18,7 @@
 
 <script lang="ts">
     import {mapGetters, mapState} from 'vuex'
-    import Group from "@/models/Group";
+    import Group from "../models/Group";
 
     export default {
 

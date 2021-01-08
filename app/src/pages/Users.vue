@@ -54,7 +54,7 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-4 pa-0 pa-md-4">
+          <v-card-text class="mt-8 pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>
@@ -162,7 +162,7 @@ import GroupsSelectDialog from "../components/GroupsSelectDialog";
 import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog";
 import {formatDate} from "../helpers/date-helpers"
-import Group from "@/models/Group";
+import Group from "../models/Group";
 
 export default {
   name: "Users",

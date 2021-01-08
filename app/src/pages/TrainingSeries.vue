@@ -150,7 +150,7 @@
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-4 pa-0 pa-md-4">
+          <v-card-text class="mt-8 pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>

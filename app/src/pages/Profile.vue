@@ -201,7 +201,8 @@ import {mapGetters, mapState} from 'vuex'
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
 import UploadProfileImage from "@/components/UploadProfileImage.vue";
 import {formatDate} from "../helpers/date-helpers"
-import GroupsSelect from "@/components/GroupsSelect";
+import GroupsSelect from "../components/GroupsSelect.vue";
+
 
 export default {
   name: "Profile",

@@ -41,7 +41,7 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-4 pa-0 pa-md-4">
+          <v-card-text class="mt-8 pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>
@@ -377,6 +377,7 @@ export default Vue.extend({
       this.editDialog = true
     },
     create() {
+      this.editedId = null;
       this.editedItem = {...this.defaultItem}
       this.editDialogTitle = 'Training erstellen'
       this.editDialog = true

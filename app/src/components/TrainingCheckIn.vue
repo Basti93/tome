@@ -137,9 +137,11 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <GroupChip v-for="(item) in groups"
-                   :key="item.id"
-                   :group="item"></GroupChip>
+        <GroupChip
+            v-for="(item) in groups"
+            :key="item.id"
+            :group="item">
+        </GroupChip>
       </v-card-text>
     </v-card>
     <v-dialog v-model="showCancelDialog" max-width="500px">
@@ -198,9 +200,9 @@
 
 <script lang="ts">
 import TrainingContent from "./TrainingContent";
-import ProfileImage from "@/components/ProfileImage";
-import User from "@/models/User";
-import Training from "@/models/Training";
+import ProfileImage from "../components/ProfileImage";
+import User from "../models/User";
+import Training from "../models/Training";
 import {mapGetters} from 'vuex'
 import GroupChip from "./GroupChip.vue";
 

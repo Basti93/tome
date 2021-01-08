@@ -29,6 +29,10 @@ const router = new Router({
       component: TrainingsCheckIn,
     },
     {
+      path: '/training/:id',
+      component: TrainingsCheckIn,
+    },
+    {
       path: '/calendar',
       name: 'Calendar',
       component: Calendar,

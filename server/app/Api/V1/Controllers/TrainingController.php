@@ -110,6 +110,18 @@ class TrainingController extends Controller
         return TrainingResource::collection($trainings);
     }
 
+    public function getUpcomingTraining($id)
+    {
+        $training = Training::findOrFail($id);
+        if (new DateTime($training->start) >= new DateTime()) {
+            return TrainingResource::make($training);
+        }
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Training with id '.$id.' could not be found or is in the past'
+        ], 200);
+    }
+
     public function getParticipationCount()
     {
         $groupIds = request()->query('groupIds');
@@ -136,7 +148,8 @@ class TrainingController extends Controller
         return response()->json($result);
     }
 
-    public function trainingPrepared($trainingId) {
+    public function trainingPrepared($trainingId)
+    {
         $training = Training::findOrFail($trainingId);
         $training->prepared = 1;
         $training->save();

@@ -8,7 +8,7 @@ import router from './router'
 import VueApexCharts from 'vue-apexcharts'
 import './registerServiceWorker'
 import Branch from "./models/Branch";
-import Group from "@/models/Group";
+import Group from "./models/Group";
 
 
 Vue.prototype.moment = moment
