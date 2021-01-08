@@ -141,6 +141,7 @@ class TrainingController extends Controller
             })
             ->where('training_participation.attend', 1)
             ->where('users.active', 1)
+            ->where('trainings.evaluated', 1)
             ->groupBy('users.id', 'users.firstName', 'users.familyName')
             ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(*) as total'))
             ->orderBy('total', 'desc')
