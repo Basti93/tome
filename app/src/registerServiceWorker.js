@@ -19,8 +19,6 @@ if (process.env.NODE_ENV === 'production') {
     },
     updated (registration) {
       console.log('New content is available; please refresh.')
-      let confirmationResult = confirm("Neue App-Version verfügbar. Möchtest du die App neu laden?")
-      if (confirmationResult) registration.waiting.postMessage({action: "skipWaiting"})
     },
     offline () {
       console.log('No internet connection found. App is running in offline mode.')

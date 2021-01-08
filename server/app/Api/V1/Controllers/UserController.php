@@ -56,26 +56,28 @@ class UserController extends Controller
         $branchId = request()->query('branchId');
         $searchText = request()->query('searchText');
 
-        $users = User::latest()
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->where(function ($query) use ($groupIds) {
-                    $query->whereHas('groups', function ($query) use ($groupIds) {
-                        $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                    })
-                        ->orWhereDoesntHave('groups');
+        $users = null;
+        if (!empty($searchText)) {
+            $users = User::latest()->when($searchText, function ($query, $searchText) {
+                    $query->where(function ($query) use ($searchText) {
+                        $query->where('firstName', 'like', '%' . $searchText . '%')
+                            ->orWhere('familyName', 'like', '%' . $searchText . '%');
+                    });
                 });
-            })
-            ->when($branchId, function ($query, $branchId) {
-                $query->whereHas('groups', function ($query) use ($branchId) {
-                    $query->where('groups.branch_id', $branchId);
+        } else {
+            $users = User::latest()->when($groupIds, function ($query, $groupIds) {
+                    $query->where(function ($query) use ($groupIds) {
+                        $query->whereHas('groups', function ($query) use ($groupIds) {
+                            $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                        });
+                    });
+                })
+                ->when($branchId, function ($query, $branchId) {
+                    $query->whereHas('groups', function ($query) use ($branchId) {
+                        $query->where('groups.branch_id', $branchId);
+                    });
                 });
-            })
-            ->when($searchText, function ($query, $searchText) {
-                $query->where(function ($query) use ($searchText) {
-                    $query->where('firstName', 'like', '%' . $searchText . '%')
-                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
-                });
-            });
+        }
 
         if (!empty(request('per_page'))) {
             $users = $users->paginate((int)request('per_page'));

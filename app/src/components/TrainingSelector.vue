@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height tp-training-selector">
+  <v-container class="fill-height tp-training-selector pa-0">
     <h3 class="hidden-sm-and-down">Training auswählen</h3>
     <v-timeline  align-top dense class="hidden-sm-and-down fill-height">
       <v-slide-x-reverse-transition

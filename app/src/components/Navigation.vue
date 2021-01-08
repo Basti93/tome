@@ -226,6 +226,7 @@
                     <ProfileImage :firstName="loggedInUser.firstName"
                                   :familyName="loggedInUser.familyName"
                                   :imagePath="loggedInUser.profileImageName"
+                                  size="32"
                                   right
                     ></ProfileImage>
                 </v-btn>

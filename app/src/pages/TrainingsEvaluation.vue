@@ -28,9 +28,9 @@
             </v-btn>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="pa-0 pa-md-4">
+          <v-card-text>
             <div v-show="dataLoaded" class="tp-training-prepare">
-              <v-container>
+              <v-container class="pa-0">
                 <v-row no-gutters>
                   <v-col md="3" cols="0">
                     <TrainingSelector
@@ -44,7 +44,7 @@
                     <v-slide-x-transition v-if="selectedTraining">
                       <div v-if="animationTrigger">
                           <v-card class="ma-1">
-                            <v-card-title class="justify-center">Trainingsdaten
+                            <v-card-title class="justify-center">
                               {{ selectedTraining.start.format('dddd [den] Do MMMM') }}
                             </v-card-title>
                             <v-card-subtitle class="text-center">{{
@@ -52,8 +52,9 @@
                               }}
                             </v-card-subtitle>
                             <v-divider></v-divider>
-                            <v-card-text class="text-center pa-0 pa-md-4">
-                              <v-alert type="success" class="text-small"
+                            <v-card-text class="text-center">
+                              <v-alert type="success"
+                                       class="text-small"
                                        dense
                                        outlined
                                        v-if="selectedTraining.evaluated">

@@ -6,15 +6,18 @@
           <v-toolbar flat extension-height="100">
             <v-toolbar-title>Benutzerverwaltung</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn title="Liste nach Sparte und Gruppe filtern" icon color="primary"
-                   @click="showFilterDialog = true">
-              <v-icon>filter_list</v-icon>
+            <v-btn
+                title="Liste nach Sparte und Gruppe filtern"
+                color="primary"
+                v-on:click="showFilterDialog = true">
+              <v-icon left>filter_list</v-icon>
+              Filtern
             </v-btn>
 
             <GroupsSelectDialog
                 v-bind:visible="showFilterDialog"
                 v-on:close="showFilterDialog = false"
-                v-bind:groupIds="trainerGroupIds"
+                v-bind:groupIds="filterGroupIds"
                 v-on:done="filterChanged">
             </GroupsSelectDialog>
             <template v-slot:extension>
@@ -29,9 +32,9 @@
                     <v-chip
                         small
                         outlined
-                        class="ma-1">
+                        class="pl-2 pr-2 ml-2 mr-2">
                       <v-icon left color="primary">group</v-icon>
-                      {{ branchAndGroupName(item) }}
+                      {{ item.getWithBranchName() }}
                     </v-chip>
                   </v-col>
                 </v-row>
@@ -51,9 +54,9 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-8 pa-0 pa-md-4">
+          <v-card-text class="mt-4 pa-0 pa-md-4">
             <v-card>
-              <v-card-text  class="pa-0 pa-md-4">
+              <v-card-text class="pa-0 pa-md-4">
                 <v-container>
                   <v-row>
                     <v-col>
@@ -92,7 +95,7 @@
                           }}
                         </template>
                         <template v-slot:item.groups="{ item }">
-                          {{ getGroupsByIds(item.groupIds).map(g => branchAndGroupName(g)).join(', ') }}
+                          {{ getGroupsByIds(item.groupIds).map(g => g.getWithBranchName()).join(', ') }}
                         </template>
                         <template v-slot:item.active="{ item }">
                           {{ item.active ? 'Ja' : 'Nein' }}
@@ -153,12 +156,13 @@
   </v-container>
 </template>
 
-<script>
+<script lang="ts">
 import {mapGetters} from 'vuex'
 import GroupsSelectDialog from "../components/GroupsSelectDialog";
 import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog";
 import {formatDate} from "../helpers/date-helpers"
+import Group from "@/models/Group";
 
 export default {
   name: "Users",
@@ -212,10 +216,9 @@ export default {
     }
   },
   created() {
-    if (this.trainerGroupIds && this.trainerGroupIds.length > 0) {
-      this.filterBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      let firstBranchId = this.getBranchByGroupId(this.trainerGroupIds[0]).id;
-      this.filterGroupIds = this.getGroupsByBranchId(firstBranchId).map(g => g.id);
+    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
+      this.filterBranchId = this.trainerBranchIds[0];
+      this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
     }
     this.loadData();
   },
@@ -228,10 +231,10 @@ export default {
       getBranchById: 'getBranchById',
       getBranchByGroupId: 'getBranchByGroupId'
     }),
-    trainerGroupIds() {
-      return this.loggedInUser.trainerGroupIds
+    trainerBranchIds() {
+      return this.loggedInUser.trainerBranchIds
     },
-    filterGroups() {
+    filterGroups(): Array<Group> {
       if (this.filterGroupIds && this.filterGroupIds.length > 0) {
         let groups = this.getGroupsByIds(this.filterGroupIds);
         return groups
@@ -330,9 +333,6 @@ export default {
     reset() {
       this.filterGroupId = null;
       this.loadData();
-    },
-    branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
     },
     formatDate,
   },

@@ -1,3 +1,6 @@
+import Branch from "../models/Branch";
+import Group from "../models/Group";
+
 
 const state = {
   branches: [],
@@ -9,7 +12,7 @@ const state = {
 }
 
 const mutations = {
-  setBranches (state, branches) {
+  setBranches (state, branches: Array<Branch>) {
     state.branches = branches;
   },
   setGroups (state, groups) {
@@ -30,10 +33,10 @@ const mutations = {
 }
 
 const getters = {
-  getGroupById: (state) => (id) => {
+  getGroupById: (state) => (id): Group => {
     return state.groups.find(g => g.id === id)
   },
-  getBranchById: (state) => (id) => {
+  getBranchById: (state) => (id):Branch => {
     return state.branches.find(g => g.id === id)
   },
   getTrainerById: (state) => (id) => {
@@ -71,20 +74,20 @@ const getters = {
       return location.name
     }
   },
-  getBranchByGroupId: (state, getters) => (id) => {
+  getBranchByGroupId: (state, getters) => (id): Branch => {
     let group = getters.getGroupById(id);
     if (group) {
       return state.branches.find(b => b.id == group.branchId)
     }
     return null;
   },
-  getGroupsByBranchId: (state, getters) => (id) => {
+  getGroupsByBranchId: (state, getters) => (id): Array<Group> => {
     return state.groups.filter(g => g.branchId === id)
   },
   getGroupIdsByBranchId: (state, getters) => (id) => {
     return state.groups.filter(g => g.branchId === id).map(g => g.id)
   },
-  getGroupsByIds: (state, getters) => (ids) => {
+  getGroupsByIds: (state, getters)  => (ids): Array<Group> => {
     return state.groups.filter(g => ids.includes(g.id))
   },
   getSimpleTrainerById: (state, getters) => (id) => {

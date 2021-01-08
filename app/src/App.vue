@@ -4,8 +4,6 @@
     <v-main
         :class="{'pt-0': $vuetify.breakpoint.smAndDown, 'pt-4': $vuetify.breakpoint.mdAndUp}">
       <v-container
-          fluid
-          fill-height
           :class="{'pa-0': $vuetify.breakpoint.smAndDown, 'pa-2': $vuetify.breakpoint.mdAndUp}">
         <SnackbarStore/>
         <v-snackbar
@@ -45,7 +43,7 @@
       </v-container>
     </v-main>
     <v-footer>
-      <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - 2021</a></span>
+      <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - {{ moment().year() }}</a></span>
     </v-footer>
   </v-app>
 </template>

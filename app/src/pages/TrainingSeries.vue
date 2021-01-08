@@ -150,8 +150,7 @@
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-divider></v-divider>
-
-          <v-card-text class="mt-8 pa-0 pa-md-4">
+          <v-card-text class="mt-4 pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>
@@ -371,9 +370,6 @@ export default Vue.extend({
     },
     removeMilleSec(time: String) {
       return time ? time.substring(0, time.length - 3) : '';
-    },
-    branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
       const momDeferUntil = this.moment(item.deferUntil);

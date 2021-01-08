@@ -8,7 +8,7 @@
         <v-toolbar-title>Filter ändern</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" @click="done" :disabled="!valid"><v-icon left>done</v-icon>Auswählen</v-btn>
+          <v-btn text color="primary" v-on:click="done" :disabled="!valid"><v-icon left>done</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-divider></v-divider>
@@ -23,8 +23,6 @@
           clearable
           label="Sparte"
           prepend-icon="bubble_chart"
-          required
-          :rules="branchRules"
         ></v-select>
         <v-select
           v-bind:disabled="!selectedBranchId"
@@ -64,9 +62,6 @@
         selectedBranchId: null,
         selectedGroupIds: [],
         groupItems: [],
-        branchRules: [
-          v => !!v || 'Pflichtfeld'
-        ],
       }
     },
     computed: {

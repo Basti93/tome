@@ -156,6 +156,7 @@ import Vue from "vue";
 import TrainingContent from "./TrainingContent"
 import {formatDate, parseDate} from "@/helpers/date-helpers"
 import {mapGetters, mapState} from 'vuex'
+import Group from "../models/Group";
 
 export default Vue.extend({
   name: "EditTrainingBase",
@@ -232,8 +233,8 @@ export default Vue.extend({
         comment: this.editedComment,
       })
     },
-    branchAndGroupName(item) {
-      return this.getBranchById(item.branchId).shortName + " | " + item.name;
+    branchAndGroupName(item: Group) {
+      return item.getWithBranchName();
     },
     fullName: item => item.firstName + ' ' + item.familyName,
     toggleSelectAllGroups () {

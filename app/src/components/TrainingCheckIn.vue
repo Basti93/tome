@@ -119,17 +119,16 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <v-chip v-for="(item) in trainers"
-                :key="item.id"
-                outlined
-                class="ma-1">
-          <ProfileImage :firstName="item.firstName"
-                        :familyName="item.familyName"
-                        :imagePath="item.profileImageName"
-                        left
-          ></ProfileImage>
-          {{ fullName(item) }}
-        </v-chip>
+        <ProfileImage
+            v-for="(item) in trainers"
+            :key="item.id"
+            class="ma-1"
+            :firstName="item.firstName"
+            :familyName="item.familyName"
+            :imagePath="item.profileImageName"
+            left
+            clickable
+        ></ProfileImage>
       </v-card-text>
     </v-card>
     <v-card class="ma-1">
@@ -143,7 +142,7 @@
                 class="ma-1"
                 outlined>
           <v-icon left color="primary">group</v-icon>
-          {{ branchAndGroupName(item) }}
+          {{ item.getWithBranchName() }}
         </v-chip>
       </v-card-text>
     </v-card>
@@ -201,7 +200,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import TrainingContent from "./TrainingContent";
 import ProfileImage from "@/components/ProfileImage";
 import User from "@/models/User";
@@ -339,9 +338,6 @@ export default {
         console.error(error);
       }
     },
-    branchAndGroupName(group) {
-      return this.getBranchById(group.branchId).shortName + ' | ' + group.name;
-    },
     fullName: item => item.firstName + ' ' + item.familyName,
     urlify(text) {
       if (text) {
@@ -364,5 +360,8 @@ export default {
   &__text {
     text-align: left;
   }
+
+
 }
+
 </style>

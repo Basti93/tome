@@ -6,8 +6,8 @@
           <v-toolbar flat>
             <v-toolbar-title>Trainingsvorbereitung</v-toolbar-title>
           </v-toolbar>
-          <v-card-text class="mt-8 pa-0 pa-md-4" v-show="dataLoaded">
-            <v-container>
+          <v-card-text v-show="dataLoaded">
+            <v-container  class="pa-0">
               <v-row no-gutters>
                 <v-col md="3" cols="0">
                   <TrainingSelector
@@ -110,7 +110,7 @@
                                   class="ma-1"
                                   outlined>
                             <v-icon left color="primary">group</v-icon>
-                            {{ branchAndGroupName(item) }}
+                            {{ item.getWithBranchName() }}
                           </v-chip>
                         </v-card-text>
                       </v-card>
@@ -498,9 +498,6 @@ export default Vue.extend({
     },
     getUpcomingTrainingById(id) {
       return this.upcomingTrainings.filter(ut => ut.id == id)[0];
-    },
-    branchAndGroupName(group) {
-      return this.getBranchById(group.branchId).shortName + ' | ' + group.name;
     },
     editTime() {
       this.editStartTime = this.selectedTraining.start.format('HH:mm')

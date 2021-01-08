@@ -16,8 +16,9 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
     import {mapGetters, mapState} from 'vuex'
+    import Group from "@/models/Group";
 
     export default {
 
@@ -40,8 +41,8 @@
             }),
         },
         methods: {
-            branchAndGroupName(item) {
-               return this.getBranchById(item.branchId).shortName + ' | ' + item.name;
+            branchAndGroupName(item: Group) {
+               return item.getWithBranchName();
             }
         },
         watch: {
