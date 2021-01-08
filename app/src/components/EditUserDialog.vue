@@ -24,6 +24,9 @@
                         dismissible>
                     Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
                 </v-alert>
+              <v-form
+                  ref="form"
+                  v-model="valid">
                 <v-container grid-list-md>
                     <v-layout wrap>
                         <v-flex xs12 sm6>
@@ -31,6 +34,7 @@
                                     v-model="firstName"
                                     label="Vorname"
                                     required
+                                    :rules="[v => !!v || 'Wird benötigt']"
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-flex>
@@ -38,6 +42,7 @@
                             <v-text-field
                                     v-model="familyName"
                                     label="Nachname"
+                                    :rules="[v => !!v || 'Wird benötigt']"
                                     required
                                     prepend-icon="account_circle"
                             ></v-text-field>
@@ -87,6 +92,7 @@
                         </v-flex>
                     </v-layout>
                 </v-container>
+              </v-form>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -112,6 +118,7 @@
         ],
         data: function () {
             return {
+                valid: false,
                 firstName: null,
                 familyName: null,
                 birthdate: null,
@@ -133,6 +140,7 @@
                 },
                 set(value) {
                     if (!value) {
+                        this.$refs.form.resetValidation();
                         this.$emit('close')
                     }
                 }
@@ -143,6 +151,7 @@
         },
         methods: {
             async save() {
+                this.$refs.form.validate();
                 try {
                     let postData = {
                         firstName: this.firstName,
@@ -171,12 +180,12 @@
                     } else {
                         response = await this.$http.post('/user/unregistered', postData);
                     }
-                    if (response && response.data.error) {
-                        this.$emit("showSnackbar", "Benutzer konnte nicht gespeichert werden", "error")
+                    if (response.data.status === 'ok') {
+                      this.$emit("showSnackbar", "Benutzer gespeichert", "success")
+                      this.$emit("saved")
+                      this.show = false;
                     } else {
-                        this.$emit("showSnackbar", "Benutzer gespeichert", "success")
-                        this.$emit("saved")
-                        this.show = false;
+                      this.$emit("showSnackbar", "Fehler beim Speichern", "error")
                     }
                 } catch (error) {
                     console.error(error);

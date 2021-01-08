@@ -241,7 +241,7 @@ class UserController extends Controller
         }
 
         $user->groups()->sync($request->input('groupIds'));
-        $user->trainerGroups()->sync($request->input('trainerGroupIds'));
+        $user->trainerBranches()->sync($request->input('trainerBranchIds'));
 
         return response()->json([
             'status' => 'ok'

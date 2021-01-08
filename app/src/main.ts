@@ -30,7 +30,7 @@ const init = async () => {
 
     const branches = resBranches.data.map(b => new Branch(b.id, b.name, b.shortName));
     store.commit('masterData/setBranches', branches);
-    store.commit('masterData/setGroups', resGroups.data.map(g => new Group(g.id, g.name, g.branchId, branches.filter(b => b.id == g.branchId)[0])));
+    store.commit('masterData/setGroups', resGroups.data.data.map(g => new Group(g.id, g.name, g.branchId, branches.filter(b => b.id == g.branchId)[0], g.userIds)));
     store.commit('masterData/setLocations', locations.data);
     store.commit('masterData/setContents', contents.data);
     store.commit('masterData/setSimpleTrainers', trainers.data.data);

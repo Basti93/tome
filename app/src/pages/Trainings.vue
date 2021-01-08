@@ -7,7 +7,7 @@
             <v-container fluid>
               <v-row align="center">
                 <v-col cols="6">
-                  <v-toolbar-title>Trainingsverwaltung</v-toolbar-title>
+                  <v-toolbar-title>Trainings</v-toolbar-title>
                 </v-col>
                 <v-col cols="6">
                   <v-select
@@ -97,7 +97,7 @@
                               color="error"
                               small
                               v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                              @click="deleteItem(item)">
+                              @click="confirmAndDelete(item)">
                             <v-icon>delete</v-icon>
                           </v-btn>
 
@@ -158,6 +158,12 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+    <ConfirmDialog
+        :show="showConfirmDialog"
+        action-text="Löschen"
+        v-on:confirmed="deleteItem()"
+        v-on:canceled="showConfirmDialog = false">
+    </ConfirmDialog>
     <!--<v-bottom-navigation
              v-model="activeView"
              hide-on-scroll
@@ -182,13 +188,17 @@ import {mapGetters, mapState} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase";
 import {formatDate, parseDate} from "../helpers/date-helpers"
+import Group from "../models/Group";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default Vue.extend({
   name: "Trainings",
-  components: {EditTrainingBase, TrainingCalendar},
+  components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
   data: function () {
     return {
       showFilterDialog: false,
+      showConfirmDialog: false,
+      itemToDelete: null,
       filterBranchId: Number,
       filterBranches: [{id: -1, name: 'Alle'}],
       editDialog: false,
@@ -356,16 +366,19 @@ export default Vue.extend({
     trainingBaseChanged(item) {
       Object.assign(this.editedItem, item)
     },
-    async deleteItem(item) {
-      if (confirm('Löschen bestätigen')) {
-        const {data} = await this.$http.delete('/training/' + item.id);
+    confirmAndDelete(item) {
+      this.itemToDelete = item;
+      this.showConfirmDialog = true;
+    },
+    async deleteItem() {
+      this.showConfirmDialog = false
+        const {data} = await this.$http.delete('/training/' + this.itemToDelete.id);
         if (data.status == 'ok') {
           this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
           this.loadData();
         } else {
           this.$emit("showSnackbar", "Training konnte nicht gelöscht werden", "error")
         }
-      }
     },
     editItem(item) {
       this.editDialogTitle = 'Training bearbeiten'

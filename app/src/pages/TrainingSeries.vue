@@ -198,7 +198,7 @@
                           <v-btn
                               outlined
                               class="ml-5"
-                              @click="deleteItem(item)"
+                              @click="confirmAndDelete(item)"
                               color="error">
                             <v-icon>delete</v-icon>
                           </v-btn>
@@ -213,6 +213,12 @@
         </v-card>
       </v-col>
     </v-row>
+    <ConfirmDialog
+        :show="showConfirmDialog"
+        action-text="Löschen"
+        v-on:confirmed="deleteItem()"
+        v-on:canceled="showConfirmDialog = false">
+    </ConfirmDialog>
   </v-container>
 </template>
 
@@ -223,13 +229,16 @@ import TrainingSeries from "@/models/TrainingSeries";
 import {mapGetters, mapState} from 'vuex'
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default Vue.extend({
   name: "TrainingSeries",
-  components: {EditTrainingBase, WeekdaysComponent},
+  components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
     return {
       showFilterDialog: false,
+      showConfirmDialog: false,
+      itemToDelete: null,
       filterBranches: [{id: -1, name: 'Alle'}],
       filterBranchId: null,
       trainers: [],
@@ -324,15 +333,18 @@ export default Vue.extend({
       }
       this.showCreateDialog = true;
     },
-    async deleteItem(item) {
-      if (confirm('Löschen bestätigen')) {
-        let response = await this.$http.delete('/trainingSeries/' + item.id);
-        if (response.data.status === 'ok') {
-          this.$emit("showSnackbar", "Serie erfolgreich gelöscht", "success")
-          this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(item), 1)
-        } else {
-          this.$emit("showSnackbar", "Serie konnte nicht gelöscht werden", "error")
-        }
+    confirmAndDelete(item) {
+      this.itemToDelete = item;
+      this.showConfirmDialog = true;
+    },
+    async deleteItem() {
+      this.showConfirmDialog = false
+      let response = await this.$http.delete('/trainingSeries/' + this.itemToDelete.id);
+      if (response.data.status === 'ok') {
+        this.$emit("showSnackbar", "Serie erfolgreich gelöscht", "success")
+        this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
+      } else {
+        this.$emit("showSnackbar", "Serie konnte nicht gelöscht werden", "error")
       }
     },
     async save() {

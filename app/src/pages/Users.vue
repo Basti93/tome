@@ -4,7 +4,7 @@
       <v-col>
         <v-card color="secondary">
           <v-toolbar flat extension-height="100">
-            <v-toolbar-title>Benutzerverwaltung</v-toolbar-title>
+            <v-toolbar-title>Benutzer</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn
                 title="Liste nach Sparte und Gruppe filtern"
@@ -115,7 +115,7 @@
                               outlined
                               class="ml-5"
                               v-if="canDeleteUser(item)"
-                              @click="deleteItem(item)"
+                              @click="confirmAndDelete(item)"
                               color="error">
                             <v-icon>delete</v-icon>
                           </v-btn>
@@ -153,6 +153,12 @@
         :edit-profile-image-name="editedItem.profileImageName"
         :edit-first-name="editedItem.firstName">
     </EditUserDialog>
+    <ConfirmDialog
+        :show="showConfirmDialog"
+        action-text="Löschen"
+        v-on:confirmed="deleteItem()"
+        v-on:canceled="showConfirmDialog = false">
+    </ConfirmDialog>
   </v-container>
 </template>
 
@@ -163,14 +169,17 @@ import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog";
 import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
   name: "Users",
-  components: {EditUserDialog, GroupsSelectDialog},
+  components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
   data: function () {
     return {
       showDialog: false,
       showFilterDialog: false,
+      showConfirmDialog: false,
+      itemToDelete: null,
       filterBranchId: null,
       filterGroupIds: [],
       editGroups: [],
@@ -319,15 +328,18 @@ export default {
     canEditUser(item) {
       return (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) && !item.isTrainer && !item.isAdmin
     },
-    async deleteItem(item) {
-      if (confirm('Löschen bestätigen')) {
-        let response = await this.$http.delete('/user/' + item.id);
-        if (response.data.status === 'ok') {
-          this.$emit("showSnackbar", "Benutzer " + item.firstName + " " + item.familyName + " erfolgreich gelöscht", "success")
-          this.users.splice(this.users.indexOf(item), 1)
-        } else {
-          this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
-        }
+    confirmAndDelete(item) {
+      this.itemToDelete = item;
+      this.showConfirmDialog = true;
+    },
+    async deleteItem() {
+      this.showConfirmDialog = false;
+      let response = await this.$http.delete('/user/' + this.itemToDelete.id);
+      if (response.data.status === 'ok') {
+        this.$emit("showSnackbar", "Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
+        this.users.splice(this.users.indexOf(this.itemToDelete), 1)
+      } else {
+        this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
       }
     },
     reset() {

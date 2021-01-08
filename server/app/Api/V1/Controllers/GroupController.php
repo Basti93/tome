@@ -2,15 +2,11 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use Auth;
 use App\Group;
-use Spatie\Permission\Models\Role;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\JWTAuth;
+use App\Api\V1\Requests\StoreGroupRequest;
+use App\Http\Resources\Group as GroupResource;
 
 class GroupController extends Controller
 {
@@ -27,13 +23,14 @@ class GroupController extends Controller
   }
 
   /**
-   * Get users with pagination.
+   * Get users.
    *
    * @return Response
    */
   public function index()
   {
-    return response()->json(Group::orderBy('branch_id')->orderBy('name')->get());
+      $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+      return GroupResource::collection(Group::orderBy('branch_id')->orderBy('name')->paginate($per_page));
   }
   /**
    * Get users with pagination.
@@ -42,7 +39,49 @@ class GroupController extends Controller
    */
   public function getByBranchId($id)
   {
-    return response()->json(Group::where('branch_id', $id)->get());
+    return GroupResource::collection(Group::where('branch_id', $id)->get());
   }
+
+    public function store(StoreGroupRequest $request)
+    {
+        $group = new Group();
+
+        $group->name = $request->input('name');
+        $group->branch_id = $request->input('branchId');
+        $group->save();
+
+        $group->users()->sync($request->input('userIds'));
+
+        return response()->json([
+            'status' => 'ok'
+        ], 201);
+
+    }
+
+    public function update(StoreGroupRequest $request, $id)
+    {
+        $group = Group::findOrFail($id);
+
+        $group->name = $request->input('name');
+        $group->branch_id = $request->input('branchId');
+        $group->save();
+
+        $group->users()->sync($request->input('userIds'));
+
+        return response()->json([
+            'status' => 'ok'
+        ], 201);
+
+    }
+
+    public function destroy($id)
+    {
+        $group = Group::findOrFail($id);
+        $group->delete();
+
+        return response()->json([
+            'status' => 'ok',
+        ], 201);
+    }
 
 }

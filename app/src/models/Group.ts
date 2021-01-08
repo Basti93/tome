@@ -6,12 +6,14 @@ export default class Group {
     name: String;
     branchId: number;
     branch: Branch;
+    userIds: Array<Number>;
 
-    constructor(id: number, name: String, branchId: number, branch: Branch) {
+    constructor(id: number, name: String, branchId: number, branch: Branch, userIds: Array<Number>) {
         this.id = id;
         this.name = name;
         this.branchId = branchId;
         this.branch = branch;
+        this.userIds = userIds;
     }
 
     getWithBranchName = function() {

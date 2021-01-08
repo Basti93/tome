@@ -12,7 +12,7 @@
           class="ma-1"
           v-on="on"
       >
-        <v-icon left color="primary">group</v-icon>
+        <v-icon left color="primary">groups</v-icon>
         {{ group.getWithBranchName() }}
       </v-chip>
     </template>

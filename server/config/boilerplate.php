@@ -48,6 +48,14 @@ return [
             'end' => 'required',
         ]
     ],
+    'store_group' => [
+
+        // here you can specify some validation rules for your sign-in request
+        'validation_rules' => [
+            'name' => 'required',
+            'branchId' => 'required',
+        ]
+    ],
     'export_accounting_times' => [
 
         // here you can specify some validation rules for your sign-in request
@@ -72,7 +80,6 @@ return [
         'validation_rules' => [
             'firstName' => 'required',
             'familyName' => 'required',
-            'groupIds' => 'required',
         ]
     ],
 

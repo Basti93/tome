@@ -9,4 +9,8 @@ export default class Branch {
         this.shortName = shortName;
     }
 
+    getShortNameAndName() {
+        return this.name + ' (' + this.shortName + ')';
+    }
+
 }

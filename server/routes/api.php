@@ -82,6 +82,12 @@ $api->version('v1', function (Router $api) {
             $api->post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
         });
 
+        $api->group(['prefix' => 'group'], function(Router $api) {
+            $api->post('/', 'App\\Api\\V1\\Controllers\\GroupController@store');
+            $api->put('{id}', 'App\\Api\\V1\\Controllers\\GroupController@update');
+            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\GroupController@destroy');
+        });
+
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
             $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
