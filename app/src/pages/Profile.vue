@@ -160,7 +160,7 @@
                                         type="info"
                                         outlined
                                     >
-                                      Hier kannst du deine Sparten auswählen um die App auf dich als Trainer abzustimmen.
+                                      Wähle deine Hauptsparte um die App auf dich abzustimmen.
                                     </v-alert>
                                     <v-select
                                         class="pt-6"
@@ -173,7 +173,7 @@
                                         chips
                                         deletable-chips
                                         dense
-                                        label="Sparte auswählen"
+                                        label="Hauptsparte auswählen"
                                         prepend-icon="bubble_chart"
                                     >
                                     </v-select>

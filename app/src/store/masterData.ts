@@ -96,6 +96,12 @@ const getters = {
   getSimpleTrainersByIds: (state, getters) => (ids) => {
       return state.simpleTrainers.filter(g => ids.includes(g.id))
   },
+  getSimpleTrainersByGroupId: (state, getters) => (groupId) => {
+      return state.simpleTrainers.filter(st => st.groupIds.includes(groupId))
+  },
+  getSimpleTrainersByBranchId: (state, getters) => (branchId) => {
+      return state.simpleTrainers.filter(st => st.trainerBranchIds.includes(branchId))
+  },
   getGroupsByBranchIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.branchId))
   },

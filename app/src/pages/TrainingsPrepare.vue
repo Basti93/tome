@@ -7,7 +7,7 @@
             <v-toolbar-title>Trainingsvorbereitung</v-toolbar-title>
           </v-toolbar>
           <v-card-text v-show="dataLoaded">
-            <v-container  class="pa-0">
+            <v-container class="pa-0">
               <v-row no-gutters>
                 <v-col md="3" cols="0">
                   <TrainingSelector
@@ -105,13 +105,10 @@
                         </v-card-title>
                         <v-divider></v-divider>
                         <v-card-text>
-                          <v-chip v-for="(item) in groups"
-                                  :key="item.id"
-                                  class="ma-1"
-                                  outlined>
-                            <v-icon left color="primary">group</v-icon>
-                            {{ item.getWithBranchName() }}
-                          </v-chip>
+                          <GroupChip
+                              v-for="(item) in groups"
+                              :key="item.id"
+                              :group="item"></GroupChip>
                         </v-card-text>
                       </v-card>
                       <v-card class="ma-1">
@@ -351,10 +348,12 @@ import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingContent from "@/components/TrainingContent"
 import ListItemProfileImage from "@/components/ListItemProfileImage"
 import TrainingSelector from "../components/TrainingSelector.vue";
+import GroupChip from "../components/GroupChip.vue";
 
 export default Vue.extend({
   name: "TrainingsPrepare",
   components: {
+    GroupChip,
     TrainingSelector,
     TrainingContent,
     "tome-list-item-profile-image": ListItemProfileImage
@@ -401,7 +400,7 @@ export default Vue.extend({
     branchContentIds(): Array<Number> {
       //check if multiple branches are in the play
       let groupBranchIds = this.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
-      if (groupBranchIds.every( v => v === groupBranchIds[0] )) {
+      if (groupBranchIds.every(v => v === groupBranchIds[0])) {
         return this.getContentIdsByGroupIds(this.selectedTraining.groupIds);
       }
       return [];

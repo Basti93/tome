@@ -137,13 +137,9 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <v-chip v-for="(item) in groups"
-                :key="item.id"
-                class="ma-1"
-                outlined>
-          <v-icon left color="primary">group</v-icon>
-          {{ item.getWithBranchName() }}
-        </v-chip>
+        <GroupChip v-for="(item) in groups"
+                   :key="item.id"
+                   :group="item"></GroupChip>
       </v-card-text>
     </v-card>
     <v-dialog v-model="showCancelDialog" max-width="500px">
@@ -206,10 +202,11 @@ import ProfileImage from "@/components/ProfileImage";
 import User from "@/models/User";
 import Training from "@/models/Training";
 import {mapGetters} from 'vuex'
+import GroupChip from "./GroupChip.vue";
 
 export default {
   name: "TrainingCheckIn",
-  components: {TrainingContent, ProfileImage},
+  components: {GroupChip, TrainingContent, ProfileImage},
   props: {
     training: Training,
     currentUser: User,
