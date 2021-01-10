@@ -4,13 +4,16 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ZoomController;
 use App\Http\Resources\Training as TrainingResource;
+use App\Location;
 use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TrainingController extends Controller
 {
@@ -186,7 +189,7 @@ class TrainingController extends Controller
 
         $contents = $request->input('contentIds');
         if (!empty($contents)) {
-            $training->contents()->sync();
+            $training->contents()->sync($contents);
         }
 
         $participantIds = $request->input('participantIds');
@@ -194,8 +197,15 @@ class TrainingController extends Controller
             $this->updateParticipants($participantIds, $training);
         }
 
+        //is online training
+        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
+            $zoom = new ZoomController();
+            $zoom->create($training);
+        }
+
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
+            'start' => $training->start->format('Y-m-d\TH:i:s.000\Z')
         ], 201);
 
     }
@@ -315,12 +325,18 @@ class TrainingController extends Controller
 
         $contents = $request->input('contentIds');
         if (!empty($contents)) {
-            $training->contents()->sync();
+            $training->contents()->sync($contents);
         }
 
         $participantIds = $request->input('participantIds');
         if (!empty($participantIds)) {
             $this->updateParticipants($participantIds, $training);
+        }
+
+        //is online training
+        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
+            $zoom = new ZoomController();
+            $zoom->updateOrCreate($training);
         }
 
         return response()->json([
@@ -397,6 +413,13 @@ class TrainingController extends Controller
         $training = Training::findOrFail($id);
         if ($training) {
             $training->delete();
+
+            //is online training
+            if ($training->location_id === Location::where('name', 'Online')->first()->id) {
+                $zoom = new ZoomController();
+                $zoom->delete($training);
+            }
+
             return response()->json([
                 'status' => 'ok',
             ], 201);

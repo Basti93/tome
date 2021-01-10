@@ -155,7 +155,6 @@ class TrainingCalendarController extends Controller
         $date = DateTime::createFromFormat(DateTime::ISO8601, $dateString);
         $time = DateTime::createFromFormat('H:i:s', $timeString);
         return $date->setTime($time->format("H"), $time->format("i"));
-
     }
 
 }

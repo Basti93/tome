@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Exports\TrainingTrainerExport;
 use DateTime;
 use Illuminate\Foundation\Auth\User;
-use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
 
 class TrainingAccountingExportController extends Controller
