@@ -70,17 +70,14 @@ class TrainingCalendarController extends Controller
         $nextWeek->setTime(00,00);
         $nextWeek->modify('+7 day');
         //don' add series that are already created (trainings are created one week in advance)
-        Log::info($end > $nextWeek);
         if ($end > $nextWeek) {
-            Log::info('Creating also planned trainings');
-            $allSeries = TrainingSeries::whereActive('1')
-                ->when($groupIds, function ($query, $groupIds) {
+            $allSeries = TrainingSeries::when($groupIds, function ($query, $groupIds) {
                     $query->whereHas('groups', function ($query) use ($groupIds) {
                         $query->whereIn('group_id', preg_split('/,/', $groupIds));
                     });
-                })
+                })->where('defer_until', '<', $start)
                 ->get();
-
+            Log::info('found '.sizeof($allSeries));
             $interval = DateInterval::createFromDateString('1 day');
             $today = new DateTime();
             $today->setTime(00,00);
