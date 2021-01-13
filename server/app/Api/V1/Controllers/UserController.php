@@ -173,6 +173,7 @@ class UserController extends Controller
         $end = new DateTime(request()->query('end'));
 
         $birthdayUser = User::select('firstName', 'familyName', 'birthdate')
+            ->where('active', 1)
             ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') >= ?", array($start->format('m-d')))
             ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') <= ?", array($end->format('m-d')))
             ->when($groupIds, function ($query, $groupIds) {

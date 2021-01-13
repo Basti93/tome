@@ -5,14 +5,6 @@
         <v-card color="secondary">
           <v-toolbar flat>
             <v-toolbar-title>Aktuelle Trainings</v-toolbar-title>
-            <v-chip
-                class="ml-2"
-                v-if="cookieUser"
-                close
-                color="primary"
-                @click:close="removeCookieUser()"
-                v-model="cookieUser">{{ cookieUser.getFullName() }}
-            </v-chip>
             <v-spacer></v-spacer>
             <v-chip v-if="$vuetify.breakpoint.lgAndUp" outlined>
               <v-icon left color="primary">group</v-icon>
@@ -21,6 +13,15 @@
             <v-btn icon color="primary" @click="filterDialogVisible = true">
               <v-icon>filter_list</v-icon>
             </v-btn>
+            <template v-slot:extension v-if="cookieUser">
+              <v-chip
+                  class="ml-2"
+                  close
+                  color="primary"
+                  @click:close="removeCookieUser()"
+                  v-model="cookieUser">{{ cookieUser.getFullName() }}
+              </v-chip>
+            </template>
             <v-dialog
                 v-model="filterDialogVisible"
                 max-width="500px"
