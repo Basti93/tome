@@ -202,7 +202,6 @@
                               v-model="participantsListGroupActive"
                               prepend-icon="check"
                               group="participants"
-                              key="0"
                               no-action
                           >
                             <template slot="activator">
@@ -235,7 +234,6 @@
                               v-model="canceledUserListGroupActive"
                               prepend-icon="cancel"
                               group="canceledusers"
-                              key="1"
                               no-action
                           >
                             <template slot="activator">
@@ -507,12 +505,7 @@ export default Vue.extend({
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
         }
-        const allGroupIds = this.upcomingTrainings
-            .map(t => t.groupIds)
-            .reduce(function (pre, cur) {
-              return pre.concat(cur);
-            });
-        const res2 = await this.$http.get('/user?groupIds=' + allGroupIds);
+        const res2 = await this.$http.get('/user');
         this.users = res2.data;
       } catch (error) {
         console.error(error);

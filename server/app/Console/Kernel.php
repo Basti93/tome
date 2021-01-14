@@ -35,7 +35,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('training:automatic-attend')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_automatic_attend.log'));
         $schedule->command('notification:upcomingTrainingForTrainer')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings_for_trainers.log'));
-        $schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
+        //$schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
         $schedule->command('training:series')->hourly()->sendOutputTo(storage_path('logs/com_series.log'));
     }
 

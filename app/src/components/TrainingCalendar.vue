@@ -27,14 +27,14 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="type = 'day'">
-                <v-list-item-title>Tag</v-list-item-title>
-              </v-list-item>
               <v-list-item @click="type = 'week'">
                 <v-list-item-title>Woche</v-list-item-title>
               </v-list-item>
               <v-list-item @click="type = 'month'">
                 <v-list-item-title>Monat</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="type = 'category'">
+                <v-list-item-title>Kategorie</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -57,6 +57,10 @@
         first-interval="8"
         interval-count="16"
         :interval-format="formatDayTime"
+        :weekdays="weekday"
+        category-show-all
+        :categories="categories"
+        category-text="name"
         @click:date="viewDay"
         @click:more="viewDay"
         @click:event="showEvent"
@@ -102,13 +106,29 @@
             Nicht Abgeschlossen
           </v-label>
           <br/>
-          <h4>{{ selectedEvent.participantCount }} Teilnehmer</h4>
+          <span class="label text-small">Von</span>
+          <v-chip small outlined class="ma-1">
+            <v-icon left color="primary">query_builder</v-icon>
+            {{ moment(selectedEvent.start).format('HH:mm') }}
+          </v-chip>
+          <span class="label text-small">bis</span>
+          <v-chip small outlined class="ml-1">
+            <v-icon left color="primary">query_builder</v-icon>
+            {{ moment(selectedEvent.end).format('HH:mm') }}
+          </v-chip>
+          <br />
+          <v-chip v-if="selectedEvent.location" outlined small class="ma-1">
+            <v-icon left color="primary">room</v-icon>
+            {{ selectedEvent.location }}
+          </v-chip>
+          <br />
+          <h4 v-if="selectedEvent.participantCount">{{ selectedEvent.participantCount }} Teilnehmer</h4>
           <h4>Gruppen</h4>
           <v-chip
               outlined
               small
               v-for="(groupId) in selectedEvent.groupIds"
-              :key="groupId"
+              :key="'groupId' + groupId"
               class="ma-1">
             <v-icon left color="primary">group</v-icon>
             {{ getGroupById(groupId).name }}
@@ -118,7 +138,7 @@
               outlined
               small
               v-for="(trainerId) in selectedEvent.trainerIds"
-              :key="trainerId"
+              :key="'trainerId' + trainerId"
               class="ma-1">
             <v-icon left color="primary">person</v-icon>
             {{ getFullName(trainerId) }}
@@ -135,7 +155,7 @@
               outlined
               small
               v-for="(groupId) in selectedEvent.groupIds"
-              :key="groupId"
+              :key="'groupId_2_' + groupId"
               class="ma-1">
             <v-icon left color="primary">group</v-icon>
             {{ getGroupById(groupId).name }}
@@ -145,7 +165,7 @@
               outlined
               small
               v-for="(trainerId) in selectedEvent.trainerIds"
-              :key="trainerId"
+              :key="'trainerId_2_' + trainerId"
               class="ma-1">
             <v-icon left color="primary">person</v-icon>
             {{ getFullName(trainerId) }}
@@ -161,7 +181,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import {mapGetters} from 'vuex';
+import {mapGetters, mapState} from 'vuex';
 import Training from "@/models/Training";
 
 export default Vue.extend({
@@ -171,6 +191,8 @@ export default Vue.extend({
   },
   data: () => ({
     events: [],
+    weekday: [1, 2, 3, 4, 5, 6, 0],
+    categories: [],
     trainings: [] as Training[],
     start: null as Date,
     end: null as Date,
@@ -183,6 +205,7 @@ export default Vue.extend({
       month: 'Monat',
       week: 'Woche',
       day: 'Tag',
+      category: 'Sparten',
     },
   }),
   mounted() {
@@ -194,6 +217,10 @@ export default Vue.extend({
       getGroupById: 'getGroupById',
       getSimpleTrainerById: 'getSimpleTrainerById',
       getBranchById: 'getBranchById',
+      getLocationNameById: 'getLocationNameById',
+    }),
+    ...mapState('masterData', {
+      branches: 'branches',
     }),
     title() {
       const {start, end} = this
@@ -217,6 +244,7 @@ export default Vue.extend({
           return `${startMonth} ${startYear}`
         case 'week':
         case 'day':
+        case 'category':
           return `${startMonth} ${startDay} ${startYear}`
       }
       return ''
@@ -226,6 +254,8 @@ export default Vue.extend({
     async loadData() {
       this.trainings = [];
       this.events = [];
+      this.categories = [];
+      this.categories = this.branches;
       this.loadTrainingEvents();
       this.loadPlannedTrainingEvents();
       if (this.privateMode) {
@@ -267,10 +297,12 @@ export default Vue.extend({
             end: training.end.format('YYYY-MM-DD HH:mm'),
             groupIds: training.groupIds,
             trainerIds: training.trainerIds,
+            location: this.getLocationNameById(training.locationId),
             participantCount: training.participants ? training.participants.filter(p => p.attend).length : null,
             type: 'training',
             color: branch.colorHex,
             evaluated: training.evaluated,
+            category: branch.name
           })
         }
       }
@@ -307,6 +339,7 @@ export default Vue.extend({
             trainerIds: training.trainerIds,
             type: 'planed-training',
             color: branch.colorHex,
+            category: branch.name
           })
         }
       }
@@ -326,7 +359,9 @@ export default Vue.extend({
       const open = () => {
         this.selectedEvent = event
         this.selectedElement = nativeEvent.target
-        setTimeout(() => this.selectedOpen = true, 10)
+        setTimeout(() => {
+          this.selectedOpen = true
+        }, 10)
       }
 
       if (this.selectedOpen) {

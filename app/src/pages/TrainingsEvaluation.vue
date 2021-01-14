@@ -121,18 +121,18 @@
                             <v-card-title>Teilnehmer</v-card-title>
                             <v-card-text class="pa-0 pa-md-4">
 
-
                               <v-list-group
-                                  v-model="participantsListGroupActive"
+                                  :value="participantsListGroupActive"
                                   prepend-icon="check"
                                   group="participants"
-                                  key="1"
                                   no-action
                               >
-                                <template v-slot:activator>
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
+                                <template slot="activator">
+                                  <v-list-item>
+                                    <v-list-item-content>
+                                      <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
                                   </v-list-item-content>
+                                  </v-list-item>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in participatingUsers"
@@ -166,21 +166,22 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  v-model="canceledUserListGroupActive"
+                                  :value="canceledUserListGroupActive"
                                   prepend-icon="cancel"
-                                  group="canceledusers"
-                                  key="2"
+                                  group="participants"
                                   no-action
                               >
-                                <template v-slot:activator>
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ canceledUsers.length }} <span
-                                        v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
-                                    </v-list-item-title>
+                                <template slot="activator">
+                                  <v-list-item>
+                                    <v-list-item-content>
+                                      <v-list-item-title>{{ canceledUsers.length }} <span
+                                          v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
+                                      </v-list-item-title>
                                   </v-list-item-content>
+                                  </v-list-item>
                                 </template>
                                 <v-list-item
-                                    v-for="(item) in canceledUsers"
+                                    v-for="item in canceledUsers"
                                     :key="item.id"
                                 >
                                   <tome-list-item-profile-image
@@ -436,12 +437,7 @@ export default Vue.extend({
           //select first training
           this.selectTraining(this.pastTrainings[0].id);
         }
-        const allGroupIds = this.pastTrainings
-            .map(t => t.groupIds)
-            .reduce(function (pre, cur) {
-              return pre.concat(cur);
-            });
-        const res2 = await this.$http.get('/user?groupIds=' + allGroupIds);
+        const res2 = await this.$http.get('/user');
         this.users = res2.data;
       } catch (error) {
         console.error(error);

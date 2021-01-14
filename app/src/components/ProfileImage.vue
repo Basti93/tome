@@ -14,10 +14,11 @@
           v-on="on"
       >
         <v-avatar left>
-          <v-img
-              :src="imageUrl"
-              :alt="fullName"
+          <v-img v-if="imageUrl"
+                 :src="imageUrl"
+                 :alt="fullName"
           ></v-img>
+          <v-icon v-else>account_circle</v-icon>
         </v-avatar>
         {{ fullName }}
       </v-chip>
@@ -26,10 +27,11 @@
       <v-list>
         <v-list-item>
           <v-list-item-avatar size="60">
-            <v-img
-                :src="imageUrl"
-                :alt="fullName"
+            <v-img v-if="imageUrl"
+                   :src="imageUrl"
+                   :alt="fullName"
             ></v-img>
+            <v-icon v-else size="60">account_circle</v-icon>
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>{{ fullName }}</v-list-item-title>

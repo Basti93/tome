@@ -262,7 +262,7 @@ export default Vue.extend({
   },
   created() {
     if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.getBranchByGroupId(this.trainerBranchIds[0]).id;
+      this.filterBranchId = this.getBranchById(this.trainerBranchIds[0]).id;
     }
     this.filterBranches = this.filterBranches.concat(this.branches)
     this.fetchData();

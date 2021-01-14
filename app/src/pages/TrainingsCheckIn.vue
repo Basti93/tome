@@ -188,16 +188,7 @@ export default Vue.extend({
     if (!this.currentUser) {
       this.cookieUserDialogVisible = true;
     }
-    this.filterGroupId = this.currentUserGroupId;
-
-    this.initalSelectedTrainingId = this.$route.params.id;
-    await this.fetchData();
-
-    if (this.initalSelectedTrainingId) {
-      this.selectTraining(this.upcomingTrainings.filter(t => t.id == this.initalSelectedTrainingId)[0].id);
-    } else if (this.upcomingTrainings.length > 0) {
-      this.selectTraining(this.upcomingTrainings[0].id);
-    }
+    this.fetchDataForCurrentUser();
 
     this.initializing = false;
   },
@@ -230,6 +221,18 @@ export default Vue.extend({
         this.addToUpcomingTrainings(data.data);
       } else {
         console.log('Training with id ' + trainingId + ' could not be found or is in the past')
+      }
+    },
+    async fetchDataForCurrentUser() {
+      this.filterGroupId = this.currentUserGroupId;
+
+      this.initalSelectedTrainingId = this.$route.params.id;
+      await this.fetchData();
+
+      if (this.initalSelectedTrainingId) {
+        this.selectTraining(this.upcomingTrainings.filter(t => t.id == this.initalSelectedTrainingId)[0].id);
+      } else if (this.upcomingTrainings.length > 0) {
+        this.selectTraining(this.upcomingTrainings[0].id);
       }
     },
     async fetchData() {
@@ -343,10 +346,7 @@ export default Vue.extend({
     currentUser() {
       this.filterGroupId = this.currentUserGroupId;
       if (!this.initializing) {
-        this.fetchData();
-        if (this.upcomingTrainings.length > 0) {
-          this.selectTraining(this.upcomingTrainings[0].id);
-        }
+        this.fetchDataForCurrentUser();
       }
     }
   }
