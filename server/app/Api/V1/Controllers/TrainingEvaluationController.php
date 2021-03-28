@@ -3,7 +3,6 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\ExportAccountingTimesRequest;
-use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Exports\TrainingTrainerExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TrainingEvaluation as TrainingEvaluationResource;
@@ -11,11 +10,10 @@ use App\Training;
 use App\TrainingTrainer;
 use App\User;
 use DateTime;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingEvaluationController extends Controller
@@ -52,7 +50,7 @@ class TrainingEvaluationController extends Controller
         $userId = $request->input('userId');
         $user = User::findOrFail($userId);
 
-        $filename = '/accounting_times/ul_abrechnung_'.strtolower($user->firstName).'_'.strtolower($user->familyName).'_'.$from->format("d_m_Y").'_'.$to->format("d_m_Y").'.xls';
+        $filename = '/accounting_times/ul_abrechnung_' . strtolower($user->firstName) . '_' . strtolower($user->familyName) . '_' . $from->format("d_m_Y") . '_' . $to->format("d_m_Y") . '.xls';
         Excel::store(new TrainingTrainerExport($user, $from, $to), $filename, 'public', \Maatwebsite\Excel\Excel::XLS);
         return response()->json([
             'status' => 'ok',
@@ -107,7 +105,8 @@ class TrainingEvaluationController extends Controller
         $trainingTrainer->save();
     }
 
-    public function removeParticipant($trainingId, $userId) {
+    public function removeParticipant($trainingId, $userId)
+    {
         $training = Training::findOrFail($trainingId);
         if ($training->participants->contains($userId)) {
             $training->participants()->updateExistingPivot($userId, array('attend' => 0), false);
@@ -120,7 +119,8 @@ class TrainingEvaluationController extends Controller
         ], 404);
     }
 
-    public function addParticipant($trainingId, $userId) {
+    public function addParticipant($trainingId, $userId)
+    {
         $training = Training::findOrFail($trainingId);
         if ($training->participants->contains($userId)) {
             $training->participants()->updateExistingPivot($userId, array('attend' => 1), false);
@@ -137,13 +137,14 @@ class TrainingEvaluationController extends Controller
      * Get the account times for the given groups of all trainers.
      * @param Request $request
      */
-    public function getAccountingTimeStatistics() {
+    public function getAccountingTimeStatistics()
+    {
         Log::info("getAccountingTimeStatistics");
         $groupIds = request()->query('groupIds');
         $year = request()->query('year');
-        $cacheKey = 'accounting_time_statistics'.$year.$groupIds;
+        $cacheKey = 'accounting_time_statistics' . $year . $groupIds;
         if (Cache::has($cacheKey)) {
-            return response()->json(Cache::get($cacheKey));
+          return response()->json(Cache::get($cacheKey));
         }
         $series = [];
 
@@ -182,44 +183,36 @@ class TrainingEvaluationController extends Controller
                 ->orderBy('month', 'asc')
                 ->get();
 
-            //sum up the accounting times per month
-            $currentMonthAccountTime = 0;
-            $lastMonth = 1;
-            $monthArray = [];
-            $size = sizeof($trainerAccountingTimes);
-            $last = sizeof($trainerAccountingTimes) - 1;
+            if (!$trainerAccountingTimes->isEmpty()) {
+                //sum up the accounting times per month
+                $currentMonthAccountTime = 0;
+                $monthArray = [];
+                $currentMonth = $trainerAccountingTimes[0]->month;
 
-            //sum the accounting hours per month
-            for ($i = 0; $i < $size; $i++) {
-                //the current month
-                $currentMonth = $trainerAccountingTimes[$i]->month;
-                //set the month from first and last row
-                if ($i === 0) {
-                    $lastMonth = $currentMonth;
-                }
-
-                //check if the month has changed since the last iteration
-                //or if the entry is the last entry
-                if ($currentMonth != $lastMonth || $i == $last) {
-
-                    //if it's the last entry add the last account hours
-                    if ($i == $last) {
-                        $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
+                //sum the accounting hours per month
+                for ($i = 0; $i < sizeof($trainerAccountingTimes); $i++) {
+                    if ($currentMonth != $trainerAccountingTimes[$i]->month) {
+                        //new month detected -> store the old in the array
+                        $monthSum = new \stdClass();
+                        $monthSum->month = $currentMonth;
+                        $monthSum->accountingHours = round($currentMonthAccountTime, 2);
+                        array_push($monthArray, $monthSum);
+                        $currentMonthAccountTime = 0;
                     }
 
-                    $monthSum = new \stdClass();
-                    $monthSum->month = $lastMonth;
-                    $monthSum->accountingHours = round($currentMonthAccountTime,2);
-                    array_push($monthArray, $monthSum);
-
-                    $currentMonthAccountTime = 0;
-
-                    $lastMonth = $currentMonth;
+                    //save the month of the last used entry
+                    $currentMonth = $trainerAccountingTimes[$i]->month;
+                    //add the account time of this entry to the month sum
+                    $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
                 }
-
-                $currentMonthAccountTime += $trainerAccountingTimes[$i]->getAccountingHoursAttribute();
-
+                //store last month because the loop will not store the last one (no new month detected in the end)
+                $monthSum = new \stdClass();
+                $monthSum->month = $currentMonth;
+                $monthSum->accountingHours = round($currentMonthAccountTime, 2);
+                array_push($monthArray, $monthSum);
             }
+
+
 
             $result = new \stdClass();
             $result->trainer = User::where('id', $trainerId)->first();
@@ -227,11 +220,9 @@ class TrainingEvaluationController extends Controller
             array_push($series, $result);
         }
 
-        Cache::put($cacheKey, $series , 15);
-
+        Cache::put($cacheKey, $series, 15);
         return response()->json($series);
     }
-
 
 
 }
