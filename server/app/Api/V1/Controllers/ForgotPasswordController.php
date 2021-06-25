@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers;
 
+use App\Notifications\MailResetPasswordNotification;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Password;
@@ -20,6 +21,7 @@ class ForgotPasswordController extends Controller
         }
 
         $broker = $this->getPasswordBroker();
+        $this->notify(new MailResetPasswordNotification($request->only('email')));
         $sendingResponse = $broker->sendResetLink($request->only('email'));
 
         if($sendingResponse !== Password::RESET_LINK_SENT) {

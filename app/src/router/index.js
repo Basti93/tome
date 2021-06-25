@@ -16,6 +16,7 @@ import Infos from "@/pages/Infos";
 import Statistics from "@/pages/Statistics";
 import ApproveUsers from "@/pages/ApproveUsers";
 import Groups from "@/pages/Groups";
+import ResetPassword from "@/pages/ResetPassword";
 
 
 Vue.use(Router)
@@ -105,6 +106,11 @@ const router = new Router({
       path: '/signup',
       name: 'Signup',
       component: Signup
+    },
+    {
+      path: '/resetPassword',
+      name: 'ResetPassword',
+      component: ResetPassword
     },
     {
       path: '/info',
