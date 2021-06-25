@@ -44,7 +44,7 @@ class TrainingAutomaticAttend extends Command
         $tomorrow = date("Y-m-d H:i:s", time() + 86400);
         $this->info('Startet at '.$now);
         $this->info('Check until '.$tomorrow);
-        $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->get();
+        $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->where('automatic_attend', 1)->get();
 
         $this->info('Found  '.count($closedTrainings).' Trainings in the next 24h');
 

@@ -271,7 +271,6 @@
               <v-time-picker
                   flat
                   v-model="editStartTime"
-                  :max="editEndTime"
                   format="24hr"
               ></v-time-picker>
             </v-col>

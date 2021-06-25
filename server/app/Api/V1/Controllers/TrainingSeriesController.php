@@ -74,6 +74,7 @@ class TrainingSeriesController extends Controller
         $training->comment = $request->input('comment');
         $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
         $training->weekdays = json_encode($request->input('weekdays'));
+        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
@@ -98,6 +99,7 @@ class TrainingSeriesController extends Controller
         $training->comment = $request->input('comment');
         $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
         $training->weekdays = json_encode($request->input('weekdays'));
+        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));

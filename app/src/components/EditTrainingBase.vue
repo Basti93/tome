@@ -40,7 +40,6 @@
           </template>
           <v-time-picker
               v-model="startTime"
-              :max="endTime"
               @click:minute="$refs.startMenuOpened.save(startTime)"
               format="24hr">
           </v-time-picker>
@@ -55,7 +54,6 @@
             <v-text-field
                 slot="activator"
                 v-model="endTime"
-                :min="startTime"
                 required
                 label="Ende"
                 prepend-icon="schedule"
@@ -81,6 +79,13 @@
             label="Ort"
             prepend-icon="add_location"
         ></v-select>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-checkbox
+            v-model.lazy="editedAutomaticAttend"
+            label="Benutzer automatisch anmelden"
+            prepend-icon="active"
+        ></v-checkbox>
       </v-col>
       <v-col cols="12">
         <v-select
@@ -176,6 +181,7 @@ export default Vue.extend({
     trainers: Array,
     groups: Array,
     comment: String,
+    automaticAttend: Boolean,
   },
   data: function () {
     return {
@@ -191,6 +197,7 @@ export default Vue.extend({
       dateMenuOpened: false,
       startMenuOpened: false,
       endMenuOpened: false,
+      editedAutomaticAttend: true,
     }
   },
   computed: {
@@ -231,6 +238,7 @@ export default Vue.extend({
         groupIds: this.selectedGroupIds,
         contentIds: this.selectedContentIds,
         comment: this.editedComment,
+        automaticAttend: this.editedAutomaticAttend,
       })
     },
     branchAndGroupName(item: Group) {
@@ -308,6 +316,12 @@ export default Vue.extend({
         this.editedComment = newVal;
       },
     },
+    automaticAttend: {
+      immediate: true,
+      handler(newVal) {
+        this.editedAutomaticAttend = newVal;
+      },
+    },
     trainingDate() {
       this.fireChangeEvent();
     },
@@ -330,6 +344,9 @@ export default Vue.extend({
       this.fireChangeEvent();
     },
     editedComment() {
+      this.fireChangeEvent();
+    },
+    editedAutomaticAttend() {
       this.fireChangeEvent();
     },
   },

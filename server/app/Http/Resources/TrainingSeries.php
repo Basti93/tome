@@ -26,6 +26,7 @@ class TrainingSeries extends JsonResource
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
             'defer_until' => $this->defer_until ? DateTime::createFromFormat('Y-m-d H:i:s', $this->defer_until)->format(DateTime::ATOM) : null,
+            'automaticAttend' => $this->automatic_attend,
         ];
     }
 }

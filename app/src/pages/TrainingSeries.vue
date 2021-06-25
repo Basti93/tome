@@ -138,6 +138,7 @@
                                 :comment="editedTrainingSeries.comment"
                                 :branchId="filterBranchId"
                                 :active="editedTrainingSeries.active"
+                                :automatic-attend="editedTrainingSeries.automaticAttend"
                             ></EditTrainingBase>
                           </v-col>
                         </v-row>
@@ -256,8 +257,8 @@ export default Vue.extend({
         {text: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
         {text: '', value: 'action', sortable: false},
       ],
-      defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null),
-      editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null) as TrainingSeries,
+      defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true),
+      editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true) as TrainingSeries,
     }
   },
   created() {
@@ -305,6 +306,7 @@ export default Vue.extend({
       this.editedTrainingSeries.trainerIds = item.trainerIds;
       this.editedTrainingSeries.comment = item.comment;
       this.editedTrainingSeries.trainerIds = item.trainerIds;
+      this.editedTrainingSeries.automaticAttend = item.automaticAttend;
     },
     async fetchData() {
       try {
@@ -358,6 +360,7 @@ export default Vue.extend({
         trainerIds: this.editedTrainingSeries.trainerIds,
         groupIds: this.editedTrainingSeries.groupIds,
         deferUntil: momDeferUntil.isValid() ? momDeferUntil.format() : null,
+        automaticAttend: this.editedTrainingSeries.automaticAttend,
 
       };
       let url = '/trainingSeries';

@@ -91,6 +91,7 @@ class TrainingSeriesCommand extends Command
                 $training->start = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->startTime);
                 $training->end = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->endTime);
                 $training->comment = $series->comment;
+                $training->automatic_attend = $series->automatic_attend;
                 $training->training_series_id = $series->id;
                 $training->location_id = $series->location_id;
                 $training->save();

@@ -51,7 +51,7 @@
                 Absagen
               </v-btn>
               <v-alert
-                  v-if="notYet"
+                  v-if="notYet && automaticAttend"
                   type="info"
                   outlined
                   pa-1
@@ -231,6 +231,7 @@ export default {
       cancelReasonRules: [
         v => !!v || 'Pflichtfeld'
       ],
+      automaticAttend: false,
     }
   },
   created() {
@@ -242,6 +243,7 @@ export default {
     this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
     this.contentIds = this.training.contentIds;
     this.comment = this.training.comment;
+    this.automaticAttend = this.training.automaticAttend;
   },
   computed: {
     attending: function () {

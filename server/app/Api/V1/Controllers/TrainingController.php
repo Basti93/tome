@@ -182,6 +182,7 @@ class TrainingController extends Controller
         $training->start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
         $training->end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
         $training->comment = $request->input('comment');
+        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
         $training->save();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
@@ -319,6 +320,7 @@ class TrainingController extends Controller
         $training->start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
         $training->end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
         $training->comment = $request->input('comment');
+        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
         $training->update();
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));

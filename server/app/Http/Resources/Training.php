@@ -26,6 +26,7 @@ class Training extends JsonResource
             'comment' => $this->comment,
             'prepared' => $this->prepared,
             'evaluated' => $this->evaluated,
+            'automaticAttend' => $this->automatic_attend,
         ];
     }
 }

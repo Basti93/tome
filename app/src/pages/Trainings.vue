@@ -153,6 +153,7 @@
               :comment="editedItem.comment"
               :trainers="trainers"
               :groups="groups"
+              :automaticAttend="editedItem.automaticAttend"
               v-on:change="trainingBaseChanged"
           ></EditTrainingBase>
         </v-card-text>
@@ -236,6 +237,7 @@ export default Vue.extend({
         trainerIds: [] as Array<Number>,
         groupIds: [] as Array<Number>,
         contentIds: [] as Array<Number>,
+        automaticAttend: true,
         comment: null,
       },
       defaultItem: {
@@ -413,6 +415,7 @@ export default Vue.extend({
         trainerIds: self.editedItem.trainerIds,
         contentIds: self.editedItem.contentIds,
         comment: self.editedItem.comment,
+        automaticAttend: self.editedItem.automaticAttend,
       }
       if (self.editedId) {
         postData.id = self.editedId;
