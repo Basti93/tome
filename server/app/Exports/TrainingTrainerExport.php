@@ -35,7 +35,7 @@ class TrainingTrainerExport implements FromCollection, WithHeadings, ShouldAutoS
         $location = Location::whereId($training->location_id)->first();
         return [
             $this->user->firstName." ".$this->user->familyName,
-            $location->name,
+            $location === null ? '' : $location->name,
             $trainingTrainer->accounting_time_start->format('d.m.Y'),
             $trainingTrainer->accounting_time_start->format('H:i'),
             $trainingTrainer->accounting_time_end->format('H:i'),
