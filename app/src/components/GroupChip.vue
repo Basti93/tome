@@ -8,11 +8,11 @@
   >
     <template v-slot:activator="{ on }">
       <v-chip
-          outlined
+        outlined
           class="ma-1"
           v-on="on"
       >
-        <v-icon left color="primary">groups</v-icon>
+        <v-icon left :color="group.branch.colorHex">groups</v-icon>
         {{ group.getWithBranchName() }}
       </v-chip>
     </template>

@@ -47,15 +47,15 @@
             clearable
             label="Gruppe"
           ></v-select>
-          <v-select
-            :disabled="!groupId"
-            :items="groupUsers"
+          <v-autocomplete
+            :items="filteredUsers"
             v-model="userId"
             :item-text="fullName"
             item-value="id"
             clearable
+
             label="Name"
-          ></v-select>
+          ></v-autocomplete>
         </v-card-text>
     </v-card>
   </v-dialog>
@@ -71,11 +71,15 @@
     data() {
       return {
         branchGroups: [],
-        groupUsers: [],
+        users: [],
+        filteredUsers: [],
         userId: null,
         branchId: null,
         groupId: null,
       }
+    },
+    created() {
+      this.loadUsers();
     },
     computed: {
       ...mapGetters({cookieUser: 'cookieUser'}),
@@ -91,55 +95,44 @@
       }
     },
     methods: {
-      resetUserId: function () {
+      reset: function () {
         this.userId = null;
+        this.filteredUsers = this.users;
       },
       branchSelect: function (id) {
-        this.resetUserId();
-        if (id) {
-          this.branchGroups = [];
-          this.$store.state.masterData.groups.forEach(function (item) {
-            if (id === item.branchId) {
-              this.branchGroups.push(item);
-            }
-          }.bind(this));
-        }
+        this.reset();
+        this.branchGroups = [];
+        this.$store.state.masterData.groups.forEach(function (item) {
+          if (id === item.branchId) {
+            this.branchGroups.push(item);
+          }
+        }.bind(this));
+        this.filteredUsers = this.users.filter(u => this.branchGroups.map(g => g.id).some(r => u.groupIds.includes(r)))
       },
       groupSelect: function (id) {
-        this.resetUserId();
-        if (id) {
-          this.loadUsersForGroup(id);
-        }
+        this.reset();
+        this.filteredUsers = this.users.filter(u => u.groupIds.includes(id))
       },
-      loadUsersForGroup: function (groupId) {
-        var self = this;
-        this.$http.get('simpleuser?groupIds=' + groupId)
-          .then(function(response) {
-            let resData = response.data;
-            if (resData) {
-              for (let i = 0; i < resData.data.length; i++) {
-                self.groupUsers.push(User.from(JSON.stringify(resData.data[i])));
-              }
-            }
-          });
+      async loadUsers() {
+        this.reset();
+        let response = await this.$http.get('simpleuser');
+        let resData = response.data;
+        if (resData) {
+          for (let i = 0; i < resData.data.length; i++) {
+            this.users.push(User.from(JSON.stringify(resData.data[i])));
+          }
+          this.filteredUsers = this.users
+        }
       },
       fullName: item => item.firstName + ' ' + item.familyName,
       done: function () {
         if (this.userId) {
-          this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.groupUsers.filter(u => u.id === this.userId)[0])})
+          this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0])})
           this.$emit('close')
         }
       },
 
-    },
-    watch: {
-      propBranchId: function (id) {
-        this.branchSelect(id);
-      },
-      propGroupId: function (id) {
-        this.groupSelect(id);
-      },
-    },
+    }
   }
 </script>
 

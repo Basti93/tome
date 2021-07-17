@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height tp-training-selector pa-0">
     <h3 class="hidden-sm-and-down">Training auswählen</h3>
-    <v-timeline  align-top dense class="hidden-sm-and-down fill-height">
+    <v-timeline align-top dense class="hidden-sm-and-down fill-height">
       <v-slide-x-reverse-transition
           group
           hide-on-leave
@@ -16,8 +16,10 @@
             class="tp-training-selector__item"
             :class="{'tp-training-selector__item--active' : item === selectedTraining}"
         >
-          <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2)}}</h2>
-          <p>{{ item.start.format('DD') + '. ' + item.start.format('MMM') }}</p>
+          <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) + " " + item.start.format('DD') + '.' + item.start.format('MMM')}}</h2>
+          <div>{{ getBranchByGroupIds(item.groupIds).shortName}}</div>
+          <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
+          <div>{{ getLocationById(item.locationId).name }}</div>
           <template v-slot:icon>
             <v-avatar>
               <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
@@ -48,8 +50,10 @@
           class="tp-training-selector__item"
           :class="{'tp-training-selector__item--active' : item === selectedTraining}"
       >
-        <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2)}}</h2>
-        <p>{{ item.start.format('DD') + '. ' + item.start.format('MMM') }}</p>
+        <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) + " " + item.start.format('DD') + '.' + item.start.format('MMM')}}</h2>
+        <div>{{ getBranchByGroupIds(item.groupIds).shortName}}</div>
+        <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
+        <div>{{ getLocationById(item.locationId).name }}</div>
         <template v-slot:icon>
           <v-avatar>
             <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
@@ -72,7 +76,7 @@
         bottom
         right
     >
-      <v-icon>sports</v-icon>
+      <v-icon>list</v-icon>
     </v-btn>
   </v-container>
 </template>
@@ -101,6 +105,10 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
+    ...mapGetters('masterData', {
+      getBranchByGroupIds: 'getBranchByGroupIds',
+      getLocationById: 'getLocationById'
+    }),
     currentUser() {
       if (this.loggedInUser) {
         return this.loggedInUser;
@@ -129,6 +137,10 @@ export default Vue.extend({
         return 'primary'
       } else if (this.isCheckIn && this.canceled(training)) {
         return 'red lighten-2'
+      }
+      const mainBranch = this.getBranchByGroupIds(training.groupIds);
+      if (mainBranch) {
+        return mainBranch.colorHex
       }
       return 'blue lighten-2'
     },

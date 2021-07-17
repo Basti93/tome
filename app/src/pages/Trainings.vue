@@ -249,6 +249,7 @@ export default Vue.extend({
         trainerIds: [] as Array<Number>,
         groupIds: [] as Array<Number>,
         contentIds: [] as Array<Number>,
+        automaticAttend: true,
         comment: null,
       },
       activeView: 0,

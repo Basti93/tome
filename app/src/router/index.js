@@ -16,6 +16,8 @@ import Infos from "@/pages/Infos";
 import Statistics from "@/pages/Statistics";
 import ApproveUsers from "@/pages/ApproveUsers";
 import Groups from "@/pages/Groups";
+import Locations from "@/pages/Locations";
+import Branches from "@/pages/Branches";
 
 
 Vue.use(Router)
@@ -87,6 +89,24 @@ const router = new Router({
       path: '/groups',
       name: 'Groups',
       component: Groups,
+      meta: {
+        requiresAuth: true,
+        forTrainers: true
+      }
+    },
+    {
+      path: '/locations',
+      name: 'Locations',
+      component: Locations,
+      meta: {
+        requiresAuth: true,
+        forTrainers: true
+      }
+    },
+    {
+      path: '/branches',
+      name: 'Branches',
+      component: Branches,
       meta: {
         requiresAuth: true,
         forTrainers: true

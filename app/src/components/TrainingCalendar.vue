@@ -287,6 +287,7 @@ export default Vue.extend({
               trainingData.comment,
               trainingData.prepared === 1 ? true : false,
               trainingData.evaluated === 1 ? true : false,
+              trainingData.automaticAttend === 1 ? true : false
           );
           this.trainings.push(training)
 

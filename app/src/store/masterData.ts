@@ -81,6 +81,16 @@ const getters = {
     }
     return null;
   },
+  getBranchByGroupIds: (state, getters) => (ids): Branch => {
+    let branchIds = getters.getGroupsByIds(ids).map(g => g.branchId);
+    if (ids && ids.length > 0  && branchIds.every(v => v === branchIds[0] )) {
+      let group = getters.getGroupById(ids[0]);
+      if (group) {
+        return state.branches.find(b => b.id == group.branchId)
+      }
+    }
+    return null;
+  },
   getGroupsByBranchId: (state, getters) => (id): Array<Group> => {
     return state.groups.filter(g => g.branchId === id)
   },

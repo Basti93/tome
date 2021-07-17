@@ -28,10 +28,10 @@ const init = async () => {
 
     const [resBranches, resGroups, locations, contents, trainers] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise, trainersPromise]);
 
-    const branches = resBranches.data.map(b => new Branch(b.id, b.name, b.shortName, b.colorHex));
+    const branches = resBranches.data.data.map(b => new Branch(b.id, b.name, b.shortName, b.colorHex));
     store.commit('masterData/setBranches', branches);
     store.commit('masterData/setGroups', resGroups.data.data.map(g => new Group(g.id, g.name, g.branchId, branches.filter(b => b.id == g.branchId)[0], g.userIds)));
-    store.commit('masterData/setLocations', locations.data);
+    store.commit('masterData/setLocations', locations.data.data);
     store.commit('masterData/setContents', contents.data);
     store.commit('masterData/setSimpleTrainers', trainers.data.data);
   } catch (e) {

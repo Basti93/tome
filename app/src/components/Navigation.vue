@@ -30,7 +30,7 @@
             to="/trainings"
             @click="drawer = false">
           <v-list-item-action>
-            <v-icon>sports</v-icon>
+            <v-icon>list</v-icon>
           </v-list-item-action>
 
           <v-list-item-content>
@@ -86,6 +86,26 @@
         </v-list-item>
         <v-list-item
             v-show="hasRoles"
+            to="/approveUsers"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-badge right color="red" v-if="nonApprovedUserCount > 0">
+              <v-icon>
+                assignment_turned_in
+              </v-icon>
+              <span slot="badge">{{ nonApprovedUserCount }}</span>
+            </v-badge>
+            <v-icon v-if="nonApprovedUserCount === 0">
+              assignment_turned_in
+            </v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Benutzer Freischalten</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+            v-show="hasRoles"
             to="/users"
             @click="drawer = false">
           <v-list-item-action>
@@ -110,22 +130,26 @@
         </v-list-item>
         <v-list-item
             v-show="hasRoles"
-            to="/approveUsers"
+            to="/branches"
             @click="drawer = false">
           <v-list-item-action>
-            <v-badge right color="red" v-if="nonApprovedUserCount > 0">
-              <v-icon>
-                assignment_turned_in
-              </v-icon>
-              <span slot="badge">{{ nonApprovedUserCount }}</span>
-            </v-badge>
-            <v-icon v-if="nonApprovedUserCount === 0">
-              assignment_turned_in
-            </v-icon>
+            <v-icon>bubble_chart</v-icon>
           </v-list-item-action>
 
           <v-list-item-content>
-            <v-list-item-title>Benutzer Freischalten</v-list-item-title>
+            <v-list-item-title>Sparten</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+            v-show="hasRoles"
+            to="/locations"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>add_location</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Orte</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item

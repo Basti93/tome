@@ -74,7 +74,7 @@
                             </v-select>
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-select
+                            <v-autocomplete
                                 :items="filteredUsers"
                                 :item-text="fullName"
                                 item-value="id"
@@ -95,7 +95,7 @@
                                   (+{{ selectedUserIds.length - 3 }} weitere)
                                 </span>
                               </template>
-                            </v-select>
+                            </v-autocomplete>
                             <v-btn
                                 color="primary"
                                 elevation="1"

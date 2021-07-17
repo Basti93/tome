@@ -49,11 +49,20 @@ return [
         ]
     ],
     'store_group' => [
-
-        // here you can specify some validation rules for your sign-in request
         'validation_rules' => [
             'name' => 'required',
             'branchId' => 'required',
+        ]
+    ],
+    'store_location' => [
+        'validation_rules' => [
+            'name' => 'required',
+        ]
+    ],
+    'store_branch' => [
+        'validation_rules' => [
+            'name' => 'required',
+            'shortName' => 'required',
         ]
     ],
     'export_accounting_times' => [

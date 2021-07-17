@@ -88,6 +88,16 @@ $api->version('v1', function (Router $api) {
             $api->delete('{id}', 'App\\Api\\V1\\Controllers\\GroupController@destroy');
         });
 
+        $api->group(['prefix' => 'location'], function(Router $api) {
+            $api->post('/', 'App\\Api\\V1\\Controllers\\LocationController@store');
+            $api->put('{id}', 'App\\Api\\V1\\Controllers\\LocationController@update');
+        });
+
+        $api->group(['prefix' => 'branch'], function(Router $api) {
+            $api->post('/', 'App\\Api\\V1\\Controllers\\BranchController@store');
+            $api->put('{id}', 'App\\Api\\V1\\Controllers\\BranchController@update');
+        });
+
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
             $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
             $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
