@@ -14,8 +14,7 @@ export default class TrainingSeries {
     deferUntil: moment.Moment;
     automaticAttend: boolean;
 
-    static from(jsonString: string) {
-        let jsonObj = JSON.parse(jsonString);
+    static from(jsonObj) {
         return new TrainingSeries(jsonObj.id, jsonObj.startTime, jsonObj.endTime, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.comment, jsonObj.weekdays, jsonObj.deferUntil,  jsonObj.automaticAttend === 1 ? true : false)
     }
 

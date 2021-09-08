@@ -311,13 +311,16 @@ export default Vue.extend({
     async fetchData() {
       try {
         this.loading = true;
+        this.trainingSeriesList = [];
         let seriesUrl = '/trainingSeries';
         // Don't set filter with the general item 'Allgemein'
         if (this.filterBranchId > 0) {
           seriesUrl += '?groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
         }
-        const trRes = await this.$http.get(seriesUrl);
-        this.trainingSeriesList = trRes.data.data;
+        const response = await this.$http.get(seriesUrl);
+        for (const responseObject of response.data.data) {
+          this.trainingSeriesList.push(TrainingSeries.from(responseObject))
+        }
 
         const trainerRes = await this.$http.get('/user/trainer');
         this.trainers = trainerRes.data;

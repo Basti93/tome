@@ -34,7 +34,7 @@ class TrainingSeriesController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 100 : (int)request('per_page');
         $groupIds = request()->query('groupIds');
 
         $trainings = TrainingSeries::latest()
