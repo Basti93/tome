@@ -28,7 +28,7 @@ class LoginController extends Controller
         try {
             $token = Auth::guard('api')->attempt($credentials);
 
-            if (!$token || !Auth::user() || !Auth::user('api')->isApproved()) {
+            if (!$token || !Auth::user()) {
                 return response()
                     ->json([
                         'status' => 'error',

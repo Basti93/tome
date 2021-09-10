@@ -9,6 +9,8 @@ import VueApexCharts from 'vue-apexcharts'
 import './registerServiceWorker'
 import Branch from "./models/Branch";
 import Group from "./models/Group";
+import User from "./models/User";
+import TrainingSeries from "./models/TrainingSeries";
 
 
 Vue.prototype.moment = moment
@@ -25,8 +27,10 @@ const init = async () => {
     const locationsPromise = axios.get('/location');
     const contentsPromise = axios.get('/content');
     const trainersPromise = axios.get('/simpleuser/trainers');
+    const usersPromise = axios.get('/simpleuser');
+    const trainingSeriesPromise = axios.get('/trainingSeries');
 
-    const [resBranches, resGroups, locations, contents, trainers] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise, trainersPromise]);
+    const [resBranches, resGroups, locations, contents, trainers, resUsers, resTrainingSeries] = await Promise.all([branchsPromise, groupsPromise, locationsPromise, contentsPromise, trainersPromise, usersPromise, trainingSeriesPromise]);
 
     const branches = resBranches.data.data.map(b => new Branch(b.id, b.name, b.shortName, b.colorHex));
     store.commit('masterData/setBranches', branches);
@@ -34,6 +38,8 @@ const init = async () => {
     store.commit('masterData/setLocations', locations.data.data);
     store.commit('masterData/setContents', contents.data);
     store.commit('masterData/setSimpleTrainers', trainers.data.data);
+    store.commit('masterData/setSimpleUsers', resUsers.data.data.map(u => new User({id: u.id, firstName: u.firstName, familyName: u.familyName, active: u.active, groupIds: u.groupIds, profileImageName: u.profileImageName})));
+    store.commit('masterData/setTrainingSeries', resTrainingSeries.data.data.map(ts => TrainingSeries.from(ts)));
   } catch (e) {
     console.error("Could not load initial data", e)
     Vue.prototype.$isOffline = true;

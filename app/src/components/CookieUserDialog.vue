@@ -24,9 +24,10 @@
                   outlined
                   pa-1
                   ma-0
+                  dense
                   class="caption"
           >
-            Falls du dich bereits registriert hast, melde dich an um an einem Training teilzunehmen.
+            Wähle deinen Namen aus um deine Trainings zu sehen.
           </v-alert>
           <v-select
             :items="$store.state.masterData.branches"
@@ -62,7 +63,6 @@
 </template>
 
 <script>
-  import User from "@/models/User";
   import {mapGetters} from 'vuex'
 
   export default {
@@ -71,7 +71,7 @@
     data() {
       return {
         branchGroups: [],
-        users: [],
+        users: this.$store.state.masterData.simpleUsers,
         filteredUsers: [],
         userId: null,
         branchId: null,
@@ -79,7 +79,8 @@
       }
     },
     created() {
-      this.loadUsers();
+      this.reset();
+      this.filteredUsers = this.users
     },
     computed: {
       ...mapGetters({cookieUser: 'cookieUser'}),
@@ -112,17 +113,6 @@
       groupSelect: function (id) {
         this.reset();
         this.filteredUsers = this.users.filter(u => u.groupIds.includes(id))
-      },
-      async loadUsers() {
-        this.reset();
-        let response = await this.$http.get('simpleuser');
-        let resData = response.data;
-        if (resData) {
-          for (let i = 0; i < resData.data.length; i++) {
-            this.users.push(User.from(JSON.stringify(resData.data[i])));
-          }
-          this.filteredUsers = this.users
-        }
       },
       fullName: item => item.firstName + ' ' + item.familyName,
       done: function () {

@@ -7,7 +7,7 @@
       <v-col cols="12" md="8">
         <v-card color="secondary">
           <v-toolbar flat>
-            <v-toolbar-title>Registrieren</v-toolbar-title>
+            <v-toolbar-title>Registrieren (nur für Trainer)</v-toolbar-title>
           </v-toolbar>
           <v-divider></v-divider>
           <v-card-text>
@@ -15,7 +15,7 @@
             <v-card-text>
               <div v-if="completed">
                 <h2>Erfolgreich registriert</h2>
-                <p>Sobald du von einem Trainer bestätigt wurdest erhältst du eine E-Mail und kannst dich anmelden.</p>
+                <p>Sobald du von einem Admin bestätigt wurdest erhältst du eine E-Mail und kannst dich anmelden.</p>
                 <v-btn
                     color="primary"
                     to="/"

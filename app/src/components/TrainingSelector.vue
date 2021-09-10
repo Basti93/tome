@@ -17,7 +17,7 @@
             :class="{'tp-training-selector__item--active' : item === selectedTraining}"
         >
           <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) + " " + item.start.format('DD') + '.' + item.start.format('MMM')}}</h2>
-          <div>{{ getBranchByGroupIds(item.groupIds).shortName}}</div>
+          <div>{{ getBranchShortNameByGroupIds(item.groupIds)}}</div>
           <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
           <div>{{ getLocationById(item.locationId).name }}</div>
           <template v-slot:icon>
@@ -51,7 +51,7 @@
           :class="{'tp-training-selector__item--active' : item === selectedTraining}"
       >
         <h2 class="subtitle-1">{{ item.start.format('dddd').slice(0, 2) + " " + item.start.format('DD') + '.' + item.start.format('MMM')}}</h2>
-        <div>{{ getBranchByGroupIds(item.groupIds).shortName}}</div>
+        <div>{{ getBranchShortNameByGroupIds(item.groupIds)}}</div>
         <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
         <div>{{ getLocationById(item.locationId).name }}</div>
         <template v-slot:icon>
@@ -107,6 +107,7 @@ export default Vue.extend({
     ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
     ...mapGetters('masterData', {
       getBranchByGroupIds: 'getBranchByGroupIds',
+      getBranchShortNameByGroupIds: 'getBranchShortNameByGroupIds',
       getLocationById: 'getLocationById'
     }),
     currentUser() {

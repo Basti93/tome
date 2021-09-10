@@ -5,18 +5,11 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\NonApprovedUser as NonApprovedUserResource;
-use App\Mail\Approved;
-use App\NotificationToken;
 use App\User;
 use Auth;
 use DateTime;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserController extends Controller
@@ -29,9 +22,9 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('jwt.auth', []);
-        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getNonApprovedCount', 'getNonApproved', 'getNonRegistered', 'getBirthdayUsers']]);
+        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getBirthdayUsers']]);
         $this->middleware('permission:create-user', ['only' => ['create', 'store', 'createUnregistered']]);
-        $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'approveUsersByIds', 'approveUser']]);
+        $this->middleware('permission:update-user', ['only' => ['edit', 'update']]);
         $this->middleware('permission:delete-user', ['only' => ['destroy']]);
     }
 
@@ -59,19 +52,19 @@ class UserController extends Controller
         $users = null;
         if (!empty($searchText)) {
             $users = User::latest()->when($searchText, function ($query, $searchText) {
-                    $query->where(function ($query) use ($searchText) {
-                        $query->where('firstName', 'like', '%' . $searchText . '%')
-                            ->orWhere('familyName', 'like', '%' . $searchText . '%');
-                    });
+                $query->where(function ($query) use ($searchText) {
+                    $query->where('firstName', 'like', '%' . $searchText . '%')
+                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
                 });
+            });
         } else {
             $users = User::latest()->when($groupIds, function ($query, $groupIds) {
-                    $query->where(function ($query) use ($groupIds) {
-                        $query->whereHas('groups', function ($query) use ($groupIds) {
-                            $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                        });
+                $query->where(function ($query) use ($groupIds) {
+                    $query->whereHas('groups', function ($query) use ($groupIds) {
+                        $query->whereIn('group_id', preg_split('/,/', $groupIds));
                     });
-                })
+                });
+            })
                 ->when($branchId, function ($query, $branchId) {
                     $query->whereHas('groups', function ($query) use ($branchId) {
                         $query->where('groups.branch_id', $branchId);
@@ -147,27 +140,8 @@ class UserController extends Controller
         return response()->json($trainers);
     }
 
-    public function getNonapproved()
+    public function getBirthdayUsers()
     {
-        $users = User::whereApproved('0')->whereRegistered('1')->get();
-        return NonApprovedUserResource::collection($users);
-    }
-
-    public function getNonRegistered()
-    {
-        $users = User::whereRegistered('0')->get();
-        return NonApprovedUserResource::collection($users);
-    }
-
-    public function getNonApprovedCount()
-    {
-        $count = User::whereApproved('0')->whereRegistered('1')->count();
-        return response()->json([
-            'data' => $count
-        ]);
-    }
-
-    public function getBirthdayUsers() {
         $groupIds = request()->query('groupIds');
         $start = new DateTime(request()->query('start'));
         $end = new DateTime(request()->query('end'));
@@ -279,39 +253,6 @@ class UserController extends Controller
 
     }
 
-    public function approveUser(Request $request, $id)
-    {
-        $userToApprove = User::findOrFail($id);
-        if (!$userToApprove) {
-            return response()->json([
-                'status' => 'User not found'
-            ], 422);
-        }
-
-        $userToApprove->assignRole(Role::findByName('member'));
-
-        $userToApprove->groups()->sync($request->input('groupIds'));
-        $userToApprove->update([
-            'approved' => true
-        ]);
-
-
-        $migrateUserId = $request->input('migrateUserId');
-        if (!empty($migrateUserId)) {
-            $migrateUser = User::findOrFail($migrateUserId);
-            $migrateUser->groups()->detach();
-            DB::table('training_participation')->where('user_id', $migrateUser->id)->update(['user_id' => $userToApprove->id]);
-            $migrateUser->delete();
-        }
-
-        $this->sendApprovedEmail($userToApprove);
-
-        return response()->json([
-            'status' => 'ok'
-        ], 201);
-
-    }
-
     public function destroy($id)
     {
         $user = User::findOrFail($id);
@@ -323,11 +264,6 @@ class UserController extends Controller
         } else {
             return response()->json(error);
         }
-    }
-
-    public function sendApprovedEmail($user)
-    {
-        Mail::to($user)->send(new Approved($user));
     }
 
 }

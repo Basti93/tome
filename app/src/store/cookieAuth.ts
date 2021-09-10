@@ -1,4 +1,4 @@
-import User from '@/models/User'
+import User from '../models/User'
 import * as MutationTypes from './mutation-types'
 import { setCookie, getCookie, eraseCookie } from "../helpers/cookie-helper"
 
@@ -9,7 +9,7 @@ const state = {
 const mutations = {
   [MutationTypes.SELECT_COOKIE_USER] (state, { cookieUser }) {
     state.cookieUser = User.from(cookieUser)
-    setCookie('cookieUser', cookieUser)
+    setCookie('cookieUser', cookieUser, null)
   },
   [MutationTypes.ERASE_COOKIE_USER] (state) {
     state.cookieUser = null

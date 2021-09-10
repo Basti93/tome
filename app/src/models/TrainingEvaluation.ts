@@ -1,5 +1,5 @@
-import TrainingParticipant from "@/models/TrainingParticipant";
-import TrainingTrainer from "@/models/TrainingTrainer";
+import TrainingParticipant from "./TrainingParticipant";
+import TrainingTrainer from "./TrainingTrainer";
 import * as moment from "moment";
 
 export default class Training {

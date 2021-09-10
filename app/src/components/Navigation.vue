@@ -49,6 +49,17 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
+            to="/groupsOverview"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>groups</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Gruppenübersicht</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
             v-show="hasRoles"
             to="/trainingsPrepare"
             @click="drawer = false">
@@ -82,26 +93,6 @@
 
           <v-list-item-content>
             <v-list-item-title>Serien</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item
-            v-show="hasRoles"
-            to="/approveUsers"
-            @click="drawer = false">
-          <v-list-item-action>
-            <v-badge right color="red" v-if="nonApprovedUserCount > 0">
-              <v-icon>
-                assignment_turned_in
-              </v-icon>
-              <span slot="badge">{{ nonApprovedUserCount }}</span>
-            </v-badge>
-            <v-icon v-if="nonApprovedUserCount === 0">
-              assignment_turned_in
-            </v-icon>
-          </v-list-item-action>
-
-          <v-list-item-content>
-            <v-list-item-title>Benutzer Freischalten</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -300,16 +291,7 @@ export default {
   data() {
     return {
       drawer: false,
-      nonApprovedUserCount: 0,
       title: process.env.VUE_APP_TITLE,
-    }
-  },
-  created() {
-    let self = this;
-    if (this.hasRoles) {
-      this.$http.get('/user/nonapprovedcount').then(function (response) {
-        self.nonApprovedUserCount = response.data.data;
-      })
     }
   },
   computed: {

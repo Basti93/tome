@@ -43,6 +43,10 @@ $api->version('v1', function (Router $api) {
         $api->get('/branch/{id}', 'App\\Api\\V1\\Controllers\\GroupController@getByBranchId');
     });
 
+    $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
+        $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
+    });
+
     $api->group(['prefix' => 'simpleuser'], function(Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
         $api->get('/trainers', 'App\\Api\\V1\\Controllers\\SimpleUserController@getTrainers');
@@ -69,15 +73,11 @@ $api->version('v1', function (Router $api) {
             $api->get('/', 'App\\Api\\V1\\Controllers\\UserController@index');
             $api->get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');
             $api->get('/trainer', 'App\\Api\\V1\\Controllers\\UserController@getTrainers');
-            $api->get('/nonapproved', 'App\\Api\\V1\\Controllers\\UserController@getNonapproved');
-            $api->get('/nonregistered', 'App\\Api\\V1\\Controllers\\UserController@getNonRegistered');
-            $api->get('/nonapprovedcount', 'App\\Api\\V1\\Controllers\\UserController@getNonApprovedCount');
             $api->get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
             $api->delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
             $api->put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
             $api->post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
-            $api->post('/{id}/approve', 'App\\Api\\V1\\Controllers\\UserController@approveUser');
             $api->post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
             $api->post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
         });
@@ -99,7 +99,6 @@ $api->version('v1', function (Router $api) {
         });
 
         $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
-            $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
             $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@update');
             $api->delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@destroy');

@@ -14,10 +14,10 @@ import TrainingSeries from "@/pages/TrainingSeries";
 import Profile from "@/pages/Profile";
 import Infos from "@/pages/Infos";
 import Statistics from "@/pages/Statistics";
-import ApproveUsers from "@/pages/ApproveUsers";
 import Groups from "@/pages/Groups";
 import Locations from "@/pages/Locations";
 import Branches from "@/pages/Branches";
+import GroupsOverview from "@/pages/GroupsOverview";
 
 
 Vue.use(Router)
@@ -39,6 +39,11 @@ const router = new Router({
       path: '/calendar',
       name: 'Calendar',
       component: Calendar,
+    },
+    {
+      path: '/groupsOverview',
+      name: 'GroupsOverview',
+      component: GroupsOverview,
     },
     {
       path: '/trainingsPrepare',
@@ -107,15 +112,6 @@ const router = new Router({
       path: '/branches',
       name: 'Branches',
       component: Branches,
-      meta: {
-        requiresAuth: true,
-        forTrainers: true
-      }
-    },
-    {
-      path: '/approveUsers',
-      name: 'ApproveUsers',
-      component: ApproveUsers,
       meta: {
         requiresAuth: true,
         forTrainers: true

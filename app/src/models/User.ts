@@ -1,5 +1,21 @@
+import * as moment from "moment";
 
 export default class User {
+
+  id: number;
+  email: string;
+  firstName: string;
+  familyName: string;
+  birthdate: moment.Moment;
+  active: boolean;
+  groupIds: number[];
+  roleNames: string [];
+  trainerBranchIds: number[];
+  registered: boolean;
+  profileImageName: string;
+  isAdmin: boolean;
+  isTrainer: boolean;
+
   static from (jsonString) {
     try {
       let jsonObj = JSON.parse(jsonString);
@@ -30,6 +46,10 @@ export default class User {
 
   getFullName = function () {
     return this.firstName + " " + this.familyName;
+  }
+
+  getFullNameFamilyFirst = function () {
+    return this.familyName + " " + this.firstName;
   }
 
 }

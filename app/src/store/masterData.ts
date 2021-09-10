@@ -1,5 +1,7 @@
 import Branch from "../models/Branch";
 import Group from "../models/Group";
+import User from "../models/User";
+import TrainingSeries from "../models/TrainingSeries";
 
 
 const state = {
@@ -8,7 +10,9 @@ const state = {
   locations: [],
   trainers: [],
   simpleTrainers: [],
+  simpleUsers: [],
   contents: [],
+  trainingSeries: [],
 }
 
 const mutations = {
@@ -26,6 +30,12 @@ const mutations = {
   },
   setSimpleTrainers (state, trainers) {
     state.simpleTrainers = trainers
+  },
+  setSimpleUsers (state, users) {
+    state.simpleUsers = users
+  },
+  setTrainingSeries (state, trainingSeries) {
+    state.trainingSeries = trainingSeries
   },
   setContents (state, contents) {
     state.contents = contents
@@ -91,6 +101,13 @@ const getters = {
     }
     return null;
   },
+  getBranchShortNameByGroupIds: (state, getters) => (ids): Branch => {
+    const branch = getters.getBranchByGroupIds(ids);
+    if (branch) {
+      return branch.shortName;
+    }
+    return null;
+  },
   getGroupsByBranchId: (state, getters) => (id): Array<Group> => {
     return state.groups.filter(g => g.branchId === id)
   },
@@ -114,6 +131,12 @@ const getters = {
   },
   getGroupsByBranchIds: (state, getters) => (ids) => {
     return state.groups.filter(g => ids.includes(g.branchId))
+  },
+  getSimpleUsersByIds: (state) => (ids): Array<User> => {
+    return state.simpleUsers.filter(g => ids.includes(g.id))
+  },
+  getTrainingSeriesByGroupId: (state) => (groupId): Array<TrainingSeries> => {
+    return state.trainingSeries.filter(ts => ts.groupIds.includes(groupId))
   },
 }
 

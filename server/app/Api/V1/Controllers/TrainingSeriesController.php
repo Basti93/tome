@@ -21,7 +21,6 @@ class TrainingSeriesController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:read-training-series', ['only' => ['index', 'getById']]);
         $this->middleware('permission:create-training-series', ['only' => ['create', 'store']]);
         $this->middleware('permission:update-training-series', ['only' => ['edit', 'update']]);
         $this->middleware('permission:delete-training-series', ['only' => ['destroy']]);

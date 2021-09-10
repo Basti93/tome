@@ -259,6 +259,7 @@ export default {
     this.loadData();
   },
   computed: {
+    ...mapGetters({loggedInUser: 'loggedInUser'}),
     ...mapGetters('masterData', {
       getBranchById: 'getBranchById',
     }),
