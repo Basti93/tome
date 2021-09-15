@@ -44,11 +44,11 @@ export default class User {
     }
   }
 
-  getFullName = function () {
+  getFullName() {
     return this.firstName + " " + this.familyName;
   }
 
-  getFullNameFamilyFirst = function () {
+  getFullNameFamilyFirst() {
     return this.familyName + " " + this.firstName;
   }
 

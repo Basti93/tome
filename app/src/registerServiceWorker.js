@@ -19,6 +19,10 @@ if (process.env.NODE_ENV === 'production') {
     },
     updated (registration) {
       console.log('New content is available; please refresh.')
+      let updateBanner = document.querySelector('#update-banner');
+      if(updateBanner) {
+        updateBanner.style.display = '';
+      }
     },
     offline () {
       console.log('No internet connection found. App is running in offline mode.')

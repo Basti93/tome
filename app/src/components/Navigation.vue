@@ -27,40 +27,6 @@
         </v-list-item>
         <v-list-item
             v-show="hasRoles"
-            to="/trainings"
-            @click="drawer = false">
-          <v-list-item-action>
-            <v-icon>list</v-icon>
-          </v-list-item-action>
-
-          <v-list-item-content>
-            <v-list-item-title>Trainings</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item
-            to="/calendar"
-            @click="drawer = false">
-          <v-list-item-action>
-            <v-icon>event</v-icon>
-          </v-list-item-action>
-
-          <v-list-item-content>
-            <v-list-item-title>Kalender</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item
-            to="/groupsOverview"
-            @click="drawer = false">
-          <v-list-item-action>
-            <v-icon>groups</v-icon>
-          </v-list-item-action>
-
-          <v-list-item-content>
-            <v-list-item-title>Gruppenübersicht</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item
-            v-show="hasRoles"
             to="/trainingsPrepare"
             @click="drawer = false">
           <v-list-item-action>
@@ -81,6 +47,18 @@
 
           <v-list-item-content>
             <v-list-item-title>Nachbereiten</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+            v-show="hasRoles"
+            to="/trainings"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>list</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Trainings</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -155,6 +133,17 @@
             <v-list-item-title>Statistiken</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item
+            to="/calendar"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>event</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Kalender</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <!--
         <v-list-item
           v-show="loggedInUser"
@@ -169,6 +158,17 @@
           </v-list-item-content>
         </v-list-item>
         -->
+        <v-list-item
+            to="/groupsOverview"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>groups</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Gruppenübersicht</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item
             v-show="!loggedInUser"
             to="/login"

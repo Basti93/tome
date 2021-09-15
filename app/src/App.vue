@@ -6,6 +6,34 @@
       <v-container
           :class="{'pa-0': $vuetify.breakpoint.smAndDown, 'pa-2': $vuetify.breakpoint.mdAndUp}">
         <SnackbarStore/>
+        <v-banner
+            color="blue"
+            sticky
+            id="update-banner"
+            style="display: none;"
+        >
+          <v-avatar
+              slot="icon"
+          >
+            <v-icon
+                icon="mdi-lock"
+                color="white"
+            >
+              info
+            </v-icon>
+          </v-avatar>
+          Neue App Version verfügbar. Bitte aktualisieren :)
+          <template v-slot:actions>
+            <v-btn
+              color="white"
+              class="mr-2"
+              v-on:click="refreshPage()"
+          >
+              <v-icon left>refresh</v-icon>
+              Aktualisieren
+          </v-btn>
+          </template>
+        </v-banner>
         <v-snackbar
             bottom
             right
@@ -43,7 +71,8 @@
       </v-container>
     </v-main>
     <v-footer>
-      <span><a style="text-decoration: none;" href="https://github.com/Basti93/tome">&copy; T.O.M.E. - {{ moment().year() }}</a></span>
+      <span><a style="text-decoration: none;"
+               href="https://github.com/Basti93/tome">&copy; T.O.M.E. - {{ moment().year() }}</a></span>
     </v-footer>
   </v-app>
 </template>
@@ -109,6 +138,9 @@ export default {
     }
   },
   methods: {
+    refreshPage() {
+      window.location.reload();
+    },
     showSnackbar(text, color = "info", timeout = 3000) {
       this.text = text
       this.timeout =
