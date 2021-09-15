@@ -18,6 +18,7 @@ import Groups from "@/pages/Groups";
 import Locations from "@/pages/Locations";
 import Branches from "@/pages/Branches";
 import GroupsOverview from "@/pages/GroupsOverview";
+import AbsenceForm from "@/pages/AbsenceForm";
 
 
 Vue.use(Router)
@@ -44,6 +45,11 @@ const router = new Router({
       path: '/groupsOverview',
       name: 'GroupsOverview',
       component: GroupsOverview,
+    },
+    {
+      path: '/absenceForm',
+      name: 'AbsenceForm',
+      component: AbsenceForm,
     },
     {
       path: '/trainingsPrepare',

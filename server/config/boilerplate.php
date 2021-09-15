@@ -32,6 +32,14 @@ return [
             'email' => 'email',
         ]
     ],
+    'store_user_absence' => [
+
+        'validation_rules' => [
+            'absenceStart' => 'required',
+            'absenceEnd' => 'required',
+            'absenceReason' => 'required',
+        ]
+    ],
     'notification_subscribe' => [
 
         'validation_rules' => [
