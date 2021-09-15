@@ -108,12 +108,8 @@
                           <v-chip v-if="item.colorHex" :color="item.colorHex"></v-chip>
                         </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              v-on:click="editItem(item)"
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
+                            <v-icon v-on:click="editItem(item)"
+                                    color="success">edit</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>

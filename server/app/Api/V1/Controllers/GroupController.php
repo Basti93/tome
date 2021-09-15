@@ -71,7 +71,7 @@ class GroupController extends Controller
 
         return response()->json([
             'status' => 'ok'
-        ], 201);
+        ], 200);
 
     }
 
@@ -82,7 +82,7 @@ class GroupController extends Controller
 
         return response()->json([
             'status' => 'ok',
-        ], 201);
+        ], 200);
     }
 
 }

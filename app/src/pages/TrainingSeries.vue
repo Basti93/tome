@@ -190,19 +190,13 @@
                           <span v-else>Aktiv</span>
                         </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              @click="editItem(item)"
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
-                          <v-btn
-                              outlined
-                              class="ml-5"
-                              @click="confirmAndDelete(item)"
-                              color="error">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                            <v-icon
+                                class="mr-2"
+                                @click="editItem(item)"
+                                color="success">edit</v-icon>
+                            <v-icon
+                                @click="confirmAndDelete(item)"
+                                color="error">delete</v-icon>
                         </template>
                       </v-data-table>
                     </v-col>

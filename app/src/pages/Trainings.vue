@@ -82,25 +82,26 @@
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
+                        <template v-slot:item.groupIds="{ item }">
+                          <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
+                                  :key="group.id"
+                                  small
+                                  outlined
+                                  class="ma-1">
+                            {{ group.name }}
+                          </v-chip>
+                        </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                              @click="editItem(item)"
-                              small
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
-                          <v-btn
-                              outlined
-                              class="ml-5"
-                              color="error"
-                              small
-                              v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                              @click="confirmAndDelete(item)">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
-
+                            <v-icon
+                                class="mr-2"
+                                v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                                @click="editItem(item)"
+                                color="success"
+                            >edit</v-icon>
+                            <v-icon
+                                color="error"
+                                v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
+                                @click="confirmAndDelete(item)">delete</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-btn color="primary" :disabled="loading" @click="reset()">
@@ -191,6 +192,7 @@ import EditTrainingBase from "../components/EditTrainingBase";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import Training from "../models/Training";
 
 export default Vue.extend({
   name: "Trainings",
@@ -223,6 +225,7 @@ export default Vue.extend({
         {text: 'Bis', value: 'end', sortable: false},
         {text: 'Ort', value: 'locationId', sortable: true},
         {text: 'Trainer', value: 'trainerIds', sortable: false},
+        {text: 'Gruppen', value: 'groupIds', sortable: false},
         {text: '', value: 'action', sortable: false},
       ],
       trainings: [],
@@ -337,6 +340,7 @@ export default Vue.extend({
     },
     loadData() {
       this.loading = true;
+      this.trainings = [];
       let url = '/training';
       // get by sort option
       if (this.sortBy) {
@@ -350,7 +354,9 @@ export default Vue.extend({
         url += '&groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
       let p1 = this.$http.get(url).then(function (res) {
-        this.trainings = res.data.data;
+        for (const jsonObj of res.data.data) {
+          this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
+        }
         this.page = res.data.meta.currentPage;
         this.totalItems = res.data.meta.total;
         this.total = res.data.meta.total;

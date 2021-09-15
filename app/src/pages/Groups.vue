@@ -163,19 +163,13 @@
                           {{ item.userIds.length }}
                         </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              v-on:click="editItem(item)"
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
-                          <v-btn
-                              outlined
-                              class="ml-5"
-                              v-on:click="confirmAndDelete(item)"
-                              color="error">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                            <v-icon
+                                class="mr-2"
+                                v-on:click="editItem(item)"
+                                color="success">edit</v-icon>
+                            <v-icon
+                                v-on:click="confirmAndDelete(item)"
+                                color="error">delete</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
@@ -335,12 +329,14 @@ export default {
       this.titleDialog = "Gruppe erstellen"
       this.showDialog = true;
       this.editedItem = {...this.defaultItem}
+      this.selectedUserIds = [];
       this.filteredUsers = this.users.slice();
     },
     editItem(group: Group) {
       this.titleDialog = "Gruppe bearbeiten"
       this.showDialog = true;
       this.editedItem = {...group}
+      this.selectedUserIds = [];
       this.filteredUsers = this.users.filter(u => !(this.editedItem.userIds.indexOf(u.id) >= 0));
     },
     confirmAndDelete(group: Group) {

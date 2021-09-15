@@ -91,13 +91,9 @@
                           <span class="caption" v-if="item.name == 'Online'">&nbsp;(Für Trainings mit diesem Ort werden automatisch Zoom Trainings erstellt)</span>
                         </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              :disabled="item.name == 'Online'"
-                              v-on:click="editItem(item)"
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
+                            <v-icon :disabled="item.name == 'Online'"
+                                    v-on:click="editItem(item)"
+                                    color="success">edit</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>

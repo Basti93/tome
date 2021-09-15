@@ -104,21 +104,15 @@
                           {{ item.registered ? 'Ja' : 'Nein' }}
                         </template>
                         <template v-slot:item.action="{ item }">
-                          <v-btn
-                              outlined
-                              v-if="canEditUser(item)"
-                              @click="editItem(item)"
-                              color="success">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
-                          <v-btn
-                              outlined
-                              class="ml-5"
-                              v-if="canDeleteUser(item)"
-                              @click="confirmAndDelete(item)"
-                              color="error">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                            <v-icon
+                                class="mr-2"
+                                v-if="canEditUser(item)"
+                                @click="editItem(item)"
+                                color="success">edit</v-icon>
+                            <v-icon
+                                v-if="canDeleteUser(item)"
+                                @click="confirmAndDelete(item)"
+                                color="error">delete</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
