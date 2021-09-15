@@ -49,6 +49,8 @@ $api->version('v1', function (Router $api) {
 
     $api->group(['prefix' => 'simpleuser'], function(Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
+        $api->post('{id}/storeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@storeAbsence');
+        $api->post('{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@removeAbsence');
         $api->get('/trainers', 'App\\Api\\V1\\Controllers\\SimpleUserController@getTrainers');
     });
 

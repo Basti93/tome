@@ -9,21 +9,21 @@ use App\UserTrainingNotification;
 use LaravelFCM\Facades\FCM;
 use LaravelFCM\Message\PayloadDataBuilder;
 
-class SendNotificationsToUsers extends Command
+class SendTrainingNotificationsToUsers extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'notification:sendToUsers {userIds} {title} {data} {--url}';
+    protected $signature = 'notification:sendToUsersTrainingContext {userIds} {trainingId} {title} {data} {notificationType} {--storeStatus} {--url}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Send a push notification to the given users';
+    protected $description = 'Send a push notification to the given users with training context';
 
     /**
      * Create a new command instance.
@@ -43,17 +43,27 @@ class SendNotificationsToUsers extends Command
     public function handle()
     {
         $userIds = explode(',', $this->argument('userIds'));
+        $trainingId = $this->argument('trainingId');
+        $notificationType = $this->argument('notificationType');
         $title = $this->argument('title');
         $data = $this->argument('data');
         $url = $this->option('url');
+        $storeStatus = $this->option('storeStatus');
+
+        $this->info('storeStatus '.$this->option('storeStatus'));
 
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
         foreach ($users as $user) {
             //check if notifications is already sent
             $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has ' . count($user->notificationTokens) . ' tokens');
-            foreach ($user->notificationTokens as $token) {
-                array_push($recipientTokens, $token->token);
+            if (!$storeStatus || !UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
+                foreach ($user->notificationTokens as $token) {
+                    array_push($recipientTokens, $token->token);
+                }
+            } else {
+                $this->info('Notification already sent to ' . $user->firstName . ' ' . $user->familyName . '');
+
             }
         }
         $this->info(sizeof($recipientTokens) . ' Recipients found');
@@ -77,5 +87,16 @@ class SendNotificationsToUsers extends Command
             NotificationToken::whereToken($tokenToDelete)->delete();
         }
 
+        if ($storeStatus) {
+            //update notification table
+            UserTrainingNotification::whereType($notificationType)->delete();
+            foreach ($users as $user) {
+                $utn = new UserTrainingNotification();
+                $utn->user_id = $user->id;
+                $utn->training_id = $trainingId;
+                $utn->type = $notificationType;
+                $utn->save();
+            }
+        }
     }
 }

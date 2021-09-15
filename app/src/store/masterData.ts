@@ -138,6 +138,9 @@ const getters = {
   getTrainingSeriesByGroupId: (state) => (groupId): Array<TrainingSeries> => {
     return state.trainingSeries.filter(ts => ts.groupIds.includes(groupId))
   },
+  getAllSimpleUsersWithGroup: (state) => (): Array<User> => {
+    return state.simpleUsers.filter(su => su.groupIds.length > 0)
+  },
 }
 
 

@@ -50,7 +50,7 @@ class UpcomingTrainingNotifications extends Command
             $this->info('Processing Training at  ' . $training->start);
             $participantIds = implode(",", $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray());
             $this->info('Sending to users with ids ' . $participantIds);
-            $this->call('notification:sendToUsers', [
+            $this->call('sendToUsersTrainingContext', [
                 'userIds' => $participantIds,
                 'trainingId' => $training->id,
                 'title' => 'Erinnerung: Dein Training startet in Kürze',

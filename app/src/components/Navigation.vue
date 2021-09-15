@@ -159,6 +159,17 @@
         </v-list-item>
         -->
         <v-list-item
+            to="/absenceForm"
+            @click="drawer = false">
+          <v-list-item-action>
+            <v-icon>directions_car</v-icon>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>Abwesenheit eintragen</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
             to="/groupsOverview"
             @click="drawer = false">
           <v-list-item-action>

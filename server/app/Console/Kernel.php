@@ -18,10 +18,12 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\TrainingAutomaticAttend',
         'App\Console\Commands\TrainingSeriesCommand',
         'App\Console\Commands\SendNotificationsToUsers',
+        'App\Console\Commands\SendTrainingNotificationsToUsers',
         'App\Console\Commands\TestNotification',
         'App\Console\Commands\CancelTrainingNotification',
         'App\Console\Commands\TrainerUpcomingTrainingNotifications',
         'App\Console\Commands\UpcomingTrainingNotifications',
+        'App\Console\Commands\AbsenceNotification',
 
     ];
 
