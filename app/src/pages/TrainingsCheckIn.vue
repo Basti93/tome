@@ -189,7 +189,9 @@ export default Vue.extend({
       this.cookieUserDialogVisible = true;
     }
     this.fetchDataForCurrentUser();
-
+    if (this.loggedInUser && this.loggedInUser.trainerBranchIds && this.loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = this.loggedInUser.trainerBranchIds[0];
+    }
     this.initializing = false;
   },
   methods: {
