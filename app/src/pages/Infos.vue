@@ -9,17 +9,30 @@
           <v-divider></v-divider>
           <v-card-text flat>
             <v-card class="mt-1">
-              <v-card-title>Nützliche Dateien</v-card-title>
+              <v-card-title>Release Notes</v-card-title>
               <v-card-text>
-                <v-list>
-                  <v-list-item
-                      v-for="(item, index) in filePaths"
-                      :key="index">
-                    <v-list-item-content><a :href="serverUrl + '/' + item" download
-                                            target="_blank">{{ item.split('\\').pop().split('/').pop() }}</a>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
+                <v-expansion-panels
+                    flat
+                    focusable
+                    accordion>
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>Update 16.9.2021</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <h4>Features</h4>
+                      <ul>
+                        <li>Automatiches auswählen der Sparte für Trainer auf der Startseite/Trainingsanmeldung</li>
+                        <li>In der Trainingstabelle werden nun auch die Gruppen angezeigt</li>
+                        <li>Editier und Lösch Icons in den Tabellen sind kompakter</li>
+                      </ul>
+                      <h4>Bug Fixes</h4>
+                      <ul>
+                        <li>Nach dem editieren von Trainings wird nun nicht mehr unbeabsichtigt "Automatisches anmelden"
+                          abgewählt
+                        </li>
+                      </ul>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
               </v-card-text>
             </v-card>
             <v-card class="mt-1">
