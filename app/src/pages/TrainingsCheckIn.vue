@@ -6,7 +6,7 @@
           <v-toolbar flat>
             <v-toolbar-title>Aktuelle Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-chip v-if="$vuetify.breakpoint.lgAndUp" outlined>
+            <v-chip outlined>
               <v-icon left color="primary">group</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
@@ -188,10 +188,10 @@ export default Vue.extend({
     if (!this.currentUser) {
       this.cookieUserDialogVisible = true;
     }
-    this.fetchDataForCurrentUser();
     if (this.loggedInUser && this.loggedInUser.trainerBranchIds && this.loggedInUser.trainerBranchIds.length > 0) {
       this.filterBranchId = this.loggedInUser.trainerBranchIds[0];
     }
+    this.fetchDataForCurrentUser();
     this.initializing = false;
   },
   methods: {

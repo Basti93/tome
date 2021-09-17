@@ -130,7 +130,7 @@
                       </v-form>
                     </v-col>
                   </v-row>
-                  <v-row>
+                  <v-row v-if="loggedInUser">
                     <v-col>
                       <v-divider class="mt-3 mb-3"></v-divider>
                       <h3>Benutzer mit eingetragener Abwesenheit (nur für Trainer sichtbar)</h3>
@@ -238,13 +238,13 @@ export default Vue.extend({
   }),
   created() {
     this.users = this.getAllSimpleUsersWithGroup();
-    if (this.cookieUser) {
-      this.userId = this.cookieUser.id;
+    if (this.currentUserId) {
+      this.userId = this.currentUserId;
     }
     this.loadAllAbsenceUsers();
   },
   computed: {
-    ...mapGetters({cookieUser: 'cookieUser'}),
+    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
     ...mapGetters('masterData', {
       getAllSimpleUsersWithGroup: 'getAllSimpleUsersWithGroup',
     }),
@@ -253,6 +253,20 @@ export default Vue.extend({
     },
     absenceEndFormatted(): String {
       return this.formatDate(this.absenceEnd)
+    },
+    currentUser() {
+      if (this.loggedInUser) {
+        return this.loggedInUser;
+      } else if (this.cookieUser) {
+        return this.cookieUser;
+      }
+      return null;
+    },
+    currentUserId() {
+      if (this.currentUser) {
+        return this.currentUser.id;
+      }
+      return null;
     },
   },
   methods: {
@@ -275,7 +289,7 @@ export default Vue.extend({
                 userObj.registered,
                 userObj.profileImageName,
                 userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-                userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+                userObj.absenceEnd ? this.moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
                 userObj.absenceReason
             ))
         }

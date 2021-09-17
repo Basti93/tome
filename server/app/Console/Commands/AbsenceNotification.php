@@ -65,7 +65,7 @@ class AbsenceNotification extends Command
             'userIds' => $trainerArrayString,
             'title' => 'Abwesenheit ' . $user->firstName . " " . $user->familyName,
             'data' => "Von " . $from . " bis " . $until . "\r\nGrund: " . $absenceReason,
-            '--url' => config('app.vue_url') . '/#/users',
+            '--url' => config('app.vue_url') . '/#/absenceForm',
         ]);
 
 

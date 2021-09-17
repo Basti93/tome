@@ -46,19 +46,19 @@ class SimpleUserController extends Controller
             ], 200);
         }
 
-        $user->absenceStart = $request->input('absenceStart');
-        $user->absenceEnd = $request->input('absenceEnd');
+        $user->absenceStart = DateTime::createFromFormat(DateTime::ISO8601, $request->input('absenceStart'));
+        $user->absenceEnd = DateTime::createFromFormat(DateTime::ISO8601, $request->input('absenceEnd'));
         $user->absenceReason = $request->input('absenceReason');
 
         $user->save();
 
         $fromFormatted = '';
         if ($user->absenceStart) {
-            $fromFormatted = DateTime::createFromFormat(DateTime::ISO8601, $user->absenceStart)->format('d.m.y');
+            $fromFormatted = $user->absenceStart->format('d.m.y');
         }
         $untilFormatted = '';
         if ($user->absenceEnd) {
-            $untilFormatted = DateTime::createFromFormat(DateTime::ISO8601, $user->absenceEnd)->format('d.m.y');
+            $untilFormatted = $user->absenceEnd->format('d.m.y');
         }
 
         Artisan::call('notification:absence', [

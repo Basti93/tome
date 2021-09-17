@@ -16,10 +16,11 @@
                     focusable
                     accordion>
                   <v-expansion-panel>
-                    <v-expansion-panel-header>Update 16.9.2021</v-expansion-panel-header>
+                    <v-expansion-panel-header>Update 17.09.2021</v-expansion-panel-header>
                     <v-expansion-panel-content>
                       <h4>Features</h4>
                       <ul>
+                        <li>Registrierung nur noch für Trainer</li>
                         <li>Möglichkeit längere Abwesenheiten einzutragen unter "Abwesenheit eintragen"</li>
                         <li>Bei Training Nachbereiten kann man nun auch Sportler nachträglich hinzufügen, die nicht in der Liste "Teilnehmer" oder "Absagen" sind</li>
                         <li>Automatiches auswählen der Sparte für Trainer auf der Startseite/Trainingsanmeldung</li>
