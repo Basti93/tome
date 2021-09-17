@@ -183,6 +183,15 @@
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
+                        <template v-slot:item.groupIds="{ item }">
+                          <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
+                                  :key="group.id"
+                                  small
+                                  outlined
+                                  class="ma-1">
+                            {{ group.name }}
+                          </v-chip>
+                        </template>
                         <template v-slot:item.deferUntil="{ item }">
                             <span v-if="checkDeferUntilIsActive(item)">
                                 {{ moment(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}
@@ -248,6 +257,7 @@ export default Vue.extend({
         {text: 'Start', value: 'startTime', sortable: false},
         {text: 'Ende', value: 'endTime', sortable: false},
         {text: 'Trainer', value: 'trainerIds', sortable: false},
+        {text: 'Gruppen', value: 'groupIds', sortable: false},
         {text: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
         {text: '', value: 'action', sortable: false},
       ],

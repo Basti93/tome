@@ -104,15 +104,17 @@
                           {{ item.registered ? 'Ja' : 'Nein' }}
                         </template>
                         <template v-slot:item.action="{ item }">
-                            <v-icon
-                                class="mr-2"
-                                v-if="canEditUser(item)"
-                                @click="editItem(item)"
-                                color="success">edit</v-icon>
-                            <v-icon
-                                v-if="canDeleteUser(item)"
-                                @click="confirmAndDelete(item)"
-                                color="error">delete</v-icon>
+                          <v-icon
+                              class="mr-2"
+                              v-if="canEditUser(item)"
+                              @click="editItem(item)"
+                              color="success">edit
+                          </v-icon>
+                          <v-icon
+                              v-if="canDeleteUser(item)"
+                              @click="confirmAndDelete(item)"
+                              color="error">delete
+                          </v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
@@ -293,17 +295,22 @@ export default {
       const self = this;
       for (let i = 0; i < res.data.data.length; i++) {
         let userObj = res.data.data[i];
-        self.users.push(new User({
-          id: userObj.id,
-          firstName: userObj.firstName,
-          familyName: userObj.familyName,
-          birthdate: userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
-          active: userObj.active,
-          profileImageName: userObj.profileImageName,
-          groupIds: userObj.groupIds,
-          roleNames: userObj.roleNames,
-          registered: userObj.registered
-        }))
+        self.users.push(new User(
+            userObj.id,
+            userObj.email,
+            userObj.firstName,
+            userObj.familyName,
+            userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.active === 1 ? true : false,
+            userObj.groupIds,
+            userObj.roleNames,
+            userObj.trainerBranchIds,
+            userObj.registered,
+            userObj.profileImageName,
+            userObj.absenceStart ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceReason
+        ))
       }
       self.page = res.data.currentPage;
       self.total = res.data.total;

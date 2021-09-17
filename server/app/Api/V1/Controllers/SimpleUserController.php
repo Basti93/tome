@@ -74,20 +74,6 @@ class SimpleUserController extends Controller
 
     }
 
-    public function removeAbsence($id)
-    {
-        $user = User::findOrFail($id);
-
-        $user->absenceStart = null;
-        $user->absenceEnd = null;
-
-        $user->save();
-
-        return response()->json([
-            'status' => 'ok'
-        ], 200);
-
-    }
 
     /**
      * Get users who are trainers.

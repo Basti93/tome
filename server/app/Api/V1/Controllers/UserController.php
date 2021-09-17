@@ -5,6 +5,7 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SimpleUser as SimpleUserResource;
 use App\User;
 use Auth;
 use DateTime;
@@ -250,6 +251,39 @@ class UserController extends Controller
         return response()->json([
             'status' => 'ok'
         ], 201);
+
+    }
+
+    public function getAllAbsenceUsers()
+    {
+        $groupIds = request()->query('groupIds');
+        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+
+        $now = date('Y-m-d H:i:s');
+        $users = User::where('absenceStart', '<=', $now)->where('absenceEnd', '>=', $now)->where('active', true)
+            ->when($groupIds, function ($query, $groupIds) {
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })->orderBy('absenceEnd')->paginate($per_page);
+
+        return response()->json($users);
+    }
+
+
+    public function removeAbsence($id)
+    {
+        $user = User::findOrFail($id);
+
+        $user->absenceStart = null;
+        $user->absenceEnd = null;
+        $user->absenceReason = null;
+
+        $user->save();
+
+        return response()->json([
+            'status' => 'ok'
+        ], 200);
 
     }
 

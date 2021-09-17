@@ -51,7 +51,10 @@ class TrainingAutomaticAttend extends Command
         foreach ($closedTrainings as $training) {
             $groups = $training->groups();
             $groupIds = $groups->pluck('group_id')->toArray();
+            $now = date('Y-m-d H:i:s');
             $groupMembers = User::whereActive(1)
+                ->whereNull('absenceStart')
+                ->whereNull('absenceEnd')
                     ->whereHas('groups', function ($query) use ($groupIds) {
                         $query->whereIn('groups.id', $groupIds);
                 })->get();
@@ -63,6 +66,22 @@ class TrainingAutomaticAttend extends Command
                     $training->participants()->attach($groupMember, ['attend' => 1]);
                 } else {
                     $this->info('User with id '.$groupMember->id.' is already assigned to the training');
+                }
+            }
+
+            $absenceMembers = User::whereActive(1)
+                ->where('absenceStart', '<=', $now)
+                ->where('absenceEnd', '>=', $now)
+                ->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('groups.id', $groupIds);
+                })->get();
+
+            $this->info('Found '.count($absenceMembers).' absence members for training at '.$training->start);
+            foreach ($absenceMembers as $groupMember) {
+                //add all users who have not clicked on attending or not-attending
+                if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
+                    $this->info('User with id '.$groupMember->id.' is absence');
+                    $training->participants()->attach($groupMember, ['attend' => 0, 'cancelreason' => '[Abwesenheit bis '.$groupMember->absenceEnd.'] '.$groupMember->absenceReason]);
                 }
             }
         }

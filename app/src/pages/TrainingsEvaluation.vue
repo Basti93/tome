@@ -220,6 +220,47 @@
                                   </v-list-item-action>
                                 </v-list-item>
                               </v-list-group>
+                              <v-list-group
+                                  v-model="undecidedUsersListGroupActive"
+                                  prepend-icon="people"
+                                  group="undecided"
+                                  no-action
+                              >
+                                <template slot="activator">
+                                  <v-list-item>
+                                    <v-list-item-content>
+                                      <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                </template>
+                                <v-list-item
+                                    v-for="(item) in undecidedUsers"
+                                    :key="item.id"
+                                >
+                                  <tome-list-item-profile-image
+                                      :image-path="item.profileImageName">
+                                  </tome-list-item-profile-image>
+
+                                  <v-list-item-content>
+                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                    <v-list-item-subtitle>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
+                                    </v-list-item-subtitle>
+                                  </v-list-item-content>
+                                  <v-list-item-action v-if="!selectedTraining.evaluated">
+                                    <v-btn
+                                        color="primary"
+                                        title="Benutzer zu Teilnehmern hinzufügen"
+                                        @click="addParticipant(item.id)"
+                                        outlined
+                                    >
+                                      <v-icon>add</v-icon>
+                                    </v-btn>
+                                  </v-list-item-action>
+                                </v-list-item>
+                              </v-list-group>
                             </v-card-text>
                           </v-card>
                         </div>
@@ -316,6 +357,7 @@ import TrainingEvaluation from "@/models/TrainingEvaluation";
 import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog";
 import ListItemProfileImage from "../components/ListItemProfileImage"
 import TrainingSelector from "../components/TrainingSelector.vue";
+import User from "../models/User";
 
 export default Vue.extend({
   name: "TrainingsEvaluation",
@@ -336,6 +378,7 @@ export default Vue.extend({
       trainersListGroupActive: true,
       participantsListGroupActive: true,
       canceledUserListGroupActive: false,
+      undecidedUsersListGroupActive: false,
       confirmEvaluationDialog: false,
       editStartTime: null as String,
       editEndTime: null as String,
@@ -374,6 +417,10 @@ export default Vue.extend({
         }
       }
       return [];
+    },
+    undecidedUsers() {
+      const usersOfGroups = this.users.filter(u => u.groupIds.some(r=> this.selectedTraining.groupIds.includes(r)))
+      return usersOfGroups.filter(u => !this.canceledUsers.concat(this.participatingUsers).includes(u));
     },
     currentUserGroupId() {
       if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
@@ -436,8 +483,26 @@ export default Vue.extend({
           //select first training
           this.selectTraining(this.pastTrainings[0].id);
         }
-        const res2 = await this.$http.get('/user');
-        this.users = res2.data;
+        this.users = []
+        const userRes = await this.$http.get('/user');
+        for (const userObj of userRes.data) {
+          this.users.push(new User(
+              userObj.id,
+              userObj.email,
+              userObj.firstName,
+              userObj.familyName,
+              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.active === 1 ? true : false,
+              userObj.groupIds,
+              userObj.roleNames,
+              userObj.trainerBranchIds,
+              userObj.registered,
+              userObj.profileImageName,
+              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceReason
+          ))
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -454,6 +519,10 @@ export default Vue.extend({
     async addParticipant(userId) {
       const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
       if (data.status == 'ok') {
+        if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
+          this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, true, null));
+
+        }
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
         this.$emit("showSnackbar", "Benutzer hinzugefügt", "success");
       }

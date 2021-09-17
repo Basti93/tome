@@ -76,6 +76,8 @@ $api->version('v1', function (Router $api) {
             $api->get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');
             $api->get('/trainer', 'App\\Api\\V1\\Controllers\\UserController@getTrainers');
             $api->get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
+            $api->get('/allAbsence', 'App\\Api\\V1\\Controllers\\UserController@getAllAbsenceUsers');
+            $api->put('/{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\UserController@removeAbsence');
             $api->delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
             $api->put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
             $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');

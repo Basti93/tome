@@ -124,13 +124,12 @@ class TrainingEvaluationController extends Controller
         $training = Training::findOrFail($trainingId);
         if ($training->participants->contains($userId)) {
             $training->participants()->updateExistingPivot($userId, array('attend' => 1), false);
-            return response()->json([
-                'status' => 'ok'
-            ], 200);
+        } else {
+            $training->participants()->attach($userId, array('attend' => 1));
         }
         return response()->json([
-            'status' => 'user not assigned to the training'
-        ], 404);
+            'status' => 'ok'
+        ], 200);
     }
 
     /**

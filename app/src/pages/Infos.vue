@@ -20,8 +20,10 @@
                     <v-expansion-panel-content>
                       <h4>Features</h4>
                       <ul>
+                        <li>Möglichkeit längere Abwesenheiten einzutragen unter "Abwesenheit eintragen"</li>
+                        <li>Bei Training Nachbereiten kann man nun auch Sportler nachträglich hinzufügen, die nicht in der Liste "Teilnehmer" oder "Absagen" sind</li>
                         <li>Automatiches auswählen der Sparte für Trainer auf der Startseite/Trainingsanmeldung</li>
-                        <li>In der Trainingstabelle werden nun auch die Gruppen angezeigt</li>
+                        <li>In der Trainings- und Trainingsserien-Tabelle werden nun auch die Gruppen angezeigt</li>
                         <li>Editier und Lösch Icons in den Tabellen sind kompakter</li>
                       </ul>
                       <h4>Bug Fixes</h4>

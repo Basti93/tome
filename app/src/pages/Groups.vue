@@ -286,16 +286,25 @@ export default {
       this.total = data.total;
     },
     async loadUsers() {
-      const {data} = await this.$http.get('/simpleuser')
       this.users = [];
-      for (let i = 0; i < data.data.length; i++) {
-        let userObj = data.data[i];
-        this.users.push(new User({
-          id: userObj.id,
-          firstName: userObj.firstName,
-          familyName: userObj.familyName,
-          profileImageName: userObj.profileImageName
-        }));
+      const userRes = await this.$http.get('/user');
+      for (const userObj of userRes.data) {
+        this.users.push(new User(
+            userObj.id,
+            userObj.email,
+            userObj.firstName,
+            userObj.familyName,
+            userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.active === 1 ? true : false,
+            userObj.groupIds,
+            userObj.roleNames,
+            userObj.trainerBranchIds,
+            userObj.registered,
+            userObj.profileImageName,
+            userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceReason
+        ));
       }
     },
     async save() {

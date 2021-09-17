@@ -358,6 +358,7 @@ import TrainingContent from "@/components/TrainingContent"
 import ListItemProfileImage from "@/components/ListItemProfileImage"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import GroupChip from "../components/GroupChip.vue";
+import User from "../models/User";
 
 export default Vue.extend({
   name: "TrainingsPrepare",
@@ -505,8 +506,26 @@ export default Vue.extend({
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
         }
-        const res2 = await this.$http.get('/user');
-        this.users = res2.data;
+        this.users = []
+        const userRes = await this.$http.get('/user');
+        for (const userObj of userRes.data) {
+          this.users.push(new User(
+              userObj.id,
+              userObj.email,
+              userObj.firstName,
+              userObj.familyName,
+              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.active === 1 ? true : false,
+              userObj.groupIds,
+              userObj.roleNames,
+              userObj.trainerBranchIds,
+              userObj.registered,
+              userObj.profileImageName,
+              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceReason
+          ))
+        }
       } catch (error) {
         console.error(error);
       } finally {
