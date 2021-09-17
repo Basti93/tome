@@ -54,7 +54,7 @@ class TrainerUpcomingTrainingNotifications extends Command
             $this->info('Processing Training at  ' . $training->start);
             $trainerArrayString = implode(",", $training->trainers()->pluck('user_id')->toArray());
             $this->info('Trainers with ids  ' . $trainerArrayString);
-            $this->call('sendToUsersTrainingContext', [
+            $this->call('notification:sendToUsersTrainingContext', [
                 'userIds' => $trainerArrayString,
                 'trainingId' => $training->id,
                 '--url' => config('app.vue_url').'/#/trainingsPrepare',

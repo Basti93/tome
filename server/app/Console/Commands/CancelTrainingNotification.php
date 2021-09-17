@@ -51,7 +51,7 @@ class CancelTrainingNotification extends Command
         $user = User::findOrFail($userId);
         $trainerArrayString = implode(",", $training->trainers()->pluck('user_id')->toArray());
         $this->info('Trainers with ids  ' . $trainerArrayString);
-        $this->call('sendToUsersTrainingContext', [
+        $this->call('notification:sendToUsersTrainingContext', [
             'userIds' => $trainerArrayString,
             'trainingId' => $training->id,
             'title' => 'Absage für das Training um ' . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i").' Uhr',
