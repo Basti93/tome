@@ -29,6 +29,7 @@ class ImageController extends Controller
             $constraint->aspectRatio();
             $constraint->upsize();
         })->encode('jpg', 65)
+        ->orientate()
         ->save();
 
         Log::info("Path: ".Storage::disk('public')->path($path));
