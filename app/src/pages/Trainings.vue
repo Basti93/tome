@@ -381,7 +381,7 @@ export default Vue.extend({
     },
     async deleteItem() {
       this.showConfirmDialog = false
-        const {data} = await this.$http.delete('/training/' + this.itemToDelete.id);
+        const {data} = await this.$http.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
         if (data.status == 'ok') {
           this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
           this.loadData();

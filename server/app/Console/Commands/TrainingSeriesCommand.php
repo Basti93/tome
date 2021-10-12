@@ -77,9 +77,11 @@ class TrainingSeriesCommand extends Command
                     $this->info('Series with id ' . $series->id . ' is deferred until ' . $series->defer_until);
                     continue;
                 }
+
                 //check if training is already created
                 if (DB::table('trainings')
                     ->whereBetween('start', array($start, $end))
+                    ->whereRaw('DAYOFWEEK(trainings.start) <> '.$dayNumber)
                     ->where('training_series_id', $series->id)
                     ->exists()) {
                     $this->info('Training with series id ' . $series->id . ' already exists');

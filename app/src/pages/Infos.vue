@@ -16,6 +16,20 @@
                     focusable
                     accordion>
                   <v-expansion-panel>
+                    <v-expansion-panel-header>Update 12.10.2021</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <h4>Features</h4>
+                      <ul>
+                        <li>Trainings die durch Trainingsserien erstellt wurden und danach gelöscht wurden werden nicht wieder neu erstellt</li>
+                      </ul>
+                      <h4>Bug Fixes</h4>
+                      <ul>
+                        <li>Hochgeladene Handybilder werden nicht mehr verdreht</li>
+                        <li>Trainingsserien erstellen nun die Trainings richtig auch wenn mehrere Tage ausgewählt sind</li>
+                      </ul>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                  <v-expansion-panel>
                     <v-expansion-panel-header>Update 17.09.2021</v-expansion-panel-header>
                     <v-expansion-panel-content>
                       <h4>Features</h4>

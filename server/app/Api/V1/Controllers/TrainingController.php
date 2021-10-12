@@ -42,6 +42,7 @@ class TrainingController extends Controller
         $groupIds = request()->query('groupIds');
 
         $trainings = Training::orderBy('start', 'desc')
+            ->where('deleted', false)
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
@@ -73,6 +74,7 @@ class TrainingController extends Controller
         }
 
         $trainings = Training::orderBy($sortBy, $direction)
+            ->where('deleted', false)
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
@@ -96,6 +98,7 @@ class TrainingController extends Controller
         $branchId = request()->query('branchId');
 
         $trainings = Training::where('start', '>=', DB::raw('NOW()'))
+            ->where('deleted', false)
             ->orderBy('start', 'asc')
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
@@ -156,6 +159,16 @@ class TrainingController extends Controller
     {
         $training = Training::findOrFail($trainingId);
         $training->prepared = 1;
+        $training->save();
+        return response()->json([
+            'status' => 'ok'
+        ], 200);
+    }
+
+    public function deleteinfuture($trainingId)
+    {
+        $training = Training::findOrFail($trainingId);
+        $training->deleted = 1;
         $training->save();
         return response()->json([
             'status' => 'ok'
