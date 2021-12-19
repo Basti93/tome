@@ -260,7 +260,8 @@ class UserController extends Controller
         $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
 
         $now = date('Y-m-d H:i:s');
-        $users = User::where('absenceStart', '<=', $now)->where('absenceEnd', '>=', $now)->where('active', true)
+        $users = User::whereNotNull('absenceStart')
+            ->where('active', true)
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));

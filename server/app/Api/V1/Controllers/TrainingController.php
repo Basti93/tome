@@ -64,7 +64,6 @@ class TrainingController extends Controller
         $direction = request()->query('direction');
         $sortBy = request()->query('sortBy');
         $groupIds = request()->query('groupIds');
-        $current = request()->query('current');
 
         //mapping
         if ($sortBy === 'date') {
@@ -82,13 +81,7 @@ class TrainingController extends Controller
             });
 
 
-        if ($current) {
-            $page = $this->getPageOfCurrentDate($groupIds, $sortBy, $per_page);
-            $trainings = $trainings->paginate($per_page, ['*'], 'page', $page);
-        } else {
-            $trainings = $trainings->paginate($per_page);
-        }
-
+        $trainings = $trainings->paginate($per_page);
         return TrainingResource::collection($trainings);
     }
 
@@ -358,38 +351,6 @@ class TrainingController extends Controller
             'status' => 'ok'
         ], 201);
 
-    }
-
-    /**
-     * @param $groupIds
-     * @param $sortBy
-     * @param int $per_page
-     * @return float
-     */
-    private function getPageOfCurrentDate($groupIds, $sortBy, int $per_page): float
-    {
-        $mostCurrentTraining = Training::when($groupIds, function ($query, $groupIds) {
-            $query->whereHas('groups', function ($query) use ($groupIds) {
-                $query->whereIn('group_id', preg_split('/,/', $groupIds));
-            });
-        })->orderByRaw("ABS(DATEDIFF(NOW(), start))")->limit(1)->first();
-
-        $position = Training::when($groupIds, function ($query, $groupIds) {
-            $query->whereHas('groups', function ($query) use ($groupIds) {
-                $query->whereIn('group_id', preg_split('/,/', $groupIds));
-            });
-        })->where('id', '<', $mostCurrentTraining->id)->orderBy($sortBy)->count();
-
-        $total = Training::when($groupIds, function ($query, $groupIds) {
-            $query->whereHas('groups', function ($query) use ($groupIds) {
-                $query->whereIn('group_id', preg_split('/,/', $groupIds));
-            });
-        })->count();
-
-        $page_no = floor((($position + 1)) / $per_page);
-        $total_pages = floor($total / $per_page);
-        $page = $total_pages - $page_no;
-        return $page;
     }
 
     /**

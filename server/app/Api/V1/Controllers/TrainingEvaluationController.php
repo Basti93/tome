@@ -31,6 +31,7 @@ class TrainingEvaluationController extends Controller
     public function getPastTrainingsForTrainer($userId)
     {
         $trainings = Training::where('start', '<=', DB::raw('NOW()'))
+            ->where('deleted', false)
             ->whereHas('trainers', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
