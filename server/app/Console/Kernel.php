@@ -25,6 +25,8 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\UpcomingTrainingNotifications',
         'App\Console\Commands\AbsenceNotification',
         'App\Console\Commands\AbsenceCleanCommand',
+        'App\Console\Commands\EmailTrainingAttendanceStatistics',
+        'App\Console\Commands\EmailLastMonthStatistics',
 
     ];
 
@@ -41,6 +43,7 @@ class Kernel extends ConsoleKernel
         //$schedule->command('notification:upcomingTraining')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
         $schedule->command('training:series')->hourly()->sendOutputTo(storage_path('logs/com_series.log'));
         $schedule->command('user:absence-clean')->dailyAt('1:00')->sendOutputTo(storage_path('logs/com_absence_clean.log'));
+        $schedule->command('emails:last-month-statistics')->monthlyOn(1)->sendOutputTo(storage_path('logs/com_email_monthly_statistics.log'));
     }
 
     /**
