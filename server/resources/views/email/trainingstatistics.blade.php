@@ -24,7 +24,7 @@
     <h3>Hallo Super-Trainer/in {{$user->name}}</h3>
     <p>Die monatliche Trainingsstatistik wurde gerade frisch gedruckt.</p>
     <h4>Teilnahmen am Training von {{ date_format($fromDate, 'd.m.Y') }} bis {{ date_format($untilDate, 'd.m.Y') }}</h4>
-    <p style="color: red; font-style: italic;">Damit diese Statistik korrekt ist müssen die Trainings immer unter "Nachbereiten" abgeschlossen werden!</p>
+    <p style="color: red; font-style: italic;">Damit diese Statistik korrekt ist müssen die Trainings immer unter "Nachbereiten" abgeschlossen werden<br> und die Sportlerinnen und Sportler richtig ein- und ausgetragen werden!</p>
     @foreach ($userGroupAttendance as $groupKey => $groupVal)
         <h5>Gruppe: {{ $groupKey  }}</h5>
         <table class="table table-border">

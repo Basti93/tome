@@ -49,7 +49,7 @@ class EmailTrainingAttendanceStatistics extends Command
         $until = DateTime::createFromFormat('Y-m-d', $this->argument('endDate'));
 
         $groups = Group::whereBranchId($branchId)->get();
-        Log::debug('Groups found for branchId ' . $branchId . ": " . sizeof($groups));
+        Log::info('Groups found for branchId ' . $branchId . ": " . sizeof($groups));
 
         $groupsArray = [];
         foreach ($groups as $group) {
@@ -58,7 +58,7 @@ class EmailTrainingAttendanceStatistics extends Command
                 $query->whereGroupId($groupId);
             })->get();
 
-            Log::debug('Users found for group id ' . $groupId . ": " . sizeof($groupUsers));
+            Log::info('Users found for group id ' . $groupId . ": " . sizeof($groupUsers));
 
             $userArray = [];
             foreach ($groupUsers as $groupUser) {
@@ -70,10 +70,10 @@ class EmailTrainingAttendanceStatistics extends Command
                         $query->where('group_id', $groupId);
                     })
                     ->whereHas('participants', function ($query) use ($userId) {
-                        $query->where('user_id', $userId);
+                        $query->where('user_id', $userId)->whereAttend(1);
                     })
                     ->count();
-                Log::debug('Trainings found for userid ' . $userId . " between " . $from->format('Y-m-d') . " - " . $until->format('Y-m-d') . ": " . $trainingsCount);
+                Log::info('Trainings found for userid ' . $userId . " between " . $from->format('Y-m-d') . " - " . $until->format('Y-m-d') . ": " . $trainingsCount);
                 $userArray[$groupUser->firstName . " " . $groupUser->familyName] = $trainingsCount;
             }
             uasort($userArray, function ($a, $b) {
@@ -91,7 +91,7 @@ class EmailTrainingAttendanceStatistics extends Command
 
         foreach ($branchTrainers as $branchTrainer) {
             if ($branchTrainer->email) {
-                Log::debug("Send monthly training statistics to " . $branchTrainer->email);
+                Log::info("Send monthly training statistics to " . $branchTrainer->email);
                 Mail::to($branchTrainer)->send(new UserTrainingStatistics($branchTrainer, $groupsArray, $from, $until));
             }
         }
