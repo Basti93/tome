@@ -6,7 +6,7 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=7.3.0",
         "code-lts/laravel-fcm": "^1.6.0",
         "dingo/api": "^v3.0.5",
         "doctrine/dbal": "^2.9",
@@ -14,7 +14,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "grohiro/laravel-camelcase-json": "^2.0.0",
         "intervention/image": "^2.5",
-        "laravel/framework": "^v7.28.1",
+        "laravel/framework": "^8.0",
         "laravel/tinker": "^v2.5.0",
         "maatwebsite/excel": "^3.1.26",
         "macsidigital/laravel-zoom": "^4.1",
@@ -24,8 +24,8 @@
     "require-dev": {
         "filp/whoops": "^2.0",
         "mockery/mockery": "^1.0",
-        "nunomaduro/collision": "^v4.3.0",
-        "phpunit/phpunit": "^8.5.13"
+        "nunomaduro/collision": "^5.0",
+        "phpunit/phpunit": "^9.0"
     },
     "autoload": {
         "classmap": [
