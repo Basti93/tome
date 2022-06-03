@@ -7,8 +7,8 @@
     "type": "project",
     "require": {
         "php": ">=7.3.0",
+        "api-ecosystem-for-laravel/dingo-api": "^3.1",
         "code-lts/laravel-fcm": "^1.6.0",
-        "dingo/api": "^v3.0.5",
         "doctrine/dbal": "^2.9",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.0",
