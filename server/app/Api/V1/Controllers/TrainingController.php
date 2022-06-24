@@ -226,10 +226,10 @@ class TrainingController extends Controller
 
     public function checkInUnregistered($id, $userId)
     {
-        $user = User::whereRegistered('0')->whereActive('1')->findOrFail($userId);
+        $user = User::whereActive('1')->findOrFail($userId);
         if ($user === null) {
             return response()->json([
-                'status' => 'unregistered user not found'
+                'status' => ' user not found'
             ], 404);
 
         }
@@ -256,10 +256,10 @@ class TrainingController extends Controller
 
     public function checkOutUnregistered(Request $request, $id, $userId)
     {
-        $user = User::whereRegistered('0')->whereActive('1')->findOrFail($userId);
+        $user = User::whereActive('1')->findOrFail($userId);
         if ($user === null) {
             return response()->json([
-                'status' => 'unregistered user not found'
+                'status' => 'user not found'
             ], 404);
         }
 
