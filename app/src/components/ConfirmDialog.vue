@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" width="500">
+  <v-dialog v-model="visible" width="500">
     <v-card>
       <v-toolbar flat>
         <v-toolbar-title>{{ actionText }} Bestätigen</v-toolbar-title>
@@ -30,6 +30,7 @@
 </template>
 
 <script>
+
 export default {
   name: "ConfirmDialog",
   props: {
@@ -39,6 +40,18 @@ export default {
   data: function () {
     return {}
 
+  },
+  computed: {
+    visible: {
+      get() {
+        return this.show;
+      },
+      set(value) {
+        if (!value) {
+          this.$emit('canceled')
+        }
+      }
+    }
   },
   methods: {
     confirm() {

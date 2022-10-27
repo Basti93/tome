@@ -65,36 +65,36 @@ const getters = {
     return getters.getContentsByBranchId(branchId).map(c => c.id);
   },
   getContentIdsByGroupIds: (state, getters) => (groupIds) => {
-    let groups = getters.getGroupsByIds(groupIds);
+    const groups = getters.getGroupsByIds(groupIds);
     return state.contents.filter(c => groups.map(g => g.branchId).indexOf(c.branchId) >= 0).map(c => c.id);
   },
   getContentsByIds: (state) => (ids) => {
     return state.contents.filter(c => ids.includes(c.id))
   },
   getGroupColorById: (state, getters) => (id) => {
-    let group = getters.getGroupById(id);
+    const group = getters.getGroupById(id);
     if (group) {
       return group.colorHex
     }
     return null;
   },
   getLocationNameById: (state) => (id) => {
-    let location = state.locations.find(l => l.id === id)
+    const location = state.locations.find(l => l.id === id)
     if (location) {
       return location.name
     }
   },
   getBranchByGroupId: (state, getters) => (id): Branch => {
-    let group = getters.getGroupById(id);
+    const group = getters.getGroupById(id);
     if (group) {
       return state.branches.find(b => b.id == group.branchId)
     }
     return null;
   },
   getBranchByGroupIds: (state, getters) => (ids): Branch => {
-    let branchIds = getters.getGroupsByIds(ids).map(g => g.branchId);
+    const branchIds = getters.getGroupsByIds(ids).map(g => g.branchId);
     if (ids && ids.length > 0  && branchIds.every(v => v === branchIds[0] )) {
-      let group = getters.getGroupById(ids[0]);
+      const group = getters.getGroupById(ids[0]);
       if (group) {
         return state.branches.find(b => b.id == group.branchId)
       }

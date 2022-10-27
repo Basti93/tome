@@ -229,15 +229,8 @@ export default Vue.extend({
       }
 
       const startMonth = this.moment(start.date).format('MMMM');
-      const endMonth = this.moment(end.date).format('MMMM');
-      const suffixMonth = startMonth === endMonth ? '' : endMonth
-
       const startYear = start.year
-      const endYear = end.year
-      const suffixYear = startYear === endYear ? '' : endYear
-
       const startDay = start.day
-      const endDay = end.day
 
       switch (this.type) {
         case 'month':

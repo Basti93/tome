@@ -153,16 +153,16 @@
                           :itemsPerPage.sync="itemsPerPage"
                           :page.sync="page"
                       >
-                        <template v-slot:item.name="{ item }">
+                        <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
                         </template>
-                        <template v-slot:item.branchId="{ item }">
+                        <template v-slot:[`item.branchId`]="{ item }">
                           {{ item.branch.name }}
                         </template>
-                        <template v-slot:item.userCount="{ item }">
+                        <template v-slot:[`item.userCount`]="{ item }">
                           {{ item.userIds.length }}
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                             <v-icon
                                 class="mr-2"
                                 v-on:click="editItem(item)"
@@ -211,7 +211,7 @@ import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
-  name: "Groups",
+  name: "GroupsTablePage",
   components: {ConfirmDialog, TomeListItemProfileImage},
   data: function () {
     return {

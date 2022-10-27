@@ -61,19 +61,19 @@
                           :page.sync="page"
                           :sort-by.sync="sortBy"
                       >
-                        <template v-slot:item.date="{ item }">
+                        <template v-slot:[`item.date`]="{ item }">
                           {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
                         </template>
-                        <template v-slot:item.start="{ item }">
+                        <template v-slot:[`item.start`]="{ item }">
                           {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
                         </template>
-                        <template v-slot:item.end="{ item }">
+                        <template v-slot:[`item.end`]="{ item }">
                           {{ moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
                         </template>
-                        <template v-slot:item.locationId="{ item }">
+                        <template v-slot:[`item.locationId`]="{ item }">
                           {{ getLocationNameById(item.locationId) }}
                         </template>
-                        <template v-slot:item.trainerIds="{ item }">
+                        <template v-slot:[`item.trainerIds`]="{ item }">
                           <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
                                   :key="trainer.id"
                                   small
@@ -82,7 +82,7 @@
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
-                        <template v-slot:item.groupIds="{ item }">
+                        <template v-slot:[`item.groupIds`]="{ item }">
                           <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
                                   :key="group.id"
                                   small
@@ -91,7 +91,7 @@
                             {{ group.name }}
                           </v-chip>
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                             <v-icon
                                 class="mr-2"
                                 v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
@@ -190,12 +190,11 @@ import {mapGetters, mapState} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase";
 import {formatDate, parseDate} from "../helpers/date-helpers"
-import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Training from "../models/Training";
 
 export default Vue.extend({
-  name: "Trainings",
+  name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
   data: function () {
     return {

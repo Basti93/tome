@@ -89,7 +89,7 @@
       </v-col>
       <v-col cols="12">
         <v-select
-            v-model="trainerIds"
+            v-model="selectedTrainerIds"
             :items="trainers"
             item-value="id"
             :item-text="fullName"

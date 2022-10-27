@@ -205,7 +205,7 @@ import GroupsSelect from "../components/GroupsSelect.vue";
 
 
 export default {
-  name: "Profile",
+  name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
   data: function () {
     return {

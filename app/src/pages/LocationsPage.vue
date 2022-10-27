@@ -86,11 +86,11 @@
                           :itemsPerPage.sync="itemsPerPage"
                           :page.sync="page"
                       >
-                        <template v-slot:item.name="{ item }">
+                        <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
                           <span class="caption" v-if="item.name == 'Online'">&nbsp;(Für Trainings mit diesem Ort werden automatisch Zoom Trainings erstellt)</span>
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                             <v-icon :disabled="item.name == 'Online'"
                                     v-on:click="editItem(item)"
                                     color="success">edit</v-icon>
@@ -136,7 +136,7 @@
 <script lang="ts">
 
 export default {
-  name: "Locations",
+  name: "LocationsPage",
   data: function () {
     return {
       loading: false,

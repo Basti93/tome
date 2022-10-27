@@ -1,9 +1,9 @@
 <template>
-
+  <div></div>
 </template>
 <script>
   export default {
-    name: 'Logout',
+    name: 'LogoutComponent',
     created () {
       this.$store.dispatch('logout')
       this.$emit("showSnackbar", "Erfolgreich abgemeldet", "info");

@@ -45,7 +45,6 @@
           label="Lade ein Profilbild hoch"
       >
       </v-file-input>
-      </v-col>
     </v-row>
   </v-container>
 </template>

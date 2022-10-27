@@ -67,7 +67,8 @@
                                       elevation="1"
                                       v-show="!selectedTraining.evaluated"
                                       @click="confirmEvaluationDialog = true"
-                                      color="primary">
+                                      color="primary"
+                                      v-on="on">
                                     Abschließen
                                   </v-btn>
                                 </template>
@@ -360,7 +361,7 @@ import TrainingSelector from "../components/TrainingSelector.vue";
 import User from "../models/User";
 
 export default Vue.extend({
-  name: "TrainingsEvaluation",
+  name: "TrainingsEvaluationPage",
   components: {
     TrainingSelector,
     TrainingAccountingExportDialog,

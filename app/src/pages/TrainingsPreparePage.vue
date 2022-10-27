@@ -361,7 +361,7 @@ import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
 export default Vue.extend({
-  name: "TrainingsPrepare",
+  name: "TrainingsPreparePage",
   components: {
     GroupChip,
     TrainingSelector,

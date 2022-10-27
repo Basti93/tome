@@ -55,7 +55,7 @@ import Vue from "vue";
 import {mapGetters} from 'vuex'
 
 export default Vue.extend({
-  name: "Login",
+  name: "LoginPage",
   data: () => ({
     valid: true,
     password: '',

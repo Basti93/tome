@@ -18,7 +18,6 @@
 <script>
 import {mapGetters} from 'vuex'
 import StatisticsFilter1 from "./StatisticsFilter1";
-import {getRandomColor} from "../helpers/color-helper"
 
 export default {
   name: "TrainerTimeline",

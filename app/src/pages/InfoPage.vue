@@ -81,7 +81,7 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "Infos",
+  name: "InfoPage",
   data: function () {
     return {
       openedPanel: 0,

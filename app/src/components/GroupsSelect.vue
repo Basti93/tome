@@ -48,7 +48,7 @@
         watch: {
             groupIds: {
                 immediate: true,
-                    handler(newVal, oldVal) {
+                    handler(newVal) {
                         if (newVal) {
                             this.selectedGroupIds = newVal;
                         }

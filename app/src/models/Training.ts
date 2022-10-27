@@ -16,9 +16,9 @@ export default class Training {
     automaticAttend: boolean;
 
     static from(jsonString: string) {
-        let jsonObj = JSON.parse(jsonString);
-        let participants = [] as TrainingParticipant[];
-        for (let participant of jsonObj.trainingParticipants) {
+        const jsonObj = JSON.parse(jsonString);
+        const participants = [] as TrainingParticipant[];
+        for (const participant of jsonObj.trainingParticipants) {
             participants.push(TrainingParticipant.from(participant));
         }
         return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, participants, jsonObj.comment, null, null,  jsonObj.automaticAttend === 1 ? true : false)

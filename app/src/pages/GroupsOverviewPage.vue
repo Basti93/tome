@@ -89,7 +89,7 @@ import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import TrainingSeries from "../models/TrainingSeries";
 
 export default Vue.extend({
-  name: "GroupsOverview",
+  name: "GroupsOverviewPage",
   components: {},
   data() {
     return {

@@ -21,7 +21,7 @@ export default class User {
 
     static from(jsonString) {
         try {
-            let jsonObj = JSON.parse(jsonString);
+            const jsonObj = JSON.parse(jsonString);
             return new User(jsonObj.id, jsonObj.email, jsonObj.firstName, jsonObj.familyName, jsonObj.birthdate, jsonObj.active === 1 ? true : false, jsonObj.groupIds, jsonObj.roleNames, jsonObj.trainerBranchIds, jsonObj.registered === 1 ? true : false, jsonObj.profileImageName, jsonObj.absenceStart, jsonObj.absenceEnd, jsonObj.absenceReason)
         } catch (_) {
             return null

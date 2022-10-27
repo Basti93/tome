@@ -8,7 +8,7 @@ export default class TrainingTrainer {
     accountingTimeEnd: moment.Moment;
 
     static from(jsonString: string) {
-        let jsonObj = JSON.parse(jsonString);
+        const jsonObj = JSON.parse(jsonString);
         return new TrainingTrainer(jsonObj.trainingId, jsonObj.userId, jsonObj.accountingTimeStart, jsonObj.accountingTimeEnd)
     }
 

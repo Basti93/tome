@@ -297,7 +297,7 @@ import {mapGetters} from 'vuex'
 import ProfileImage from "@/components/ProfileImage.vue";
 
 export default {
-  name: "Navigation",
+  name: "TomeNavigation",
   components: {ProfileImage},
   data() {
     return {

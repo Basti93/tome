@@ -162,19 +162,19 @@
                           :items="trainingSeriesList"
                           :loading="loading"
                           hide-default-footer>
-                        <template v-slot:item.id="{ item }">
+                        <template v-slot:[`item.id`]="{ item }">
                           {{ item.id }}
                         </template>
-                        <template v-slot:item.weekdays="{ item }">
+                        <template v-slot:[`item.weekdays`]="{ item }">
                           {{ dayArrayToString(item.weekdays) }}
                         </template>
-                        <template v-slot:item.startTime="{ item }">
+                        <template v-slot:[`item.startTime`]="{ item }">
                           {{ item.startTime }}
                         </template>
-                        <template v-slot:item.endTime="{ item }">
+                        <template v-slot:[`item.endTime`]="{ item }">
                           {{ item.endTime }}
                         </template>
-                        <template v-slot:item.trainerIds="{ item }">
+                        <template v-slot:[`item.trainerIds`]="{ item }">
                           <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
                                   :key="trainer.id"
                                   small
@@ -183,7 +183,7 @@
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
-                        <template v-slot:item.groupIds="{ item }">
+                        <template v-slot:[`item.groupIds`]="{ item }">
                           <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
                                   :key="group.id"
                                   small
@@ -192,13 +192,13 @@
                             {{ group.name }}
                           </v-chip>
                         </template>
-                        <template v-slot:item.deferUntil="{ item }">
+                        <template v-slot:[`item.deferUntil`]="{ item }">
                             <span v-if="checkDeferUntilIsActive(item)">
                                 {{ moment(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}
                             </span>
                           <span v-else>Aktiv</span>
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                             <v-icon
                                 class="mr-2"
                                 @click="editItem(item)"
@@ -236,7 +236,7 @@ import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default Vue.extend({
-  name: "TrainingSeries",
+  name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
     return {

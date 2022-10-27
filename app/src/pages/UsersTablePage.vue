@@ -83,27 +83,27 @@
                               clearable
                           ></v-text-field>
                         </template>
-                        <template v-slot:item.firstName="{ item }">
+                        <template v-slot:[`item.firstName`]="{ item }">
                           {{ item.firstName }}
                         </template>
-                        <template v-slot:item.familyName="{ item }">
+                        <template v-slot:[`item.familyName`]="{ item }">
                           {{ item.familyName }}
                         </template>
-                        <template v-slot:item.birthdate="{ item }">
+                        <template v-slot:[`item.birthdate`]="{ item }">
                           {{
                             item.birthdate ? moment().diff(item.birthdate, 'years') + ' (Jg. ' + item.birthdate.format('YY') + ')' : 'NA'
                           }}
                         </template>
-                        <template v-slot:item.groups="{ item }">
+                        <template v-slot:[`item.groups`]="{ item }">
                           {{ getGroupsByIds(item.groupIds).map(g => g.getWithBranchName()).join(', ') }}
                         </template>
-                        <template v-slot:item.active="{ item }">
+                        <template v-slot:[`item.active`]="{ item }">
                           {{ item.active ? 'Ja' : 'Nein' }}
                         </template>
-                        <template v-slot:item.registered="{ item }">
+                        <template v-slot:[`item.registered`]="{ item }">
                           {{ item.registered ? 'Ja' : 'Nein' }}
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                           <v-icon
                               class="mr-2"
                               v-if="canEditUser(item)"
@@ -168,7 +168,7 @@ import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
-  name: "Users",
+  name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
   data: function () {
     return {

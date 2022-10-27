@@ -147,22 +147,22 @@
                           :itemsPerPage.sync="itemsPerPage"
                           :page.sync="page"
                       >
-                        <template v-slot:item.firstName="{ item }">
+                        <template v-slot:[`item.firstName`]="{ item }">
                           {{ item.firstName }}
                         </template>
-                        <template v-slot:item.familyName="{ item }">
+                        <template v-slot:[`item.familyName`]="{ item }">
                           {{ item.familyName }}
                         </template>
-                        <template v-slot:item.absenceStart="{ item }">
+                        <template v-slot:[`item.absenceStart`]="{ item }">
                           {{ item.absenceStart.format('DD.MM.YYYY') }}
                         </template>
-                        <template v-slot:item.absenceEnd="{ item }">
+                        <template v-slot:[`item.absenceEnd`]="{ item }">
                           {{ item.absenceEnd.format('DD.MM.YYYY') }}
                         </template>
-                        <template v-slot:item.absenceReason="{ item }">
+                        <template v-slot:[`item.absenceReason`]="{ item }">
                           {{ item.absenceReason }}
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                           <v-icon v-on:click="confirmAndDelete(item.id)" color="error">delete</v-icon>
                         </template>
                         <template v-slot:no-data>
@@ -205,7 +205,7 @@ import User from "../models/User";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default Vue.extend({
-  name: "AbsenceForm",
+  name: "AbsenceFormPage",
   components: {ConfirmDialog},
   data: () => ({
     absenceUsers: [],

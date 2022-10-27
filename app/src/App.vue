@@ -79,7 +79,7 @@
 
 <script>
 import {mapGetters} from 'vuex'
-import Navigation from "@/components/Navigation.vue";
+import Navigation from "@/components/TomeNavigation.vue";
 import SnackbarStore from '@/components/SnackbarStore.vue'
 import messaging from './firebase-config'
 
@@ -117,6 +117,7 @@ export default {
     if (this.$isOffline) {
       this.$emit("showSnackbar", "Daten konnten nicht geladen werden! Stelle sicher dass du Internet hast.", "error");
     }
+
     if (this.currentUser && messaging && process.env.NODE_ENV === 'production') {
       this.getFirebaseToken();
       //refresh token

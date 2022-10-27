@@ -10,4 +10,5 @@ module.exports = {
         'vuetify/grid-unknown-attributes': 'error',
         'vuetify/no-legacy-grid': 'error',
     }
+
 }

@@ -46,7 +46,7 @@ import TrainingParticipationBarChart from "@/components/TrainingParticipationBar
 import TrainerTimeline from "@/components/TrainerTimeline.vue";
 
 export default {
-  name: "Statistics",
+  name: "StatisticsPage",
   components: {TrainerTimeline, TrainingParticipationBarChart},
   computed: {
     ...mapGetters({loggedInUser: 'loggedInUser'}),

@@ -98,16 +98,16 @@
                           :itemsPerPage.sync="itemsPerPage"
                           :page.sync="page"
                       >
-                        <template v-slot:item.name="{ item }">
+                        <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
                         </template>
-                        <template v-slot:item.shortName="{ item }">
+                        <template v-slot:[`item.shortName`]="{ item }">
                           {{ item.shortName }}
                         </template>
-                        <template v-slot:item.colorHex="{ item }">
+                        <template v-slot:[`item.colorHex`]="{ item }">
                           <v-chip v-if="item.colorHex" :color="item.colorHex"></v-chip>
                         </template>
-                        <template v-slot:item.action="{ item }">
+                        <template v-slot:[`item.action`]="{ item }">
                             <v-icon v-on:click="editItem(item)"
                                     color="success">edit</v-icon>
                         </template>
@@ -152,7 +152,7 @@
 <script lang="ts">
 
 export default {
-  name: "Branches",
+  name: "BranchesTablePage",
   data: function () {
     return {
       loading: false,

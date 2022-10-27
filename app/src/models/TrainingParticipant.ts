@@ -6,7 +6,7 @@ export default class TrainingParticipant {
     cancelreason: string;
 
     static from(jsonString: string) {
-        let jsonObj = JSON.parse(jsonString);
+        const jsonObj = JSON.parse(jsonString);
         return new TrainingParticipant(jsonObj.trainingId, jsonObj.userId, jsonObj.attend === 1 ? true : false, jsonObj.cancelreason)
     }
 

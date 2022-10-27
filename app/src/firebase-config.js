@@ -12,7 +12,7 @@ const config = {
 }
 
 let messaging = null;
-if (firebase.messaging.isSupported() && process.env.NODE_ENV === 'production') {
+if (firebase && firebase.messaging.isSupported() && process.env.NODE_ENV === 'production') {
     console.log("Firebase messaging is supported")
     firebase.initializeApp(config)
     messaging = firebase.messaging()

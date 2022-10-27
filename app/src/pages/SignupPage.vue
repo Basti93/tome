@@ -122,7 +122,7 @@
 import {formatDate} from "../helpers/date-helpers"
 
 export default {
-  name: "Signup",
+  name: "SignupPage",
   data: () => ({
     errors: [],
     valid: true,

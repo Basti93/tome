@@ -35,7 +35,7 @@ import {mapGetters} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 
 export default Vue.extend({
-  name: "Calendar",
+  name: "CalendarPage",
   components: {TrainingCalendar},
 
   computed: {

@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === 'production') {
     updatefound () {
       console.log('New content is downloading.')
     },
-    updated (registration) {
+    updated () {
       console.log('New content is available; please refresh.')
       let updateBanner = document.querySelector('#update-banner');
       if(updateBanner) {
@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'production') {
   })
 
   let refreshing
-  navigator.serviceWorker.addEventListener("controllerchange", e=>{
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (refreshing) return
     window.location.reload()
     refreshing = true

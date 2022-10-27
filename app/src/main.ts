@@ -16,6 +16,7 @@ import SimpleUser from "./models/SimpleUser";
 Vue.prototype.moment = moment
 
 Vue.use(VueApexCharts)
+// eslint-disable-next-line
 Vue.component('apexchart', VueApexCharts)
 
 Vue.config.productionTip = false

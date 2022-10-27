@@ -1,6 +1,6 @@
 <template>
     <v-dialog
-            v-model="visible"
+            v-model="show"
             max-width="600px"
             persistent>
         <v-card>

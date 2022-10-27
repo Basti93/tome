@@ -116,7 +116,7 @@ import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingSelector from "../components/TrainingSelector.vue";
 
 export default Vue.extend({
-  name: "TrainingsCheckIn",
+  name: "TrainingsCheckInPage",
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
   data: function () {
     return {
@@ -211,7 +211,6 @@ export default Vue.extend({
       this.filterDialogVisible = false;
     },
     findBranch(groupIds) {
-      let branch = null;
       if (groupIds && groupIds.length > 0) {
         return this.getBranchByGroupId(groupIds[0]);
       }
