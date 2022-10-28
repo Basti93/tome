@@ -1,0 +1,30 @@
+"Indicates what fields are available at the top level of a query operation."
+type Query {
+    users: [User!]! @guard @all
+    publicUsers: [User!]! @all(scopes: ["active"])
+}
+
+"Account of a person who utilizes this application."
+type User {
+    "Unique primary key."
+    id: ID!
+
+    "First Name."
+    firstName: String!
+
+    "Family Name."
+    familyName: String!
+
+    "Unique email address."
+    email: String! @guard
+
+    "The profile image name/short path"
+    profile_image_name: String @guard
+
+    "If the user is still active"
+    active: Boolean! @guard
+
+    groups: [Group] @belongsToMany
+
+}
+

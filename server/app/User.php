@@ -3,10 +3,12 @@
 namespace App;
 
 use Hash;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Builder;
 
 
 class User extends Authenticatable implements JWTSubject
@@ -68,6 +70,15 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function scopeHasGroups(Builder $query): Builder
+    {
+        return $query->where('active', true);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', true);
+    }
 
     public function group()
     {
@@ -79,7 +90,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Branch', 'trainer_branch', 'user_id');
     }
 
-    public function groups()
+    public function groups(): belongsToMany
     {
         return $this->belongsToMany('App\Group', 'user_group', 'user_id');
     }

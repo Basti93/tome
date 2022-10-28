@@ -11,7 +11,7 @@ return [
      | to accept any value.
      |
      */
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'graphql'],
 
     'allowed_methods' => ['*'],
 

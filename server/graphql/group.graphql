@@ -1,0 +1,9 @@
+"Group of users"
+type Group {
+    "Unique primary key."
+    id: ID!
+
+    "Group Name."
+    name: String!
+
+}
