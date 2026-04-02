@@ -20,4 +20,5 @@ import { defineComponent } from "vue"
       ...mapMutations(["closeSnackbar"])
     })
   }
+}
 </script>

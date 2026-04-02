@@ -176,6 +176,7 @@ export default defineComponent({
       this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
   })
 });
+}
 </script>
 
 <style lang="scss">

@@ -385,6 +385,8 @@ export default defineComponent({
     },
     fullName: item => item.firstName + ' ' + item.familyName,
   })
+}
+}
 </script>
 
 <style scoped>

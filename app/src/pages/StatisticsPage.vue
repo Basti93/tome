@@ -52,6 +52,7 @@ export default defineComponent({
   computed: {
     ...mapGetters({loggedInUser: 'loggedInUser'}),
   })
+}
 </script>
 
 <style scoped>

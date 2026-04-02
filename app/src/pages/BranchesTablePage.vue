@@ -249,6 +249,8 @@ export default defineComponent({
       this.$store.commit('masterData/setBranches', this.branches);
     },
   })
+}
+}
 </script>
 
 <style scoped>

@@ -33,4 +33,5 @@ import { defineComponent } from "vue"
             },
         },
     });
+}
 </script>

@@ -61,6 +61,8 @@ export default defineComponent({
     cancel() {
       this.$emit('canceled')
   })
+}
+}
 </script>
 
 <style scoped>

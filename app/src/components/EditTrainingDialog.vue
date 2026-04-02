@@ -269,6 +269,7 @@ import { defineComponent } from "vue"
                 return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
         })
     })
+}
 </script>
 
 <style scoped>

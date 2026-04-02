@@ -225,6 +225,8 @@ export default defineComponent({
       this.$store.commit('masterData/setLocations', this.locations);
     },
   })
+}
+}
 </script>
 
 <style scoped>

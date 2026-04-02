@@ -404,6 +404,7 @@ export default defineComponent({
     parseDate,
   },
 })
+}
 </script>
 
 <style scoped>
