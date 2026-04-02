@@ -24,9 +24,10 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
   import {mapGetters, mapState} from 'vuex'
 
-  export default {
+  export default defineComponent({
 
     name: "GroupSelect",
     props: {
@@ -70,14 +71,13 @@
         } else {
           this.selectedGroupId = null;
           this.groupItems = []
-        }
         this.$emit('branchSelected', this.selectedBranchId)
         this.$emit('groupSelected', this.selectedGroupId)
       },
       selectedGroupId: function () {
         this.$emit('groupSelected', this.selectedGroupId)
       },
-    }
+    })
   }
 </script>
 

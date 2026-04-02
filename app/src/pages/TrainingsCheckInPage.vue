@@ -105,8 +105,8 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 import {mapGetters} from 'vuex'
 import TrainingCheckIn from "../components/TrainingCheckIn.vue";
 import GroupSelect from "../components/GroupSelect.vue";
@@ -115,7 +115,7 @@ import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingSelector from "../components/TrainingSelector.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingsCheckInPage",
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
   data: function () {
@@ -349,8 +349,7 @@ export default Vue.extend({
       if (!this.initializing) {
         this.fetchDataForCurrentUser();
       }
-    }
-  }
+  })
 })
 
 </script>

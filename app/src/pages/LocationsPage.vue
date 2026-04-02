@@ -134,8 +134,9 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-export default {
+export default defineComponent({
   name: "LocationsPage",
   data: function () {
     return {
@@ -205,7 +206,6 @@ export default {
         }
       } catch (error) {
         console.error(error);
-      }
     },
     createItem() {
       this.titleDialog = "Ort erstellen"
@@ -224,8 +224,7 @@ export default {
     updateMasterData() {
       this.$store.commit('masterData/setLocations', this.locations);
     },
-  }
-}
+  })
 </script>
 
 <style scoped>

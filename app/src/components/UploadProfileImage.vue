@@ -50,10 +50,10 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 
-export default Vue.extend({
+export default defineComponent({
   name: "UploadProfileImage",
   props: {
     imagePath: String,
@@ -100,7 +100,6 @@ export default Vue.extend({
     resetLocalFile() {
       this.files = null;
       this.files = [];
-    }
   },
   watch: {
     imagePath: {
@@ -110,7 +109,7 @@ export default Vue.extend({
         this.editImagePath = newVal;
       },
     },
-  }
+  })
 });
 </script>
 

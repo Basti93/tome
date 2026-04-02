@@ -213,10 +213,10 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
+import { defineComponent } from "vue"
     import Training from "../models/Training";
 
-    export default Vue.extend({
+    export default defineComponent({
         name: "EditTrainingDialog",
         data: function () {
             return {
@@ -267,8 +267,7 @@
 
                 const [day, month, year] = date.split('.')
                 return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-            }
-        }
+        })
     })
 </script>
 

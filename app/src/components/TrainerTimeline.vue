@@ -16,10 +16,11 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import StatisticsFilter1 from "./StatisticsFilter1";
 
-export default {
+export default defineComponent({
   name: "TrainerTimeline",
   components: {StatisticsFilter1},
   props: ['trainerId'],
@@ -94,12 +95,11 @@ export default {
         for (let i = 0; i < data[z].data.length; i++) {
           let monthNumber = parseInt(data[z].data[i].month);
           count.splice((monthNumber - 1), 1, data[z].data[i].accountingHours);
-        }
         this.series.push({
           name: data[z].trainer.firstName + ' ' + data[z].trainer.familyName,
           data: count
         });
-      }
+      })
     },
     filterGroupIdsChanged: function (groupIds) {
       this.filterGroupIds = groupIds;

@@ -157,13 +157,13 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue"
 import TrainingContent from "./TrainingContent"
 import {formatDate, parseDate} from "@/helpers/date-helpers"
 import {mapGetters, mapState} from 'vuex'
 import Group from "../models/Group";
 
-export default Vue.extend({
+export default defineComponent({
   name: "EditTrainingBase",
   components: {TrainingContent},
   props: {
@@ -281,7 +281,6 @@ export default Vue.extend({
       handler(newVal) {
         if (newVal) {
           this.endTime = newVal;
-        }
       },
     },
     locationId: {
@@ -295,7 +294,7 @@ export default Vue.extend({
       handler(newVal) {
         if (newVal) {
           this.selectedGroupIds = newVal;
-        }
+        })
       },
     },
     trainerIds: {

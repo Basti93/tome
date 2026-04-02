@@ -99,11 +99,12 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
     import GroupsSelect from "./GroupsSelect";
     import UploadProfileImage from "./UploadProfileImage";
     import {formatDate, parseDate} from "../helpers/date-helpers"
 
-    export default {
+    export default defineComponent({
         name: "EditUserDialog",
         components: {GroupsSelect, UploadProfileImage},
         props: [
@@ -224,7 +225,6 @@
                 if (data.status === 'ok') {
                     console.log("Image uploaded")
                     return data.imageUrl;
-                }
                 this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
                 throw "Image upload error";
             },
@@ -238,7 +238,7 @@
             birthdateMenu(val) {
                 val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
             },
-        }
+        })
     }
 </script>
 

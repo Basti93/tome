@@ -17,10 +17,11 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import StatisticsFilter1 from "./StatisticsFilter1";
 
-export default {
+export default defineComponent({
   name: "TrainingParticipationBarChart",
   components: {StatisticsFilter1},
   data: function () {
@@ -87,7 +88,6 @@ export default {
         for (let i = 0; i < data.length; i++) {
           names.push(data[i].firstName + " " + data[i].familyName)
           count.push(data[i].total)
-        }
         this.options = {
           xaxis: {
             categories: names,
@@ -97,7 +97,7 @@ export default {
           data: count
         }];
 
-      }
+      })
     },
     filterGroupIdsChanged: function (groupIds) {
       this.filterGroupIds = groupIds;

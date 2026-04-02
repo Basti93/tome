@@ -41,9 +41,10 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters, mapState} from 'vuex'
 
-export default {
+export default defineComponent({
 
   name: "StatisticsFilter1",
   props: {
@@ -115,12 +116,10 @@ export default {
             }
           }
           this.$emit('groupsSelected', this.selectedGroupIds)
-        }
       },
 
     },
-  }
-}
+  })
 </script>
 
 <style scoped>

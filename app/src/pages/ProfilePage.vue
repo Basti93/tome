@@ -197,6 +197,7 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters, mapState} from 'vuex'
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
 import UploadProfileImage from "@/components/UploadProfileImage.vue";
@@ -204,7 +205,7 @@ import {formatDate} from "../helpers/date-helpers"
 import GroupsSelect from "../components/GroupsSelect.vue";
 
 
-export default {
+export default defineComponent({
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
   data: function () {
@@ -312,12 +313,11 @@ export default {
         }
       } catch {
         this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
-      }
     },
     formatDate,
     shortNameAndName(branch) {
       return branch.name + ' (' + branch.shortName + ')';
-    }
+    })
   },
   watch: {
     birthdateMenu(val) {

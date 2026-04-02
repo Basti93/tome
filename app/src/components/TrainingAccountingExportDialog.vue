@@ -90,11 +90,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import {formatDate, parseDate} from "../helpers/date-helpers"
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingAccountingExportDialog",
   props: {
     'visible': Boolean,
@@ -151,12 +151,11 @@ export default Vue.extend({
         console.error(error);
       } finally {
         this.creatingExcelReport = false;
-      }
 
     },
     formatDate,
     parseDate,
-  }
+  })
 });
 </script>
 

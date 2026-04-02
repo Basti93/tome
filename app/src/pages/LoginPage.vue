@@ -51,10 +51,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 
-export default Vue.extend({
+export default defineComponent({
   name: "LoginPage",
   data: () => ({
     valid: true,
@@ -84,7 +84,6 @@ export default Vue.extend({
     checkCurrentLogin() {
       if (this.loggedInUser) {
         this.$router.replace(this.$route.query.redirect || '/')
-      }
     },
     async login() {
       const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password});
@@ -96,7 +95,7 @@ export default Vue.extend({
         this.$store.dispatch('eraseCookieUser');
         this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
         this.$router.replace(this.$route.query.redirect || '/')
-      }
+      })
     },
   },
 })

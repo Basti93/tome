@@ -41,17 +41,17 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import TrainingParticipationBarChart from "@/components/TrainingParticipationBarChart.vue";
 import TrainerTimeline from "@/components/TrainerTimeline.vue";
 
-export default {
+export default defineComponent({
   name: "StatisticsPage",
   components: {TrainerTimeline, TrainingParticipationBarChart},
   computed: {
     ...mapGetters({loggedInUser: 'loggedInUser'}),
-  }
-}
+  })
 </script>
 
 <style scoped>

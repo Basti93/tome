@@ -185,7 +185,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue"
 import {mapGetters, mapState} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase";
@@ -193,7 +193,7 @@ import {formatDate, parseDate} from "../helpers/date-helpers"
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Training from "../models/Training";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
   data: function () {
@@ -456,13 +456,12 @@ export default Vue.extend({
               } else {
                 console.error(res.data.error);
                 self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
-              }
             })
             .catch(function (err) {
               console.log(err);
               self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
             })
-      }
+      })
     },
     formatDate,
     parseDate,

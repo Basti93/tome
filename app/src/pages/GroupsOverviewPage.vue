@@ -80,15 +80,15 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 import {mapGetters} from 'vuex'
 import Group from "../models/Group";
 import User from "../models/User";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import TrainingSeries from "../models/TrainingSeries";
 
-export default Vue.extend({
+export default defineComponent({
   name: "GroupsOverviewPage",
   components: {},
   data() {
@@ -102,7 +102,6 @@ export default Vue.extend({
         {text: 'Sparte', value: 'branchId', sortable: false},
         {text: 'Mitglieder', value: 'userCount', sortable: false},
       ],
-    }
   },
   created() {
   },
@@ -119,7 +118,7 @@ export default Vue.extend({
     dayArrayToString,
     formatDate,
     parseDate,
-  }
+  })
 })
 
 </script>

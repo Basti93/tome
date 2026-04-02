@@ -17,10 +17,11 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
     import {mapGetters, mapState} from 'vuex'
     import Group from "../models/Group";
 
-    export default {
+    export default defineComponent({
 
         name: "GroupsSelect",
         props: {
@@ -51,14 +52,13 @@
                     handler(newVal) {
                         if (newVal) {
                             this.selectedGroupIds = newVal;
-                        }
                 },
 
             },
             selectedGroupIds: function () {
                 this.$emit('groupsChanged', {groupIds: this.selectedGroupIds})
             },
-        }
+        })
     }
 </script>
 

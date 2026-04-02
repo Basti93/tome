@@ -150,8 +150,9 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-export default {
+export default defineComponent({
   name: "BranchesTablePage",
   data: function () {
     return {
@@ -223,7 +224,6 @@ export default {
         }
       } catch (error) {
         console.error(error);
-      }
     },
     createItem() {
       this.titleDialog = "Sparte erstellen"
@@ -248,8 +248,7 @@ export default {
     updateMasterData() {
       this.$store.commit('masterData/setBranches', this.branches);
     },
-  }
-}
+  })
 </script>
 
 <style scoped>

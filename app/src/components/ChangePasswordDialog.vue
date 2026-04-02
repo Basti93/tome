@@ -50,10 +50,10 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
+import { defineComponent } from "vue"
     import {mapGetters} from 'vuex'
 
-    export default Vue.extend({
+    export default defineComponent({
         name: "ChangePasswordDialog",
         props: {
             'visible': Boolean,
@@ -102,8 +102,7 @@
                 if (response.data.status === 'ok') {
                     this.show = false;
                 }
-            }
-        }
+        })
     });
 </script>
 

@@ -44,9 +44,10 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
   import {mapGetters, mapState} from 'vuex'
 
-  export default {
+  export default defineComponent({
 
     name: "GroupsSelectDialog",
     props: {
@@ -109,12 +110,11 @@
         } else {
           this.selectedGroupIds = null;
           this.groupItems = []
-        }
       },
       branchId: function () {
         this.initSelect();
       },
-    }
+    })
   }
 </script>
 

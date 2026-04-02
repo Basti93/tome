@@ -349,8 +349,8 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 import {mapGetters, mapState} from 'vuex'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
@@ -360,7 +360,7 @@ import TrainingSelector from "../components/TrainingSelector.vue";
 import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingsPreparePage",
   components: {
     GroupChip,
@@ -593,7 +593,6 @@ export default Vue.extend({
         this.selectedTraining.locationId = this.editLocationId;
         this.cancelEditLocation();
         this.$emit("showSnackbar", "Ort aktualisiert", "success");
-      }
     },
     cancelEditLocation() {
       this.editLocationId = null;
@@ -618,7 +617,7 @@ export default Vue.extend({
         this.selectedTraining.start = startDateTime;
         this.selectedTraining.end = endDateTime;
         this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
-      }
+      })
     },
     fullName: item => item.firstName + ' ' + item.familyName,
   },

@@ -159,6 +159,7 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import GroupsSelectDialog from "../components/GroupsSelectDialog";
 import User from "../models/User";
@@ -167,7 +168,7 @@ import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default {
+export default defineComponent({
   name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
   data: function () {
@@ -378,7 +379,6 @@ export default {
       handler() {
         if (!this.loading) {
           this.loadData();
-        }
       },
       deep: true,
     },
@@ -386,7 +386,7 @@ export default {
       handler() {
         if (!this.loading) {
           this.loadData();
-        }
+        })
       },
       deep: true,
     },

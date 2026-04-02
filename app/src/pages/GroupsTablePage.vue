@@ -203,6 +203,7 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 import Group from "../models/Group";
 import {mapGetters, mapState} from "vuex";
 import Branch from "../models/Branch";
@@ -210,7 +211,7 @@ import User from "../models/User"
 import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default {
+export default defineComponent({
   name: "GroupsTablePage",
   components: {ConfirmDialog, TomeListItemProfileImage},
   data: function () {
@@ -362,7 +363,6 @@ export default {
         this.$emit("showSnackbar", "Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
       } else {
         this.$emit("showSnackbar", "Gruppe konnte nicht gelöscht werden", "error")
-      }
     },
     addSelectedUsersToGroup() {
       this.editedItem.userIds = this.editedItem.userIds .concat(this.selectedUserIds)
@@ -384,8 +384,7 @@ export default {
       return item.getShortNameAndName();
     },
     fullName: item => item.firstName + ' ' + item.familyName,
-  }
-}
+  })
 </script>
 
 <style scoped>

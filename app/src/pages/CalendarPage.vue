@@ -29,12 +29,12 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 import {mapGetters} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "CalendarPage",
   components: {TrainingCalendar},
 
@@ -45,8 +45,7 @@ export default Vue.extend({
         return true;
       }
       return false;
-    }
-  }
+  })
 })
 
 </script>

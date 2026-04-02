@@ -28,9 +28,10 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 
-export default {
+export default defineComponent({
   name: "TrainingContent",
   props: {
     contentIds: Array,
@@ -79,8 +80,7 @@ export default {
       this.selectedContentIds = [];
       for (let i = 0; i < this.initContentIds.length; i++) {
         this.selectedContentIds.push(this.initContentIds[i]);
-      }
-    }
+    })
   },
 }
 </script>

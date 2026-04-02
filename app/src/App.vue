@@ -78,12 +78,13 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import Navigation from "@/components/TomeNavigation.vue";
 import SnackbarStore from '@/components/SnackbarStore.vue'
 import messaging from './firebase-config'
 
-export default {
+export default defineComponent({
   name: 'App',
   components: {Navigation, SnackbarStore},
   data() {
@@ -181,8 +182,7 @@ export default {
     },
     isFirebaseSupported() {
       return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-    }
-  }
+  })
 
 }
 </script>

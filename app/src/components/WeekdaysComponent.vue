@@ -13,9 +13,9 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
+import { defineComponent } from "vue"
 
-    export default Vue.extend({
+    export default defineComponent({
         name: "WeekdaysComponent",
         props: {
           weekdays: Array,
@@ -30,7 +30,6 @@
         methods: {
            getWeekdayString(weekday: number): string {
                return this.weekdaysStrings[weekday - 1];
-           }
         },
         watch: {
             weekdaysSelected() {
@@ -42,7 +41,7 @@
                     this.weekdaysSelected = newVal;
                 },
             },
-        }
+        })
     })
 </script>
 

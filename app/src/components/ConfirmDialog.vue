@@ -30,8 +30,9 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 
-export default {
+export default defineComponent({
   name: "ConfirmDialog",
   props: {
     show: Boolean,
@@ -59,9 +60,7 @@ export default {
     },
     cancel() {
       this.$emit('canceled')
-    }
-  }
-}
+  })
 </script>
 
 <style scoped>

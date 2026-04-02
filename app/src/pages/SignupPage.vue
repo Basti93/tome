@@ -119,9 +119,10 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {formatDate} from "../helpers/date-helpers"
 
-export default {
+export default defineComponent({
   name: "SignupPage",
   data: () => ({
     errors: [],
@@ -187,8 +188,7 @@ export default {
               this.$emit("showSnackbar", validationError, "error");
             }
           }
-        }
-      }
+      })
     },
     formatDate,
   },

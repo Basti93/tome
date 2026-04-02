@@ -50,11 +50,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue"
 import Group from "../models/Group";
 import {mapGetters} from "vuex";
 
-export default Vue.extend({
+export default defineComponent({
   name: "GroupChip",
   props: {
     group: Group,
@@ -72,10 +72,9 @@ export default Vue.extend({
     imageUrl(imagePath) {
       if (imagePath) {
         return this.serverUrl + "/" + imagePath;
-      }
       return null;
     },
-  }
+  })
 });
 </script>
 

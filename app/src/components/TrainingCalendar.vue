@@ -180,11 +180,11 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue"
 import {mapGetters, mapState} from 'vuex';
 import Training from "@/models/Training";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingCalendar",
   props: {
     privateMode: Boolean,
@@ -363,7 +363,6 @@ export default Vue.extend({
         setTimeout(open, 10)
       } else {
         open()
-      }
 
       nativeEvent.stopPropagation()
     },
@@ -394,7 +393,7 @@ export default Vue.extend({
     getFullName(trainerId) {
       let trainer = this.getSimpleTrainerById(trainerId);
       return trainer.firstName + " " + trainer.familyName;
-    }
+    })
   },
 })
 </script>

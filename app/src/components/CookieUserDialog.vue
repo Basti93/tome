@@ -63,9 +63,10 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
   import {mapGetters} from 'vuex'
 
-  export default {
+  export default defineComponent({
     name: "CookieUserDialog",
     props: ['visible', 'propUserId', 'propGroupId', 'propBranchId'],
     data() {
@@ -119,10 +120,9 @@
         if (this.userId) {
           this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0])})
           this.$emit('close')
-        }
       },
 
-    }
+    })
   }
 </script>
 

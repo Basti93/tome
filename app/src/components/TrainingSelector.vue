@@ -82,12 +82,12 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from 'vue'
 import Training from "../models/Training";
 import {mapGetters} from "vuex";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingSelector",
   props: {
     trainings: Array,
@@ -174,8 +174,7 @@ export default Vue.extend({
   watch: {
     selectedTrainingId(): Number {
       this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
-    }
-  }
+  })
 });
 </script>
 

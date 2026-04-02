@@ -197,14 +197,14 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 import {mapGetters} from "vuex";
 import {formatDate} from "@/helpers/date-helpers"
 import User from "../models/User";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "AbsenceFormPage",
   components: {ConfirmDialog},
   data: () => ({
@@ -326,8 +326,7 @@ export default Vue.extend({
         if (data.status === 'ok') {
           this.$emit("showSnackbar", "Abwesenheit erfolgreich gelöscht", "success");
           this.loadAllAbsenceUsers();
-        }
-      }
+      })
     },
     resetFormData() {
       this.absenceReason = null;

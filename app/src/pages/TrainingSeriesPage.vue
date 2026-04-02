@@ -227,7 +227,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue"
 import EditTrainingBase from "../components/EditTrainingBase";
 import TrainingSeries from "@/models/TrainingSeries";
 import {mapGetters, mapState} from 'vuex'
@@ -235,7 +235,7 @@ import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
@@ -378,13 +378,12 @@ export default Vue.extend({
         res = await this.$http.put(url, postData);
       } else {
         res = await this.$http.post(url, postData);
-      }
 
       if (res.data.status == 'ok') {
         this.showCreateDialog = false;
         this.fetchData();
         this.$emit('showSnackbar', 'Serie erfolgreich erstellt');
-      }
+      })
 
     },
     filterChanged() {

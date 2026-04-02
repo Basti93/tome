@@ -293,17 +293,17 @@
 </template>
 
 <script>
+import { defineComponent } from "vue"
 import {mapGetters} from 'vuex'
 import ProfileImage from "@/components/ProfileImage.vue";
 
-export default {
+export default defineComponent({
   name: "TomeNavigation",
   components: {ProfileImage},
   data() {
     return {
       drawer: false,
       title: process.env.VUE_APP_TITLE,
-    }
   },
   computed: {
     ...mapGetters({loggedInUser: 'loggedInUser'}),
@@ -315,7 +315,7 @@ export default {
       let group = this.getGroupById(this.loggedInUser.groupId);
       if (group) {
         return group.name
-      }
+      })
       return undefined;
     },
   },

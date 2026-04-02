@@ -77,10 +77,10 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 
-import Vue from "vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "InfoPage",
   data: function () {
     return {
@@ -88,7 +88,6 @@ export default Vue.extend({
       faqs: [],
       filePaths: [],
       serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
-    }
   },
   created(): void {
     this.fetchFaqs();
@@ -101,7 +100,7 @@ export default Vue.extend({
       this.filePaths = res.data;
 
     },
-  }
+  })
 })
 </script>
 

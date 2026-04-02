@@ -199,6 +199,7 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from "vue"
 import TrainingContent from "./TrainingContent";
 import ProfileImage from "../components/ProfileImage";
 import User from "../models/User";
@@ -206,7 +207,7 @@ import Training from "../models/Training";
 import {mapGetters} from 'vuex'
 import GroupChip from "./GroupChip.vue";
 
-export default {
+export default defineComponent({
   name: "TrainingCheckIn",
   components: {GroupChip, TrainingContent, ProfileImage},
   props: {
@@ -337,7 +338,6 @@ export default {
         }
       } catch (error) {
         console.error(error);
-      }
     },
     fullName: item => item.firstName + ' ' + item.familyName,
     urlify(text) {
@@ -346,7 +346,7 @@ export default {
         return text.replace(urlRegex, function (url) {
           return '<a target="_blank" href="' + url + '">' + url + '</a>';
         })
-      }
+      })
     },
   },
 }

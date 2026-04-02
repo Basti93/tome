@@ -59,9 +59,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue"
 
-export default Vue.extend({
+export default defineComponent({
   name: "ProfileImage",
   props: {
     imagePath: String,
@@ -88,12 +88,11 @@ export default Vue.extend({
     imageUrl() {
       if (this.imagePath) {
         return this.serverUrl + "/" + this.imagePath;
-      }
       return null;
     },
     fullName() {
       return this.firstName + " " + this.familyName;
-    }
+    })
   },
 });
 </script>

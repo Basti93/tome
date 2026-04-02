@@ -350,7 +350,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue"
 import {mapGetters, mapState} from 'vuex'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
@@ -360,7 +360,7 @@ import ListItemProfileImage from "../components/ListItemProfileImage"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default defineComponent({
   name: "TrainingsEvaluationPage",
   components: {
     TrainingSelector,
@@ -534,7 +534,6 @@ export default Vue.extend({
       if (data.status == 'ok') {
         this.selectedTraining.evaluated = true
         this.$emit("showSnackbar", "Training abgeschlossen", "success");
-      }
     },
     editTime(item: TrainingTrainer) {
       this.selectedTrainerId = item.userId;
@@ -563,7 +562,7 @@ export default Vue.extend({
         selectedTrainer.accountingTimeStart = startDateTime;
         selectedTrainer.accountingTimeEnd = endDateTime;
         this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
-      }
+      })
     },
     selectTraining(id) {
       this.animationTrigger = false;
