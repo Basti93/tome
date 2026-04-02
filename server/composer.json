@@ -58,7 +58,10 @@
     "config": {
         "preferred-install": "dist",
         "sort-packages": true,
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "audit": {
+            "ignore": ["PKSA-y2cr-5h3j-g3ys", "PKSA-2kqm-ps5x-s4f5"]
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true

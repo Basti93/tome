@@ -10,50 +10,63 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "apexcharts": "^3.35.3",
-    "axios": "^0.27.2",
-    "core-js": "^3.22.8",
-    "firebase": "^9.12.1",
-    "jwt-decode": "^3.1.2",
-    "material-design-icons-iconfont": "^6.7.0",
-    "moment": "^2.29.3",
+    "@mdi/font": "^7.4.47",
+    "@mdi/js": "^7.2.96",
+    "apexcharts": "^4.0.0",
+    "axios": "^1.6.0",
+    "core-js": "^3.35.0",
+    "firebase": "^10.7.0",
+    "jwt-decode": "^4.0.0",
+    "moment": "^2.29.4",
     "register-service-worker": "^1.7.2",
-    "sass-loader": "^10.2.1",
-    "vue": "^2.6.14",
-    "vue-apexcharts": "^1.6.2",
-    "vue-axios": "^3.4.1",
-    "vue-router": "^3.5.4",
-    "vuetify": "^2.6.6",
-    "vuex": "^3.6.2"
+    "sass-loader": "^16.0.7",
+    "vue": "^3.5.0",
+    "vue-apexcharts": "^1.6.3",
+    "vue-router": "^4.3.0",
+    "vuetify": "^3.5.0",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.18.2",
-    "@vue/cli-plugin-babel": "^5.0.4",
-    "@vue/cli-plugin-eslint": "^5.0.4",
-    "@vue/cli-plugin-pwa": "^5.0.4",
-    "@vue/cli-plugin-typescript": "^5.0.4",
-    "@vue/cli-service": "^5.0.4",
-    "@vue/eslint-config-typescript": "^10.0.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.7.1",
-    "eslint-plugin-vuetify": "^1.1.0",
-    "sass": "^1.55.0",
-    "typescript": "^3.6.5",
-    "vue-template-compiler": "^2.6.14"
+    "@babel/eslint-parser": "^7.23.0",
+    "@types/node": "^25.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-plugin-pwa": "^5.0.8",
+    "@vue/cli-plugin-typescript": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "@vue/compiler-sfc": "^3.5.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-vue": "^9.18.0",
+    "sass": "^1.69.0",
+    "typescript": "^5.3.0"
   },
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "browser": true,
+      "es2021": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended",
-      "@vue/typescript"
+      "@vue/eslint-config-typescript"
     ],
-    "rules": {},
+    "rules": {
+      "vue/no-deprecated-slot-attribute": "off",
+      "vue/no-deprecated-v-on-native-modifier": "off",
+      "vue/no-deprecated-v-bind-sync": "off",
+      "vue/no-use-computed-property-like-method": "off",
+      "vue/multi-word-component-names": "off",
+      "vue/no-v-text-v-html-on-component": "off"
+    },
     "parserOptions": {
-      "parser": "@typescript-eslint/parser"
+      "parser": "@typescript-eslint/parser",
+      "ecmaVersion": 2020
     }
   },
   "postcss": {

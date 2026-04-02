@@ -9,10 +9,11 @@ module.exports = {
             }
         }
     },
-    pwa: {
-        workboxPluginMode: 'InjectManifest',
-        workboxOptions: {
-            swSrc: './src/firebase-messaging-sw.js',
-        }
-    }
+    // PWA disabled for Vue 3 migration - will re-enable after migration complete
+    // pwa: {
+    //     workboxPluginMode: 'InjectManifest',
+    //     workboxOptions: {
+    //         swSrc: './src/firebase-messaging-sw.js',
+    //     }
+    // }
 }
