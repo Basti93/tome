@@ -24,26 +24,15 @@
                                 md="4"
                             >
                               <v-autocomplete
-                                  :items="users"
+                                  :items="formattedUsers"
                                   v-model="userId"
                                   item-value="id"
-                                  item-title="firstName"
+                                  item-title="displayName"
                                   clearable
                                   required
                                   :rules="requiredRule"
                                   label="Sportler auswählen"
-                              >
-                                <template v-slot:selection="{ item }">
-                                  {{ item.firstName }} {{ item.familyName }}
-                                </template>
-                                <template v-slot:item="{ item, props }">
-                                  <v-list-item v-bind="props">
-                                    <template #title>
-                                      {{ item.firstName }} {{ item.familyName }}
-                                    </template>
-                                  </v-list-item>
-                                </template>
-                              </v-autocomplete>
+                              ></v-autocomplete>
                             </v-col>
                             <v-col
                                 cols="12"
@@ -268,6 +257,13 @@ const absenceStartFormatted = computed(() => {
 
 const absenceEndFormatted = computed(() => {
   return formatDate(absenceEnd.value)
+})
+
+const formattedUsers = computed(() => {
+  return users.value.map(user => ({
+    ...user,
+    displayName: `${user.firstName} ${user.familyName}`
+  }))
 })
 
 function getAllSimpleUsersWithGroup() {
