@@ -20,35 +20,115 @@ class TrainingsTableSeeder extends Seeder
      */
     public function run()
     {
-        $location = Location::where('name', 'Gym A')->first();
-        $series = TrainingSeries::where('comment', 'Weekly women\'s training series')->first();
-        $group = Group::where('name', 'Wettkampfturner I')->first();
-        $trainer = User::where('email', 'trainer@tome.local')->first();
-        $member = User::where('email', 'member@tome.local')->first();
-        $contents = Content::whereIn('name', ['Boden', 'Sprung'])->get();
+        $locations = Location::all();
+        $groups = Group::all();
+        $trainers = User::whereHas('roles', fn($q) => $q->where('name', 'trainer'))->get();
+        $members = User::whereHas('roles', fn($q) => $q->where('name', 'member'))->get();
+        $contents = Content::all();
 
-        if (!$group || !$trainer || !$member || $contents->isEmpty()) {
+        if ($locations->isEmpty() || $groups->isEmpty() || $trainers->isEmpty() || $contents->isEmpty()) {
             return;
         }
 
-        $start = Carbon::now()->addDays(3)->setTime(18, 0, 0);
-        $end = (clone $start)->addMinutes(90);
+        // Create 30 past trainings for evaluation (from last 30 days)
+        for ($i = 0; $i < 30; $i++) {
+            $daysOffset = floor($i / 4); // 4 trainings per day
+            $timeSlot = $i % 4;
 
-        $training = Training::firstOrNew([
-            'start' => $start->toDateTimeString(),
-            'end' => $end->toDateTimeString(),
-        ]);
+            $times = [
+                ['hour' => 9, 'minute' => 0],
+                ['hour' => 14, 'minute' => 0],
+                ['hour' => 17, 'minute' => 0],
+                ['hour' => 19, 'minute' => 0],
+            ];
 
-        $training->comment = 'First seeded training block';
-        $training->prepared = 1;
-        $training->evaluated = 0;
-        $training->location_id = optional($location)->id;
-        $training->training_series_id = optional($series)->id;
-        $training->save();
+            $time = $times[$timeSlot];
+            $start = Carbon::now()->subDays(30 - $daysOffset)->setTime($time['hour'], $time['minute'], 0);
+            $end = (clone $start)->addMinutes(90);
 
-        $training->groups()->syncWithoutDetaching([$group->id]);
-        $training->trainers()->syncWithoutDetaching([$trainer->id]);
-        $training->contents()->syncWithoutDetaching($contents->pluck('id')->all());
-        $training->participants()->syncWithoutDetaching([$member->id => ['attend' => 1]]);
+            $training = new Training([
+                'start' => $start->toDateTimeString(),
+                'end' => $end->toDateTimeString(),
+                'comment' => 'Past training ' . ($i + 1),
+                'prepared' => 1,
+                'evaluated' => rand(0, 1), // Some already evaluated, some pending
+                'location_id' => $locations->random()->id,
+            ]);
+            $training->save();
+
+            // Assign random group(s)
+            $randomGroups = $groups->random(rand(1, 2))->pluck('id')->all();
+            $training->groups()->syncWithoutDetaching($randomGroups);
+
+            // Assign random trainer(s)
+            $randomTrainers = $trainers->random(rand(1, 2))->pluck('id')->all();
+            $training->trainers()->syncWithoutDetaching($randomTrainers);
+
+            // Assign random contents
+            if ($contents->isNotEmpty()) {
+                $randomContents = $contents->random(rand(1, 3))->pluck('id')->all();
+                $training->contents()->syncWithoutDetaching($randomContents);
+            }
+
+            // Assign random members as participants
+            $participantIds = [];
+            foreach ($members->random(rand(3, min(8, $members->count()))) as $member) {
+                $participantIds[$member->id] = ['attend' => rand(0, 1)];
+            }
+            if (!empty($participantIds)) {
+                $training->participants()->syncWithoutDetaching($participantIds);
+            }
+        }
+
+        // Create 100 future trainings spread across the next 60 days
+        for ($i = 0; $i < 100; $i++) {
+            // Spread trainings across different days and times
+            $daysOffset = floor($i / 4); // 4 trainings per day
+            $timeSlot = $i % 4; // Morning, midday, afternoon, evening
+
+            $times = [
+                ['hour' => 9, 'minute' => 0],
+                ['hour' => 14, 'minute' => 0],
+                ['hour' => 17, 'minute' => 0],
+                ['hour' => 19, 'minute' => 0],
+            ];
+
+            $time = $times[$timeSlot];
+            $start = Carbon::now()->addDays(3 + $daysOffset)->setTime($time['hour'], $time['minute'], 0);
+            $end = (clone $start)->addMinutes(90);
+
+            $training = new Training([
+                'start' => $start->toDateTimeString(),
+                'end' => $end->toDateTimeString(),
+                'comment' => 'Seeded training ' . ($i + 1),
+                'prepared' => rand(0, 1),
+                'evaluated' => 0, // Future trainings not yet evaluated
+                'location_id' => $locations->random()->id,
+            ]);
+            $training->save();
+
+            // Assign random group(s)
+            $randomGroups = $groups->random(rand(1, 2))->pluck('id')->all();
+            $training->groups()->syncWithoutDetaching($randomGroups);
+
+            // Assign random trainer(s)
+            $randomTrainers = $trainers->random(rand(1, 2))->pluck('id')->all();
+            $training->trainers()->syncWithoutDetaching($randomTrainers);
+
+            // Assign random contents
+            if ($contents->isNotEmpty()) {
+                $randomContents = $contents->random(rand(1, 3))->pluck('id')->all();
+                $training->contents()->syncWithoutDetaching($randomContents);
+            }
+
+            // Assign random members as participants
+            $participantIds = [];
+            foreach ($members->random(rand(3, min(8, $members->count()))) as $member) {
+                $participantIds[$member->id] = ['attend' => rand(0, 1)];
+            }
+            if (!empty($participantIds)) {
+                $training->participants()->syncWithoutDetaching($participantIds);
+            }
+        }
     }
 }

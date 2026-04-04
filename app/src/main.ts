@@ -7,6 +7,13 @@ import httpClient from './http/api'
 import { useMasterDataStore } from './store/masterData'
 import VueApexCharts from 'vue3-apexcharts'
 
+// @ts-ignore
+import moment from 'moment'
+// @ts-ignore
+import 'moment/locale/de'
+
+moment.locale('de')
+
 async function init() {
   const app = createApp(App)
   const pinia = createPinia()

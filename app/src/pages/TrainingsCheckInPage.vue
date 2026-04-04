@@ -65,7 +65,7 @@
                   ></TrainingSelector>
                 </v-col>
                 <v-col md="9">
-                  <div v-show="dataLoaded" class="tp-training-check-in">
+                  <div v-show="dataLoaded" class="tp-training-check-in" :style="{ '--selected-color': selectedTrainingColor } as any">
                     <v-slide-x-transition>
                       <TrainingCheckIn
                           v-if="selectedTraining && animationTrigger"
@@ -159,6 +159,16 @@ export default {
     },
     selectedTraining() {
       return this.getUpcomingTrainingById(this.selectedTrainingId);
+    },
+    selectedTrainingColor() {
+      if (this.selectedTraining) {
+        const masterData = useMasterDataStore();
+        const mainBranch = masterData.getBranchByGroupIds(this.selectedTraining.groupIds);
+        if (mainBranch) {
+          return mainBranch.colorHex;
+        }
+      }
+      return '#64b5f6';
     },
     currentUserGroupId() {
       if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
@@ -362,5 +372,34 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.tp-training-check-in {
+  --selected-color: #64b5f6;
+  position: relative;
 
+  .tp-training-check-in__card {
+    position: relative;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--selected-color) 8%, white) 0%,
+      transparent 25%
+    );
+    margin-left: 6px;
+
+    :deep(.v-card__title) {
+      justify-content: center !important;
+      text-align: center !important;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background-color: var(--selected-color);
+      border-radius: 4px 0 0 4px;
+    }
+  }
+}
 </style>

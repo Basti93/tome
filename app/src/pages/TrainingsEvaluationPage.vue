@@ -123,7 +123,7 @@
                             <v-card-text class="pa-0 pa-md-4">
 
                               <v-list-group
-                                  :value="participantsListGroupActive"
+                                  v-model="participantsListGroupActive"
                                   prepend-icon="mdi-check"
                                   group="participants"
                                   no-action
@@ -164,7 +164,7 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  :value="canceledUserListGroupActive"
+                                  v-model="canceledUserListGroupActive"
                                   prepend-icon="cancel"
                                   group="participants"
                                   no-action
@@ -378,8 +378,8 @@ export default {
       selectedLocationId: null,
       trainersListGroupActive: true,
       participantsListGroupActive: true,
-      canceledUserListGroupActive: false,
-      undecidedUsersListGroupActive: false,
+      canceledUserListGroupActive: true,
+      undecidedUsersListGroupActive: true,
       confirmEvaluationDialog: false,
       editStartTime: null as String,
       editEndTime: null as String,
