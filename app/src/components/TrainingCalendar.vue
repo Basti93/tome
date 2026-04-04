@@ -214,27 +214,27 @@ export default {
   },
   computed: {
     branches() {
-      return useMasterDataStore().branches
+      return useMasterDataStore().branches;
     },
     title() {
-      const {start, end} = this
+      const {start, end} = this;
       if (!start || !end) {
-        return ''
+        return '';
       }
 
       const startMonth = moment(start.date).format('MMMM');
-      const startYear = start.year
-      const startDay = start.day
+      const startYear = start.year;
+      const startDay = start.day;
 
       switch (this.type) {
         case 'month':
-          return `${startMonth} ${startYear}`
+          return `${startMonth} ${startYear}`;
         case 'week':
         case 'day':
         case 'category':
-          return `${startMonth} ${startDay} ${startYear}`
+          return `${startMonth} ${startDay} ${startYear}`;
       }
-      return ''
+      return '';
     },
   },
   methods: {
