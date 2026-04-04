@@ -116,10 +116,10 @@ export default {
       return useMasterDataStore().getSimpleTrainersByGroupId(groupId)
     },
     getTrainingSeriesByGroupId(groupId) {
-      return useMasterDataStore().getTrainingSeriesByGroupId(groupId)
+      return useMasterDataStore().getTrainingSeriesByGroupId(groupId);
     },
     getLocationNameById(locationId) {
-      return useMasterDataStore().getLocationNameById(locationId)
+      return useMasterDataStore().getLocationNameById(locationId);
     },
     dayArrayToString,
     formatDate,
