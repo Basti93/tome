@@ -10,6 +10,13 @@ until docker-compose exec -T mysql mysqladmin ping -h localhost > /dev/null 2>&1
 done
 
 echo ""
+echo "Waiting for Laravel to be ready..."
+until docker-compose exec -T laravel php -v > /dev/null 2>&1; do
+  printf '.'
+  sleep 1
+done
+
+echo ""
 echo "Running Laravel migrations..."
 docker-compose exec -T laravel php artisan migrate --force
 
