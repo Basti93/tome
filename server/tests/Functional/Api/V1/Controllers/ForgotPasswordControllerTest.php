@@ -15,7 +15,8 @@ class ForgotPasswordControllerTest extends TestCase
         parent::setUp();
 
         $user = new User([
-            'name' => 'Test',
+            'firstName' => 'Test',
+            'familyName' => 'User',
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -25,7 +26,7 @@ class ForgotPasswordControllerTest extends TestCase
 
     public function testForgotPasswordRecoverySuccessfully()
     {
-        $this->post('api/auth/recovery', [
+        $this->post('api/v1/auth/recovery', [
             'email' => 'test@email.com'
         ])->assertJson([
             'status' => 'ok'
@@ -34,7 +35,7 @@ class ForgotPasswordControllerTest extends TestCase
 
     public function testForgotPasswordRecoveryReturnsUserNotFoundError()
     {
-        $this->post('api/auth/recovery', [
+        $this->post('api/v1/auth/recovery', [
             'email' => 'unknown@email.com'
         ])->assertJsonStructure([
             'error'
@@ -43,7 +44,7 @@ class ForgotPasswordControllerTest extends TestCase
 
     public function testForgotPasswordRecoveryReturnsValidationErrors()
     {
-        $this->post('api/auth/recovery', [
+        $this->post('api/v1/auth/recovery', [
             'email' => 'i am not an email'
         ])->assertJsonStructure([
             'error'

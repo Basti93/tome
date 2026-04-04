@@ -16,7 +16,8 @@ class UserControllerTest extends TestCase
         parent::setUp();
 
         $user = new User([
-            'name' => 'Test',
+            'firstName' => 'Test',
+            'familyName' => 'User',
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -26,7 +27,7 @@ class UserControllerTest extends TestCase
 
     public function testMe()
     {
-        $response = $this->post('api/auth/login', [
+        $response = $this->post('api/v1/auth/login', [
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -36,7 +37,7 @@ class UserControllerTest extends TestCase
         $responseJSON = json_decode($response->getContent(), true);
         $token = $responseJSON['token'];
 
-        $this->get('api/auth/me?token=' . $token, [], [])->assertJson([
+        $this->get('api/v1/auth/me?token=' . $token, [], [])->assertJson([
             'name' => 'Test',
             'email' => 'test@email.com'
         ])->isOk();

@@ -2,18 +2,19 @@
 
 namespace App\Api\V1\Controllers;
 
+use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
 use App\Api\V1\Requests\LoginRequest;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Auth;
 use App\User;
-use Spatie\Permission\Models\Role;
 
 class LoginController extends Controller
 {
+    private const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+    private const LOCKOUT_DURATION_MINUTES = 15;
     /**
      * Log the user in
      *
@@ -24,28 +25,66 @@ class LoginController extends Controller
     public function login(LoginRequest $request, JWTAuth $JWTAuth)
     {
         $credentials = $request->only(['email', 'password']);
+        $user = User::where('email', $request->input('email'))->first();
+
+        if ($user && $user->locked_until && Carbon::parse($user->locked_until)->isFuture()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Account locked due to too many failed login attempts. Please try again later.',
+            ], 403);
+        }
 
         try {
             $token = Auth::guard('api')->attempt($credentials);
 
             if (!$token || !Auth::user()) {
-                return response()
-                    ->json([
-                        'status' => 'error',
-                        'message' => 'Unauthorized',
-                    ]);
+                if ($user) {
+                    $locked = $this->incrementFailedLoginAttempts($user);
+
+                    if ($locked) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Account locked due to too many failed login attempts. Please try again later.',
+                        ], 403);
+                    }
+                }
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized',
+                ], 403);
             }
 
         } catch (JWTException $e) {
             throw new HttpException(500);
         }
 
-        return response()
-            ->json([
-                'status' => 'ok',
-                'token' => $token,
-                'user' => Auth::guard('api')->user(),
-                'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
-            ]);
+        if ($user) {
+            $user->failed_login_attempts = 0;
+            $user->locked_until = null;
+            $user->save();
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'token' => $token,
+            'user' => Auth::guard('api')->user(),
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
+        ]);
+    }
+
+    private function incrementFailedLoginAttempts(User $user): bool
+    {
+        $user->failed_login_attempts = $user->failed_login_attempts + 1;
+
+        if ($user->failed_login_attempts >= self::MAX_FAILED_LOGIN_ATTEMPTS) {
+            $user->locked_until = Carbon::now()->addMinutes(self::LOCKOUT_DURATION_MINUTES);
+            $user->save();
+            return true;
+        }
+
+        $user->save();
+        return false;
     }
 }
+

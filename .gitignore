@@ -27,6 +27,10 @@
 /server/.env
 /server/composer.lock
 /server/config/database_prod.php
+/server/.phpunit.result.cache
+/server/.phpunit.cache
+/server/.phpunit/
+/server/phpunit*.cache
 
 
 

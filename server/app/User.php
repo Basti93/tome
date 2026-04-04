@@ -31,6 +31,10 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token', 'updated_at', 'created_at', 'roles'
     ];
 
+    protected $casts = [
+        'locked_until' => 'datetime',
+    ];
+
     protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];
 
     public function getNameAttribute() {
