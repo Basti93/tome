@@ -107,12 +107,12 @@
                               class="mr-2"
                               v-if="canEditUser(item)"
                               @click="editItem(item)"
-                              color="success">edit
+                              color="success">mdi-pencil
                           </v-icon>
                           <v-icon
                               v-if="canDeleteUser(item)"
                               @click="confirmAndDelete(item)"
-                              color="error">delete
+                              color="error">mdi-trash-can
                           </v-icon>
                         </template>
                         <template v-slot:no-data>
