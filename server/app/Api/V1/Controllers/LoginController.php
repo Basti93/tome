@@ -74,12 +74,16 @@ class LoginController extends Controller
             $user->save();
         }
 
+        $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);
+        $secureCookie = app()->environment('production');
+
         return response()->json([
             'status' => 'ok',
-            'token' => $token,
             'user' => Auth::guard('api')->user(),
             'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
-        ]);
+        ])->withCookie(
+            cookie('jwt_token', $token, $refreshTtlMinutes, '/', null, $secureCookie, true, false, 'Strict')
+        );
     }
 
     private function incrementFailedLoginAttempts(User $user): bool

@@ -21,10 +21,14 @@ class RefreshController extends Controller
     {
         $token = Auth::guard('api')->refresh();
 
+        $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);
+        $secureCookie = app()->environment('production');
+
         return response()->json([
             'status' => 'ok',
-            'token' => $token,
             'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
-        ]);
+        ])->withCookie(
+            cookie('jwt_token', $token, $refreshTtlMinutes, '/', null, $secureCookie, true, false, 'Strict')
+        );
     }
 }

@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->api(append: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\JwtFromCookie::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

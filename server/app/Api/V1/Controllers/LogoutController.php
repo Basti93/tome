@@ -27,6 +27,7 @@ class LogoutController extends Controller
         Auth::guard('api')->logout();
 
         return response()
-            ->json(['message' => 'Successfully logged out']);
+            ->json(['message' => 'Successfully logged out'])
+            ->withCookie(cookie()->forget('jwt_token'));
     }
 }

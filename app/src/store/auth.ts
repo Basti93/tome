@@ -6,15 +6,12 @@ export const useAuthStore = defineStore('auth', {
     const stored = localStorage.getItem('user')
     return {
       user: stored ? User.from(stored) : null,
-      token: localStorage.getItem('token') as string | null
     }
   },
   actions: {
-    login(user: User, token: string) {
+    login(user: User) {
       this.user = user
-      this.token = token
       localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('token', token)
     },
     updateUser(user: User) {
       this.user = user
@@ -22,9 +19,7 @@ export const useAuthStore = defineStore('auth', {
     },
     logout() {
       this.user = null
-      this.token = null
       localStorage.removeItem('user')
-      localStorage.removeItem('token')
     }
   }
 })

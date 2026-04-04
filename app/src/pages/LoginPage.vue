@@ -163,13 +163,13 @@ export default {
             useSnackbarStore().show(data.message, "error")
           }
           useAuthStore().logout()
-        } else if (!data.token) {
+        } else if (!data.user) {
           useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
           useAuthStore().logout()
         } else {
           this.emailNotVerifiedError = false
           const user = User.from(JSON.stringify(data.user))
-          useAuthStore().login(user, data.token)
+          useAuthStore().login(user)
           useCookieAuthStore().eraseCookieUser()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
           this.router.replace(this.route.query.redirect as string || '/')
