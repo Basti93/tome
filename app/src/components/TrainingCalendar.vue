@@ -181,8 +181,10 @@
 
 <script lang="ts">
 ;
-import {mapGetters, mapState} from 'vuex';
 import Training from "@/models/Training";
+import { useMasterDataStore } from '@/store/masterData'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   name: "TrainingCalendar",
@@ -209,26 +211,19 @@ export default {
     },
   }),
   mounted() {
-    this.focus = this.moment().format('YYYY-MM-DD')
+    this.focus = moment().format('YYYY-MM-DD')
   },
   computed: {
-    ...mapGetters('masterData', {
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupById: 'getGroupById',
-      getSimpleTrainerById: 'getSimpleTrainerById',
-      getBranchById: 'getBranchById',
-      getLocationNameById: 'getLocationNameById',
-    }),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    branches() {
+      return useMasterDataStore().branches
+    },
     title() {
       const {start, end} = this
       if (!start || !end) {
         return ''
       }
 
-      const startMonth = this.moment(start.date).format('MMMM');
+      const startMonth = moment(start.date).format('MMMM');
       const startYear = start.year
       const startDay = start.day
 
@@ -244,6 +239,15 @@ export default {
     },
   },
   methods: {
+    getBranchByGroupId(groupId: number) {
+      return useMasterDataStore().getBranchByGroupId(groupId)
+    },
+    getSimpleTrainerById(trainerId: number) {
+      return useMasterDataStore().getSimpleTrainerById(trainerId)
+    },
+    getLocationNameById(locationId: number) {
+      return useMasterDataStore().getLocationNameById(locationId)
+    },
     async loadData() {
       this.trainings = [];
       this.events = [];
@@ -262,7 +266,7 @@ export default {
       } else {
         url += 'simplecalendar'
       }
-      const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -270,8 +274,8 @@ export default {
         }
         if (branch) {
           let training = new Training(trainingData.id,
-              this.moment(trainingData.start),
-              this.moment(trainingData.end),
+              moment(trainingData.start),
+              moment(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -303,7 +307,7 @@ export default {
     },
     async loadPlannedTrainingEvents() {
       let url = '/training/simplecalendar/planned'
-      const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -311,8 +315,8 @@ export default {
         }
         if (branch) {
           let training = new Training(trainingData.id,
-              this.moment(trainingData.start),
-              this.moment(trainingData.end),
+              moment(trainingData.start),
+              moment(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -339,11 +343,11 @@ export default {
       }
     },
     async loadBirthdayEvents() {
-      const {data} = await this.$http.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await axios.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
       for (let birthdayData of data) {
         this.events.push({
           name: birthdayData.firstName + " " + birthdayData.familyName,
-          start: this.start.date.slice(0, 4) + "-" + this.moment(birthdayData.birthdate).format('MM-DD'),
+          start: this.start.date.slice(0, 4) + "-" + moment(birthdayData.birthdate).format('MM-DD'),
           color: '#F57F17',
           type: 'birthday',
         })

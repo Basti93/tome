@@ -134,6 +134,12 @@ export default {
       this.$emit('change', training.id)
       this.showOverlay = false
     },
+    getBranchShortNameByGroupIds(groupIds: number[]): string {
+      return useMasterDataStore().getBranchShortNameByGroupIds(groupIds)
+    },
+    getLocationById(locationId: number) {
+      return useMasterDataStore().getLocationById(locationId)
+    },
     timelineColor(training: Training): String {
       if (this.checkStatusDone(training)) {
         return 'primary'
