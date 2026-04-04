@@ -44,7 +44,8 @@ async function request<T = any>(
   url: string,
   config: RequestConfig = {}
 ): Promise<FetchResponse<T>> {
-  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${normalizedUrl}`
 
   // Debug logging
   console.log('[HTTP Client]', {
@@ -54,9 +55,14 @@ async function request<T = any>(
     method: config.method || 'GET'
   })
 
+  // Setup headers - don't set Content-Type for FormData
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...config.headers,
+  }
+
+  // Only set Content-Type if not FormData (browser will set it for FormData)
+  if (!(config.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
   }
 
   const fetchConfig: RequestInit = {
@@ -185,10 +191,18 @@ const httpClient = {
     data?: any,
     config?: RequestConfig
   ): Promise<FetchResponse<T>> {
+    // Determine body based on data type
+    let body: BodyInit | undefined
+    if (data instanceof FormData) {
+      body = data
+    } else if (data) {
+      body = JSON.stringify(data)
+    }
+
     return request<T>(url, {
       ...config,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body,
     })
   },
 

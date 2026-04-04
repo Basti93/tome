@@ -10,7 +10,7 @@
             v-for="(item) in trainings"
             :key="item.id"
             v-on:click.native="selectTraining(item)"
-            right
+            right 
             dense
             :color="timelineColor(item)"
             class="tp-training-selector__item"
@@ -24,7 +24,7 @@
             <v-avatar :color="timelineColor(item)">
               <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
               <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
-              <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
+              <v-icon v-else small color="primary">mdi-alert-decagram</v-icon>
             </v-avatar>
           </template>
         </v-timeline-item>
@@ -58,7 +58,7 @@
           <v-avatar :color="timelineColor(item)">
             <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
             <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
-            <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
+            <v-icon v-else small color="primary">mdi-alert-decagram</v-icon>
           </v-avatar>
         </template>
       </v-timeline-item>

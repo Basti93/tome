@@ -4,37 +4,48 @@
       <v-col
           cols="12"
           align="center">
-        <v-avatar
-            v-if="imageUrl"
-            class="profile"
-            color="grey"
-            size="164"
-            tile
-        >
-          <v-img :src="imageUrl"></v-img>
-        </v-avatar>
-        <v-avatar
-            v-else
-            cols="12"
-            size="128">
-          <v-icon size="128">mdi-account-circle</v-icon>
-        </v-avatar>
+        <div class="avatar-container">
+          <v-avatar
+              v-if="imageUrl"
+              class="profile"
+              color="grey"
+              size="164"
+              tile
+          >
+            <v-img :src="imageUrl"></v-img>
+          </v-avatar>
+          <v-avatar
+              v-else
+              cols="12"
+              size="128">
+            <v-icon size="128">mdi-account-circle</v-icon>
+          </v-avatar>
+          <v-badge
+              v-if="hasChanges"
+              color="amber"
+              icon="mdi-pencil"
+              overlap
+              bordered
+          ></v-badge>
+        </div>
       </v-col>
       <v-col
           cols="12"
-          v-if="imageUrl"
           align="center"
       >
         <v-btn
+            v-if="imageUrl"
             @click="removeImage"
             color="error"
-            title="Profilbild löschen">
+            title="Profilbild löschen"
+            size="small">
           <v-icon left>mdi-trash-can</v-icon>
           Löschen
         </v-btn>
       </v-col>
 
       <v-file-input
+          ref="fileInput"
           class="mt-5"
           :rules="imageRule"
           accept="image/png, image/jpeg, image/bmp"
@@ -42,6 +53,7 @@
           show-size
           v-model="files"
           @change="imageChanged"
+          @update:modelValue="imageChanged"
           label="Lade ein Profilbild hoch"
       >
       </v-file-input>
@@ -77,12 +89,30 @@ export default {
       return useAuthStore().user
     },
     imageUrl() {
-      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
-        return URL.createObjectURL(this.files[0]);
+      let file = null;
+
+      // Handle both single File object and array of Files
+      if (this.files) {
+        if (Array.isArray(this.files)) {
+          file = this.files.length > 0 ? this.files[0] : null;
+        } else if (this.files instanceof File) {
+          file = this.files;
+        }
+      }
+
+      if (file) {
+        return URL.createObjectURL(file);
       } else if (this.editImagePath && this.serverUrl) {
         return this.serverUrl + "/" + this.editImagePath;
       }
       return null;
+    },
+    hasChanges() {
+      if (!this.files) return false;
+      if (Array.isArray(this.files)) {
+        return this.files.length > 0;
+      }
+      return this.files instanceof File;
     }
   },
   methods: {
@@ -92,8 +122,19 @@ export default {
       this.$emit('imageRemoved')
     },
     imageChanged() {
-      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
-        this.$emit('imageChanged', this.files[0])
+      let file = null;
+
+      // Handle both single File object and array of Files
+      if (this.files) {
+        if (Array.isArray(this.files)) {
+          file = this.files.length > 0 ? this.files[0] : null;
+        } else if (this.files instanceof File) {
+          file = this.files;
+        }
+      }
+
+      if (file) {
+        this.$emit('imageChanged', file)
       } else {
         this.$emit('imageChanged', null)
       }
@@ -110,11 +151,14 @@ export default {
         this.resetLocalFile();
         this.editImagePath = newVal;
       },
-    },
+    }
   }
 }
 </script>
 
 <style scoped>
-
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
 </style>

@@ -112,7 +112,7 @@ function requestPushPermission() {
 }
 
 function sendTokenToServer(userId: number, token: string) {
-  import('@/axios').then(({ default: axios }) => {
+  import('@/http/api').then(({ default: httpClient }) => {
     httpClient.post('/notifications/subscribe', { firebaseToken: token, userId })
   })
 }

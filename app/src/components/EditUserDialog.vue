@@ -100,10 +100,11 @@
 
 <script>
 import { useDisplay } from 'vuetify'
-    import GroupsSelect from "./GroupsSelect";
-    import UploadProfileImage from "./UploadProfileImage";
-    import {formatDate, parseDate} from "../helpers/date-helpers"
-    import moment from 'moment'
+import GroupsSelect from "./GroupsSelect";
+import UploadProfileImage from "./UploadProfileImage";
+import {formatDate, parseDate} from "../helpers/date-helpers"
+import moment from 'moment'
+import httpClient from '@/http/api'
 
     export default {
         setup() {
@@ -182,9 +183,9 @@ import { useDisplay } from 'vuetify'
                         postData.birthdate = moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
                     }
                     if (this.editUserId) {
-                        response = await this.$http.put('/user/' + this.editUserId, postData);
+                        response = await httpClient.put('/user/' + this.editUserId, postData);
                     } else {
-                        response = await this.$http.post('/user/unregistered', postData);
+                        response = await httpClient.post('/user/unregistered', postData);
                     }
                     if (response.data.status === 'ok') {
                       this.$emit("showSnackbar", "Benutzer gespeichert", "success")
@@ -220,13 +221,7 @@ import { useDisplay } from 'vuetify'
             async uploadProfileImage() {
                 let formData = new FormData();
                 formData.append('profile_image', this.imageToUpload);
-                const {data} = await this.$http.post('/user/me/uploadprofileimage',
-                    formData,
-                    {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    });
+                const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
                 if (data.status === 'ok') {
                     console.log("Image uploaded")
                     return data.imageUrl;

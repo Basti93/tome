@@ -175,7 +175,15 @@ class UserController extends Controller
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
         $user->email = $request->input('email');
-        $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
+
+        // Handle birthdate - only set if provided and not empty
+        $birthdateInput = $request->input('birthdate');
+        if (!empty($birthdateInput)) {
+            $parsedDate = DateTime::createFromFormat(DateTime::ISO8601, $birthdateInput);
+            if ($parsedDate !== false) {
+                $user->birthdate = $parsedDate;
+            }
+        }
 
         //delete old image because there is a new one
         if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {

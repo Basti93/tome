@@ -9,11 +9,19 @@
             <v-btn
                 elevation="1"
                 color="primary"
-                   v-bind:disabled="!valid"
+                v-bind:disabled="!valid || !hasUnsavedChanges"
                 @click="save()"
+                :class="{ 'pulse': hasUnsavedChanges }"
             >
               <v-icon left>mdi-content-save</v-icon>
               Speichern
+              <v-badge
+                  v-if="hasUnsavedChanges"
+                  color="amber"
+                  content="!"
+                  inline
+                  class="ml-2"
+              ></v-badge>
             </v-btn>
           </v-toolbar>
           <v-card-text class="pa-0 pa-md-4">
@@ -253,6 +261,19 @@ export default {
     birthdateFormatted() {
       return this.formatDate(this.editUser.birthdate)
     },
+    hasUnsavedChanges() {
+      if (!this.loggedInUser) return false;
+      return (
+        this.editUser.firstName !== this.loggedInUser.firstName ||
+        this.editUser.familyName !== this.loggedInUser.familyName ||
+        this.editUser.email !== this.loggedInUser.email ||
+        this.editUser.birthdate !== this.loggedInUser.birthdate ||
+        this.imageToUpload !== null ||
+        this.editUser.profileImageName !== this.loggedInUser.profileImageName ||
+        JSON.stringify(this.editUser.groupIds) !== JSON.stringify(this.loggedInUser.groupIds) ||
+        JSON.stringify(this.editUser.trainerBranchIds) !== JSON.stringify(this.loggedInUser.trainerBranchIds)
+      );
+    }
   },
   methods: {
     assignCurrentUser: function () {
@@ -275,13 +296,7 @@ export default {
     async uploadProfileImage() {
       let formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
-      const {data} = await httpClient.post('/user/me/uploadprofileimage',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
+      const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
       if (data.status === 'ok') {
         console.log("Image uploaded")
         return data.imageUrl;
@@ -295,7 +310,7 @@ export default {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,
           email: this.editUser.email,
-          birthdate: moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
+          birthdate: this.editUser.birthdate ? moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format() : null,
           groupIds: this.editUser.groupIds,
           trainerBranchIds: this.editUser.trainerBranchIds,
         };
@@ -333,5 +348,19 @@ export default {
 </script>
 
 <style scoped>
+.pulse {
+  animation: pulse 2s infinite;
+}
 
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
 </style>

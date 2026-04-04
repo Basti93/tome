@@ -14,14 +14,14 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     libpng-dev
 
-# Install PHP extensions
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
     mbstring \
     gd \
-    zip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg
+    zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

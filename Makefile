@@ -4,10 +4,12 @@ help:
 	@echo "TOME Development Commands"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-up         Start Docker containers"
-	@echo "  make docker-down       Stop Docker containers"
-	@echo "  make docker-init       Initialize database and setup"
-	@echo "  make docker-logs       View Docker logs"
+	@echo "  make docker-up              Start Docker containers"
+	@echo "  make docker-down            Stop Docker containers"
+	@echo "  make docker-rebuild         Rebuild and restart after code changes"
+	@echo "  make docker-rebuild-fresh   Clean rebuild with fresh database"
+	@echo "  make docker-init            Initialize database and setup"
+	@echo "  make docker-logs            View Docker logs"
 	@echo ""
 	@echo "Database:"
 	@echo "  make db-migrate        Run migrations"
@@ -31,6 +33,22 @@ docker-up:
 docker-down:
 	docker-compose down
 	@echo "✅ Docker services stopped"
+
+docker-rebuild:
+	@echo "🔄 Rebuilding Docker containers..."
+	docker-compose down
+	docker-compose build laravel
+	docker-compose up -d
+	@echo "✅ Docker rebuilt and started"
+	@echo "   App:       http://localhost:8000"
+
+docker-rebuild-fresh:
+	@echo "🔄 Rebuilding Docker containers (fresh - no cache)..."
+	docker-compose down -v
+	docker-compose build --no-cache laravel
+	docker-compose up -d
+	make docker-init
+	@echo "✅ Docker rebuilt fresh and initialized"
 
 docker-init:
 	bash docker/scripts/init-db.sh
@@ -59,7 +77,8 @@ db-backup:
 
 frontend-build:
 	cd app && npm run build:serve
-	@echo "✅ Frontend built and deployed"
+	docker-compose restart nginx
+	@echo "✅ Frontend built, deployed, and nginx restarted"
 
 frontend-dev:
 	cd app && npm install && npm run dev
