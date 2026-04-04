@@ -50,11 +50,10 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
 import Group from "../models/Group";
-import {mapGetters} from "vuex";
+import { useMasterDataStore } from '@/store/masterData'
 
-export default Vue.extend({
+export default {
   name: "GroupChip",
   props: {
     group: Group,
@@ -62,13 +61,13 @@ export default Vue.extend({
   data: function () {
     return {
       menu: false,
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
-  computed: {
-    ...mapGetters('masterData', {getSimpleTrainersByBranchId: 'getSimpleTrainersByBranchId'}),
-  },
   methods: {
+    getSimpleTrainersByBranchId(branchId: number) {
+      return useMasterDataStore().getSimpleTrainersByBranchId(branchId)
+    },
     imageUrl(imagePath) {
       if (imagePath) {
         return this.serverUrl + "/" + imagePath;
@@ -76,6 +75,6 @@ export default Vue.extend({
       return null;
     },
   }
-});
+}
 </script>
 

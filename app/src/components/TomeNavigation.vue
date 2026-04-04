@@ -293,8 +293,9 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
 import ProfileImage from "@/components/ProfileImage.vue";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
 
 export default {
   name: "TomeNavigation",
@@ -302,17 +303,18 @@ export default {
   data() {
     return {
       drawer: false,
-      title: process.env.VUE_APP_TITLE,
+      title: import.meta.env.VITE_TITLE,
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {getGroupById: 'getGroupById'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     hasRoles: function () {
       return this.loggedInUser && (this.loggedInUser.isTrainer || this.loggedInUser.isAdmin);
     },
     currentUserGroupName: function () {
-      let group = this.getGroupById(this.loggedInUser.groupId);
+      let group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
       if (group) {
         return group.name
       }

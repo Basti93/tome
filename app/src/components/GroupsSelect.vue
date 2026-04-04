@@ -17,11 +17,10 @@
 </template>
 
 <script lang="ts">
-    import {mapGetters, mapState} from 'vuex'
     import Group from "../models/Group";
+    import { useMasterDataStore } from '@/store/masterData'
 
     export default {
-
         name: "GroupsSelect",
         props: {
             groupIds: Array,
@@ -31,14 +30,10 @@
                 selectedGroupIds: [],
             }
         },
-        created() {
-
-        },
         computed: {
-            ...mapGetters('masterData', {getBranchById: 'getBranchById'}),
-            ...mapState('masterData', {
-                groups: 'groups',
-            }),
+            groups() {
+                return useMasterDataStore().groups
+            },
         },
         methods: {
             branchAndGroupName(item: Group) {

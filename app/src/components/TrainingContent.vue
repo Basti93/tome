@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import {mapGetters} from 'vuex'
+import { useMasterDataStore } from '@/store/masterData'
 
 export default {
   name: "TrainingContent",
@@ -44,15 +44,12 @@ export default {
       selectedContentIds: [],
     }
   },
-  computed: {
-    ...mapGetters('masterData', {getContentsByIds: 'getContentsByIds'}),
-  },
   created() {
     this.selectedContentIds = [];
     for (let i = 0; i < this.initContentIds.length; i++) {
       this.selectedContentIds.push(this.initContentIds[i]);
     }
-    this.contents = this.getContentsByIds(this.contentIds);
+    this.contents = useMasterDataStore().getContentsByIds(this.contentIds);
   },
   methods: {
     isSelected: function (item) {
