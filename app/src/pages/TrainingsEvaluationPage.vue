@@ -121,7 +121,7 @@
                           <v-card class="ma-1">
                             <v-card-title>Teilnehmer</v-card-title>
                             <v-card-text class="pa-0 pa-md-4">
-
+                              <v-list>
                               <v-list-group
                                   v-model="participantsListGroupActive"
                                   prepend-icon="mdi-check"
@@ -254,6 +254,7 @@
                                   </template>
                                 </v-list-item>
                               </v-list-group>
+                              </v-list>
                             </v-card-text>
                           </v-card>
                         </div>
