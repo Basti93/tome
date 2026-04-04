@@ -240,6 +240,9 @@ import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {

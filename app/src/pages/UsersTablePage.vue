@@ -171,6 +171,9 @@ import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
   data: function () {

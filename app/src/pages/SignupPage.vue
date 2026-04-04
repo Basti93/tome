@@ -124,6 +124,9 @@ import axios from '@/axios'
 import moment from 'moment'
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "SignupPage",
   data: () => ({
     errors: [],

@@ -210,6 +210,9 @@ import moment from 'moment'
 import User from '@/models/User'
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
   data: function () {

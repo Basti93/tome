@@ -196,6 +196,9 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Training from "../models/Training";
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
   data: function () {
