@@ -12,6 +12,6 @@ class EncryptCookies extends BaseEncrypter
      * @var array
      */
     protected $except = [
-        //
+        'jwt_token', // JWT tokens should not be encrypted
     ];
 }

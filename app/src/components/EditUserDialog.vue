@@ -1,15 +1,15 @@
 <template>
-    <v-dialog v-model="show" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+    <v-dialog v-model="show" max-width="1000px" :fullscreen="xs" persistent>
         <v-card>
             <v-toolbar flat>
                 <v-btn icon @click="show=false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                 </v-btn>
                 <v-toolbar-title v-if="!editUserId">Vorläufigen Benutzer Anlegen</v-toolbar-title>
                 <v-toolbar-title v-else>Benutzer Bearbeiten</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
+                    <v-btn text color="primary" @click="save"><v-icon left>mdi-check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
             <v-divider class="pb-2"></v-divider>
@@ -27,9 +27,9 @@
               <v-form
                   ref="form"
                   v-model="valid">
-                <v-container grid-list-md>
-                    <v-layout wrap>
-                        <v-flex xs12 sm6>
+                <v-container>
+                    <v-row>
+                        <v-col cols="12" sm="6">
                             <v-text-field
                                     v-model="firstName"
                                     label="Vorname"
@@ -37,8 +37,8 @@
                                     :rules="[v => !!v || 'Wird benötigt']"
                                     prepend-icon="account_circle"
                             ></v-text-field>
-                        </v-flex>
-                        <v-flex xs12 sm6>
+                        </v-col>
+                        <v-col cols="12" sm="6">
                             <v-text-field
                                     v-model="familyName"
                                     label="Nachname"
@@ -46,51 +46,51 @@
                                     required
                                     prepend-icon="account_circle"
                             ></v-text-field>
-                        </v-flex>
-                        <v-flex xs12 md6>
+                        </v-col>
+                        <v-col cols="12" md="6">
                             <v-menu
                                     ref="birthdateMenu"
                                     :close-on-content-click="false"
                                     v-model="birthdateMenu">
-                                <template v-slot:activator="{ on }">
+                                <template v-slot:activator="{ props }">
                                     <v-text-field
                                             v-model="birthdateFormatted"
                                             label="Geburtsdatum"
                                             prepend-icon="event"
                                             readonly
-                                            v-on="on"
+                                            v-bind="props"
                                     ></v-text-field>
                                 </template>
                                 <v-date-picker
                                     ref="birthdatePicker"
                                     v-model="birthdate"
-                                    @input="birthdateMenu = false"
+                                    @update:modelValue="birthdateMenu = false"
                                     :max="new Date().toISOString().substr(0, 10)"
                                     min="1950-01-01">
                                 </v-date-picker>
                             </v-menu>
-                        </v-flex>
-                        <v-flex xs12 md6>
+                        </v-col>
+                        <v-col cols="12" md="6">
                             <GroupsSelect
                                     :groupIds="groupIds"
                                     v-on:groupsChanged="groupsChanged">
                             </GroupsSelect>
-                        </v-flex>
-                        <v-flex xs12 md6>
+                        </v-col>
+                        <v-col cols="12" md="6">
                             <UploadProfileImage
                                     v-on:imageChanged="imageChanged"
                                     v-on:imageRemoved="imageRemoved"
                                     :imagePath="profileImageName"
                             ></UploadProfileImage>
-                        </v-flex>
-                        <v-flex xs12 md6>
+                        </v-col>
+                        <v-col cols="12" md="6">
                             <v-checkbox
                                     v-model="active"
                                     label="Aktiv"
                                     prepend-icon="active"
                             ></v-checkbox>
-                        </v-flex>
-                    </v-layout>
+                        </v-col>
+                    </v-row>
                 </v-container>
               </v-form>
             </v-card-text>
@@ -99,11 +99,17 @@
 </template>
 
 <script>
+import { useDisplay } from 'vuetify'
     import GroupsSelect from "./GroupsSelect";
     import UploadProfileImage from "./UploadProfileImage";
     import {formatDate, parseDate} from "../helpers/date-helpers"
+    import moment from 'moment'
 
     export default {
+        setup() {
+            const { xs } = useDisplay();
+            return { xs };
+        },
         name: "EditUserDialog",
         components: {GroupsSelect, UploadProfileImage},
         props: [
@@ -173,7 +179,7 @@
 
                     let response = null;
                     if (this.birthdate) {
-                        postData.birthdate = this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
+                        postData.birthdate = moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
                     }
                     if (this.editUserId) {
                         response = await this.$http.put('/user/' + this.editUserId, postData);
@@ -205,7 +211,7 @@
             assignValues() {
               this.firstName = this.editFirstName;
               this.familyName = this.editFamilyName;
-              this.birthdate = this.editBirthdate ? this.moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
+              this.birthdate = this.editBirthdate ? moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
               this.groupIds = this.editGroupIds;
               this.active = this.editActive;
               this.profileImageName = this.editProfileImageName;

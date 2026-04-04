@@ -28,27 +28,23 @@
   </v-container>
 </template>
 
-<script lang="ts">
-
-import Vue from "vue";
-import {mapGetters} from 'vuex'
+<script setup lang="ts">
+import { computed } from 'vue'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
+import { useAuthStore } from '@/store/auth'
 
-export default Vue.extend({
-  name: "CalendarPage",
-  components: {TrainingCalendar},
+const authStore = useAuthStore()
 
-  computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    userLoggedIn() {
-      if (this.loggedInUser) {
-        return true;
-      }
-      return false;
-    }
-  }
+const loggedInUser = computed(() => {
+  return authStore.user
 })
 
+const userLoggedIn = computed(() => {
+  if (loggedInUser.value) {
+    return true
+  }
+  return false
+})
 </script>
 
 <style scoped lang="scss">

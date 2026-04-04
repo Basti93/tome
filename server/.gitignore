@@ -1,0 +1,28 @@
+# Laravel
+/bootstrap/cache
+/storage
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Generated frontend files (built from /app)
+/public/assets
+/public/img
+/public/index.html
+/public/manifest.json
+/public/robots.txt
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

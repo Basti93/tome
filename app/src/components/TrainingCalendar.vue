@@ -2,11 +2,11 @@
   <v-sheet>
     <v-toolbar flat class="mb-2">
       <v-btn fab text small @click="prev">
-        <v-icon small>chevron_left</v-icon>
+        <v-icon small>mdi-chevron-left</v-icon>
       </v-btn>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-btn fab text small @click="next">
-        <v-icon small>chevron_right</v-icon>
+        <v-icon small>mdi-chevron-right</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
 
@@ -23,7 +23,7 @@
                   v-on="on"
               >
                 <span>{{ typeToLabel[type] }}</span>
-                <v-icon right>arrow_drop_down</v-icon>
+                <v-icon right>mdi-menu-down</v-icon>
               </v-btn>
             </template>
             <v-list>
@@ -43,7 +43,7 @@
                  small
                  class="mr-4 ml-4"
                  @click="setToday">
-            <v-icon left>adjust</v-icon>
+            <v-icon left>mdi-palette</v-icon>
             Heute
           </v-btn>
         </v-toolbar-items>
@@ -82,7 +82,7 @@
             :color="selectedEvent.color"
         >
           <v-btn icon>
-            <v-icon>event</v-icon>
+            <v-icon>mdi-calendar-month</v-icon>
           </v-btn>
           <v-toolbar-title v-if="selectedEvent.type == 'training'">Training {{ selectedEvent.branchName }}
           </v-toolbar-title>
@@ -93,32 +93,32 @@
           <v-spacer></v-spacer>
           <v-btn @click="selectedOpen = false"
                  text>
-            <v-icon>cancel</v-icon>
+            <v-icon>mdi-cancel</v-icon>
           </v-btn>
         </v-toolbar>
         <v-card-text v-if="selectedEvent.type == 'training'">
           <v-label v-if="privateMode && selectedEvent.evaluated">
-            <v-icon left color="primary">check</v-icon>
+            <v-icon left color="primary">mdi-check</v-icon>
             Abgeschlossen
           </v-label>
           <v-label v-if="privateMode && !selectedEvent.evaluated">
-            <v-icon left color="error">cancel</v-icon>
+            <v-icon left color="error">mdi-cancel</v-icon>
             Nicht Abgeschlossen
           </v-label>
           <br/>
           <span class="label text-small">Von</span>
           <v-chip small outlined class="ma-1">
-            <v-icon left color="primary">query_builder</v-icon>
+            <v-icon left color="primary">mdi-clock-outline</v-icon>
             {{ moment(selectedEvent.start).format('HH:mm') }}
           </v-chip>
           <span class="label text-small">bis</span>
           <v-chip small outlined class="ml-1">
-            <v-icon left color="primary">query_builder</v-icon>
+            <v-icon left color="primary">mdi-clock-outline</v-icon>
             {{ moment(selectedEvent.end).format('HH:mm') }}
           </v-chip>
           <br />
           <v-chip v-if="selectedEvent.location" outlined small class="ma-1">
-            <v-icon left color="primary">room</v-icon>
+            <v-icon left color="primary">mdi-map-marker</v-icon>
             {{ selectedEvent.location }}
           </v-chip>
           <br />
@@ -130,7 +130,7 @@
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId' + groupId"
               class="ma-1">
-            <v-icon left color="primary">group</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
@@ -140,13 +140,13 @@
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId' + trainerId"
               class="ma-1">
-            <v-icon left color="primary">person</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
         <v-card-text v-else-if="selectedEvent.type == 'planed-training'">
           <v-label>
-            <v-icon left color="info">info</v-icon>
+            <v-icon left color="info">mdi-information</v-icon>
             Geplantes Training, noch nicht bestätigt
           </v-label>
           <br/>
@@ -157,7 +157,7 @@
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId_2_' + groupId"
               class="ma-1">
-            <v-icon left color="primary">group</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
@@ -167,7 +167,7 @@
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId_2_' + trainerId"
               class="ma-1">
-            <v-icon left color="primary">person</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
@@ -180,11 +180,12 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import {mapGetters, mapState} from 'vuex';
 import Training from "@/models/Training";
+import { useMasterDataStore } from '@/store/masterData';
+import axios from '@/axios';
+import moment from 'moment';
 
-export default Vue.extend({
+export default {
   name: "TrainingCalendar",
   props: {
     privateMode: Boolean,
@@ -193,14 +194,14 @@ export default Vue.extend({
     events: [],
     weekday: [1, 2, 3, 4, 5, 6, 0],
     categories: [],
-    trainings: [] as Training[],
-    start: null as Date,
-    end: null as Date,
-    focus: null as String,
+    trainings: [],
+    start: null,
+    end: null,
+    focus: null,
     selectedEvent: {},
     selectedElement: null,
     selectedOpen: false,
-    type: 'month' as String,
+    type: 'month',
     typeToLabel: {
       month: 'Monat',
       week: 'Woche',
@@ -209,60 +210,62 @@ export default Vue.extend({
     },
   }),
   mounted() {
-    this.focus = this.moment().format('YYYY-MM-DD')
+    this.focus = moment().format('YYYY-MM-DD');
   },
   computed: {
-    ...mapGetters('masterData', {
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupById: 'getGroupById',
-      getSimpleTrainerById: 'getSimpleTrainerById',
-      getBranchById: 'getBranchById',
-      getLocationNameById: 'getLocationNameById',
-    }),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    branches() {
+      return useMasterDataStore().branches;
+    },
     title() {
-      const {start, end} = this
+      const {start, end} = this;
       if (!start || !end) {
-        return ''
+        return '';
       }
 
-      const startMonth = this.moment(start.date).format('MMMM');
-      const startYear = start.year
-      const startDay = start.day
+      const startMonth = moment(start.date).format('MMMM');
+      const startYear = start.year;
+      const startDay = start.day;
 
       switch (this.type) {
         case 'month':
-          return `${startMonth} ${startYear}`
+          return `${startMonth} ${startYear}`;
         case 'week':
         case 'day':
         case 'category':
-          return `${startMonth} ${startDay} ${startYear}`
+          return `${startMonth} ${startDay} ${startYear}`;
       }
-      return ''
+      return '';
     },
   },
   methods: {
+    getBranchByGroupId(groupId: number) {
+      return useMasterDataStore().getBranchByGroupId(groupId);
+    },
+    getSimpleTrainerById(trainerId: number) {
+      return useMasterDataStore().getSimpleTrainerById(trainerId);
+    },
+    getLocationNameById(locationId: number) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
     async loadData() {
       this.trainings = [];
       this.events = [];
       this.categories = [];
       this.categories = this.branches;
-      this.loadTrainingEvents();
-      this.loadPlannedTrainingEvents();
+      await this.loadTrainingEvents();
+      await this.loadPlannedTrainingEvents();
       if (this.privateMode) {
-        this.loadBirthdayEvents();
+        await this.loadBirthdayEvents();
       }
     },
     async loadTrainingEvents() {
-      let url = '/training/'
+      let url = '/training/';
       if (this.privateMode) {
-        url += 'calendar'
+        url += 'calendar';
       } else {
-        url += 'simplecalendar'
+        url += 'simplecalendar';
       }
-      const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -270,8 +273,8 @@ export default Vue.extend({
         }
         if (branch) {
           let training = new Training(trainingData.id,
-              this.moment(trainingData.start),
-              this.moment(trainingData.end),
+              moment(trainingData.start),
+              moment(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -282,7 +285,7 @@ export default Vue.extend({
               trainingData.evaluated === 1 ? true : false,
               trainingData.automaticAttend === 1 ? true : false
           );
-          this.trainings.push(training)
+          this.trainings.push(training);
 
           this.events.push({
             name: branch.shortName,
@@ -297,13 +300,13 @@ export default Vue.extend({
             color: branch.colorHex,
             evaluated: training.evaluated,
             category: branch.name
-          })
+          });
         }
       }
     },
     async loadPlannedTrainingEvents() {
-      let url = '/training/simplecalendar/planned'
-      const {data} = await this.$http.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      let url = '/training/simplecalendar/planned';
+      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -311,8 +314,8 @@ export default Vue.extend({
         }
         if (branch) {
           let training = new Training(trainingData.id,
-              this.moment(trainingData.start),
-              this.moment(trainingData.end),
+              moment(trainingData.start),
+              moment(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -322,7 +325,7 @@ export default Vue.extend({
               false,
               false,
           );
-          this.trainings.push(training)
+          this.trainings.push(training);
 
           this.events.push({
             name: branch.shortName,
@@ -334,58 +337,58 @@ export default Vue.extend({
             type: 'planed-training',
             color: branch.colorHex,
             category: branch.name
-          })
+          });
         }
       }
     },
     async loadBirthdayEvents() {
-      const {data} = await this.$http.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await axios.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
       for (let birthdayData of data) {
         this.events.push({
           name: birthdayData.firstName + " " + birthdayData.familyName,
-          start: this.start.date.slice(0, 4) + "-" + this.moment(birthdayData.birthdate).format('MM-DD'),
+          start: this.start.date.slice(0, 4) + "-" + moment(birthdayData.birthdate).format('MM-DD'),
           color: '#F57F17',
           type: 'birthday',
-        })
+        });
       }
     },
     showEvent({nativeEvent, event}) {
       const open = () => {
-        this.selectedEvent = event
-        this.selectedElement = nativeEvent.target
+        this.selectedEvent = event;
+        this.selectedElement = nativeEvent.target;
         setTimeout(() => {
-          this.selectedOpen = true
-        }, 10)
-      }
+          this.selectedOpen = true;
+        }, 10);
+      };
 
       if (this.selectedOpen) {
-        this.selectedOpen = false
-        setTimeout(open, 10)
+        this.selectedOpen = false;
+        setTimeout(open, 10);
       } else {
-        open()
+        open();
       }
 
-      nativeEvent.stopPropagation()
+      nativeEvent.stopPropagation();
     },
     viewDay({date}): void {
-      this.focus = date
-      this.type = 'day'
+      this.focus = date;
+      this.type = 'day';
     },
     getEventColor(event) {
-      return event.color
+      return event.color;
     },
     setToday(): void {
       this.focus = new Date();
     },
     prev(): void {
-      this.$refs.calendar.prev()
+      this.$refs.calendar.prev();
     },
     next(): void {
-      this.$refs.calendar.next()
+      this.$refs.calendar.next();
     },
     updateRange({start, end}) {
-      this.start = start
-      this.end = end
+      this.start = start;
+      this.end = end;
       this.loadData();
     },
     formatDayTime(timeObj) {
@@ -396,7 +399,7 @@ export default Vue.extend({
       return trainer.firstName + " " + trainer.familyName;
     }
   },
-})
+};
 </script>
 
 <style scoped>

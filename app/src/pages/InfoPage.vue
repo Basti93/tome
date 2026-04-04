@@ -16,8 +16,8 @@
                     focusable
                     accordion>
                   <v-expansion-panel>
-                    <v-expansion-panel-header>Update 12.10.2021</v-expansion-panel-header>
-                    <v-expansion-panel-content>
+                    <v-expansion-panel-title>Update 12.10.2021</v-expansion-panel-title>
+                    <v-expansion-panel-text>
                       <h4>Features</h4>
                       <ul>
                         <li>Trainings die durch Trainingsserien erstellt wurden und danach gelöscht wurden werden nicht wieder neu erstellt</li>
@@ -27,11 +27,11 @@
                         <li>Hochgeladene Handybilder werden nicht mehr verdreht</li>
                         <li>Trainingsserien erstellen nun die Trainings richtig auch wenn mehrere Tage ausgewählt sind</li>
                       </ul>
-                    </v-expansion-panel-content>
+                    </v-expansion-panel-text>
                   </v-expansion-panel>
                   <v-expansion-panel>
-                    <v-expansion-panel-header>Update 17.09.2021</v-expansion-panel-header>
-                    <v-expansion-panel-content>
+                    <v-expansion-panel-title>Update 17.09.2021</v-expansion-panel-title>
+                    <v-expansion-panel-text>
                       <h4>Features</h4>
                       <ul>
                         <li>Registrierung nur noch für Trainer</li>
@@ -47,7 +47,7 @@
                           abgewählt
                         </li>
                       </ul>
-                    </v-expansion-panel-content>
+                    </v-expansion-panel-text>
                   </v-expansion-panel>
                 </v-expansion-panels>
               </v-card-text>
@@ -62,8 +62,8 @@
                   <v-expansion-panel
                       v-for="(item, index) in faqs"
                       :key="index">
-                    <v-expansion-panel-header>{{ item.headline }}</v-expansion-panel-header>
-                    <v-expansion-panel-content v-html="item.content" class="ma-2"></v-expansion-panel-content>
+                    <v-expansion-panel-title>{{ item.headline }}</v-expansion-panel-title>
+                    <v-expansion-panel-text class="ma-2" v-html="item.content"></v-expansion-panel-text>
                   </v-expansion-panel>
                 </v-expansion-panels>
               </v-card-text>
@@ -76,37 +76,29 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import axios from '@/axios'
 
-import Vue from "vue";
+const openedPanel = ref(0)
+const faqs = ref([])
+const filePaths = ref([])
+const serverUrl = import.meta.env.VITE_IMAGE_FOLDER_URL
 
-export default Vue.extend({
-  name: "InfoPage",
-  data: function () {
-    return {
-      openedPanel: 0,
-      faqs: [],
-      filePaths: [],
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
-    }
-  },
-  created(): void {
-    this.fetchFaqs();
-  },
-  methods: {
-    async fetchFaqs() {
-      let res = await this.$http.get('/faq/');
-      this.faqs = res.data;
-      res = await this.$http.get('/faq/files');
-      this.filePaths = res.data;
+async function fetchFaqs() {
+  const res = await axios.get('/faq/')
+  faqs.value = res.data
+  const filesRes = await axios.get('/faq/files')
+  filePaths.value = filesRes.data
+}
 
-    },
-  }
+onMounted(() => {
+  fetchFaqs()
 })
 </script>
 
 <style scoped lang="scss">
-.v-expansion-panel-content {
+.v-expansion-panel-text {
   display: block;
 }
 </style>

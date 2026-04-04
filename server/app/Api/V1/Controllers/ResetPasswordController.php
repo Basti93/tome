@@ -4,11 +4,12 @@ namespace App\Api\V1\Controllers;
 
 use Config;
 use App\User;
-use Tymon\JWTAuth\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Password;
 use App\Api\V1\Requests\ResetPasswordRequest;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Services\AuthLogService;
 
 class ResetPasswordController extends Controller
 {
@@ -24,13 +25,16 @@ class ResetPasswordController extends Controller
             throw new HttpException(500);
         }
 
+        $user = User::where('email', '=', $request->get('email'))->first();
+        if ($user) {
+            AuthLogService::passwordReset($user->id, $request);
+        }
+
         if(!Config::get('boilerplate.reset_password.release_token')) {
             return response()->json([
                 'status' => 'ok',
             ]);
         }
-
-        $user = User::where('email', '=', $request->get('email'))->first();
 
         return response()->json([
             'status' => 'ok',

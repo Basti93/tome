@@ -7,14 +7,14 @@
             <v-toolbar-title>Abgehaltene Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn
-                v-if="$vuetify.breakpoint.mobile"
+                v-if="xs"
                 color="primary"
                 outlined
                 title="Übungsleiter-Abrechnung exportieren"
                 small
                 v-on:click="showAccountingDialog = true"
             >
-              <v-icon>request_quote</v-icon>
+              <v-icon>mdi-file-document-outline</v-icon>
             </v-btn>
             <v-btn
                 v-else
@@ -23,7 +23,7 @@
                 color="primary"
                 v-on:click="showAccountingDialog = true"
             >
-              <v-icon left>request_quote</v-icon>
+              <v-icon left>mdi-file-document-outline</v-icon>
               ÜL-Abrechnung
             </v-btn>
           </v-toolbar>
@@ -98,22 +98,22 @@
                                   v-for="(item, index) in selectedTraining.trainers"
                                   :key="index"
                               >
-                                <tome-list-item-profile-image
-                                    :image-path="item.profileImageName">
-                                </tome-list-item-profile-image>
+                                <template v-slot:prepend>
+                                  <tome-list-item-profile-image
+                                      :image-path="item.profileImageName">
+                                  </tome-list-item-profile-image>
+                                </template>
 
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ trainerFullName(item.userId) }}</v-list-item-title>
-                                  <v-list-item-subtitle>Von {{ item.accountingTimeStart.format('HH:mm') }} bis
-                                    {{ item.accountingTimeEnd.format('HH:mm') }}
-                                  </v-list-item-subtitle>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ trainerFullName(item.userId) }}</v-list-item-title>
+                                <v-list-item-subtitle>Von {{ item.accountingTimeStart.format('HH:mm') }} bis
+                                  {{ item.accountingTimeEnd.format('HH:mm') }}
+                                </v-list-item-subtitle>
 
-                                <v-list-item-action v-if="!selectedTraining.evaluated">
-                                  <v-btn color="primary" @click="editTime(item)" outlined>
-                                    <v-icon>edit</v-icon>
+                                <template v-slot:append v-if="!selectedTraining.evaluated">
+                                  <v-btn color="primary" @click="editTime(item)" outlined size="small">
+                                    <v-icon>mdi-pencil</v-icon>
                                   </v-btn>
-                                </v-list-item-action>
+                                </template>
 
                               </v-list-item>
                             </v-card-text>
@@ -124,45 +124,42 @@
 
                               <v-list-group
                                   :value="participantsListGroupActive"
-                                  prepend-icon="check"
+                                  prepend-icon="mdi-check"
                                   group="participants"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
-                                  </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in participatingUsers"
                                     :key="item.id"
                                 >
 
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                    <span class="label">{{
-                                        getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                      }}</span>
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
+                                  </v-list-item-subtitle>
 
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
                                     <v-btn
                                         title="Benutzer zu Absagen hinzufügen"
                                         color="primary"
                                         @click="removeParticipant(item.id)"
                                         outlined
+                                        size="small"
                                     >
-                                      <v-icon>remove</v-icon>
+                                      <v-icon>mdi-minus</v-icon>
                                     </v-btn>
-                                  </v-list-item-action>
+                                  </template>
 
                                 </v-list-item>
                               </v-list-group>
@@ -172,53 +169,51 @@
                                   group="participants"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ canceledUsers.length }} <span
-                                          v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
-                                      </v-list-item-title>
-                                  </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ canceledUsers.length }} <span
+                                      v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
+                                  </v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="item in canceledUsers"
                                     :key="item.id"
                                 >
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                    <span class="label">{{
-                                        getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                      }}</span>
-                                    </v-list-item-subtitle>
-                                    <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
-                                      {{ getCancelReason(item.id) }}
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
-                                    <v-btn v-if="getCancelReason(item.id)"
-                                           title="Absage anschauen"
-                                           color="primary"
-                                           @click="openCancelReasonDialog(item.id)"
-                                           outlined>
-                                      <v-icon>search</v-icon>
-                                    </v-btn>
-                                  </v-list-item-action>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
-                                    <v-btn
-                                        color="primary"
-                                        title="Benutzer zu Teilnehmern hinzufügen"
-                                        @click="addParticipant(item.id)"
-                                        outlined
-                                    >
-                                      <v-icon>add</v-icon>
-                                    </v-btn>
-                                  </v-list-item-action>
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
+                                  </v-list-item-subtitle>
+                                  <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
+                                    {{ getCancelReason(item.id) }}
+                                  </v-list-item-subtitle>
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
+                                    <div class="d-flex gap-2">
+                                      <v-btn v-if="getCancelReason(item.id)"
+                                             title="Absage anschauen"
+                                             color="primary"
+                                             @click="openCancelReasonDialog(item.id)"
+                                             outlined
+                                             size="small">
+                                        <v-icon>mdi-magnify</v-icon>
+                                      </v-btn>
+                                      <v-btn
+                                          color="primary"
+                                          title="Benutzer zu Teilnehmern hinzufügen"
+                                          @click="addParticipant(item.id)"
+                                          outlined
+                                          size="small"
+                                      >
+                                        <v-icon>mdi-plus</v-icon>
+                                      </v-btn>
+                                    </div>
+                                  </template>
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
@@ -227,39 +222,36 @@
                                   group="undecided"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
-                                    </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in undecidedUsers"
                                     :key="item.id"
                                 >
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                                  </v-list-item-subtitle>
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
                                     <v-btn
                                         color="primary"
                                         title="Benutzer zu Teilnehmern hinzufügen"
                                         @click="addParticipant(item.id)"
                                         outlined
+                                        size="small"
                                     >
-                                      <v-icon>add</v-icon>
+                                      <v-icon>mdi-plus</v-icon>
                                     </v-btn>
-                                  </v-list-item-action>
+                                  </template>
                                 </v-list-item>
                               </v-list-group>
                             </v-card-text>
@@ -288,17 +280,17 @@
         v-model="timeDialogOpened"
         max-width="800px"
         scrollable
-        :fullscreen="$vuetify.breakpoint.xsOnly"
+        :fullscreen="xs"
         persistent>
       <v-card>
         <v-card-title>
           <v-btn icon @click="timeDialogOpened=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           Abrechnungszeitraum ändern
           <v-spacer></v-spacer>
           <v-btn text color="primary" @click="updateAccountingTime">
-            <v-icon left>check</v-icon>
+            <v-icon left>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>
@@ -334,7 +326,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelReasonDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>
         </v-toolbar>
@@ -350,17 +342,25 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import {mapGetters, mapState} from 'vuex'
+import { useDisplay } from 'vuetify'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
 import TrainingEvaluation from "@/models/TrainingEvaluation";
-import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog";
-import ListItemProfileImage from "../components/ListItemProfileImage"
+import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog.vue";
+import ListItemProfileImage from "../components/ListItemProfileImage.vue"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default {
+  setup() {
+    const { xs, md } = useDisplay()
+    return { xs, md }
+  },
   name: "TrainingsEvaluationPage",
   components: {
     TrainingSelector,
@@ -390,14 +390,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getSimpleTrainerById: 'getSimpleTrainerById',
-      getGroupsByIds: 'getGroupsByIds',
-    }),
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    locations() { return useMasterDataStore().locations },
     selectedTraining() {
       return this.getUpcomingTrainingById(this.selectedTrainingId);
     },
@@ -420,7 +414,7 @@ export default Vue.extend({
       return [];
     },
     undecidedUsers() {
-      const usersOfGroups = this.users.filter(u => u.groupIds.some(r=> this.selectedTraining.groupIds.includes(r)))
+      const usersOfGroups = this.users.filter(u => u.groupIds.some(r => this.selectedTraining.groupIds.includes(r)))
       return usersOfGroups.filter(u => !this.canceledUsers.concat(this.participatingUsers).includes(u));
     },
     currentUserGroupId() {
@@ -429,6 +423,7 @@ export default Vue.extend({
       }
       return null
     },
+    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
   },
   created() {
     this.fetchData();
@@ -453,7 +448,7 @@ export default Vue.extend({
         this.dataLoaded = false;
         this.pastTrainings = [];
         //load data
-        const res = await this.$http.get('/trainingevaluation/' + this.loggedInUser.id);
+        const res = await axios.get('/trainingevaluation/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -462,18 +457,18 @@ export default Vue.extend({
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
             let trainers = [] as TrainingTrainer[];
-            const trainingStartTime = this.moment(trObj.start, 'YYYY-MM-DDTHH:mm');
-            const trainingEndTime = this.moment(trObj.end, 'YYYY-MM-DDTHH:mm');
+            const trainingStartTime = moment(trObj.start, 'YYYY-MM-DDTHH:mm');
+            const trainingEndTime = moment(trObj.end, 'YYYY-MM-DDTHH:mm');
             for (let partObj of trObj.trainers) {
               let timeStart;
               if (partObj.accountingTimeStart != null) {
-                timeStart = this.moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
+                timeStart = moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeStart = trainingStartTime
               }
               let timeEnd;
               if (partObj.accountingTimeEnd != null) {
-                timeEnd = this.moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
+                timeEnd = moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeEnd = trainingEndTime
               }
@@ -485,22 +480,22 @@ export default Vue.extend({
           this.selectTraining(this.pastTrainings[0].id);
         }
         this.users = []
-        const userRes = await this.$http.get('/user');
+        const userRes = await axios.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }
@@ -511,29 +506,29 @@ export default Vue.extend({
       }
     },
     async removeParticipant(userId) {
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
       if (data.status == 'ok') {
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
-        this.$emit("showSnackbar", "Benutzer entfernt", "success");
+        useSnackbarStore().show("Benutzer entfernt", "success");
       }
     },
     async addParticipant(userId) {
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
       if (data.status == 'ok') {
         if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
           this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, true, null));
 
         }
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
-        this.$emit("showSnackbar", "Benutzer hinzugefügt", "success");
+        useSnackbarStore().show("Benutzer hinzugefügt", "success");
       }
     },
     async evaluated() {
       this.confirmEvaluationDialog = false;
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
       if (data.status == 'ok') {
         this.selectedTraining.evaluated = true
-        this.$emit("showSnackbar", "Training abgeschlossen", "success");
+        useSnackbarStore().show("Training abgeschlossen", "success");
       }
     },
     editTime(item: TrainingTrainer) {
@@ -558,11 +553,11 @@ export default Vue.extend({
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
       if (data.status == 'ok') {
         selectedTrainer.accountingTimeStart = startDateTime;
         selectedTrainer.accountingTimeEnd = endDateTime;
-        this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
+        useSnackbarStore().show("Zeiten aktualisiert", "success");
       }
     },
     selectTraining(id) {
@@ -577,10 +572,13 @@ export default Vue.extend({
     },
     fullName: item => item.firstName + ' ' + item.familyName,
     trainerFullName(id) {
-      return this.fullName(this.getSimpleTrainerById(id))
+      return this.fullName(useMasterDataStore().getSimpleTrainerById(id))
+    },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
     },
   },
-})
+}
 
 </script>
 

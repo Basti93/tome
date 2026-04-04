@@ -13,14 +13,14 @@
             text
             v-on:click="cancel()"
         >
-          <v-icon left>cancel</v-icon>
+          <v-icon left>mdi-cancel</v-icon>
           Abbrechen
         </v-btn>
         <v-btn
             text
             v-on:click="confirm()"
         >
-          <v-icon left>check</v-icon>
+          <v-icon left>mdi-check</v-icon>
           Bestätigen
         </v-btn>
 

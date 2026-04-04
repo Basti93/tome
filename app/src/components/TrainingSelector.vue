@@ -21,10 +21,10 @@
           <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
           <div>{{ getLocationById(item.locationId).name }}</div>
           <template v-slot:icon>
-            <v-avatar>
-              <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
-              <v-icon v-else-if="isCheckIn && canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-              <v-icon v-else small>new_releases</v-icon>
+            <v-avatar :color="timelineColor(item)">
+              <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
+              <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
+              <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
             </v-avatar>
           </template>
         </v-timeline-item>
@@ -36,7 +36,7 @@
         v-on:click.native="showOverlay = false"
     >
       <v-btn v-on:click="showOverlay = false" icon fixed top right>
-        <v-icon>close</v-icon>
+        <v-icon>mdi-close</v-icon>
       </v-btn>
       <h2>Training auswählen</h2>
       <v-timeline align-top dense class="fill-height tp-training-selector__overlay-timeline">
@@ -55,10 +55,10 @@
         <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
         <div>{{ getLocationById(item.locationId).name }}</div>
         <template v-slot:icon>
-          <v-avatar>
-            <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
-            <v-icon v-else-if="isCheckIn &&canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-            <v-icon v-else small>new_releases</v-icon>
+          <v-avatar :color="timelineColor(item)">
+            <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
+            <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
+            <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
           </v-avatar>
         </template>
       </v-timeline-item>
@@ -76,18 +76,19 @@
         bottom
         right
     >
-      <v-icon>list</v-icon>
+      <v-icon>mdi-format-list-bulleted</v-icon>
     </v-btn>
   </v-container>
 </template>
 
 <script lang="ts">
 
-import Vue from 'vue'
 import Training from "../models/Training";
-import {mapGetters} from "vuex";
+import { useAuthStore } from '@/store/auth'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useMasterDataStore } from '@/store/masterData'
 
-export default Vue.extend({
+export default {
   name: "TrainingSelector",
   props: {
     trainings: Array,
@@ -104,12 +105,12 @@ export default Vue.extend({
     this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
-    ...mapGetters('masterData', {
-      getBranchByGroupIds: 'getBranchByGroupIds',
-      getBranchShortNameByGroupIds: 'getBranchShortNameByGroupIds',
-      getLocationById: 'getLocationById'
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    cookieUser() {
+      return useCookieAuthStore().cookieUser
+    },
     currentUser() {
       if (this.loggedInUser) {
         return this.loggedInUser;
@@ -133,13 +134,19 @@ export default Vue.extend({
       this.$emit('change', training.id)
       this.showOverlay = false
     },
+    getBranchShortNameByGroupIds(groupIds: number[]): string {
+      return useMasterDataStore().getBranchShortNameByGroupIds(groupIds)
+    },
+    getLocationById(locationId: number) {
+      return useMasterDataStore().getLocationById(locationId)
+    },
     timelineColor(training: Training): String {
       if (this.checkStatusDone(training)) {
         return 'primary'
       } else if (this.isCheckIn && this.canceled(training)) {
         return 'red lighten-2'
       }
-      const mainBranch = this.getBranchByGroupIds(training.groupIds);
+      const mainBranch = useMasterDataStore().getBranchByGroupIds(training.groupIds);
       if (mainBranch) {
         return mainBranch.colorHex
       }
@@ -176,7 +183,7 @@ export default Vue.extend({
       this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
     }
   }
-});
+}
 </script>
 
 <style lang="scss">

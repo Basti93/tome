@@ -17,7 +17,7 @@
             v-else
             cols="12"
             size="128">
-          <v-icon size="128">account_circle</v-icon>
+          <v-icon size="128">mdi-account-circle</v-icon>
         </v-avatar>
       </v-col>
       <v-col
@@ -29,7 +29,7 @@
             @click="removeImage"
             color="error"
             title="Profilbild löschen">
-          <v-icon left>delete</v-icon>
+          <v-icon left>mdi-trash-can</v-icon>
           Löschen
         </v-btn>
       </v-col>
@@ -50,10 +50,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
 
-export default Vue.extend({
+export default {
   name: "UploadProfileImage",
   props: {
     imagePath: String,
@@ -64,9 +63,9 @@ export default Vue.extend({
       uploading: false,
       changeImage: false,
       files: [],
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
       imageRule: [
-        value => !value.size || value.size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
+        value => !value || !Array.isArray(value) || value.length === 0 || value[0].size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
       ],
     }
   },
@@ -74,10 +73,12 @@ export default Vue.extend({
     this.editImagePath = this.imagePath;
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     imageUrl() {
-      if ((this.files && this.files.size) || this.files.length > 0) {
-        return URL.createObjectURL(this.files);
+      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
+        return URL.createObjectURL(this.files[0]);
       } else if (this.editImagePath && this.serverUrl) {
         return this.serverUrl + "/" + this.editImagePath;
       }
@@ -91,8 +92,8 @@ export default Vue.extend({
       this.$emit('imageRemoved')
     },
     imageChanged() {
-      if (this.files && this.files.size) {
-        this.$emit('imageChanged', this.files)
+      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
+        this.$emit('imageChanged', this.files[0])
       } else {
         this.$emit('imageChanged', null)
       }
@@ -111,7 +112,7 @@ export default Vue.extend({
       },
     },
   }
-});
+}
 </script>
 
 <style scoped>

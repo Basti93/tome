@@ -8,11 +8,11 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="$vuetify.breakpoint.xsOnly"
+                  :fullscreen="xs"
                   persistent
                   max-width="1000px"
               >
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn
                       title="Neuen Trainingsort erstellen"
                       fab
@@ -21,23 +21,22 @@
                       left
                       elevation="2"
                       color="primary"
-                      v-on="on"
-                      v-bind="attrs"
-                      v-on:click="createItem()">
-                    <v-icon>add</v-icon>
+                      v-bind="props"
+                      @click="createItem()">
+                    <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
 
                 <v-card>
                   <v-toolbar flat>
                     <v-btn icon v-on:click="closeDialog()">
-                      <v-icon>close</v-icon>
+                      <v-icon>mdi-close</v-icon>
                     </v-btn>
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                       <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>check</v-icon>
+                        <v-icon left>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -83,8 +82,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
@@ -93,14 +92,14 @@
                         <template v-slot:[`item.action`]="{ item }">
                             <v-icon :disabled="item.name == 'Online'"
                                     v-on:click="editItem(item)"
-                                    color="success">edit</v-icon>
+                                    color="success">mdi-pencil</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -134,8 +133,14 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify';
+import axios from '@/axios';
 
 export default {
+  setup() {
+    const { xs, md } = useDisplay()
+    return { xs, md }
+  },
   name: "LocationsPage",
   data: function () {
     return {
@@ -177,7 +182,7 @@ export default {
       }
     },
     async loadLocations() {
-      const {data} = await this.$http.get('/location')
+      const {data} = await axios.get('/location')
       this.locations = data.data;
       this.page = data.currentPage;
       this.total = data.total;
@@ -191,9 +196,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await this.$http.put('/location/' + this.editedItem.id, postData);
+          response = await axios.put('/location/' + this.editedItem.id, postData);
         } else {
-          response = await this.$http.post('/location', postData);
+          response = await axios.post('/location', postData);
         }
         if (response && response.data.error) {
           this.$emit("showSnackbar", "Ort konnte nicht gespeichert werden", "error")

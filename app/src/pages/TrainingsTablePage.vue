@@ -15,7 +15,7 @@
                       :items="filterBranches"
                       v-model="filterBranchId"
                       v-on:change="filterChanged()"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
                       flat
                       dense
@@ -36,7 +36,7 @@
                   elevation="2"
                   color="primary"
                   @click="create()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
           </v-toolbar>
@@ -55,11 +55,10 @@
                           :headers="headers"
                           :items="trainings"
                           :loading="loading"
-                          :sort-desc.sync="sortDesc"
                           :server-items-length="totalItems"
-                          :items-per-page.sync="itemsPerPage"
-                          :page.sync="page"
-                          :sort-by.sync="sortBy"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
+                          v-model:sort-by="sortBy"
                       >
                         <template v-slot:[`item.date`]="{ item }">
                           {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
@@ -97,15 +96,15 @@
                                 v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
                                 @click="editItem(item)"
                                 color="success"
-                            >edit</v-icon>
+                            >mdi-pencil</v-icon>
                             <v-icon
                                 color="error"
                                 v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                                @click="confirmAndDelete(item)">delete</v-icon>
+                                @click="confirmAndDelete(item)">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-btn color="primary" :disabled="loading" @click="reset()">
-                            <v-icon left>cached</v-icon>
+                            <v-icon left>mdi-refresh</v-icon>
                             Keine Daten gefunden
                           </v-btn>
                         </template>
@@ -129,13 +128,13 @@
       <v-card tile>
         <v-toolbar flat>
           <v-btn icon @click="close">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>{{ editDialogTitle }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="save">
-              <v-icon left>check</v-icon>
+              <v-icon left>mdi-check</v-icon>
               Speichern
             </v-btn>
           </v-toolbar-items>
@@ -174,26 +173,32 @@
      >
        <v-btn>
          <span>Listenansicht</span>
-         <v-icon>list</v-icon>
+         <v-icon>mdi-format-list-bulleted</v-icon>
        </v-btn>
        <v-btn>
          <span>Kalendaransicht</span>
-         <v-icon>event</v-icon>
+         <v-icon>mdi-calendar-month</v-icon>
        </v-btn>
      </v-bottom-navigation>-->
   </v-container>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import {mapGetters, mapState} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
-import EditTrainingBase from "../components/EditTrainingBase";
+import EditTrainingBase from "../components/EditTrainingBase.vue";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Training from "../models/Training";
 
-export default Vue.extend({
+export default {
+  setup() {
+    return { moment };
+  },
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
   data: function () {
@@ -211,8 +216,7 @@ export default Vue.extend({
       totalItems: 0,
       page: 1,
       itemsPerPage: 10,
-      sortBy: null,
-      sortDesc: null,
+      sortBy: [],
       initializing: true,
       editDialogDateMenu: false,
       editDialogStartMenu: false,
@@ -258,29 +262,19 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.getBranchById(this.trainerBranchIds[0]).id;
+    const masterData = useMasterDataStore();
+    const loggedInUser = useAuthStore().user;
+    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id;
     }
-    this.filterBranches = this.filterBranches.concat(this.branches)
-
+    this.filterBranches = this.filterBranches.concat(masterData.branches)
     this.loadData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getGroupsByBranchId: 'getGroupsByBranchId',
-      getBranchByGroupId: 'getBranchByGroupId',
-      getLocationNameById: 'getLocationNameById',
-      getGroupsByIds: 'getGroupsByIds',
-      getContentIdsByBranchId: 'getContentIdsByBranchId',
-      getBranchById: 'getBranchById',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds'
-    }),
-    ...mapState('masterData', {
-      locations: 'locations',
-      branches: 'branches',
-      groups: 'groups'
-    }),
+    loggedInUser() { return useAuthStore().user },
+    locations() { return useMasterDataStore().locations },
+    branches() { return useMasterDataStore().branches },
+    groups() { return useMasterDataStore().groups },
     editedItemDateFormatted() {
       return this.formatDate(this.editedItemDate)
     },
@@ -289,11 +283,11 @@ export default Vue.extend({
         return this.editedItem.date
       },
       set: function (newValue) {
-        Vue.set(this.editedItem, 'date', newValue)
+        this.editedItem.date = newValue
       }
     },
     trainerBranchIds() {
-      return this.loggedInUser.trainerBranchIds
+      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
     },
   },
   watch: {
@@ -321,14 +315,6 @@ export default Vue.extend({
       },
       deep: true,
     },
-    sortDesc: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
     editedItemDate() {
       this.editedItem.dateFormatted = this.formatDate(this.editedItem.date)
     },
@@ -338,21 +324,23 @@ export default Vue.extend({
       this.loadData();
     },
     loadData() {
+      const masterData = useMasterDataStore();
       this.loading = true;
       this.trainings = [];
       let url = '/training';
       // get by sort option
-      if (this.sortBy) {
-        const direction = this.sortDesc ? 'desc' : 'asc';
-        url += '/sort?direction=' + direction + '&sortBy=' + this.sortBy + '&page=' + this.page + '&per_page=' + this.itemsPerPage
+      if (this.sortBy && this.sortBy.length > 0) {
+        const sortColumn = this.sortBy[0];
+        const direction = sortColumn.order === 'desc' ? 'desc' : 'asc';
+        url += '/sort?direction=' + direction + '&sortBy=' + sortColumn.key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
       } else {
         url += '?page=' + this.page + '&per_page=' + this.itemsPerPage
       }
       // Don't set filter with the general item 'Allgemein'
       if (this.filterBranchId > 0) {
-        url += '&groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+        url += '&groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
-      let p1 = this.$http.get(url).then(function (res) {
+      let p1 = axios.get(url).then(function (res) {
         for (const jsonObj of res.data.data) {
           this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
         }
@@ -361,7 +349,7 @@ export default Vue.extend({
         this.total = res.data.meta.total;
       }.bind(this));
 
-      let p2 = this.$http.get('/user/trainer').then(function (res) {
+      let p2 = axios.get('/user/trainer').then(function (res) {
         this.trainers = res.data;
       }.bind(this));
 
@@ -380,21 +368,21 @@ export default Vue.extend({
     },
     async deleteItem() {
       this.showConfirmDialog = false
-        const {data} = await this.$http.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
+        const {data} = await axios.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
         if (data.status == 'ok') {
-          this.$emit("showSnackbar", "Training erfolgreich gelöscht", "success")
+          useSnackbarStore().show("Training erfolgreich gelöscht", "success")
           this.loadData();
         } else {
-          this.$emit("showSnackbar", "Training konnte nicht gelöscht werden", "error")
+          useSnackbarStore().show("Training konnte nicht gelöscht werden", "error")
         }
     },
     editItem(item) {
       this.editDialogTitle = 'Training bearbeiten'
       this.editedId = item.id;
       Object.assign(this.editedItem, item)
-      this.editedItemDate = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
-      this.editedItem.start = this.moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
-      this.editedItem.end = this.moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItemDate = moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
+      this.editedItem.start = moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItem.end = moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
       this.editDialog = true
     },
     create() {
@@ -414,8 +402,8 @@ export default Vue.extend({
       const self = this;
       const postData = {
         id: null,
-        start: self.moment(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
-        end: self.moment(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
+        start: moment(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
+        end: moment(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
         locationId: self.editedItem.locationId,
         groupIds: self.editedItem.groupIds,
         trainerIds: self.editedItem.trainerIds,
@@ -425,12 +413,12 @@ export default Vue.extend({
       }
       if (self.editedId) {
         postData.id = self.editedId;
-        self.$http.put('/training/' + self.editedId, postData)
+        axios.put('/training/' + self.editedId, postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()
-                self.$emit("showSnackbar", "Training gespeichert", "success")
-                self.$http.get('/training/' + self.editedId)
+                useSnackbarStore().show("Training gespeichert", "success")
+                axios.get('/training/' + self.editedId)
                     .then(function ({data}) {
                       const index = self.trainings.findIndex(t => (t && t.id == self.editedId));
                       self.trainings.splice(index, 1, data.data);
@@ -438,36 +426,45 @@ export default Vue.extend({
 
               } else {
                 console.error(res.data.error);
-                self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
+                useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
               }
             })
             .catch(function (err) {
               console.log(err);
-              self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
+              useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
             })
       } else {
 
-        self.$http.post('/training', postData)
+        axios.post('/training', postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()
-                self.$emit("showSnackbar", "Training gespeichert", "success")
+                useSnackbarStore().show("Training gespeichert", "success")
                 self.loadData();
               } else {
                 console.error(res.data.error);
-                self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
+                useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
               }
             })
             .catch(function (err) {
               console.log(err);
-              self.$emit("showSnackbar", "Training konnte nicht gespeichert werden", "error")
+              useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
             })
       }
+    },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getSimpleTrainersByIds(trainerIds) {
+      return useMasterDataStore().getSimpleTrainersByIds(trainerIds);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
     },
     formatDate,
     parseDate,
   },
-})
+}
 </script>
 
 <style scoped>

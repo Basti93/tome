@@ -2,6 +2,16 @@
 
 return [
 
+    // Password policy - configurable requirements
+    'password_policy' => [
+        'min_length' => env('PASSWORD_MIN_LENGTH', 8),
+        'require_lowercase' => env('PASSWORD_REQUIRE_LOWERCASE', true),
+        'require_uppercase' => env('PASSWORD_REQUIRE_UPPERCASE', true),
+        'require_digits' => env('PASSWORD_REQUIRE_DIGITS', true),
+        'require_special' => env('PASSWORD_REQUIRE_SPECIAL', true),
+        'special_chars' => '@$!%*?&.',
+    ],
+
     // these options are related to the sign-up procedure
     'sign_up' => [
 
@@ -14,12 +24,12 @@ return [
             'firstName' => 'required',
             'familyName' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required'
+            'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/'
         ]
     ],
     'change_password' => [
         'validation_rules' => [
-            'password' => 'required',
+            'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/',
         ]
     ],
     // these options are related to store user
@@ -130,7 +140,7 @@ return [
         'validation_rules' => [
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|confirmed'
+            'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/|confirmed'
         ]
     ]
 
