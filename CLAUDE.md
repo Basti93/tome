@@ -6,24 +6,80 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 T.O.M.E. (Training Organization Made Easy) is a monorepo with a decoupled Vue.js PWA frontend (`/app`) and Laravel REST API backend (`/server`). Communication uses JWT-authenticated REST API calls.
 
-## Commands
+## Development Setup
 
-### Frontend (`/app`)
+Two development workflows are available:
+
+### Option 1: Docker (Recommended - Production-like)
+Best for testing the full integrated stack with nginx proxy.
+
 ```bash
-npm install          # Install dependencies
-npm run serve        # Dev server (port 8080)
-npm run build        # Production build
-npm run lint         # ESLint with auto-fix
+# Build and start all services (nginx, laravel, mysql)
+docker-compose up -d
+
+# Run Laravel migrations
+docker-compose exec laravel php artisan migrate
+docker-compose exec laravel php artisan db:seed
+
+# Build frontend and copy to public folder
+cd app && npm run build:serve
+
+# Access at http://localhost:8000
 ```
 
-### Backend (`/server`)
+Features:
+- ✅ Nginx reverse proxy handles routing
+- ✅ Same-origin cookies work (SameSite=Strict in Docker)
+- ✅ MySQL database included
+- ✅ Production-like environment
+
+Stop with: `docker-compose down`
+
+### Option 2: Local Development (Vite + Local Laravel)
+Best for rapid development with hot reload.
+
 ```bash
-composer install                  # Install dependencies
-php artisan serve                 # Dev server (port 8000)
-php artisan migrate               # Run migrations
-php artisan db:seed               # Seed database
-php artisan jwt:secret -f         # Generate JWT secret
-phpunit                           # Run tests
+# Terminal 1: Start Laravel backend
+cd server && composer install && php artisan serve
+# Runs on http://localhost:8000
+
+# Terminal 2: Start Vite dev server with live reload
+cd app && npm install && npm run dev
+# Runs on http://localhost:5173 with auto-refresh
+
+# Terminal 3: (Optional) Configure Laravel
+php artisan migrate
+php artisan db:seed
+```
+
+Features:
+- ✅ Hot module reload for frontend changes
+- ✅ Separate dev servers (no nginx needed)
+- ✅ Vite proxy to /api/* endpoints
+- ✅ SameSite=Lax cookies work with different ports
+
+Access: `http://localhost:5173`
+
+### Commands
+
+#### Frontend (`/app`)
+```bash
+npm install              # Install dependencies
+npm run dev             # Vite dev server (port 5173, hot reload)
+npm run build           # Production build to /dist
+npm run build:serve     # Build + copy to /server/public
+npm run deploy          # Copy dist/ to /server/public
+npm run lint            # ESLint with auto-fix
+```
+
+#### Backend (`/server`)
+```bash
+composer install              # Install dependencies
+php artisan serve             # Dev server (port 8000)
+php artisan migrate           # Run migrations
+php artisan db:seed           # Seed database
+php artisan jwt:secret -f     # Generate JWT secret
+phpunit                       # Run tests
 ```
 
 ## Architecture
@@ -45,13 +101,14 @@ phpunit                           # Run tests
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
 
 ### Authentication Flow
-Users authenticate with JWT (stored in `localStorage`) or via cookie-based access for unregistered users. Axios interceptors auto-attach tokens; 401 responses trigger automatic token refresh.
+Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger automatic token refresh via the Axios response interceptor.
 
 ## Setup
 
-### Frontend `.env.local`
+### Frontend `.env.local` (Optional)
 ```
-VUE_APP_API_URL=http://localhost:8000/api/v1
+# Optional: Override API URL (defaults to /api/v1 which is relative to the server)
+VITE_APP_API_URL=http://localhost:8000/api/v1
 ```
 
 ### Backend `.env` (key vars)

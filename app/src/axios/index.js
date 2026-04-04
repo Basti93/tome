@@ -2,7 +2,8 @@ import axios from 'axios'
 import { useAuthStore } from '@/store/auth'
 
 // axios configuration
-axios.defaults.baseURL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000/api/v1'
+// Use relative API URL - will work from any server (same origin)
+axios.defaults.baseURL = import.meta.env.VITE_APP_API_URL || '/api/v1'
 axios.defaults.headers.common = {'Content-Type': 'application/json'}
 axios.defaults.withCredentials = true
 
