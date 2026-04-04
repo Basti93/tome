@@ -1,57 +1,30 @@
-import User from '../models/User'
-import * as MutationTypes from './mutation-types'
+import { defineStore } from 'pinia'
+import type User from '@/models/User'
 
-const state = {
-  user: User.from(localStorage.user),
-  token: localStorage.token
-}
-
-const mutations = {
-  [MutationTypes.LOGIN] (state, {
-    token,
-    user
-  }) {
-    state.token = token
-    state.user = User.from(user)
-    localStorage.token = token
-    localStorage.user = user
+export const useAuthStore = defineStore('auth', {
+  state: () => {
+    const stored = localStorage.getItem('user')
+    return {
+      user: stored ? JSON.parse(stored) as User : null as User | null,
+      token: localStorage.getItem('token') as string | null
+    }
   },
-  [MutationTypes.UPDATE_USER] (state, { user }) {
-    state.user = User.from(user)
-    localStorage.user = user
-  },
-  [MutationTypes.LOGOUT] (state) {
-    state.user = null
-    state.token = null
-    delete localStorage.token
-    delete localStorage.user
+  actions: {
+    login(user: User, token: string) {
+      this.user = user
+      this.token = token
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('token', token)
+    },
+    updateUser(user: User) {
+      this.user = user
+      localStorage.setItem('user', JSON.stringify(user))
+    },
+    logout() {
+      this.user = null
+      this.token = null
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+    }
   }
-}
-
-const getters = {
-  loggedInUser (state) {
-    return state.user
-  },
-  loggedInUserToken (state) {
-    return state.token
-  }
-}
-
-const actions = {
-  login ({ commit }, payload) {
-    commit(MutationTypes.LOGIN, payload)
-  },
-  updateUser ({ commit }, payload) {
-    commit(MutationTypes.UPDATE_USER, payload)
-  },
-  logout ({ commit }) {
-    commit(MutationTypes.LOGOUT)
-  }
-}
-
-export default {
-  state,
-  mutations,
-  getters,
-  actions
-}
+})
