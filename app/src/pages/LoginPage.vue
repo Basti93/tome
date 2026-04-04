@@ -19,24 +19,38 @@
                   v-model="email"
                   :rules="emailRules"
                   label="E-mail"
+                  prepend-icon="email"
                   required
               ></v-text-field>
 
               <v-text-field
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   :rules="passwordRules"
                   v-model="password"
+                  prepend-icon="security"
+                  :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                  @click:append="showPassword = !showPassword"
                   label="Passwort"
                   @keypress.enter.prevent="login()"
                   required
               ></v-text-field>
 
+              <div class="text-right mb-2">
+                <router-link to="/forgot-password" class="text-decoration-none">
+                  <small>Passwort vergessen?</small>
+                </router-link>
+              </div>
+
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
+              <router-link to="/signup" class="text-decoration-none mr-2">
+                <small>Registrieren</small>
+              </router-link>
               <v-btn
                   elevation="1"
-                  :disabled="!valid"
+                  :disabled="!valid || loading"
+                  :loading="loading"
                   v-on:click="login()"
                   color="primary"
               >
@@ -57,17 +71,20 @@ import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
+import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
 
 export default {
   name: "LoginPage",
   setup() {
     const router = useRouter()
     const route = useRoute()
-    return { router, route }
+    return { router, route, PASSWORD_POLICY }
   },
   data: () => ({
     valid: true,
     password: '',
+    showPassword: false,
+    loading: false,
     passwordRules: [
       v => !!v || 'Wird benötigt'
     ],
@@ -104,6 +121,7 @@ export default {
     },
     async login() {
       try {
+        this.loading = true
         const {data} = await axios.post('/auth/login', {email: this.email, password: this.password})
         if (!data.token) {
           useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
@@ -116,7 +134,13 @@ export default {
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {
-        useSnackbarStore().show("Anmeldung fehlgeschlagen", "error")
+        if (error?.data?.message) {
+          useSnackbarStore().show(error.data.message, "error")
+        } else {
+          useSnackbarStore().show("Anmeldung fehlgeschlagen", "error")
+        }
+      } finally {
+        this.loading = false
       }
     },
   },
