@@ -88,12 +88,8 @@ export default {
   name: "GroupsOverviewPage",
   components: {},
   data() {
-    const masterData = useMasterDataStore();
     return {
       loading: false,
-      trainingSeries: masterData.trainingSeries as TrainingSeries[],
-      users: masterData.simpleUsers as User[],
-      groups: masterData.groups as Group[],
       headers: [
         {text: 'Name', value: 'name', sortable: false},
         {text: 'Sparte', value: 'branchId', sortable: false},
@@ -106,6 +102,12 @@ export default {
   computed: {
     loggedInUser() {
       return useAuthStore().user;
+    },
+    groups() {
+      return useMasterDataStore().groups;
+    },
+    trainingSeries() {
+      return useMasterDataStore().trainingSeries;
     },
   },
   methods: {
@@ -127,7 +129,7 @@ export default {
         const branch = useMasterDataStore().branches.find(b => b.id === group.branchId);
         return branch ? branch.colorHex : '#000000';
       }
-      return '#000000';
+      return '#000000'; 
     },
     getBranchNameByGroupId(groupId) {
       const group = useMasterDataStore().groups.find(g => g.id === groupId);

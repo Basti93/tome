@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:serve": "npm run build && npm run deploy",
-    "deploy": "cp -r dist/* ../server/public/",
+    "deploy": "rm -rf ../server/public/* && cp -r dist/* ../server/public/",
     "watch": "npm run build -- --watch && npm run deploy",
     "watch:deploy": "chokidar 'src/**/*' -c 'npm run build:serve'",
     "preview": "vite preview",

@@ -38,6 +38,10 @@ RUN composer install --no-interaction
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Copy startup script
+COPY startup.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
+
 EXPOSE 9000
 
-CMD ["php-fpm"]
+CMD ["/usr/local/bin/startup.sh"]
