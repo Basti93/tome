@@ -134,7 +134,8 @@
 </template>
 
 <script lang="ts">
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
+import axios from '@/axios';
 
 export default {
   setup() {
@@ -182,7 +183,7 @@ export default {
       }
     },
     async loadLocations() {
-      const {data} = await this.$http.get('/location')
+      const {data} = await axios.get('/location')
       this.locations = data.data;
       this.page = data.currentPage;
       this.total = data.total;
@@ -196,9 +197,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await this.$http.put('/location/' + this.editedItem.id, postData);
+          response = await axios.put('/location/' + this.editedItem.id, postData);
         } else {
-          response = await this.$http.post('/location', postData);
+          response = await axios.post('/location', postData);
         }
         if (response && response.data.error) {
           this.$emit("showSnackbar", "Ort konnte nicht gespeichert werden", "error")

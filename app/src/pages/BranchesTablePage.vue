@@ -150,7 +150,8 @@
 </template>
 
 <script lang="ts">
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
+import axios from '@/axios';
 
 export default {
   setup() {
@@ -198,7 +199,7 @@ export default {
       }
     },
     async loadBranches() {
-      const {data} = await this.$http.get('/branch')
+      const {data} = await axios.get('/branch')
       this.branches = data.data;
       this.page = data.currentPage;
       this.total = data.total;
@@ -214,9 +215,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await this.$http.put('/branch/' + this.editedItem.id, postData);
+          response = await axios.put('/branch/' + this.editedItem.id, postData);
         } else {
-          response = await this.$http.post('/branch', postData);
+          response = await axios.post('/branch', postData);
         }
         if (response && response.data.error) {
           this.$emit("showSnackbar", "Sparte konnte nicht gespeichert werden", "error")
