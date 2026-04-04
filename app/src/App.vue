@@ -28,14 +28,6 @@
           </template>
         </v-banner>
         <v-snackbar
-            location="bottom right"
-            :color="snackbarStore.color"
-            v-model="snackbarStore.visible"
-            :timeout="snackbarStore.timeout"
-        >
-          {{ snackbarStore.text }}
-        </v-snackbar>
-        <v-snackbar
             v-if="currentUser"
             v-model="pushPermissionSnackbar"
             location="bottom right"

@@ -21,10 +21,10 @@
           <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
           <div>{{ getLocationById(item.locationId).name }}</div>
           <template v-slot:icon>
-            <v-avatar>
-              <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
-              <v-icon v-else-if="isCheckIn && canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-              <v-icon v-else small>mdi-alert-decagram</v-icon>
+            <v-avatar :color="timelineColor(item)">
+              <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
+              <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
+              <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
             </v-avatar>
           </template>
         </v-timeline-item>
@@ -55,10 +55,10 @@
         <div>{{ item.start.format('HH:mm') + ' - ' + item.end.format('HH:mm') }}</div>
         <div>{{ getLocationById(item.locationId).name }}</div>
         <template v-slot:icon>
-          <v-avatar>
-            <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
-            <v-icon v-else-if="isCheckIn &&canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-            <v-icon v-else small>mdi-alert-decagram</v-icon>
+          <v-avatar :color="timelineColor(item)">
+            <v-icon v-if="checkStatusDone(item)" small color="white">{{isCheckIn ? 'mdi-thumb-up' : 'mdi-check' }}</v-icon>
+            <v-icon v-else-if="isCheckIn && canceled(item)" small color="white">{{isCheckIn ? 'mdi-thumb-down' : 'mdi-cancel' }}</v-icon>
+            <v-icon v-else small color="white">mdi-alert-decagram</v-icon>
           </v-avatar>
         </template>
       </v-timeline-item>

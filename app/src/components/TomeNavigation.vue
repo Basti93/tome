@@ -99,7 +99,7 @@
             to="/statistics"
             @click="drawer = false">
           <template v-slot:prepend>
-            <v-icon>mdi-timeline</v-icon>
+            <v-icon>mdi-chart-bar</v-icon>
           </template>
           <v-list-item-title>Statistiken</v-list-item-title>
         </v-list-item>
@@ -244,8 +244,8 @@ export default {
   name: "TomeNavigation",
   components: {ProfileImage},
   setup() {
-    const { xs, md } = useDisplay()
-    return { xs, md }
+    const { xs, mdAndUp } = useDisplay()
+    return { xs, mdAndUp }
   },
   data() {
     return {

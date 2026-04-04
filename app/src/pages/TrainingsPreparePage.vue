@@ -206,10 +206,7 @@
                           >
                             <template slot="activator">
                               <v-list-item>
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt
-                                  </v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt</v-list-item-title>
                               </v-list-item>
                             </template>
                             <v-list-item
@@ -220,14 +217,12 @@
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-content>
-                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
+                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                              </v-list-item-subtitle>
                             </v-list-item>
                           </v-list-group>
                           <v-list-group
@@ -238,32 +233,29 @@
                           >
                             <template slot="activator">
                               <v-list-item>
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ canceledUsers.length }} <span
-                                      v-if="canceledUsers.length == 1">Absage</span><span
-                                      v-else>Absagen</span></v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ canceledUsers.length }} <span
+                                    v-if="canceledUsers.length == 1">Absage</span><span
+                                    v-else>Absagen</span></v-list-item-title>
                               </v-list-item>
                             </template>
                             <v-list-item
                                 v-for="(item) in canceledUsers"
                                 :key="item.id"
+                                @click="openCancelReasonDialog(item.id)"
                             >
                               <tome-list-item-profile-image
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-content @click="openCancelReasonDialog(item.id)">
-                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                </v-list-item-subtitle>
-                                <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
-                                  {{ getCancelReason(item.id) }}
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
+                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                              </v-list-item-subtitle>
+                              <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
+                                {{ getCancelReason(item.id) }}
+                              </v-list-item-subtitle>
                             </v-list-item>
                           </v-list-group>
                         </v-card-text>

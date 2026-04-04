@@ -5,6 +5,7 @@ import router from './router'
 import vuetify from './plugins/vuetify'
 import axios from './axios'
 import { useMasterDataStore } from './store/masterData'
+import VueApexCharts from 'vue3-apexcharts'
 
 async function init() {
   const app = createApp(App)
@@ -13,6 +14,7 @@ async function init() {
   app.use(pinia)
   app.use(router)
   app.use(vuetify)
+  app.component('apexchart', VueApexCharts)
 
   const masterData = useMasterDataStore()
   try {
