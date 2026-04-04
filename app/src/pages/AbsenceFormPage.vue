@@ -198,13 +198,13 @@
 
 <script lang="ts">
 
-import Vue from "vue";
+;
 import {mapGetters} from "vuex";
 import {formatDate} from "@/helpers/date-helpers"
 import User from "../models/User";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default Vue.extend({
+export default {
   name: "AbsenceFormPage",
   components: {ConfirmDialog},
   data: () => ({

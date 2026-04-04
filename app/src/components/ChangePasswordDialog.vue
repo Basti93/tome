@@ -50,10 +50,10 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
+    
     import {mapGetters} from 'vuex'
 
-    export default Vue.extend({
+    export default {
         name: "ChangePasswordDialog",
         props: {
             'visible': Boolean,
@@ -98,13 +98,13 @@
                 }
             },
             async save() {
-                const response = await this.$http.post('/user/me/changepassword', {'password': this.password});
+                const response = await this.$http.post('/user/me/changepassword', {'password': this.password}
                 if (response.data.status === 'ok') {
                     this.show = false;
                 }
             }
         }
-    });
+    }
 </script>
 
 <style scoped>

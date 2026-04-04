@@ -59,9 +59,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-
-export default Vue.extend({
+export default {
   name: "ProfileImage",
   props: {
     imagePath: String,
@@ -76,7 +74,7 @@ export default Vue.extend({
     return {
       dSize: 24,
       menu: false,
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   created() {
@@ -95,6 +93,6 @@ export default Vue.extend({
       return this.firstName + " " + this.familyName;
     }
   },
-});
+}
 </script>
 

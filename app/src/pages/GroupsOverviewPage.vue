@@ -81,14 +81,14 @@
 
 <script lang="ts">
 
-import Vue from "vue";
+;
 import {mapGetters} from 'vuex'
 import Group from "../models/Group";
 import User from "../models/User";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import TrainingSeries from "../models/TrainingSeries";
 
-export default Vue.extend({
+export default {
   name: "GroupsOverviewPage",
   components: {},
   data() {

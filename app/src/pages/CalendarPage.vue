@@ -30,11 +30,11 @@
 
 <script lang="ts">
 
-import Vue from "vue";
+;
 import {mapGetters} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 
-export default Vue.extend({
+export default {
   name: "CalendarPage",
   components: {TrainingCalendar},
 

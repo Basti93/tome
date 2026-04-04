@@ -90,11 +90,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+
 import {mapGetters} from 'vuex'
 import {formatDate, parseDate} from "../helpers/date-helpers"
 
-export default Vue.extend({
+export default {
   name: "TrainingAccountingExportDialog",
   props: {
     'visible': Boolean,
@@ -108,7 +108,7 @@ export default Vue.extend({
       toDateMenuOpened: false,
       url: null,
       creatingExcelReport: false,
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   computed: {
@@ -143,7 +143,7 @@ export default Vue.extend({
               userId: this.loggedInUser.id,
               from: this.moment(this.dateFrom, 'YYYY-MM-DD').format(),
               to: this.moment(this.dateTo, 'YYYY-MM-DD').format(),
-            });
+            }
         if (data.status == 'ok') {
           this.url = this.serverUrl + "/" + data.fileName;
         }
@@ -157,7 +157,7 @@ export default Vue.extend({
     formatDate,
     parseDate,
   }
-});
+}
 </script>
 
 <style scoped>

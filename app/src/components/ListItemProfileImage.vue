@@ -6,9 +6,7 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-
-    export default Vue.extend({
+    export default {
         name: "tome-list-item-profile-image",
         props: {
             imagePath: String,
@@ -17,7 +15,7 @@
         data: function () {
             return {
                 dSize: 24,
-                serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+                serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
             }
         },
         created() {
@@ -33,5 +31,5 @@
                 return null;
             },
         },
-    });
+    }
 </script>

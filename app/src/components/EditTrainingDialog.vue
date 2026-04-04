@@ -213,10 +213,10 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
+    ;
     import Training from "../models/Training";
 
-    export default Vue.extend({
+    export default {
         name: "EditTrainingDialog",
         data: function () {
             return {

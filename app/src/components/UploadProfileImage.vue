@@ -50,10 +50,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
 
-export default Vue.extend({
+export default {
   name: "UploadProfileImage",
   props: {
     imagePath: String,
@@ -64,7 +63,7 @@ export default Vue.extend({
       uploading: false,
       changeImage: false,
       files: [],
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
       imageRule: [
         value => !value.size || value.size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
       ],
@@ -74,7 +73,9 @@ export default Vue.extend({
     this.editImagePath = this.imagePath;
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     imageUrl() {
       if ((this.files && this.files.size) || this.files.length > 0) {
         return URL.createObjectURL(this.files);
@@ -111,7 +112,7 @@ export default Vue.extend({
       },
     },
   }
-});
+}
 </script>
 
 <style scoped>

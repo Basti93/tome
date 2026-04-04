@@ -78,16 +78,16 @@
 
 <script lang="ts">
 
-import Vue from "vue";
+;
 
-export default Vue.extend({
+export default {
   name: "InfoPage",
   data: function () {
     return {
       openedPanel: 0,
       faqs: [],
       filePaths: [],
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   created(): void {

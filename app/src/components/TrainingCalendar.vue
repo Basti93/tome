@@ -180,11 +180,11 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+;
 import {mapGetters, mapState} from 'vuex';
 import Training from "@/models/Training";
 
-export default Vue.extend({
+export default {
   name: "TrainingCalendar",
   props: {
     privateMode: Boolean,

@@ -51,10 +51,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+;
 import {mapGetters} from 'vuex'
 
-export default Vue.extend({
+export default {
   name: "LoginPage",
   data: () => ({
     valid: true,
@@ -87,7 +87,7 @@ export default Vue.extend({
       }
     },
     async login() {
-      const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password});
+      const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password}
       if (!data.token) {
         this.$emit("showSnackbar", "Falsches Passwort oder E-Mail!", "error");
         this.$store.dispatch('logout')
