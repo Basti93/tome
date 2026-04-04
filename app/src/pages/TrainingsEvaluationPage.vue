@@ -151,15 +151,32 @@
                                   </v-list-item-subtitle>
 
                                   <template v-slot:append v-if="!selectedTraining.evaluated">
-                                    <v-btn
-                                        title="Benutzer zu Absagen hinzufügen"
-                                        color="primary"
-                                        @click="removeParticipant(item.id)"
-                                        outlined
-                                        size="small"
-                                    >
-                                      <v-icon>mdi-minus</v-icon>
-                                    </v-btn>
+                                    <v-tooltip text="Zu Abgesagt verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="removeParticipant(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-thumb-down</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
+                                    <v-tooltip text="Zu Sonstige verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="removeParticipantToUndecided(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-help-circle-outline</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
                                   </template>
 
                                 </v-list-item>
@@ -195,25 +212,44 @@
                                     {{ getCancelReason(item.id) }}
                                   </v-list-item-subtitle>
                                   <template v-slot:append v-if="!selectedTraining.evaluated">
-                                    <div class="d-flex gap-2">
-                                      <v-btn v-if="getCancelReason(item.id)"
-                                             title="Absage anschauen"
-                                             color="primary"
-                                             @click="openCancelReasonDialog(item.id)"
-                                             outlined
-                                             size="small">
-                                        <v-icon>mdi-magnify</v-icon>
-                                      </v-btn>
-                                      <v-btn
-                                          color="primary"
-                                          title="Benutzer zu Teilnehmern hinzufügen"
-                                          @click="addParticipant(item.id)"
-                                          outlined
-                                          size="small"
-                                      >
-                                        <v-icon>mdi-plus</v-icon>
-                                      </v-btn>
-                                    </div>
+                                    <v-tooltip v-if="getCancelReason(item.id)" text="Absagegrund anschauen">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="openCancelReasonDialog(item.id)"
+                                            size="small">
+                                          <v-icon>mdi-magnify</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
+                                    <v-tooltip text="Zu Teilnehmern verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="addParticipant(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-thumb-up</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
+                                    <v-tooltip text="Zu Sonstige verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="removeParticipantToUndecided(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-help-circle-outline</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
                                   </template>
                                 </v-list-item>
                               </v-list-group>
@@ -244,15 +280,32 @@
                                   }}</span>
                                   </v-list-item-subtitle>
                                   <template v-slot:append v-if="!selectedTraining.evaluated">
-                                    <v-btn
-                                        color="primary"
-                                        title="Benutzer zu Teilnehmern hinzufügen"
-                                        @click="addParticipant(item.id)"
-                                        outlined
-                                        size="small"
-                                    >
-                                      <v-icon>mdi-plus</v-icon>
-                                    </v-btn>
+                                    <v-tooltip text="Zu Teilnehmern verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="addParticipant(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-thumb-up</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
+                                    <v-tooltip text="Zu Abgesagt verschieben">
+                                      <template v-slot:activator="{ props }">
+                                        <v-btn
+                                            v-bind="props"
+                                            icon
+                                            color="primary"
+                                            @click="addParticipantAsCanceled(item.id)"
+                                            size="small"
+                                        >
+                                          <v-icon>mdi-thumb-down</v-icon>
+                                        </v-btn>
+                                      </template>
+                                    </v-tooltip>
                                   </template>
                                 </v-list-item>
                               </v-list-group>
@@ -524,6 +577,27 @@ export default {
         }
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
         useSnackbarStore().show("Benutzer hinzugefügt", "success");
+      }
+    },
+    async addParticipantAsCanceled(userId) {
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
+      if (data.status == 'ok') {
+        if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
+          this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, false, null));
+        } else {
+          this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
+        }
+        useSnackbarStore().show("Benutzer zu Absagen hinzugefügt", "success");
+      }
+    },
+    async removeParticipantToUndecided(userId) {
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+      if (data.status == 'ok') {
+        const index = this.selectedTraining.participants.findIndex(p => p.userId === userId);
+        if (index >= 0) {
+          this.selectedTraining.participants.splice(index, 1);
+        }
+        useSnackbarStore().show("Benutzer entfernt", "success");
       }
     },
     async evaluated() {
