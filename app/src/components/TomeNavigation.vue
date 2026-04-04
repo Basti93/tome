@@ -258,7 +258,7 @@
           <v-btn
               text
               v-on="on"
-              v-show="$vuetify.breakpoint.mdAndUp"
+              v-show="mdAndUp"
           >
             <span>{{ loggedInUser.firstName }}&nbsp;{{ loggedInUser.familyName }}</span>
             <ProfileImage :firstName="loggedInUser.firstName"
@@ -302,8 +302,8 @@ export default {
   name: "TomeNavigation",
   components: {ProfileImage},
   setup() {
-    const { xsOnly } = useDisplay()
-    return { xsOnly }
+    const { xsOnly, mdAndUp } = useDisplay()
+    return { xsOnly, mdAndUp }
   },
   data() {
     return {
