@@ -29,17 +29,17 @@
 </template>
 
 <script lang="ts">
-
-;
-import {mapGetters} from 'vuex'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
+import { useAuthStore } from '@/store/auth'
 
 export default {
   name: "CalendarPage",
   components: {TrainingCalendar},
 
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     userLoggedIn() {
       if (this.loggedInUser) {
         return true;

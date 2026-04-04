@@ -57,12 +57,11 @@
                   <v-menu
                       ref="birthdateMenu"
                       :close-on-content-click="false"
-                      v-model="birthdateMenu"
-                      :rules="birthdateRules"
-                      required>
+                      v-model="birthdateMenu">
                     <template v-slot:activator="{ on }">
                       <v-text-field
                           v-model="birthdateFormatted"
+                          :rules="birthdateRules"
                           required
                           label="Geburtsdatum"
                           prepend-icon="event"
@@ -120,6 +119,9 @@
 
 <script>
 import {formatDate} from "../helpers/date-helpers"
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   name: "SignupPage",
@@ -149,7 +151,12 @@ export default {
     ],
   }),
   mounted: function () {
-    this.$refs.form.$children['0'].focus()
+    try {
+      const el = document.querySelector('input');
+      if (el) el.focus();
+    } catch (e) {
+      // focus failed
+    }
   },
   computed: {
     birthdateFormatted() {
@@ -169,33 +176,28 @@ export default {
     },
     async signup() {
       try {
-        await this.$http.post('/auth/signup', {
+        await axios.post('/auth/signup', {
           firstName: this.firstName,
           familyName: this.familyName,
           email: this.email,
-          birthdate: this.moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
+          birthdate: moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
           password: this.password,
         });
         this.completed = true;
-        this.$emit("showSnackbar", "Erfolgreich registriert", "success");
+        useSnackbarStore().show("Erfolgreich registriert", "success")
       } catch (error) {
         console.log(error);
         if (error) {
           if (error.status_code === 422) {
             for (const validationError of error.errors) {
               console.info(validationError);
-              this.$emit("showSnackbar", validationError, "error");
+              useSnackbarStore().show(validationError, "error")
             }
           }
         }
       }
     },
     formatDate,
-  },
-  watch: {
-    birthdateMenu(val) {
-      val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
-    },
   },
 }
 </script>

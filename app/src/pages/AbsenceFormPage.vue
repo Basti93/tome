@@ -144,8 +144,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:itemsPerPage="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.firstName`]="{ item }">
                           {{ item.firstName }}
@@ -197,12 +197,15 @@
 </template>
 
 <script lang="ts">
-
-;
-import {mapGetters} from "vuex";
 import {formatDate} from "@/helpers/date-helpers"
 import User from "../models/User";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { useAuthStore } from '@/store/auth'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   name: "AbsenceFormPage",
@@ -244,10 +247,12 @@ export default {
     this.loadAllAbsenceUsers();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
-    ...mapGetters('masterData', {
-      getAllSimpleUsersWithGroup: 'getAllSimpleUsersWithGroup',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    cookieUser() {
+      return useCookieAuthStore().cookieUser
+    },
     absenceStartFormatted(): String {
       return this.formatDate(this.absenceStart)
     },
@@ -270,10 +275,13 @@ export default {
     },
   },
   methods: {
+    getAllSimpleUsersWithGroup() {
+      return useMasterDataStore().getAllSimpleUsersWithGroup()
+    },
     async loadAllAbsenceUsers() {
       this.loadingUsers = true;
       this.absenceUsers = [];
-      const {data} = await this.$http.get('user/allAbsence');
+      const {data} = await axios.get('user/allAbsence');
       if (data.data) {
         for (const userObj of data.data) {
             this.absenceUsers.push(new User(
@@ -281,15 +289,15 @@ export default {
                 userObj.email,
                 userObj.firstName,
                 userObj.familyName,
-                userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+                userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
                 userObj.active === 1 ? true : false,
                 userObj.groupIds,
                 userObj.roleNames,
                 userObj.trainerBranchIds,
                 userObj.registered,
                 userObj.profileImageName,
-                userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-                userObj.absenceEnd ? this.moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
+                userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+                userObj.absenceEnd ? moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
                 userObj.absenceReason
             ))
         }
@@ -301,17 +309,17 @@ export default {
     async sendAbsence() {
       if (this.$refs.form.validate()) {
         let postData = {
-          absenceStart: this.moment(this.absenceStart, 'YYYY-MM-DDTHH:mm').format(),
-          absenceEnd: this.moment(this.absenceEnd, 'YYYY-MM-DDTHH:mm').format(),
+          absenceStart: moment(this.absenceStart, 'YYYY-MM-DDTHH:mm').format(),
+          absenceEnd: moment(this.absenceEnd, 'YYYY-MM-DDTHH:mm').format(),
           absenceReason: this.absenceReason
         }
-        const {data} = await this.$http.post('simpleuser/' + this.userId + '/storeAbsence', postData);
+        const {data} = await axios.post('simpleuser/' + this.userId + '/storeAbsence', postData);
         if (data.status === 'ok') {
-          this.$emit("showSnackbar", "Abwesenheit erfolgreich eingetragen", "success");
+          useSnackbarStore().show("Abwesenheit erfolgreich eingetragen", "success")
           this.resetFormData();
           this.loadAllAbsenceUsers();
         } else if (data.status === 'absence_exists') {
-          this.$emit("showSnackbar", "Eine Abwesenheit ist für diesen Benutzer bereits eingetragen. Bitte kontaktiere einen Trainer um sie zu ändern.", "error");
+          useSnackbarStore().show("Eine Abwesenheit ist für diesen Benutzer bereits eingetragen. Bitte kontaktiere einen Trainer um sie zu ändern.", "error")
         }
       }
     },
@@ -322,9 +330,9 @@ export default {
     async deleteAbsence() {
       this.showConfirmDialog = false;
       if (this.userIdToDelete) {
-        const {data} = await this.$http.put('user/' + this.userIdToDelete + '/removeAbsence');
+        const {data} = await axios.put('user/' + this.userIdToDelete + '/removeAbsence');
         if (data.status === 'ok') {
-          this.$emit("showSnackbar", "Abwesenheit erfolgreich gelöscht", "success");
+          useSnackbarStore().show("Abwesenheit erfolgreich gelöscht", "success")
           this.loadAllAbsenceUsers();
         }
       }

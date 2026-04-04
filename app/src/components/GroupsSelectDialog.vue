@@ -33,7 +33,7 @@
           multiple
           clearable
           chips
-          deletable-chips
+          closable-chips
           label="Gruppen"
           prepend-icon="group"
         ></v-select>
@@ -45,78 +45,85 @@
 
 <script>
 import { useDisplay } from 'vuetify'
-  import {mapGetters, mapState} from 'vuex'
+import { useMasterDataStore } from '@/store/masterData'
 
-  export default {
-
-    name: "GroupsSelectDialog",
-    props: {
-      'visible': Boolean,
-      'groupIds': Array,
-    },
-    created() {
-      this.initSelect()
-    },
-    data() {
-      return {
-        valid: true,
-        selectedBranchId: null,
-        selectedGroupIds: [],
-        groupItems: [],
-      }
-    },
-    computed: {
-      ...mapGetters('masterData', {getBranchByGroupId: 'getBranchByGroupId'}),
-      ...mapState('masterData', {
-        groups: 'groups',
-        branches: 'branches',
-      }),
-      show: {
-        get() {
-          return this.visible;
-        },
-        set(value) {
-          if (!value) {
-            this.$emit('close')
-          }
-        }
-      }
-    },
-    methods: {
-      fillGroupSelect: function () {
-        this.groupItems = [];
-        this.selectedGroupIds = [];
-        this.groups.forEach(function (item) {
-          if (this.selectedBranchId === item.branchId) {
-            this.groupItems.push(item);
-          }
-        }.bind(this));
-      },
-      initSelect: function () {
-        this.selectedGroupIds = this.groupIds;
-        if (this.groupIds.length > 0) {
-          this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
-        }
-      },
-      done: function() {
-        this.$emit('done', {branchId: this.selectedBranchId, groupdIds: this.selectedGroupIds})
-        this.show = false;
-      },
-    },
-    watch: {
-      selectedBranchId: function () {
-        if (this.selectedBranchId) {
-          this.fillGroupSelect();
-        } else {
-          this.selectedGroupIds = null;
-          this.groupItems = []
-        }
-      },
-      branchId: function () {
-        this.initSelect();
-      },
+export default {
+  name: "GroupsSelectDialog",
+  setup() {
+    const { xsOnly } = useDisplay()
+    return { xsOnly }
+  },
+  props: {
+    'visible': Boolean,
+    'groupIds': Array,
+  },
+  created() {
+    this.initSelect()
+  },
+  data() {
+    return {
+      valid: true,
+      selectedBranchId: null,
+      selectedGroupIds: [],
+      groupItems: [],
     }
+  },
+  computed: {
+    groups() {
+      return useMasterDataStore().groups
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
+    show: {
+      get() {
+        return this.visible;
+      },
+      set(value) {
+        if (!value) {
+          this.$emit('close')
+        }
+      }
+    }
+  },
+  methods: {
+    getBranchByGroupId(groupId) {
+      return useMasterDataStore().getBranchByGroupId(groupId)
+    },
+    fillGroupSelect: function () {
+      this.groupItems = [];
+      this.selectedGroupIds = [];
+      this.groups.forEach(function (item) {
+        if (this.selectedBranchId === item.branchId) {
+          this.groupItems.push(item);
+        }
+      }.bind(this));
+    },
+    initSelect: function () {
+      this.selectedGroupIds = this.groupIds;
+      if (this.groupIds.length > 0) {
+        this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
+      }
+    },
+    done: function() {
+      this.$emit('done', {branchId: this.selectedBranchId, groupdIds: this.selectedGroupIds})
+      this.show = false;
+    },
+  },
+  watch: {
+    selectedBranchId: function () {
+      if (this.selectedBranchId) {
+        this.fillGroupSelect();
+      } else {
+        this.selectedGroupIds = null;
+        this.groupItems = []
+      }
+    },
+    branchId: function () {
+      this.initSelect();
+    },
   }
+}
 </script>
 
 <style scoped>

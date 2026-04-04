@@ -21,7 +21,7 @@
             multiple
             clearable
             chips
-            deletable-chips
+            closable-chips
             @change="selectedGroupIdsChanged()"
             label="Gruppen"
             prepend-icon="group"
@@ -41,10 +41,10 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex'
+import { useMasterDataStore } from '@/store/masterData'
+import moment from 'moment'
 
 export default {
-
   name: "StatisticsFilter1",
   props: {
     'branchIds': Array,
@@ -70,11 +70,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('masterData', {getBranchByGroupId: 'getBranchByGroupId'}),
-    ...mapState('masterData', {
-      groups: 'groups',
-      branches: 'branches',
-    }),
+    groups() {
+      return useMasterDataStore().groups
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
   },
   methods: {
     initSelect: function () {
@@ -90,8 +91,8 @@ export default {
     },
     lastFiveYears() {
       const years = []
-      const dateEnd = this.moment().subtract(4, 'y')
-      const dateStart = this.moment()
+      const dateEnd = moment().subtract(4, 'y')
+      const dateStart = moment()
       while (dateEnd.diff(dateStart, 'years') <= 0) {
         years.push(dateStart.year())
         dateStart.subtract(1, 'year')

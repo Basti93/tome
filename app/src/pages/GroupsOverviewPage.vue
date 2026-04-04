@@ -39,26 +39,23 @@
                                 <v-divider></v-divider>
                                 <v-card-text>
                                   <v-list subheader :color="group.branch.colorHex" dense>
-                                    <v-subheader>Sportler</v-subheader>
+                                    <v-list-subheader>Sportler</v-list-subheader>
 
                                     <v-list-item
                                         v-for="user in getSimpleUsersByIds(group.userIds).sort((a,b) => a.familyName.localeCompare(b.familyName))"
                                         :key="user.id">
-                                      <v-list-item-content>
-                                        {{ user.getFullNameFamilyFirst() }}
-                                      </v-list-item-content>
+                                      {{ user.getFullNameFamilyFirst() }}
                                     </v-list-item>
                                   </v-list>
                                   <v-list subheader :color="group.branch.colorHex" dense>
-                                    <v-subheader>Trainingszeiten</v-subheader>
+                                    <v-list-subheader>Trainingszeiten</v-list-subheader>
 
                                     <v-list-item
                                         v-for="training in getTrainingSeriesByGroupId(group.id).sort((a,b) => (a.weekdays.length > 0 && b.weekdays.length > 0) ? a.weekdays[0] - b.weekdays[0] : -1)"
                                         :key="training.id">
-                                      <v-list-item-content>
-                                        <span class="caption">{{ dayArrayToString(training.weekdays) }} - {{ training.startTime }} - {{ training.endTime }}</span>
-                                        <span class="caption">{{getLocationNameById(training.locationId)}}</span>
-                                      </v-list-item-content>
+                                      <span class="caption">{{ dayArrayToString(training.weekdays) }} - {{ training.startTime }} - {{ training.endTime }}</span>
+                                      <br/>
+                                      <span class="caption">{{getLocationNameById(training.locationId)}}</span>
                                     </v-list-item>
                                   </v-list>
                                 </v-card-text>
@@ -80,23 +77,23 @@
 </template>
 
 <script lang="ts">
-
-;
-import {mapGetters} from 'vuex'
 import Group from "../models/Group";
 import User from "../models/User";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import TrainingSeries from "../models/TrainingSeries";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
 
 export default {
   name: "GroupsOverviewPage",
   components: {},
   data() {
+    const masterData = useMasterDataStore()
     return {
       loading: false,
-      trainingSeries: this.$store.state.masterData.trainingSeries as TrainingSeries[],
-      users: this.$store.state.masterData.simpleUsers as User[],
-      groups: this.$store.state.masterData.groups as Group[],
+      trainingSeries: masterData.trainingSeries as TrainingSeries[],
+      users: masterData.simpleUsers as User[],
+      groups: masterData.groups as Group[],
       headers: [
         {text: 'Name', value: 'name', sortable: false},
         {text: 'Sparte', value: 'branchId', sortable: false},
@@ -107,15 +104,23 @@ export default {
   created() {
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getSimpleUsersByIds: 'getSimpleUsersByIds',
-      getSimpleTrainersByGroupId: 'getSimpleTrainersByGroupId',
-      getTrainingSeriesByGroupId: 'getTrainingSeriesByGroupId',
-      getLocationNameById: 'getLocationNameById',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
   },
   methods: {
+    getSimpleUsersByIds(userIds) {
+      return useMasterDataStore().getSimpleUsersByIds(userIds)
+    },
+    getSimpleTrainersByGroupId(groupId) {
+      return useMasterDataStore().getSimpleTrainersByGroupId(groupId)
+    },
+    getTrainingSeriesByGroupId(groupId) {
+      return useMasterDataStore().getTrainingSeriesByGroupId(groupId)
+    },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId)
+    },
     dayArrayToString,
     formatDate,
     parseDate,

@@ -197,12 +197,15 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex'
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
 import UploadProfileImage from "@/components/UploadProfileImage.vue";
 import {formatDate} from "../helpers/date-helpers"
 import GroupsSelect from "../components/GroupsSelect.vue";
-
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   name: "ProfilePage",
@@ -236,10 +239,12 @@ export default {
     this.assignCurrentUser();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
     birthdateFormatted() {
       return this.formatDate(this.editUser.birthdate)
     },
@@ -247,7 +252,6 @@ export default {
   methods: {
     assignCurrentUser: function () {
       this.editUser = {...this.loggedInUser}
-      //this.editUser.birthdate = this.logged
     },
     groupsChanged: function ({groupIds}) {
       this.editUser.groupIds = groupIds;
@@ -266,7 +270,7 @@ export default {
     async uploadProfileImage() {
       let formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
-      const {data} = await this.$http.post('/user/me/uploadprofileimage',
+      const {data} = await axios.post('/user/me/uploadprofileimage',
           formData,
           {
             headers: {
@@ -277,7 +281,7 @@ export default {
         console.log("Image uploaded")
         return data.imageUrl;
       }
-      this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
+      useSnackbarStore().show("Fehler beim Hochladen des Bildes.", "error")
       throw "Image upload error";
     },
     async save() {
@@ -286,7 +290,7 @@ export default {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,
           email: this.editUser.email,
-          birthdate: this.moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
+          birthdate: moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
           groupIds: this.editUser.groupIds,
           trainerBranchIds: this.editUser.trainerBranchIds,
         };
@@ -301,28 +305,23 @@ export default {
           postData.profileImageName = imageName;
         }
 
-        let {data} = await this.$http.put('user/me', postData);
+        let {data} = await axios.put('user/me', postData);
         if (data.status == 'ok') {
-          this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
-          let {data} = await this.$http.get('auth/me');
-          this.$store.dispatch('updateUser', {user: JSON.stringify(data)})
+          useSnackbarStore().show("Erfolgreich gespeichert", "success")
+          let {data: userData} = await axios.get('auth/me');
+          useAuthStore().updateUser({user: JSON.stringify(userData)})
           this.assignCurrentUser();
         } else {
-          this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+          useSnackbarStore().show("Fehler beim Speichern.", "error")
         }
-      } catch {
-        this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+      } catch (error) {
+        useSnackbarStore().show("Fehler beim Speichern.", "error")
       }
     },
     formatDate,
     shortNameAndName(branch) {
       return branch.name + ' (' + branch.shortName + ')';
     }
-  },
-  watch: {
-    birthdateMenu(val) {
-      val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
-    },
   },
 }
 </script>

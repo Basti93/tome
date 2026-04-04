@@ -90,9 +90,10 @@
 </template>
 
 <script lang="ts">
-
-import {mapGetters} from 'vuex'
 import {formatDate, parseDate} from "../helpers/date-helpers"
+import { useAuthStore } from '@/store/auth'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   name: "TrainingAccountingExportDialog",
@@ -112,7 +113,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     fromDateFormatted(): String {
       return this.formatDate(this.dateFrom)
     },
@@ -138,12 +141,13 @@ export default {
     async createExcelReport(): void {
       this.creatingExcelReport = true;
       try {
-        const {data} = await this.$http.post('/trainingevaluation/exportaccountingtimes',
+        const {data} = await axios.post('/trainingevaluation/exportaccountingtimes',
             {
               userId: this.loggedInUser.id,
-              from: this.moment(this.dateFrom, 'YYYY-MM-DD').format(),
-              to: this.moment(this.dateTo, 'YYYY-MM-DD').format(),
+              from: moment(this.dateFrom, 'YYYY-MM-DD').format(),
+              to: moment(this.dateTo, 'YYYY-MM-DD').format(),
             }
+        )
         if (data.status == 'ok') {
           this.url = this.serverUrl + "/" + data.fileName;
         }
@@ -152,7 +156,6 @@ export default {
       } finally {
         this.creatingExcelReport = false;
       }
-
     },
     formatDate,
     parseDate,

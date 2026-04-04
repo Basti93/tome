@@ -51,11 +51,19 @@
 </template>
 
 <script lang="ts">
-;
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import { useRouter, useRoute } from 'vue-router'
 
 export default {
   name: "LoginPage",
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+    return { router, route }
+  },
   data: () => ({
     valid: true,
     password: '',
@@ -69,10 +77,17 @@ export default {
     ],
   }),
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'})
+    loggedInUser() {
+      return useAuthStore().user
+    }
   },
   mounted: function () {
-    this.$refs.form.$children['0'].focus()
+    try {
+      const el = document.querySelector('input');
+      if (el) el.focus();
+    } catch (e) {
+      // focus failed
+    }
   },
   created() {
     this.checkCurrentLogin()
@@ -83,23 +98,27 @@ export default {
   methods: {
     checkCurrentLogin() {
       if (this.loggedInUser) {
-        this.$router.replace(this.$route.query.redirect || '/')
+        this.router.replace(this.route.query.redirect as string || '/')
       }
     },
     async login() {
-      const {data} = await this.$http.post('/auth/login', {email: this.email, password: this.password}
-      if (!data.token) {
-        this.$emit("showSnackbar", "Falsches Passwort oder E-Mail!", "error");
-        this.$store.dispatch('logout')
-      } else {
-        this.$store.dispatch('login', {token: data.token, user: JSON.stringify(data.user)})
-        this.$store.dispatch('eraseCookieUser');
-        this.$emit("showSnackbar", "Erfolgreich angemeldet", "success");
-        this.$router.replace(this.$route.query.redirect || '/')
+      try {
+        const {data} = await axios.post('/auth/login', {email: this.email, password: this.password})
+        if (!data.token) {
+          useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
+          useAuthStore().logout()
+        } else {
+          useAuthStore().login({token: data.token, user: JSON.stringify(data.user)})
+          useCookieAuthStore().eraseCookieUser()
+          useSnackbarStore().show("Erfolgreich angemeldet", "success")
+          this.router.replace(this.route.query.redirect as string || '/')
+        }
+      } catch (error) {
+        useSnackbarStore().show("Anmeldung fehlgeschlagen", "error")
       }
     },
   },
-})
+}
 </script>
 
 <style scoped>

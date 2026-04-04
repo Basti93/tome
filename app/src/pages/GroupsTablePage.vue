@@ -150,8 +150,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:itemsPerPage="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
@@ -205,11 +205,15 @@
 <script lang="ts">
 import { useDisplay } from 'vuetify'
 import Group from "../models/Group";
-import {mapGetters, mapState} from "vuex";
 import Branch from "../models/Branch";
 import User from "../models/User"
 import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 
 export default {
   setup() {
@@ -258,18 +262,20 @@ export default {
     this.loadData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getBranchById: 'getBranchById',
-    }),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
     editedUsers() {
       return this.users.filter(u => this.editedItem.userIds.indexOf(u.id) >= 0)
     },
   },
   methods: {
+    getBranchById(branchId) {
+      return useMasterDataStore().getBranchById(branchId)
+    },
     async loadData() {
       this.loading = true
       try {
@@ -281,7 +287,7 @@ export default {
       }
     },
     async loadGroups() {
-      const {data} = await this.$http.get('/group')
+      const {data} = await axios.get('/group')
       this.groups = [];
       for (let i = 0; i < data.data.length; i++) {
         let groupObj = data.data[i];
@@ -292,22 +298,22 @@ export default {
     },
     async loadUsers() {
       this.users = [];
-      const userRes = await this.$http.get('/user');
+      const userRes = await axios.get('/user');
       for (const userObj of userRes.data) {
         this.users.push(new User(
             userObj.id,
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
             userObj.absenceReason
         ));
       }
@@ -323,14 +329,14 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await this.$http.put('/group/' + this.editedItem.id, postData);
+          response = await axios.put('/group/' + this.editedItem.id, postData);
         } else {
-          response = await this.$http.post('/group', postData);
+          response = await axios.post('/group', postData);
         }
         if (response && response.data.error) {
-          this.$emit("showSnackbar", "Gruppe konnte nicht gespeichert werden", "error")
+          useSnackbarStore().show("Gruppe konnte nicht gespeichert werden", "error")
         } else {
-          this.$emit("showSnackbar", "Gruppe gespeichert", "success")
+          useSnackbarStore().show("Gruppe gespeichert", "success")
           this.showDialog = false;
           await this.loadData();
           this.updateMasterData();
@@ -359,14 +365,14 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let {data} = await this.$http.delete('/group/' + this.itemToDelete.id);
+      let {data} = await axios.delete('/group/' + this.itemToDelete.id);
       await this.loadData();
       this.updateMasterData();
 
       if (data.status === 'ok') {
-        this.$emit("showSnackbar", "Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
       } else {
-        this.$emit("showSnackbar", "Gruppe konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Gruppe konnte nicht gelöscht werden", "error")
       }
     },
     addSelectedUsersToGroup() {
@@ -383,7 +389,7 @@ export default {
       this.showDialog = false;
     },
     updateMasterData() {
-      this.$store.commit('masterData/setGroups', this.groups);
+      useMasterDataStore().setGroups(this.groups);
     },
     buildFullBranchname(item: Branch) {
       return item.getShortNameAndName();

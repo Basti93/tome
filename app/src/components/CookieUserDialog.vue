@@ -30,7 +30,7 @@
             Wähle deinen Namen aus um deine Trainings zu sehen.
           </v-alert>
           <v-select
-            :items="$store.state.masterData.branches"
+            :items="branches"
             item-text="name"
             item-value="id"
             v-model="branchId"
@@ -85,6 +85,9 @@
     computed: {
       users() {
         return useMasterDataStore().simpleUsers
+      },
+      branches() {
+        return useMasterDataStore().branches
       },
       show: {
         get() {
