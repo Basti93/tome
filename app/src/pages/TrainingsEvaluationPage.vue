@@ -124,7 +124,7 @@
 
                               <v-list-group
                                   :value="participantsListGroupActive"
-                                  prepend-icon="check"
+                                  prepend-icon="mdi-check"
                                   group="participants"
                                   no-action
                               >
