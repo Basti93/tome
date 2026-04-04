@@ -350,8 +350,11 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import {mapGetters, mapState} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
 import TrainingEvaluation from "@/models/TrainingEvaluation";
@@ -360,7 +363,7 @@ import ListItemProfileImage from "../components/ListItemProfileImage"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default {
   name: "TrainingsEvaluationPage",
   components: {
     TrainingSelector,
@@ -390,14 +393,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getSimpleTrainerById: 'getSimpleTrainerById',
-      getGroupsByIds: 'getGroupsByIds',
-    }),
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    locations() { return useMasterDataStore().locations },
     selectedTraining() {
       return this.getUpcomingTrainingById(this.selectedTrainingId);
     },
@@ -420,7 +417,7 @@ export default Vue.extend({
       return [];
     },
     undecidedUsers() {
-      const usersOfGroups = this.users.filter(u => u.groupIds.some(r=> this.selectedTraining.groupIds.includes(r)))
+      const usersOfGroups = this.users.filter(u => u.groupIds.some(r => this.selectedTraining.groupIds.includes(r)))
       return usersOfGroups.filter(u => !this.canceledUsers.concat(this.participatingUsers).includes(u));
     },
     currentUserGroupId() {
@@ -429,6 +426,7 @@ export default Vue.extend({
       }
       return null
     },
+    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
   },
   created() {
     this.fetchData();
@@ -453,7 +451,7 @@ export default Vue.extend({
         this.dataLoaded = false;
         this.pastTrainings = [];
         //load data
-        const res = await this.$http.get('/trainingevaluation/' + this.loggedInUser.id);
+        const res = await axios.get('/trainingevaluation/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -462,18 +460,18 @@ export default Vue.extend({
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
             let trainers = [] as TrainingTrainer[];
-            const trainingStartTime = this.moment(trObj.start, 'YYYY-MM-DDTHH:mm');
-            const trainingEndTime = this.moment(trObj.end, 'YYYY-MM-DDTHH:mm');
+            const trainingStartTime = moment(trObj.start, 'YYYY-MM-DDTHH:mm');
+            const trainingEndTime = moment(trObj.end, 'YYYY-MM-DDTHH:mm');
             for (let partObj of trObj.trainers) {
               let timeStart;
               if (partObj.accountingTimeStart != null) {
-                timeStart = this.moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
+                timeStart = moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeStart = trainingStartTime
               }
               let timeEnd;
               if (partObj.accountingTimeEnd != null) {
-                timeEnd = this.moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
+                timeEnd = moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeEnd = trainingEndTime
               }
@@ -485,22 +483,22 @@ export default Vue.extend({
           this.selectTraining(this.pastTrainings[0].id);
         }
         this.users = []
-        const userRes = await this.$http.get('/user');
+        const userRes = await axios.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }
@@ -511,29 +509,29 @@ export default Vue.extend({
       }
     },
     async removeParticipant(userId) {
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
       if (data.status == 'ok') {
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
-        this.$emit("showSnackbar", "Benutzer entfernt", "success");
+        useSnackbarStore().show("Benutzer entfernt", "success");
       }
     },
     async addParticipant(userId) {
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
       if (data.status == 'ok') {
         if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
           this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, true, null));
 
         }
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
-        this.$emit("showSnackbar", "Benutzer hinzugefügt", "success");
+        useSnackbarStore().show("Benutzer hinzugefügt", "success");
       }
     },
     async evaluated() {
       this.confirmEvaluationDialog = false;
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
       if (data.status == 'ok') {
         this.selectedTraining.evaluated = true
-        this.$emit("showSnackbar", "Training abgeschlossen", "success");
+        useSnackbarStore().show("Training abgeschlossen", "success");
       }
     },
     editTime(item: TrainingTrainer) {
@@ -558,11 +556,11 @@ export default Vue.extend({
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await this.$http.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
+      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
       if (data.status == 'ok') {
         selectedTrainer.accountingTimeStart = startDateTime;
         selectedTrainer.accountingTimeEnd = endDateTime;
-        this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
+        useSnackbarStore().show("Zeiten aktualisiert", "success");
       }
     },
     selectTraining(id) {
@@ -577,10 +575,10 @@ export default Vue.extend({
     },
     fullName: item => item.firstName + ' ' + item.familyName,
     trainerFullName(id) {
-      return this.fullName(this.getSimpleTrainerById(id))
+      return this.fullName(useMasterDataStore().getSimpleTrainerById(id))
     },
   },
-})
+}
 
 </script>
 

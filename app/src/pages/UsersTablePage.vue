@@ -159,7 +159,11 @@
 </template>
 
 <script lang="ts">
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import GroupsSelectDialog from "../components/GroupsSelectDialog";
 import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog";
@@ -221,31 +225,25 @@ export default {
     }
   },
   created() {
-    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.trainerBranchIds[0];
-      this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+    const masterData = useMasterDataStore();
+    const loggedInUser = useAuthStore().user;
+    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = loggedInUser.trainerBranchIds[0];
+      this.filterGroupIds = masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
     }
     this.loadData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getGroupById: 'getGroupById',
-      getGroupsByIds: 'getGroupsByIds',
-      getGroupsByBranchId: 'getGroupsByBranchId',
-      getBranchById: 'getBranchById',
-      getBranchByGroupId: 'getBranchByGroupId'
-    }),
+    loggedInUser() { return useAuthStore().user },
     trainerBranchIds() {
-      return this.loggedInUser.trainerBranchIds
+      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
     },
     filterGroups(): Array<Group> {
+      const masterData = useMasterDataStore();
       if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        let groups = this.getGroupsByIds(this.filterGroupIds);
-        return groups
+        return masterData.getGroupsByIds(this.filterGroupIds);
       } else if (this.filterBranchId) {
-        let groups = this.getGroupsByBranchId(this.filterBranchId);
-        return groups
+        return masterData.getGroupsByBranchId(this.filterBranchId);
       }
       return [];
     },
@@ -258,7 +256,7 @@ export default {
       this.filterGroupIds = groupIds;
       this.filterBranchId = branchId;
       if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
-        this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+        this.filterGroupIds = useMasterDataStore().getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
       this.loadData();
     },
@@ -282,7 +280,7 @@ export default {
       }
 
       try {
-        const request = await this.$http.get(url);
+        const request = await axios.get(url);
         this.dataLoaded(request)
       } catch (error) {
         console.error(error)
@@ -300,15 +298,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
             userObj.absenceReason
         ))
       }
@@ -335,12 +333,12 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false;
-      let response = await this.$http.delete('/user/' + this.itemToDelete.id);
+      let response = await axios.delete('/user/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
-        this.$emit("showSnackbar", "Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(this.itemToDelete), 1)
       } else {
-        this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Benutzer konnte nicht gelöscht werden", "error")
       }
     },
     reset() {

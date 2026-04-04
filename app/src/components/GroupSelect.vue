@@ -24,10 +24,9 @@
 </template>
 
 <script>
-  import {mapGetters, mapState} from 'vuex'
+  import { useMasterDataStore } from '@/store/masterData'
 
   export default {
-
     name: "GroupSelect",
     props: {
       'branchId': Number,
@@ -41,11 +40,12 @@
       }
     },
     computed: {
-      ...mapGetters('masterData', {getBranchByGroupId: 'getBranchByGroupId'}),
-      ...mapState('masterData', {
-        groups: 'groups',
-        branches: 'branches',
-      }),
+      groups() {
+        return useMasterDataStore().groups
+      },
+      branches() {
+        return useMasterDataStore().branches
+      },
     },
     methods: {
       fillGroupSelect: function () {

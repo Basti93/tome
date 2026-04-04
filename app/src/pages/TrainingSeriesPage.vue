@@ -227,15 +227,18 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import EditTrainingBase from "../components/EditTrainingBase";
 import TrainingSeries from "@/models/TrainingSeries";
-import {mapGetters, mapState} from 'vuex'
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default Vue.extend({
+export default {
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
@@ -266,34 +269,29 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.getBranchById(this.trainerBranchIds[0]).id;
+    const masterData = useMasterDataStore();
+    const loggedInUser = useAuthStore().user;
+    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id;
     }
-    this.filterBranches = this.filterBranches.concat(this.branches)
+    this.filterBranches = this.filterBranches.concat(masterData.branches)
     this.fetchData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getGroupsByIds: 'getGroupsByIds',
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupsByBranchId: 'getGroupsByBranchId',
-      getBranchById: 'getBranchById',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds'
-    }),
-    ...mapState('masterData', {
-      groups: 'groups',
-      branches: 'branches',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    groups() { return useMasterDataStore().groups },
+    branches() { return useMasterDataStore().branches },
     trainerGroupIds() {
-      return this.loggedInUser.trainerGroupIds
+      return this.loggedInUser ? this.loggedInUser.trainerGroupIds : []
     },
     deferUntilFormatted(): String {
       return this.formatDate(this.editedTrainingSeries.deferUntil)
     },
     trainerBranchIds() {
-      return this.loggedInUser.trainerBranchIds
+      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
     },
+    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
+    getSimpleTrainersByIds() { return (ids) => useMasterDataStore().getSimpleTrainersByIds(ids) },
   },
   methods: {
     openCreateDialog() {
@@ -317,16 +315,17 @@ export default Vue.extend({
         this.loading = true;
         this.trainingSeriesList = [];
         let seriesUrl = '/trainingSeries';
+        const masterData = useMasterDataStore();
         // Don't set filter with the general item 'Allgemein'
         if (this.filterBranchId > 0) {
-          seriesUrl += '?groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+          seriesUrl += '?groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
         }
-        const response = await this.$http.get(seriesUrl);
+        const response = await axios.get(seriesUrl);
         for (const responseObject of response.data.data) {
           this.trainingSeriesList.push(TrainingSeries.from(responseObject))
         }
 
-        const trainerRes = await this.$http.get('/user/trainer');
+        const trainerRes = await axios.get('/user/trainer');
         this.trainers = trainerRes.data;
       } finally {
         this.loading = false;
@@ -336,7 +335,7 @@ export default Vue.extend({
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      let momDeferUntil = this.moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      let momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
       if (momDeferUntil.isValid()) {
         this.editedTrainingSeries.deferUntil = momDeferUntil.format('Y-MM-DD')
       }
@@ -348,16 +347,16 @@ export default Vue.extend({
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let response = await this.$http.delete('/trainingSeries/' + this.itemToDelete.id);
+      let response = await axios.delete('/trainingSeries/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
-        this.$emit("showSnackbar", "Serie erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
         this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
       } else {
-        this.$emit("showSnackbar", "Serie konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Serie konnte nicht gelöscht werden", "error")
       }
     },
     async save() {
-      const momDeferUntil = this.moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
       let postData = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,
@@ -375,15 +374,15 @@ export default Vue.extend({
       if (this.editedTrainingSeries.id) {
         url += '/' + this.editedTrainingSeries.id;
         postData.id = this.editedTrainingSeries.id;
-        res = await this.$http.put(url, postData);
+        res = await axios.put(url, postData);
       } else {
-        res = await this.$http.post(url, postData);
+        res = await axios.post(url, postData);
       }
 
       if (res.data.status == 'ok') {
         this.showCreateDialog = false;
         this.fetchData();
-        this.$emit('showSnackbar', 'Serie erfolgreich erstellt');
+        useSnackbarStore().show('Serie erfolgreich erstellt');
       }
 
     },
@@ -394,8 +393,8 @@ export default Vue.extend({
       return time ? time.substring(0, time.length - 3) : '';
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
-      const momDeferUntil = this.moment(item.deferUntil);
-      return momDeferUntil.isValid() && momDeferUntil >= this.moment().startOf('day');
+      const momDeferUntil = moment(item.deferUntil);
+      return momDeferUntil.isValid() && momDeferUntil >= moment().startOf('day');
     },
     weekdaysChanged(weekdays) {
       this.editedTrainingSeries.weekdays = weekdays;
@@ -404,7 +403,7 @@ export default Vue.extend({
     formatDate,
     parseDate,
   },
-})
+}
 </script>
 
 <style scoped>

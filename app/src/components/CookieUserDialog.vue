@@ -63,7 +63,8 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
+  import { useMasterDataStore } from '@/store/masterData'
+  import { useCookieAuthStore } from '@/store/cookieAuth'
 
   export default {
     name: "CookieUserDialog",
@@ -71,7 +72,6 @@
     data() {
       return {
         branchGroups: [],
-        users: this.$store.state.masterData.simpleUsers,
         filteredUsers: [],
         userId: null,
         branchId: null,
@@ -83,7 +83,9 @@
       this.filteredUsers = this.users
     },
     computed: {
-      ...mapGetters({cookieUser: 'cookieUser'}),
+      users() {
+        return useMasterDataStore().simpleUsers
+      },
       show: {
         get() {
           return this.visible;
@@ -103,7 +105,8 @@
       branchSelect: function (id) {
         this.reset();
         this.branchGroups = [];
-        this.$store.state.masterData.groups.forEach(function (item) {
+        const masterData = useMasterDataStore()
+        masterData.groups.forEach(function (item) {
           if (id === item.branchId) {
             this.branchGroups.push(item);
           }
@@ -117,7 +120,7 @@
       fullName: item => item.firstName + ' ' + item.familyName,
       done: function () {
         if (this.userId) {
-          this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0])})
+          useCookieAuthStore().selectCookieUser(JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0]))
           this.$emit('close')
         }
       },

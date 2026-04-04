@@ -350,8 +350,11 @@
 
 <script lang="ts">
 
-import Vue from "vue";
-import {mapGetters, mapState} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import axios from '@/axios'
+import moment from 'moment'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingContent from "@/components/TrainingContent"
@@ -360,7 +363,7 @@ import TrainingSelector from "../components/TrainingSelector.vue";
 import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default {
   name: "TrainingsPreparePage",
   components: {
     GroupChip,
@@ -394,25 +397,14 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupById: 'getGroupById',
-      getBranchById: 'getBranchById',
-      getLocationNameById: 'getLocationNameById',
-      getContentIdsByBranchId: 'getContentIdsByBranchId',
-      getGroupsByIds: 'getGroupsByIds',
-      getContentIdsByGroupIds: 'getContentIdsByGroupIds',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds',
-    }),
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    locations() { return useMasterDataStore().locations },
     branchContentIds(): Array<Number> {
+      const masterData = useMasterDataStore();
       //check if multiple branches are in the play
-      let groupBranchIds = this.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
+      let groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
       if (groupBranchIds.every(v => v === groupBranchIds[0])) {
-        return this.getContentIdsByGroupIds(this.selectedTraining.groupIds);
+        return masterData.getContentIdsByGroupIds(this.selectedTraining.groupIds);
       }
       return [];
     },
@@ -420,7 +412,7 @@ export default Vue.extend({
       return this.getUpcomingTrainingById(this.selectedTrainingId);
     },
     groups() {
-      return this.getGroupsByIds(this.selectedTraining.groupIds);
+      return useMasterDataStore().getGroupsByIds(this.selectedTraining.groupIds);
     },
     participatingUsers() {
       if (this.selectedTraining.participants) {
@@ -447,7 +439,8 @@ export default Vue.extend({
       return null
     },
     sharelink() {
-      let trainers = this.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
+      const masterData = useMasterDataStore();
+      let trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
       let trainerText = "";
       for (let i = 0; i < trainers.length; i++) {
         trainerText += trainers[i].firstName + " " + trainers[i].familyName
@@ -461,7 +454,7 @@ export default Vue.extend({
           + "\r\n"
           + "Uhrzeit: " + this.selectedTraining.start.format('HH:mm') + " - " + this.selectedTraining.end.format('HH:mm') + " Uhr"
           + "\r\n"
-          + "Ort: " + this.getLocationNameById(this.selectedTraining.locationId)
+          + "Ort: " + masterData.getLocationNameById(this.selectedTraining.locationId)
           + "\r\n"
           + "Trainer: " + trainerText
           + "\r\n"
@@ -493,7 +486,7 @@ export default Vue.extend({
         this.dataLoaded = false;
         this.upcomingTrainings = [];
         //load data
-        const res = await this.$http.get('/trainingprepare/' + this.loggedInUser.id);
+        const res = await axios.get('/trainingprepare/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -501,28 +494,28 @@ export default Vue.extend({
             for (let partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
-            this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
+            this.upcomingTrainings.push(new Training(trObj.id, moment(trObj.start, 'YYYY-MM-DDTHH:mm'), moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
           }
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
         }
         this.users = []
-        const userRes = await this.$http.get('/user');
+        const userRes = await axios.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }
@@ -533,10 +526,11 @@ export default Vue.extend({
       }
     },
     selectTraining(id) {
+      const masterData = useMasterDataStore();
       this.animationTrigger = false;
       this.selectedTrainingId = id;
       if (this.selectedTraining.groupIds && this.selectedTraining.groupIds.length > 0) {
-        this.branchId = this.getBranchByGroupId(this.selectedTraining.groupIds[0]).id;
+        this.branchId = masterData.getBranchByGroupId(this.selectedTraining.groupIds[0]).id;
       }
       setTimeout(() => {
         this.animationTrigger = true;
@@ -562,11 +556,11 @@ export default Vue.extend({
       const postData = {
         'comment': this.editComment,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
+      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
       if (data.status == 'ok') {
         this.selectedTraining.comment = this.editComment;
         this.cancelEditComment();
-        this.$emit("showSnackbar", "Kommentar aktualisiert", "success");
+        useSnackbarStore().show("Kommentar aktualisiert", "success");
       }
     },
     cancelEditComment() {
@@ -578,21 +572,21 @@ export default Vue.extend({
       const postData = {
         'contentIds': selectedContentIds,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
+      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
       if (data.status == 'ok') {
         this.selectedTraining.contentIds = selectedContentIds;
-        this.$emit("showSnackbar", "Trainingsinhalte aktualisiert", "success");
+        useSnackbarStore().show("Trainingsinhalte aktualisiert", "success");
       }
     },
     async saveEditLocation() {
       const postData = {
         'locationId': this.editLocationId,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
+      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
       if (data.status == 'ok') {
         this.selectedTraining.locationId = this.editLocationId;
         this.cancelEditLocation();
-        this.$emit("showSnackbar", "Ort aktualisiert", "success");
+        useSnackbarStore().show("Ort aktualisiert", "success");
       }
     },
     cancelEditLocation() {
@@ -613,16 +607,16 @@ export default Vue.extend({
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
+      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
       if (data.status == 'ok') {
         this.selectedTraining.start = startDateTime;
         this.selectedTraining.end = endDateTime;
-        this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
+        useSnackbarStore().show("Zeiten aktualisiert", "success");
       }
     },
     fullName: item => item.firstName + ' ' + item.familyName,
   },
-})
+}
 
 </script>
 

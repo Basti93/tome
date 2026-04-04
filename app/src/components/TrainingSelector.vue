@@ -83,11 +83,12 @@
 
 <script lang="ts">
 
-import Vue from 'vue'
 import Training from "../models/Training";
-import {mapGetters} from "vuex";
+import { useAuthStore } from '@/store/auth'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useMasterDataStore } from '@/store/masterData'
 
-export default Vue.extend({
+export default {
   name: "TrainingSelector",
   props: {
     trainings: Array,
@@ -104,12 +105,12 @@ export default Vue.extend({
     this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
-    ...mapGetters('masterData', {
-      getBranchByGroupIds: 'getBranchByGroupIds',
-      getBranchShortNameByGroupIds: 'getBranchShortNameByGroupIds',
-      getLocationById: 'getLocationById'
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    cookieUser() {
+      return useCookieAuthStore().cookieUser
+    },
     currentUser() {
       if (this.loggedInUser) {
         return this.loggedInUser;
@@ -139,7 +140,7 @@ export default Vue.extend({
       } else if (this.isCheckIn && this.canceled(training)) {
         return 'red lighten-2'
       }
-      const mainBranch = this.getBranchByGroupIds(training.groupIds);
+      const mainBranch = useMasterDataStore().getBranchByGroupIds(training.groupIds);
       if (mainBranch) {
         return mainBranch.colorHex
       }
@@ -176,7 +177,7 @@ export default Vue.extend({
       this.selectedTraining = this.getTrainingById(this.selectedTrainingId);
     }
   }
-});
+}
 </script>
 
 <style lang="scss">

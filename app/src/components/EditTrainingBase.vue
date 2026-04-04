@@ -157,13 +157,12 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import TrainingContent from "./TrainingContent"
 import {formatDate, parseDate} from "@/helpers/date-helpers"
-import {mapGetters, mapState} from 'vuex'
-import Group from "../models/Group";
+import Group from "../models/Group"
+import { useMasterDataStore } from "@/store/masterData"
 
-export default Vue.extend({
+export default {
   name: "EditTrainingBase",
   components: {TrainingContent},
   props: {
@@ -201,15 +200,14 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
-    ...mapGetters('masterData', {getContentIdsByBranchId: 'getContentIdsByBranchId', getBranchById: 'getBranchById', getGroupById: 'getGroupById'}),
+    locations() {
+      return useMasterDataStore().locations
+    },
     trainingDateFormatted(): String {
       return this.formatDate(this.trainingDate)
     },
     branchContentIds(): Array<Number> {
-      return this.getContentIdsByBranchId(this.branchId);
+      return useMasterDataStore().getContentIdsByBranchId(this.branchId)
     },
     allGroupsSelected() {
       return this.selectedGroupIds.length === this.groups.length
@@ -350,7 +348,7 @@ export default Vue.extend({
       this.fireChangeEvent();
     },
   },
-})
+}
 </script>
 
 <style scoped>

@@ -203,8 +203,9 @@ import TrainingContent from "./TrainingContent";
 import ProfileImage from "../components/ProfileImage";
 import User from "../models/User";
 import Training from "../models/Training";
-import {mapGetters} from 'vuex'
 import GroupChip from "./GroupChip.vue";
+import { useMasterDataStore } from '@/store/masterData'
+import axios from '@/axios'
 
 export default {
   name: "TrainingCheckIn",
@@ -235,12 +236,13 @@ export default {
     }
   },
   created() {
+    const store = useMasterDataStore()
     this.id = this.training.id;
     this.start = this.training.start;
     this.end = this.training.end;
-    this.location = this.getLocationNameById(this.training.locationId);
-    this.groups = this.getGroupsByIds(this.training.groupIds);
-    this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
+    this.location = store.getLocationNameById(this.training.locationId);
+    this.groups = store.getGroupsByIds(this.training.groupIds);
+    this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
     this.contentIds = this.training.contentIds;
     this.comment = this.training.comment;
     this.automaticAttend = this.training.automaticAttend;
@@ -262,21 +264,16 @@ export default {
     participantCount: function () {
       return this.training.participants ? this.training.participants.filter(p => p.attend).length : null;
     },
-    ...mapGetters('masterData', {
-      getLocationNameById: 'getLocationNameById',
-      getGroupsByIds: 'getGroupsByIds',
-      getBranchById: 'getBranchById',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds',
-    }),
   },
   watch: {
     training: function () {
+      const store = useMasterDataStore()
       this.id = this.training.id;
       this.start = this.training.start;
       this.end = this.training.end;
-      this.location = this.getLocationNameById(this.training.locationId);
-      this.groups = this.getGroupsByIds(this.training.groupIds);
-      this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
+      this.location = store.getLocationNameById(this.training.locationId);
+      this.groups = store.getGroupsByIds(this.training.groupIds);
+      this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
       this.contentIds = this.training.contentIds;
       this.comment = this.training.comment;
 
@@ -303,7 +300,7 @@ export default {
           url += '/checkin/' + this.currentUser.id;
         }
         //send post
-        const {data} = await this.$http.post(url);
+        const {data} = await axios.post(url);
         if (data.status === 'ok') {
           this.$emit('checkedIn')
         }
@@ -327,7 +324,7 @@ export default {
           }
         }
         //send post
-        const {data} = await this.$http.post(url, postData);
+        const {data} = await axios.post(url, postData);
         if (data.status === 'ok') {
           this.cancelReason = null;
           this.showCancelDialog = false;
