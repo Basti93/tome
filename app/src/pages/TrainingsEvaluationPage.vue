@@ -156,11 +156,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="removeParticipant(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-thumb-down</v-icon>
+                                          <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
@@ -169,11 +169,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-help-circle-outline</v-icon>
+                                          <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
