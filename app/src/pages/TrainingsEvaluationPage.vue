@@ -123,13 +123,14 @@
                             <v-card-text class="pa-0 pa-md-4">
                               <v-list>
                               <v-list-group
-                                  v-model="participantsListGroupActive"
+                                  :value="participantsListGroupActive"
+                                  @update:open="participantsListGroupActive = $event"
                                   prepend-icon="mdi-check"
-                                  group="participants"
-                                  no-action
                               >
-                                <template v-slot:activator>
-                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
+                                <template v-slot:activator="{ props }">
+                                  <v-list-item v-bind="props">
+                                    <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
+                                  </v-list-item>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in participatingUsers"
@@ -164,15 +165,15 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  v-model="canceledUserListGroupActive"
+                                  :value="canceledUserListGroupActive"
+                                  @update:open="canceledUserListGroupActive = $event"
                                   prepend-icon="cancel"
-                                  group="participants"
-                                  no-action
                               >
-                                <template v-slot:activator>
-                                  <v-list-item-title>{{ canceledUsers.length }} <span
-                                      v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
-                                  </v-list-item-title>
+                                <template v-slot:activator="{ props }">
+                                  <v-list-item v-bind="props">
+                                    <v-list-item-title>{{ canceledUsers.length }} <span
+                                        v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span></v-list-item-title>
+                                  </v-list-item>
                                 </template>
                                 <v-list-item
                                     v-for="item in canceledUsers"
@@ -217,13 +218,14 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  v-model="undecidedUsersListGroupActive"
+                                  :value="undecidedUsersListGroupActive"
+                                  @update:open="undecidedUsersListGroupActive = $event"
                                   prepend-icon="people"
-                                  group="undecided"
-                                  no-action
                               >
-                                <template v-slot:activator>
-                                  <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
+                                <template v-slot:activator="{ props }">
+                                  <v-list-item v-bind="props">
+                                    <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
+                                  </v-list-item>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in undecidedUsers"
@@ -564,6 +566,9 @@ export default {
     selectTraining(id) {
       this.animationTrigger = false;
       this.selectedTrainingId = id;
+      this.participantsListGroupActive = true;
+      this.canceledUserListGroupActive = true;
+      this.undecidedUsersListGroupActive = true;
       setTimeout(() => {
         this.animationTrigger = true;
       }, 100);
