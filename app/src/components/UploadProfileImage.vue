@@ -65,7 +65,7 @@ export default {
       files: [],
       serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
       imageRule: [
-        value => !value.size || value.size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
+        value => !value || !Array.isArray(value) || value.length === 0 || value[0].size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
       ],
     }
   },
@@ -77,8 +77,8 @@ export default {
       return useAuthStore().user
     },
     imageUrl() {
-      if ((this.files && this.files.size) || this.files.length > 0) {
-        return URL.createObjectURL(this.files);
+      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
+        return URL.createObjectURL(this.files[0]);
       } else if (this.editImagePath && this.serverUrl) {
         return this.serverUrl + "/" + this.editImagePath;
       }
@@ -92,8 +92,8 @@ export default {
       this.$emit('imageRemoved')
     },
     imageChanged() {
-      if (this.files && this.files.size) {
-        this.$emit('imageChanged', this.files)
+      if (this.files && Array.isArray(this.files) && this.files.length > 0) {
+        this.$emit('imageChanged', this.files[0])
       } else {
         this.$emit('imageChanged', null)
       }
