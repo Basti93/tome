@@ -217,10 +217,10 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="openCancelReasonDialog(item.id)"
-                                            size="small">
-                                          <v-icon>mdi-magnify</v-icon>
+                                            size="x-small">
+                                          <v-icon size="small">mdi-magnify</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
@@ -229,11 +229,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-thumb-up</v-icon>
+                                          <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
@@ -242,11 +242,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-help-circle-outline</v-icon>
+                                          <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
@@ -285,11 +285,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-thumb-up</v-icon>
+                                          <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
@@ -298,11 +298,11 @@
                                         <v-btn
                                             v-bind="props"
                                             icon
-                                            color="primary"
+                                            variant="text"
                                             @click="addParticipantAsCanceled(item.id)"
-                                            size="small"
+                                            size="x-small"
                                         >
-                                          <v-icon>mdi-thumb-down</v-icon>
+                                          <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>
                                       </template>
                                     </v-tooltip>
