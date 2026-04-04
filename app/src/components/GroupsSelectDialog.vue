@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" max-width="600px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+  <v-dialog v-model="show" max-width="600px" :fullscreen="xsOnly" persistent>
     <v-card>
       <v-toolbar flat>
         <v-btn icon @click="show=false">
@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import { useDisplay } from 'vuetify'
   import {mapGetters, mapState} from 'vuex'
 
   export default {

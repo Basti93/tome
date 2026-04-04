@@ -8,7 +8,7 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="$vuetify.breakpoint.xsOnly"
+                  :fullscreen="xsOnly"
                   persistent
                   max-width="1000px"
               >
@@ -203,6 +203,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
 import Group from "../models/Group";
 import {mapGetters, mapState} from "vuex";
 import Branch from "../models/Branch";
@@ -211,6 +212,10 @@ import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
+  setup() {
+    const { xsOnly, mdAndUp } = useDisplay()
+    return { xsOnly, mdAndUp }
+  },
   name: "GroupsTablePage",
   components: {ConfirmDialog, TomeListItemProfileImage},
   data: function () {

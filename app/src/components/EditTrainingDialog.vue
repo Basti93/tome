@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+    <v-dialog v-model="dialog" max-width="1000px" :fullscreen="xsOnly" persistent>
         <v-card>
             <v-card-title>
                 <span class="title">Training Bearbeiten/Anlegen</span>
@@ -213,6 +213,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
     ;
     import Training from "../models/Training";
 

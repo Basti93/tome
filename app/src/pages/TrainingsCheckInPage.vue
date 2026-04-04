@@ -25,7 +25,7 @@
             <v-dialog
                 v-model="filterDialogVisible"
                 max-width="500px"
-                :fullscreen="$vuetify.breakpoint.xsOnly"
+                :fullscreen="xsOnly"
                 persistent>
               <v-card>
                 <v-toolbar flat dense>
@@ -118,10 +118,15 @@ import CookieUserDialog from "../components/CookieUserDialog.vue";
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingSelector from "../components/TrainingSelector.vue";
+import { useDisplay } from 'vuetify'
 
 export default {
   name: "TrainingsCheckInPage",
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
+  setup() {
+    const { xsOnly } = useDisplay()
+    return { xsOnly }
+  },
   data: function () {
     return {
       initalSelectedTrainingId: null,

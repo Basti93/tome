@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="show" max-width="1000px" :fullscreen="$vuetify.breakpoint.xsOnly" persistent>
+    <v-dialog v-model="show" max-width="1000px" :fullscreen="xsOnly" persistent>
         <v-card>
             <v-toolbar flat>
                 <v-btn icon @click="show=false">
@@ -99,6 +99,7 @@
 </template>
 
 <script>
+import { useDisplay } from 'vuetify'
     import GroupsSelect from "./GroupsSelect";
     import UploadProfileImage from "./UploadProfileImage";
     import {formatDate, parseDate} from "../helpers/date-helpers"

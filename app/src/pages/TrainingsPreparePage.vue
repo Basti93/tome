@@ -304,7 +304,7 @@
         v-model="timeDialogOpened"
         max-width="800px"
         scrollable
-        :fullscreen="$vuetify.breakpoint.xsOnly"
+        :fullscreen="xsOnly"
         persistent>
       <v-card>
         <v-card-title>
@@ -349,6 +349,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
 
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
@@ -364,6 +365,10 @@ import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
 export default {
+  setup() {
+    const { xsOnly, mdAndUp } = useDisplay()
+    return { xsOnly, mdAndUp }
+  },
   name: "TrainingsPreparePage",
   components: {
     GroupChip,

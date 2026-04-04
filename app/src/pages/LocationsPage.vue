@@ -8,7 +8,7 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="$vuetify.breakpoint.xsOnly"
+                  :fullscreen="xsOnly"
                   persistent
                   max-width="1000px"
               >
@@ -134,8 +134,13 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
 
 export default {
+  setup() {
+    const { xsOnly, mdAndUp } = useDisplay()
+    return { xsOnly, mdAndUp }
+  },
   name: "LocationsPage",
   data: function () {
     return {

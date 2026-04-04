@@ -4,7 +4,7 @@
         fixed
         v-model="drawer"
     >
-      <v-container fluid text class="pt-6 text-center" center v-if="loggedInUser" v-show="$vuetify.breakpoint.xsOnly">
+      <v-container fluid text class="pt-6 text-center" center v-if="loggedInUser" v-show="xsOnly">
         <ProfileImage :firstName="loggedInUser.firstName"
                       :familyName="loggedInUser.familyName"
                       :imagePath="loggedInUser.profileImageName"
@@ -296,10 +296,15 @@
 import ProfileImage from "@/components/ProfileImage.vue";
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
+import { useDisplay } from 'vuetify'
 
 export default {
   name: "TomeNavigation",
   components: {ProfileImage},
+  setup() {
+    const { xsOnly } = useDisplay()
+    return { xsOnly }
+  },
   data() {
     return {
       drawer: false,
