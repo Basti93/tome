@@ -19,7 +19,13 @@ class RefreshController extends Controller
      */
     public function refresh()
     {
+        // Blacklist the old token to prevent reuse (refresh token rotation)
+        $oldToken = Auth::guard('api')->token();
+
         $token = Auth::guard('api')->refresh();
+
+        // Invalidate the old token
+        Auth::guard('api')->manager()->blacklist()->add($oldToken);
 
         $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);
         $secureCookie = app()->environment('production');
