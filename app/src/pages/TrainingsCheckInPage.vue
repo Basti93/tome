@@ -7,11 +7,11 @@
             <v-toolbar-title>Aktuelle Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-chip outlined>
-              <v-icon left color="primary">group</v-icon>
+              <v-icon left color="primary">mdi-account</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
             <v-btn icon color="primary" @click="filterDialogVisible = true">
-              <v-icon>filter_list</v-icon>
+              <v-icon>mdi-filter-variant</v-icon>
             </v-btn>
             <template v-slot:extension v-if="cookieUser">
               <v-chip
@@ -30,13 +30,13 @@
               <v-card>
                 <v-toolbar flat dense>
                   <v-btn icon @click="filterDialogVisible = false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>Filter ändern</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn text color="primary" @click="filterDone">
-                      <v-icon>done</v-icon>
+                      <v-icon>mdi-check</v-icon>
                     </v-btn>
                   </v-toolbar-items>
                 </v-toolbar>

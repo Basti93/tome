@@ -10,12 +10,12 @@
             <v-col>
               <span class="label text-small">Von</span>
               <v-chip small outlined class="ma-1">
-                <v-icon left color="primary">query_builder</v-icon>
+                <v-icon left color="primary">mdi-clock-outline</v-icon>
                 {{ start.format('HH:mm') }}
               </v-chip>
               <span class="label text-small">bis</span>
               <v-chip small outlined class="ml-1">
-                <v-icon left color="primary">query_builder</v-icon>
+                <v-icon left color="primary">mdi-clock-outline</v-icon>
                 {{ end.format('HH:mm') }}
               </v-chip>
             </v-col>
@@ -23,7 +23,7 @@
           <v-row>
             <v-col>
               <v-chip outlined small class="ma-1">
-                <v-icon left color="primary">room</v-icon>
+                <v-icon left color="primary">mdi-map-marker</v-icon>
                 {{ location }}
               </v-chip>
             </v-col>
@@ -38,7 +38,7 @@
                   class="ma-2"
                   @click="currentUser ? participate() : showCookieUserLogin()">
                 Teilnehmen
-                <v-icon right>thumb_up</v-icon>
+                <v-icon right>mdi-thumb-up</v-icon>
               </v-btn>
               <v-btn
                   style="min-width: 150px"
@@ -47,7 +47,7 @@
                   color="red lighten-2"
                   class="ma-2"
                   @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
-                <v-icon left>thumb_down</v-icon>
+                <v-icon left>mdi-thumb-down</v-icon>
                 Absagen
               </v-btn>
               <v-alert
@@ -148,7 +148,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Kurzfristige Absage</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -157,7 +157,7 @@
                    color="primary"
                    @click="cancelParticipation(cancelReason)"
                    :disabled="!cancelDialogValid">
-              <v-icon left>check</v-icon>
+              <v-icon left>mdi-check</v-icon>
               Absage abschicken
             </v-btn>
           </v-toolbar-items>

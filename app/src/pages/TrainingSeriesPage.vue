@@ -37,7 +37,7 @@
                   elevation="2"
                   color="primary"
                   @click="openCreateDialog()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
 
               </v-btn>
             </template>
@@ -47,13 +47,13 @@
               <v-card>
                 <v-toolbar flat>
                   <v-btn icon @click="showCreateDialog = false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>{{editDialogTitle}}</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn text color="primary" @click="save()">
-                      <v-icon left>check</v-icon>
+                      <v-icon left>mdi-check</v-icon>
                       Speichern
                     </v-btn>
                   </v-toolbar-items>
@@ -67,12 +67,12 @@
 
                     <v-tab href="#tab-1">
                       Serie
-                      <v-icon>event</v-icon>
+                      <v-icon>mdi-calendar-month</v-icon>
                     </v-tab>
 
                     <v-tab href="#tab-2">
                       Trainingsdaten
-                      <v-icon>groups</v-icon>
+                      <v-icon>mdi-account-multiple</v-icon>
                     </v-tab>
 
                     <v-tab-item :value="'tab-1'">
@@ -202,10 +202,10 @@
                             <v-icon
                                 class="mr-2"
                                 @click="editItem(item)"
-                                color="success">edit</v-icon>
+                                color="success">mdi-pencil</v-icon>
                             <v-icon
                                 @click="confirmAndDelete(item)"
-                                color="error">delete</v-icon>
+                                color="error">mdi-trash-can</v-icon>
                         </template>
                       </v-data-table>
                     </v-col>

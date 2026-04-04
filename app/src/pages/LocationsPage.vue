@@ -24,20 +24,20 @@
                       v-on="on"
                       v-bind="attrs"
                       v-on:click="createItem()">
-                    <v-icon>add</v-icon>
+                    <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
 
                 <v-card>
                   <v-toolbar flat>
                     <v-btn icon v-on:click="closeDialog()">
-                      <v-icon>close</v-icon>
+                      <v-icon>mdi-close</v-icon>
                     </v-btn>
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                       <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>check</v-icon>
+                        <v-icon left>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -93,14 +93,14 @@
                         <template v-slot:[`item.action`]="{ item }">
                             <v-icon :disabled="item.name == 'Online'"
                                     v-on:click="editItem(item)"
-                                    color="success">edit</v-icon>
+                                    color="success">mdi-pencil</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>

@@ -10,7 +10,7 @@
                 title="Liste nach Sparte und Gruppe filtern"
                 color="primary"
                 v-on:click="showFilterDialog = true">
-              <v-icon left>filter_list</v-icon>
+              <v-icon left>mdi-filter-variant</v-icon>
               Filtern
             </v-btn>
 
@@ -33,7 +33,7 @@
                         small
                         outlined
                         class="pl-2 pr-2 ml-2 mr-2">
-                      <v-icon left color="primary">group</v-icon>
+                      <v-icon left color="primary">mdi-account</v-icon>
                       {{ item.getWithBranchName() }}
                     </v-chip>
                   </v-col>
@@ -49,7 +49,7 @@
                   elevation="2"
                   color="primary"
                   @click="editItem()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
           </v-toolbar>
@@ -120,7 +120,7 @@
                           <v-container fluid>
                             <v-layout row justify-center>
                               <v-btn color="error" :disabled="loading" @click="reset()">
-                                <v-icon left>cached</v-icon>
+                                <v-icon left>mdi-refresh</v-icon>
                                 Keine Daten gefunden
                               </v-btn>
                             </v-layout>

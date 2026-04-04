@@ -7,15 +7,14 @@
             :close-on-content-click="false"
             v-model="dateMenuOpened"
         >
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
                 v-model="trainingDateFormatted"
                 required
                 label="Datum"
                 prepend-icon="event"
                 readonly
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
           <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
@@ -26,21 +25,19 @@
             ref="startMenuOpened"
             v-model="startMenuOpened"
             :close-on-content-click="false">
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
                 v-model="startTime"
                 label="Start"
                 required
                 prepend-icon="schedule"
                 readonly
-                lazy
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
           <v-time-picker
               v-model="startTime"
-              @click:minute="$refs.startMenuOpened.save(startTime)"
+              @click:minute="startMenuOpened = false"
               format="24hr">
           </v-time-picker>
         </v-menu>
@@ -50,16 +47,14 @@
             ref="endMenuOpened"
             :close-on-content-click="false"
             v-model="endMenuOpened">
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
                 v-model="endTime"
                 required
                 label="Ende"
                 prepend-icon="schedule"
                 readonly
-                lazy
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
           <v-time-picker
@@ -117,19 +112,16 @@
             deletable-chips>
           <template v-slot:prepend-item>
             <v-list-item
-                ripple
                 @click="toggleSelectAllGroups"
             >
-              <v-list-item-action>
+              <template v-slot:prepend>
                 <v-icon :color="selectedGroupIds.length > 0 ? 'indigo darken-4' : ''">
                   {{ allGroupsSelectedIcon }}
                 </v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>
-                  Alle Selektieren
-                </v-list-item-title>
-              </v-list-item-content>
+              </template>
+              <v-list-item-title>
+                Alle Selektieren
+              </v-list-item-title>
             </v-list-item>
             <v-divider class="mt-2"></v-divider>
           </template>

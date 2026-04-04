@@ -3,12 +3,12 @@
     <v-card>
       <v-toolbar flat>
         <v-btn icon @click="show=false">
-          <v-icon>close</v-icon>
+          <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>Filter ändern</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" v-on:click="done" :disabled="!valid"><v-icon left>done</v-icon>Auswählen</v-btn>
+          <v-btn text color="primary" v-on:click="done" :disabled="!valid"><v-icon left>mdi-check</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-divider></v-divider>

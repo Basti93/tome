@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import type User from '@/models/User'
+import User from '@/models/User'
 
 export const useAuthStore = defineStore('auth', {
   state: () => {
     const stored = localStorage.getItem('user')
     return {
-      user: stored ? JSON.parse(stored) as User : null as User | null,
+      user: stored ? User.from(stored) : null,
       token: localStorage.getItem('token') as string | null
     }
   },

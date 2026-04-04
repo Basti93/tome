@@ -14,7 +14,7 @@
                 small
                 v-on:click="showAccountingDialog = true"
             >
-              <v-icon>request_quote</v-icon>
+              <v-icon>mdi-file-document-outline</v-icon>
             </v-btn>
             <v-btn
                 v-else
@@ -23,7 +23,7 @@
                 color="primary"
                 v-on:click="showAccountingDialog = true"
             >
-              <v-icon left>request_quote</v-icon>
+              <v-icon left>mdi-file-document-outline</v-icon>
               ÜL-Abrechnung
             </v-btn>
           </v-toolbar>
@@ -98,22 +98,22 @@
                                   v-for="(item, index) in selectedTraining.trainers"
                                   :key="index"
                               >
-                                <tome-list-item-profile-image
-                                    :image-path="item.profileImageName">
-                                </tome-list-item-profile-image>
+                                <template v-slot:prepend>
+                                  <tome-list-item-profile-image
+                                      :image-path="item.profileImageName">
+                                  </tome-list-item-profile-image>
+                                </template>
 
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ trainerFullName(item.userId) }}</v-list-item-title>
-                                  <v-list-item-subtitle>Von {{ item.accountingTimeStart.format('HH:mm') }} bis
-                                    {{ item.accountingTimeEnd.format('HH:mm') }}
-                                  </v-list-item-subtitle>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ trainerFullName(item.userId) }}</v-list-item-title>
+                                <v-list-item-subtitle>Von {{ item.accountingTimeStart.format('HH:mm') }} bis
+                                  {{ item.accountingTimeEnd.format('HH:mm') }}
+                                </v-list-item-subtitle>
 
-                                <v-list-item-action v-if="!selectedTraining.evaluated">
-                                  <v-btn color="primary" @click="editTime(item)" outlined>
-                                    <v-icon>edit</v-icon>
+                                <template v-slot:append v-if="!selectedTraining.evaluated">
+                                  <v-btn color="primary" @click="editTime(item)" outlined size="small">
+                                    <v-icon>mdi-pencil</v-icon>
                                   </v-btn>
-                                </v-list-item-action>
+                                </template>
 
                               </v-list-item>
                             </v-card-text>
@@ -128,41 +128,38 @@
                                   group="participants"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
-                                  </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer</v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in participatingUsers"
                                     :key="item.id"
                                 >
 
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                    <span class="label">{{
-                                        getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                      }}</span>
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
+                                  </v-list-item-subtitle>
 
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
                                     <v-btn
                                         title="Benutzer zu Absagen hinzufügen"
                                         color="primary"
                                         @click="removeParticipant(item.id)"
                                         outlined
+                                        size="small"
                                     >
-                                      <v-icon>remove</v-icon>
+                                      <v-icon>mdi-minus</v-icon>
                                     </v-btn>
-                                  </v-list-item-action>
+                                  </template>
 
                                 </v-list-item>
                               </v-list-group>
@@ -172,53 +169,51 @@
                                   group="participants"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ canceledUsers.length }} <span
-                                          v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
-                                      </v-list-item-title>
-                                  </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ canceledUsers.length }} <span
+                                      v-if="canceledUsers.length == 1">Absage</span><span v-else>Absagen</span>
+                                  </v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="item in canceledUsers"
                                     :key="item.id"
                                 >
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                    <span class="label">{{
-                                        getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                      }}</span>
-                                    </v-list-item-subtitle>
-                                    <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
-                                      {{ getCancelReason(item.id) }}
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
-                                    <v-btn v-if="getCancelReason(item.id)"
-                                           title="Absage anschauen"
-                                           color="primary"
-                                           @click="openCancelReasonDialog(item.id)"
-                                           outlined>
-                                      <v-icon>search</v-icon>
-                                    </v-btn>
-                                  </v-list-item-action>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
-                                    <v-btn
-                                        color="primary"
-                                        title="Benutzer zu Teilnehmern hinzufügen"
-                                        @click="addParticipant(item.id)"
-                                        outlined
-                                    >
-                                      <v-icon>add</v-icon>
-                                    </v-btn>
-                                  </v-list-item-action>
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                  <span class="label">{{
+                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                    }}</span>
+                                  </v-list-item-subtitle>
+                                  <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
+                                    {{ getCancelReason(item.id) }}
+                                  </v-list-item-subtitle>
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
+                                    <div class="d-flex gap-2">
+                                      <v-btn v-if="getCancelReason(item.id)"
+                                             title="Absage anschauen"
+                                             color="primary"
+                                             @click="openCancelReasonDialog(item.id)"
+                                             outlined
+                                             size="small">
+                                        <v-icon>mdi-magnify</v-icon>
+                                      </v-btn>
+                                      <v-btn
+                                          color="primary"
+                                          title="Benutzer zu Teilnehmern hinzufügen"
+                                          @click="addParticipant(item.id)"
+                                          outlined
+                                          size="small"
+                                      >
+                                        <v-icon>mdi-plus</v-icon>
+                                      </v-btn>
+                                    </div>
+                                  </template>
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
@@ -227,39 +222,36 @@
                                   group="undecided"
                                   no-action
                               >
-                                <template slot="activator">
-                                  <v-list-item>
-                                    <v-list-item-content>
-                                      <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
-                                    </v-list-item-content>
-                                  </v-list-item>
+                                <template v-slot:activator>
+                                  <v-list-item-title>{{ undecidedUsers.length }} <span>Sonstige</span></v-list-item-title>
                                 </template>
                                 <v-list-item
                                     v-for="(item) in undecidedUsers"
                                     :key="item.id"
                                 >
-                                  <tome-list-item-profile-image
-                                      :image-path="item.profileImageName">
-                                  </tome-list-item-profile-image>
+                                  <template v-slot:prepend>
+                                    <tome-list-item-profile-image
+                                        :image-path="item.profileImageName">
+                                    </tome-list-item-profile-image>
+                                  </template>
 
-                                  <v-list-item-content>
-                                    <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                    </v-list-item-subtitle>
-                                  </v-list-item-content>
-                                  <v-list-item-action v-if="!selectedTraining.evaluated">
+                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                                  </v-list-item-subtitle>
+                                  <template v-slot:append v-if="!selectedTraining.evaluated">
                                     <v-btn
                                         color="primary"
                                         title="Benutzer zu Teilnehmern hinzufügen"
                                         @click="addParticipant(item.id)"
                                         outlined
+                                        size="small"
                                     >
-                                      <v-icon>add</v-icon>
+                                      <v-icon>mdi-plus</v-icon>
                                     </v-btn>
-                                  </v-list-item-action>
+                                  </template>
                                 </v-list-item>
                               </v-list-group>
                             </v-card-text>
@@ -293,12 +285,12 @@
       <v-card>
         <v-card-title>
           <v-btn icon @click="timeDialogOpened=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           Abrechnungszeitraum ändern
           <v-spacer></v-spacer>
           <v-btn text color="primary" @click="updateAccountingTime">
-            <v-icon left>check</v-icon>
+            <v-icon left>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>
@@ -334,7 +326,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelReasonDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>
         </v-toolbar>

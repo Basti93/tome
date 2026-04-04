@@ -95,22 +95,26 @@ export default {
     async fetchData() {
       this.series = [];
       if (this.filterGroupIds.length > 0 && this.filterYear) {
-        let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
-        let {data} = await axios.get(url);
-        let names = [];
-        let count = [];
-        for (let i = 0; i < data.length; i++) {
-          names.push(data[i].firstName + " " + data[i].familyName);
-          count.push(data[i].total);
+        try {
+          let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
+          let {data} = await axios.get(url);
+          let names = [];
+          let count = [];
+          for (let i = 0; i < data.length; i++) {
+            names.push(data[i].firstName + " " + data[i].familyName);
+            count.push(data[i].total);
+          }
+          this.options = {
+            xaxis: {
+              categories: names,
+            },
+          };
+          this.series = [{
+            data: count
+          }];
+        } catch (error) {
+          console.error('Error fetching participation data:', error);
         }
-        this.options = {
-          xaxis: {
-            categories: names,
-          },
-        };
-        this.series = [{
-          data: count
-        }];
       }
     },
     filterGroupIdsChanged: function (groupIds) {

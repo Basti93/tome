@@ -2,11 +2,11 @@
   <v-sheet>
     <v-toolbar flat class="mb-2">
       <v-btn fab text small @click="prev">
-        <v-icon small>chevron_left</v-icon>
+        <v-icon small>mdi-chevron-left</v-icon>
       </v-btn>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-btn fab text small @click="next">
-        <v-icon small>chevron_right</v-icon>
+        <v-icon small>mdi-chevron-right</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
 
@@ -23,7 +23,7 @@
                   v-on="on"
               >
                 <span>{{ typeToLabel[type] }}</span>
-                <v-icon right>arrow_drop_down</v-icon>
+                <v-icon right>mdi-menu-down</v-icon>
               </v-btn>
             </template>
             <v-list>
@@ -43,7 +43,7 @@
                  small
                  class="mr-4 ml-4"
                  @click="setToday">
-            <v-icon left>adjust</v-icon>
+            <v-icon left>mdi-palette</v-icon>
             Heute
           </v-btn>
         </v-toolbar-items>
@@ -82,7 +82,7 @@
             :color="selectedEvent.color"
         >
           <v-btn icon>
-            <v-icon>event</v-icon>
+            <v-icon>mdi-calendar-month</v-icon>
           </v-btn>
           <v-toolbar-title v-if="selectedEvent.type == 'training'">Training {{ selectedEvent.branchName }}
           </v-toolbar-title>
@@ -93,32 +93,32 @@
           <v-spacer></v-spacer>
           <v-btn @click="selectedOpen = false"
                  text>
-            <v-icon>cancel</v-icon>
+            <v-icon>mdi-cancel</v-icon>
           </v-btn>
         </v-toolbar>
         <v-card-text v-if="selectedEvent.type == 'training'">
           <v-label v-if="privateMode && selectedEvent.evaluated">
-            <v-icon left color="primary">check</v-icon>
+            <v-icon left color="primary">mdi-check</v-icon>
             Abgeschlossen
           </v-label>
           <v-label v-if="privateMode && !selectedEvent.evaluated">
-            <v-icon left color="error">cancel</v-icon>
+            <v-icon left color="error">mdi-cancel</v-icon>
             Nicht Abgeschlossen
           </v-label>
           <br/>
           <span class="label text-small">Von</span>
           <v-chip small outlined class="ma-1">
-            <v-icon left color="primary">query_builder</v-icon>
+            <v-icon left color="primary">mdi-clock-outline</v-icon>
             {{ moment(selectedEvent.start).format('HH:mm') }}
           </v-chip>
           <span class="label text-small">bis</span>
           <v-chip small outlined class="ml-1">
-            <v-icon left color="primary">query_builder</v-icon>
+            <v-icon left color="primary">mdi-clock-outline</v-icon>
             {{ moment(selectedEvent.end).format('HH:mm') }}
           </v-chip>
           <br />
           <v-chip v-if="selectedEvent.location" outlined small class="ma-1">
-            <v-icon left color="primary">room</v-icon>
+            <v-icon left color="primary">mdi-map-marker</v-icon>
             {{ selectedEvent.location }}
           </v-chip>
           <br />
@@ -130,7 +130,7 @@
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId' + groupId"
               class="ma-1">
-            <v-icon left color="primary">group</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
@@ -140,13 +140,13 @@
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId' + trainerId"
               class="ma-1">
-            <v-icon left color="primary">person</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
         <v-card-text v-else-if="selectedEvent.type == 'planed-training'">
           <v-label>
-            <v-icon left color="info">info</v-icon>
+            <v-icon left color="info">mdi-information</v-icon>
             Geplantes Training, noch nicht bestätigt
           </v-label>
           <br/>
@@ -157,7 +157,7 @@
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId_2_' + groupId"
               class="ma-1">
-            <v-icon left color="primary">group</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
@@ -167,7 +167,7 @@
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId_2_' + trainerId"
               class="ma-1">
-            <v-icon left color="primary">person</v-icon>
+            <v-icon left color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
@@ -210,6 +210,7 @@ export default {
       category: 'Sparten',
     },
   }),
+  },
   mounted() {
     this.focus = moment().format('YYYY-MM-DD')
   },

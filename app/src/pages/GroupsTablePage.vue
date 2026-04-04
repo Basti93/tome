@@ -24,20 +24,20 @@
                       v-on="on"
                       v-bind="attrs"
                       v-on:click="createItem()">
-                    <v-icon>add</v-icon>
+                    <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
 
                 <v-card>
                   <v-toolbar flat>
                     <v-btn icon v-on:click="closeDialog()">
-                      <v-icon>close</v-icon>
+                      <v-icon>mdi-close</v-icon>
                     </v-btn>
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                       <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>check</v-icon>
+                        <v-icon left>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -100,7 +100,7 @@
                                 color="primary"
                                 elevation="1"
                                 v-on:click="addSelectedUsersToGroup()">
-                              <v-icon left>add</v-icon>
+                              <v-icon left>mdi-plus</v-icon>
                               Hinzufügen
                             </v-btn>
                           </v-col>
@@ -111,18 +111,20 @@
                                   v-for="item in editedUsers"
                                   :key="item.id"
                               >
-                                <tome-list-item-profile-image
-                                    :image-path="item.profileImageName"
-                                ></tome-list-item-profile-image>
+                                <template v-slot:prepend>
+                                  <tome-list-item-profile-image
+                                      :image-path="item.profileImageName"
+                                  ></tome-list-item-profile-image>
+                                </template>
                                 {{ fullName(item) }}
-                                <v-list-item-action>
+                                <template v-slot:append>
                                   <v-btn
                                       icon
+                                      size="x-small"
                                       v-on:click="removeUserFromGroup(item.id)">
-                                    <v-icon>cancel</v-icon>
+                                    <v-icon>mdi-cancel</v-icon>
                                   </v-btn>
-
-                                </v-list-item-action>
+                                </template>
                               </v-list-item>
                             </v-list>
                           </v-col>
@@ -166,17 +168,17 @@
                             <v-icon
                                 class="mr-2"
                                 v-on:click="editItem(item)"
-                                color="success">edit</v-icon>
+                                color="success">mdi-pencil</v-icon>
                             <v-icon
                                 v-on:click="confirmAndDelete(item)"
-                                color="error">delete</v-icon>
+                                color="error">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>

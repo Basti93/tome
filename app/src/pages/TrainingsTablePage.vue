@@ -36,7 +36,7 @@
                   elevation="2"
                   color="primary"
                   @click="create()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
           </v-toolbar>
@@ -97,15 +97,15 @@
                                 v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
                                 @click="editItem(item)"
                                 color="success"
-                            >edit</v-icon>
+                            >mdi-pencil</v-icon>
                             <v-icon
                                 color="error"
                                 v-if="loggedInUser.isAdmin || loggedInUser.isTrainer"
-                                @click="confirmAndDelete(item)">delete</v-icon>
+                                @click="confirmAndDelete(item)">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-btn color="primary" :disabled="loading" @click="reset()">
-                            <v-icon left>cached</v-icon>
+                            <v-icon left>mdi-refresh</v-icon>
                             Keine Daten gefunden
                           </v-btn>
                         </template>
@@ -129,13 +129,13 @@
       <v-card tile>
         <v-toolbar flat>
           <v-btn icon @click="close">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>{{ editDialogTitle }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="save">
-              <v-icon left>check</v-icon>
+              <v-icon left>mdi-check</v-icon>
               Speichern
             </v-btn>
           </v-toolbar-items>
@@ -174,11 +174,11 @@
      >
        <v-btn>
          <span>Listenansicht</span>
-         <v-icon>list</v-icon>
+         <v-icon>mdi-format-list-bulleted</v-icon>
        </v-btn>
        <v-btn>
          <span>Kalendaransicht</span>
-         <v-icon>event</v-icon>
+         <v-icon>mdi-calendar-month</v-icon>
        </v-btn>
      </v-bottom-navigation>-->
   </v-container>

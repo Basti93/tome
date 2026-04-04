@@ -73,12 +73,12 @@
                                 <v-btn @click="saveEditLocation()"
                                        color="primary"
                                        text>
-                                  <v-icon>check</v-icon>
+                                  <v-icon>mdi-check</v-icon>
                                 </v-btn>
                                 <v-btn @click="cancelEditLocation()"
                                        color="primary"
                                        text>
-                                  <v-icon>cancel</v-icon>
+                                  <v-icon>mdi-cancel</v-icon>
                                 </v-btn>
                               </v-col>
                               <v-col v-else>
@@ -102,7 +102,7 @@
                                     :href="sharelink"
                                     target="_blank"
                                     color="primary">
-                                  <v-icon left>share</v-icon>
+                                  <v-icon left>mdi-share-variant</v-icon>
                                   Mit Whatsapp teilen
                                 </v-btn>
                               </v-col>
@@ -144,14 +144,14 @@
                                     @click="saveEditComment()"
                                     color="primary"
                                 >
-                                  <v-icon>check</v-icon>
+                                  <v-icon>mdi-check</v-icon>
                                 </v-btn>
                                 <v-btn
                                     class="ma-2"
                                     @click="cancelEditComment()"
                                     color="error"
                                 >
-                                  <v-icon>cancel</v-icon>
+                                  <v-icon>mdi-cancel</v-icon>
                                 </v-btn>
                               </v-col>
                             </v-row>
@@ -292,7 +292,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelReasonDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>
         </v-toolbar>
@@ -309,12 +309,12 @@
       <v-card>
         <v-card-title>
           <v-btn icon @click="timeDialogOpened=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           Trainingszeit ändern
           <v-spacer></v-spacer>
           <v-btn text color="primary" @click="updateTrainingTime">
-            <v-icon left>check</v-icon>
+            <v-icon left>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>

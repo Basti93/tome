@@ -8,7 +8,7 @@
         <v-btn
             icon
             @click="show=false">
-          <v-icon>close</v-icon>
+          <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>Übungsleiter-Abrechnung</v-toolbar-title>
       </v-toolbar>
@@ -67,7 +67,7 @@
                     color="primary"
                     :disabled="!valid"
                     @click="createExcelReport()">
-                  <v-icon left>update</v-icon>
+                  <v-icon left>mdi-refresh</v-icon>
                   Erstellen
                 </v-btn>
                 <v-btn
@@ -77,7 +77,7 @@
                     download
                     color="primary"
                 >
-                  <v-icon left>save_alt</v-icon>
+                  <v-icon left>mdi-download</v-icon>
                   Download Excel
                 </v-btn>
               </v-col>

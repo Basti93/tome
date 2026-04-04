@@ -56,6 +56,7 @@ import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import { useRouter, useRoute } from 'vue-router'
+import User from '@/models/User'
 
 export default {
   name: "LoginPage",
@@ -108,7 +109,8 @@ export default {
           useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
           useAuthStore().logout()
         } else {
-          useAuthStore().login({token: data.token, user: JSON.stringify(data.user)})
+          const user = User.from(JSON.stringify(data.user))
+          useAuthStore().login(user, data.token)
           useCookieAuthStore().eraseCookieUser()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
           this.router.replace(this.route.query.redirect as string || '/')

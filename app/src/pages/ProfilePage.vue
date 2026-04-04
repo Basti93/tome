@@ -12,7 +12,7 @@
                    v-bind:disabled="!valid"
                 @click="save()"
             >
-              <v-icon left>save</v-icon>
+              <v-icon left>mdi-content-save</v-icon>
               Speichern
             </v-btn>
           </v-toolbar>
@@ -32,11 +32,11 @@
 
                         <v-tab href="#tab-1">
                           Benutzereinstellungen
-                          <v-icon>account_circle</v-icon>
+                          <v-icon>mdi-account-circle</v-icon>
                         </v-tab>
                         <v-tab href="#tab-2" v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
                           Trainereinstellungen
-                          <v-icon>verified_user</v-icon>
+                          <v-icon>mdi-shield-check</v-icon>
                         </v-tab>
                         <v-tab-item :value="'tab-1'">
                           <v-card flat>
@@ -114,7 +114,7 @@
                                         elevation="1"
                                         @click="showPasswordDialog = true"
                                     >
-                                      <v-icon left>security</v-icon>
+                                      <v-icon left>mdi-shield-lock</v-icon>
                                       Passwort ändern
                                     </v-btn>
                                   </v-col>
@@ -206,6 +206,7 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import moment from 'moment'
+import User from '@/models/User'
 
 export default {
   name: "ProfilePage",
@@ -309,7 +310,8 @@ export default {
         if (data.status == 'ok') {
           useSnackbarStore().show("Erfolgreich gespeichert", "success")
           let {data: userData} = await axios.get('auth/me');
-          useAuthStore().updateUser({user: JSON.stringify(userData)})
+          const user = User.from(JSON.stringify(userData))
+          useAuthStore().updateUser(user)
           this.assignCurrentUser();
         } else {
           useSnackbarStore().show("Fehler beim Speichern.", "error")

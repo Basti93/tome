@@ -17,7 +17,7 @@
             v-else
             cols="12"
             size="128">
-          <v-icon size="128">account_circle</v-icon>
+          <v-icon size="128">mdi-account-circle</v-icon>
         </v-avatar>
       </v-col>
       <v-col
@@ -29,7 +29,7 @@
             @click="removeImage"
             color="error"
             title="Profilbild löschen">
-          <v-icon left>delete</v-icon>
+          <v-icon left>mdi-trash-can</v-icon>
           Löschen
         </v-btn>
       </v-col>

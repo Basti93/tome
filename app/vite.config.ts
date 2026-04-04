@@ -10,6 +10,16 @@ export default defineConfig({
     },
     extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json', '.vue']
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern'
+      },
+      sass: {
+        api: 'modern'
+      }
+    }
+  },
   build: {
     sourcemap: false
   }

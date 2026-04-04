@@ -2,23 +2,22 @@
   <v-menu
       v-if="clickable"
       v-model="menu"
-      bottom
-      right
+      location="bottom end"
       transition="scale-transition"
       origin="top left"
   >
-    <template v-slot:activator="{ on }">
+    <template v-slot:activator="{ props }">
       <v-chip
           outlined
           class="ma-1"
-          v-on="on"
+          v-bind="props"
       >
         <v-avatar left>
           <v-img v-if="imageUrl"
                  :src="imageUrl"
                  :alt="fullName"
           ></v-img>
-          <v-icon v-else>account_circle</v-icon>
+          <v-icon v-else>mdi-account-circle</v-icon>
         </v-avatar>
         {{ fullName }}
       </v-chip>
@@ -26,25 +25,26 @@
     <v-card width="300">
       <v-list>
         <v-list-item>
-          <v-list-item-avatar size="60">
-            <v-img v-if="imageUrl"
-                   :src="imageUrl"
-                   :alt="fullName"
-            ></v-img>
-            <v-icon v-else size="60">account_circle</v-icon>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title>{{ fullName }}</v-list-item-title>
-            <v-list-item-subtitle>Trainer</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
+          <template v-slot:prepend>
+            <v-avatar size="60">
+              <v-img v-if="imageUrl"
+                     :src="imageUrl"
+                     :alt="fullName"
+              ></v-img>
+              <v-icon v-else size="60">mdi-account-circle</v-icon>
+            </v-avatar>
+          </template>
+          <v-list-item-title>{{ fullName }}</v-list-item-title>
+          <v-list-item-subtitle>Trainer</v-list-item-subtitle>
+          <template v-slot:append>
             <v-btn
                 icon
+                size="x-small"
                 @click="menu = false"
             >
-              <v-icon>close</v-icon>
+              <v-icon>mdi-close</v-icon>
             </v-btn>
-          </v-list-item-action>
+          </template>
         </v-list-item>
       </v-list>
     </v-card>
@@ -54,7 +54,7 @@
            :src="imageUrl"
            :alt="fullName"
     ></v-img>
-    <v-icon v-else :size="dSize">account_circle</v-icon>
+    <v-icon v-else :size="dSize">mdi-account-circle</v-icon>
   </v-avatar>
 </template>
 

@@ -3,13 +3,13 @@
         <v-card>
             <v-toolbar flat>
                 <v-btn icon @click="show=false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                 </v-btn>
                 <v-toolbar-title v-if="!editUserId">Vorläufigen Benutzer Anlegen</v-toolbar-title>
                 <v-toolbar-title v-else>Benutzer Bearbeiten</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="save"><v-icon left>check</v-icon>Speichern</v-btn>
+                    <v-btn text color="primary" @click="save"><v-icon left>mdi-check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
             <v-divider class="pb-2"></v-divider>

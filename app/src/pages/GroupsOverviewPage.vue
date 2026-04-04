@@ -124,7 +124,7 @@ export default {
     dayArrayToString,
     formatDate,
     parseDate,
-  }
+  },
 })
 
 </script>

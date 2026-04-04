@@ -24,7 +24,7 @@
             <v-avatar>
               <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
               <v-icon v-else-if="isCheckIn && canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-              <v-icon v-else small>new_releases</v-icon>
+              <v-icon v-else small>mdi-alert-decagram</v-icon>
             </v-avatar>
           </template>
         </v-timeline-item>
@@ -36,7 +36,7 @@
         v-on:click.native="showOverlay = false"
     >
       <v-btn v-on:click="showOverlay = false" icon fixed top right>
-        <v-icon>close</v-icon>
+        <v-icon>mdi-close</v-icon>
       </v-btn>
       <h2>Training auswählen</h2>
       <v-timeline align-top dense class="fill-height tp-training-selector__overlay-timeline">
@@ -58,7 +58,7 @@
           <v-avatar>
             <v-icon v-if="checkStatusDone(item)" small>{{isCheckIn ? 'thumb_up' : 'check' }}</v-icon>
             <v-icon v-else-if="isCheckIn &&canceled(item)" small>{{isCheckIn ? 'thumb_down' : 'cancel' }}</v-icon>
-            <v-icon v-else small>new_releases</v-icon>
+            <v-icon v-else small>mdi-alert-decagram</v-icon>
           </v-avatar>
         </template>
       </v-timeline-item>
@@ -76,7 +76,7 @@
         bottom
         right
     >
-      <v-icon>list</v-icon>
+      <v-icon>mdi-format-list-bulleted</v-icon>
     </v-btn>
   </v-container>
 </template>

@@ -163,14 +163,14 @@
                           {{ item.absenceReason }}
                         </template>
                         <template v-slot:[`item.action`]="{ item }">
-                          <v-icon v-on:click="confirmAndDelete(item.id)" color="error">delete</v-icon>
+                          <v-icon v-on:click="confirmAndDelete(item.id)" color="error">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loadingUsers" v-on:click="loadAllAbsenceUsers()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -345,9 +345,8 @@ export default {
       this.$refs.form.reset()
     },
     fullName: item => item.firstName + ' ' + item.familyName,
-    formatDate
+    formatDate,
   },
-
 })
 
 </script>

@@ -90,7 +90,7 @@ const pushPermissionSnackbar = ref(true)
 const currentYear = moment().year()
 
 const currentUser = computed(() => {
-  return authStore.loggedInUser || cookieAuthStore.cookieUser || null
+  return authStore.user || cookieAuthStore.cookieUser || null
 })
 
 const pushPermissionSnackbarVisible = computed(() => {

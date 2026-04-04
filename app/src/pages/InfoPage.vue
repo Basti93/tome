@@ -77,8 +77,7 @@
 </template>
 
 <script lang="ts">
-
-;
+import axios from '@/axios'
 
 export default {
   name: "InfoPage",
@@ -95,13 +94,13 @@ export default {
   },
   methods: {
     async fetchFaqs() {
-      let res = await this.$http.get('/faq/');
+      let res = await axios.get('/faq/');
       this.faqs = res.data;
-      res = await this.$http.get('/faq/files');
+      res = await axios.get('/faq/files');
       this.filePaths = res.data;
 
     },
-  }
+  },
 })
 </script>
 
