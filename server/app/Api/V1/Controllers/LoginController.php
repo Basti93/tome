@@ -59,6 +59,15 @@ class LoginController extends Controller
             throw new HttpException(500);
         }
 
+        // Check if email is verified
+        if ($user && !$user->email_verified_at) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Please verify your email before logging in.',
+                'code' => 'email_not_verified'
+            ], 403);
+        }
+
         if ($user) {
             $user->failed_login_attempts = 0;
             $user->locked_until = null;

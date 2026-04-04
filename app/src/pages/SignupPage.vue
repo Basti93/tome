@@ -15,7 +15,8 @@
             <v-card-text>
               <div v-if="completed">
                 <h2>Erfolgreich registriert</h2>
-                <p>Sobald du von einem Admin bestätigt wurdest erhältst du eine E-Mail und kannst dich anmelden.</p>
+                <p>Bitte verifizieren Sie Ihre E-Mail-Adresse. Wir haben einen Bestätigungslink an {{ email }} gesendet.</p>
+                <p>Klicken Sie auf den Link in der E-Mail, um Ihr Konto zu aktivieren.</p>
                 <v-btn
                     color="primary"
                     to="/"

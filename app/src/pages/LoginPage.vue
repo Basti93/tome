@@ -9,6 +9,34 @@
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-divider></v-divider>
+
+          <!-- Email Not Verified Alert -->
+          <v-alert
+              v-if="emailNotVerifiedError"
+              type="warning"
+              icon="mdi-email-alert"
+              class="ma-4"
+          >
+            <v-row class="align-center">
+              <v-col>
+                <strong>E-Mail nicht verifiziert</strong>
+                <p class="mb-0">Bitte bestätigen Sie Ihre E-Mail-Adresse, um sich anzumelden.</p>
+                <p class="caption mb-0">{{ emailForResend }}</p>
+              </v-col>
+              <v-col cols="auto">
+                <v-btn
+                    small
+                    outlined
+                    @click="resendVerificationEmail()"
+                    :loading="resendLoading"
+                    color="warning"
+                >
+                  Erneut senden
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-alert>
+
           <v-form
               ref="form"
               v-model="valid"
@@ -85,6 +113,9 @@ export default {
     password: '',
     showPassword: false,
     loading: false,
+    emailNotVerifiedError: false,
+    emailForResend: '',
+    resendLoading: false,
     passwordRules: [
       v => !!v || 'Wird benötigt'
     ],
@@ -124,12 +155,19 @@ export default {
         this.loading = true
         const {data} = await axios.post('/auth/login', {email: this.email, password: this.password})
         if (data.status === 'error') {
-          useSnackbarStore().show(data.message, "error")
+          if (data.code === 'email_not_verified') {
+            this.emailNotVerifiedError = true
+            this.emailForResend = this.email
+            useSnackbarStore().show("E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.", "error")
+          } else {
+            useSnackbarStore().show(data.message, "error")
+          }
           useAuthStore().logout()
         } else if (!data.token) {
           useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
           useAuthStore().logout()
         } else {
+          this.emailNotVerifiedError = false
           const user = User.from(JSON.stringify(data.user))
           useAuthStore().login(user, data.token)
           useCookieAuthStore().eraseCookieUser()
@@ -137,15 +175,40 @@ export default {
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {
-        if (error?.status === 429) {
+        const status = error?.status ?? error?.response?.status
+        const data = error?.data ?? error?.response?.data
+
+        if (status === 403 && data?.code === 'email_not_verified') {
+          this.emailNotVerifiedError = true
+          this.emailForResend = this.email
+          useSnackbarStore().show("E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.", "error")
+        } else if (status === 429) {
           useSnackbarStore().show("Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.", "error")
-        } else if (error?.data?.message) {
-          useSnackbarStore().show(error.data.message, "error")
+        } else if (data?.errors) {
+          const first = Object.values(data.errors)[0]
+          const message = Array.isArray(first) ? first[0] : first
+          useSnackbarStore().show(message, "error")
+        } else if (data?.message) {
+          useSnackbarStore().show(data.message, "error")
         } else {
           useSnackbarStore().show("Anmeldung fehlgeschlagen", "error")
         }
       } finally {
         this.loading = false
+      }
+    },
+    async resendVerificationEmail() {
+      try {
+        this.resendLoading = true
+        await axios.post('/auth/email/send', {
+          email: this.emailForResend
+        })
+        useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet. Bitte überprüfen Sie Ihren E-Mail-Eingang.', 'success')
+      } catch (error) {
+        console.log(error)
+        useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+      } finally {
+        this.resendLoading = false
       }
     },
   },

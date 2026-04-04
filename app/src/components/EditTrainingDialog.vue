@@ -22,9 +22,9 @@
                 </v-tabs>
                 <v-window v-model="activeTab">
                     <v-window-item>
-                        <v-container grid-list-md>
-                            <v-layout wrap>
-                                <v-flex xs12 md6>
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12" md="6">
                                     <v-menu
                                             ref="dateMenuOpened"
                                             :close-on-content-click="false"
@@ -42,8 +42,8 @@
                                         </template>
                                         <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
                                     </v-menu>
-                                </v-flex>
-                                <v-flex xs6 md3>
+                                </v-col>
+                                <v-col cols="6" md="3">
                                     <v-menu
                                             ref="startMenuOpened"
                                             :close-on-content-click="false"
@@ -61,8 +61,8 @@
                                         </template>
                                         <v-time-picker v-model="startTime" @input="startMenuOpened = false" format="24hr"></v-time-picker>
                                     </v-menu>
-                                </v-flex>
-                                <v-flex xs6 md3>
+                                </v-col>
+                                <v-col cols="6" md="3">
                                     <v-menu
                                             ref="endMenuOpened"
                                             :close-on-content-click="false"
@@ -80,8 +80,8 @@
                                         </template>
                                         <v-time-picker v-model="endTime" @input="endMenuOpened = false" format="24hr"></v-time-picker>
                                     </v-menu>
-                                </v-flex>
-                                <v-flex xs12>
+                                </v-col>
+                                <v-col cols="12">
                                     <v-autocomplete
                                             :items="locations"
                                             item-title="name"
@@ -92,8 +92,8 @@
                                             label="Ort"
                                             prepend-icon="add_location"
                                     ></v-autocomplete>
-                                </v-flex>
-                                <v-flex xs12>
+                                </v-col>
+                                <v-col cols="12">
                                     <v-autocomplete
                                             v-model="editedItem.trainerIds"
                                             :items="filterTrainers"
@@ -108,8 +108,8 @@
                                             multiple
                                     >
                                     </v-autocomplete>
-                                </v-flex>
-                                <v-flex xs12>
+                                </v-col>
+                                <v-col cols="12">
                                     <v-autocomplete
                                             :items="filterGroups"
                                             v-model="editedItem.groupIds"
@@ -122,8 +122,8 @@
                                             chips
                                             closable-chips>
                                     </v-autocomplete>
-                                </v-flex>
-                                <v-flex xs12 ml-2 style="text-align: left;">
+                                </v-col>
+                                <v-col cols="12" class="ml-2" style="text-align: left;">
                                     <v-label>Trainingsinhalte</v-label>
                                     <TrainingContent
                                             :contentIds="branchContentIds"
@@ -134,21 +134,21 @@
                                     >
 
                                     </TrainingContent>
-                                </v-flex>
-                                <v-flex xs12>
+                                </v-col>
+                                <v-col cols="12">
                                     <v-textarea
                                             filled
                                             label="Kommentar"
                                             v-model="editedItem.comment"
                                     ></v-textarea>
-                                </v-flex>
-                            </v-layout>
+                                </v-col>
+                            </v-row>
                         </v-container>
                     </v-window-item>
                     <v-window-item>
-                        <v-container grid-list-md>
-                            <v-layout wrap>
-                                <v-flex xs12>
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
                                     <v-list>
                                         <template v-for="(item) in editDialogFilteredUsers">
 
@@ -192,8 +192,8 @@
                                             </v-chip>
                                         </template>
                                     </v-autocomplete>
-                                </v-flex>
-                            </v-layout>
+                                </v-col>
+                            </v-row>
                         </v-container>
                     </v-window-item>
                 </v-window>

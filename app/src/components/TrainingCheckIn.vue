@@ -104,7 +104,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <v-container grid-list-md>
+        <v-container>
           <TrainingContent
               :contentIds="contentIds"
               :initContentIds="contentIds"
@@ -165,9 +165,9 @@
         <v-divider></v-divider>
         <v-card-text>
           <v-form v-model="cancelDialogValid">
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
                   <v-alert
                       type="warning"
                       outlined
@@ -178,8 +178,8 @@
                     Das Training findet innerhalb der nächsten 24 Stunden statt. Bitte gib einen Grund für deine Absage
                     an.
                   </v-alert>
-                </v-flex>
-                <v-flex xs12>
+                </v-col>
+                <v-col cols="12">
                   <v-textarea
                       filled
                       label="Gib hier einen Grund an"
@@ -188,8 +188,8 @@
                       v-model="cancelReason">
 
                   </v-textarea>
-                </v-flex>
-              </v-layout>
+                </v-col>
+              </v-row>
             </v-container>
           </v-form>
         </v-card-text>

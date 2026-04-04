@@ -50,6 +50,7 @@ const router = createRouter({
       meta: { requiresAuth: true, forTrainers: true }
     },
     { path: '/signup', name: 'Signup', component: () => import('@/pages/SignupPage.vue') },
+    { path: '/verify-email', name: 'VerifyEmail', component: () => import('@/pages/VerifyEmailPage.vue') },
     { path: '/info', name: 'Informationen', component: () => import('@/pages/InfoPage.vue') },
     { path: '/login', name: 'Login', component: () => import('@/pages/LoginPage.vue') },
     { path: '/logout', name: 'Logout', component: () => import('@/components/LogoutComponent.vue') },

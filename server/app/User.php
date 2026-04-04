@@ -28,11 +28,12 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'updated_at', 'created_at', 'roles'
+        'password', 'remember_token', 'updated_at', 'created_at', 'roles', 'email_verification_token'
     ];
 
     protected $casts = [
         'locked_until' => 'datetime',
+        'email_verified_at' => 'datetime',
     ];
 
     protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];

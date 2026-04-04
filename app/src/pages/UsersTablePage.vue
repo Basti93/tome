@@ -117,12 +117,14 @@
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
-                            <v-layout row justify-center>
-                              <v-btn color="error" :disabled="loading" @click="reset()">
-                                <v-icon left>mdi-refresh</v-icon>
-                                Keine Daten gefunden
-                              </v-btn>
-                            </v-layout>
+                            <v-row justify="center">
+                              <v-col cols="auto">
+                                <v-btn color="error" :disabled="loading" @click="reset()">
+                                  <v-icon left>mdi-refresh</v-icon>
+                                  Keine Daten gefunden
+                                </v-btn>
+                              </v-col>
+                            </v-row>
                           </v-container>
                         </template>
                       </v-data-table>

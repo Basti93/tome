@@ -77,9 +77,9 @@
                   </v-tabs>
                   <v-window v-model="activeTab">
                     <v-window-item>
-                      <v-container grid-list-md>
-                        <v-layout wrap>
-                          <v-flex xs12>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12">
                             <v-alert
                                 type="info"
                                 class="text-small"
@@ -88,15 +88,15 @@
                                 outlined>
                               Trainings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                             </v-alert>
-                          </v-flex>
-                          <v-flex xs12 md9 offset-md-1>
+                          </v-col>
+                          <v-col cols="12" md="9" offset-md="1">
                             <v-label>Wochentage</v-label>
                             <WeekdaysComponent
                                 :weekdays="editedTrainingSeries.weekdays"
                                 v-on:change="weekdaysChanged"
                             ></WeekdaysComponent>
-                          </v-flex>
-                          <v-flex xs12 md3 offset-md-1>
+                          </v-col>
+                          <v-col cols="12" md="3" offset-md="1">
                             <v-menu
                                 ref="deferUntilMenuOpened"
                                 :close-on-content-click="false"
@@ -116,12 +116,12 @@
                               <v-date-picker v-model="editedTrainingSeries.deferUntil"
                                              @input="deferUntilMenuOpened = false"></v-date-picker>
                             </v-menu>
-                          </v-flex>
-                        </v-layout>
+                          </v-col>
+                        </v-row>
                       </v-container>
                     </v-window-item>
                     <v-window-item>
-                      <v-container grid-list-md>
+                      <v-container>
                         <v-row>
                           <v-col>
                             <EditTrainingBase

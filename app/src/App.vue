@@ -58,7 +58,7 @@
         </router-view>
       </v-container>
     </v-main>
-    <v-footer>
+    <v-footer color="primary">
       <span><a style="text-decoration: none;"
                href="https://github.com/Basti93/tome">&copy; T.O.M.E. - {{ currentYear }}</a></span>
     </v-footer>

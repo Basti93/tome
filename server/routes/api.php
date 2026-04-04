@@ -58,6 +58,9 @@ Route::prefix('v1')->group(function () {
         Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
         Route::post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
 
+        Route::post('email/send', 'App\\Api\\V1\\Controllers\\EmailVerificationController@sendVerificationEmail')->middleware('throttle:3,1');
+        Route::post('email/verify', 'App\\Api\\V1\\Controllers\\EmailVerificationController@verifyEmail')->middleware('throttle:5,1');
+
         Route::post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
         Route::post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
         Route::get('me', 'App\\Api\\V1\\Controllers\\UserController@me');

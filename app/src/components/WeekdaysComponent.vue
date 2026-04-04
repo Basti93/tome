@@ -1,15 +1,16 @@
 <template>
-    <v-layout row wrap>
-        <v-flex
+    <v-row>
+        <v-col
                 v-for="(item) in weekdaysNumbers"
-                :key="item">
+                :key="item"
+                cols="auto">
             <v-checkbox
                     :label="getWeekdayString(item)"
                     :value="item"
                     v-model="weekdaysSelected">
             </v-checkbox>
-        </v-flex>
-    </v-layout>
+        </v-col>
+    </v-row>
 </template>
 
 <script lang="ts">
