@@ -209,65 +209,64 @@
 </template>
 
 <script lang="ts">
-import { useDisplay } from 'vuetify'
-    ;
-    import Training from "../models/Training";
+import { useDisplay } from 'vuetify';
+import Training from "../models/Training";
 
-    export default {
-        name: "EditTrainingDialog",
-        data: function () {
-            return {
-                activeTab: 0,
-                training: null as Training,
-                dateMenuOpened: false,
-                startMenuOpened: false,
-                endMenuOpened: false,
-            }
+export default {
+    name: "EditTrainingDialog",
+    data: function () {
+        return {
+            activeTab: 0,
+            training: null as Training,
+            dateMenuOpened: false,
+            startMenuOpened: false,
+            endMenuOpened: false,
+        };
+    },
+    computed: {
+        trainingDateFormatted() {
+            return this.formatDate(this.training.start);
         },
-        computed: {
-            trainingDateFormatted() {
-                return this.formatDate(this.training.start)
+        trainingDate: {
+            get: function () {
+                return this.training.start;
             },
-            trainingDate: {
-                get: function () {
-                    return this.training.start
-                },
                 set: function (newValue) {
                     this.training.start = newValue;
                 }
             },
             startTime: {
-                get: function () {
-                    return this.training.start;
-                },
-                set: function (newValue) {
-                    this.training.start = newValue;
-                }
+            get: function () {
+                return this.training.start;
             },
-            endTime: {
-                get: function () {
-                    return this.training.start;
-                },
-                set: function (newValue) {
-                    this.training.start = newValue;
-                }
-            },
-        },
-        methods: {
-            formatDate(date) {
-                if (!date) return null;
-
-                const [year, month, day] = date.split('-');
-                return `${day}.${month}.${year}`;
-            },
-            parseDate(date) {
-                if (!date) return null;
-
-                const [day, month, year] = date.split('.');
-                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            set: function (newValue) {
+                this.training.start = newValue;
             }
+        },
+        endTime: {
+            get: function () {
+                return this.training.start;
+            },
+            set: function (newValue) {
+                this.training.start = newValue;
+            }
+        },
+    },
+    methods: {
+        formatDate(date) {
+            if (!date) return null;
+
+            const [year, month, day] = date.split('-');
+            return `${day}.${month}.${year}`;
+        },
+        parseDate(date) {
+            if (!date) return null;
+
+            const [day, month, year] = date.split('.');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         }
-    });
+    }
+});
 </script>
 
 <style scoped>
