@@ -163,7 +163,7 @@
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import User from "../models/User";
@@ -283,7 +283,7 @@ export default {
       }
 
       try {
-        const request = await axios.get(url);
+        const request = await httpClient.get(url);
         this.dataLoaded(request)
       } catch (error) {
         console.error(error)
@@ -336,7 +336,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false;
-      let response = await axios.delete('/user/' + this.itemToDelete.id);
+      let response = await httpClient.delete('/user/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(this.itemToDelete), 1)

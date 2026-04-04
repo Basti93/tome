@@ -139,7 +139,7 @@
 import {formatDate} from "../helpers/date-helpers"
 import { PASSWORD_POLICY, getPasswordHint, getPasswordValidationRules } from '@/constants/passwordPolicy'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 
 export default {
@@ -232,7 +232,7 @@ export default {
     async signup() {
       try {
         this.loading = true
-        await axios.post('/auth/signup', {
+        await httpClient.post('/auth/signup', {
           firstName: this.firstName,
           familyName: this.familyName,
           email: this.email,

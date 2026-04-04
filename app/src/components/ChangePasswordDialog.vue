@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 
 export default {
@@ -100,7 +100,7 @@ export default {
         },
         async save() {
             try {
-                const response = await axios.post('/user/me/changepassword', {'password': this.password})
+                const response = await httpClient.post('/user/me/changepassword', {'password': this.password})
                 if (response.data.status === 'ok') {
                     useSnackbarStore().show("Passwort geändert", "success")
                     this.show = false;

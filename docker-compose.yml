@@ -13,7 +13,9 @@ services:
     networks:
       - tome-network
     environment:
-      - VITE_APP_API_URL=http://localhost:8000/api/v1
+      # Use relative URL - works in Docker and local dev
+      # Vite dev server proxies /api/* requests
+      - VITE_API_URL=/api/v1
     restart: unless-stopped
 
   # Nginx reverse proxy
@@ -24,6 +26,7 @@ services:
       - "8000:80"
     volumes:
       - ./server/public:/var/www/html/public
+      - ./server/public_app:/var/www/html/public_app
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - laravel

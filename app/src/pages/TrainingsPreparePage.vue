@@ -346,7 +346,7 @@ import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
@@ -483,7 +483,7 @@ export default {
         this.dataLoaded = false;
         this.upcomingTrainings = [];
         //load data
-        const res = await axios.get('/trainingprepare/' + this.loggedInUser.id);
+        const res = await httpClient.get('/trainingprepare/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -497,7 +497,7 @@ export default {
           this.selectTraining(this.upcomingTrainings[0].id);
         }
         this.users = []
-        const userRes = await axios.get('/user');
+        const userRes = await httpClient.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
@@ -553,7 +553,7 @@ export default {
       const postData = {
         'comment': this.editComment,
       };
-      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
       if (data.status == 'ok') {
         this.selectedTraining.comment = this.editComment;
         this.cancelEditComment();
@@ -569,7 +569,7 @@ export default {
       const postData = {
         'contentIds': selectedContentIds,
       };
-      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
       if (data.status == 'ok') {
         this.selectedTraining.contentIds = selectedContentIds;
         useSnackbarStore().show("Trainingsinhalte aktualisiert", "success");
@@ -579,7 +579,7 @@ export default {
       const postData = {
         'locationId': this.editLocationId,
       };
-      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
       if (data.status == 'ok') {
         this.selectedTraining.locationId = this.editLocationId;
         this.cancelEditLocation();
@@ -604,7 +604,7 @@ export default {
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await axios.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
       if (data.status == 'ok') {
         this.selectedTraining.start = startDateTime;
         this.selectedTraining.end = endDateTime;

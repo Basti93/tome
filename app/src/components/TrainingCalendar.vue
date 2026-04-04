@@ -182,7 +182,7 @@
 <script lang="ts">
 import Training from "@/models/Training";
 import { useMasterDataStore } from '@/store/masterData';
-import axios from '@/axios';
+import httpClient from '@/http/api';
 import moment from 'moment';
 
 export default {
@@ -265,7 +265,7 @@ export default {
       } else {
         url += 'simplecalendar';
       }
-      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -306,7 +306,7 @@ export default {
     },
     async loadPlannedTrainingEvents() {
       let url = '/training/simplecalendar/planned';
-      const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
@@ -342,7 +342,7 @@ export default {
       }
     },
     async loadBirthdayEvents() {
-      const {data} = await axios.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
+      const {data} = await httpClient.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
       for (let birthdayData of data) {
         this.events.push({
           name: birthdayData.firstName + " " + birthdayData.familyName,

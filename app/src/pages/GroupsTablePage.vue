@@ -213,7 +213,7 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 
 export default {
@@ -288,7 +288,7 @@ export default {
       }
     },
     async loadGroups() {
-      const {data} = await axios.get('/group')
+      const {data} = await httpClient.get('/group')
       this.groups = [];
       for (let i = 0; i < data.data.length; i++) {
         let groupObj = data.data[i];
@@ -299,7 +299,7 @@ export default {
     },
     async loadUsers() {
       this.users = [];
-      const userRes = await axios.get('/user');
+      const userRes = await httpClient.get('/user');
       for (const userObj of userRes.data) {
         this.users.push(new User(
             userObj.id,
@@ -330,9 +330,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await axios.put('/group/' + this.editedItem.id, postData);
+          response = await httpClient.put('/group/' + this.editedItem.id, postData);
         } else {
-          response = await axios.post('/group', postData);
+          response = await httpClient.post('/group', postData);
         }
         if (response && response.data.error) {
           useSnackbarStore().show("Gruppe konnte nicht gespeichert werden", "error")
@@ -366,7 +366,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let {data} = await axios.delete('/group/' + this.itemToDelete.id);
+      let {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
       await this.loadData();
       this.updateMasterData();
 

@@ -150,7 +150,8 @@
 
 <script lang="ts">
 import { useDisplay } from 'vuetify';
-import axios from '@/axios';
+import httpClient from '@/http/api';
+import { useMasterDataStore } from '@/store/masterData';
 
 export default {
   setup() {
@@ -198,7 +199,7 @@ export default {
       }
     },
     async loadBranches() {
-      const {data} = await axios.get('/branch')
+      const {data} = await httpClient.get('/branch')
       this.branches = data.data;
       this.page = data.currentPage;
       this.total = data.total;
@@ -214,9 +215,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await axios.put('/branch/' + this.editedItem.id, postData);
+          response = await httpClient.put('/branch/' + this.editedItem.id, postData);
         } else {
-          response = await axios.post('/branch', postData);
+          response = await httpClient.post('/branch', postData);
         }
         if (response && response.data.error) {
           this.$emit("showSnackbar", "Sparte konnte nicht gespeichert werden", "error")
@@ -251,7 +252,8 @@ export default {
       this.showDialog = false;
     },
     updateMasterData() {
-      this.$store.commit('masterData/setBranches', this.branches);
+      const masterDataStore = useMasterDataStore();
+      masterDataStore.setBranches(this.branches);
     },
   }
 }

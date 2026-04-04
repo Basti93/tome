@@ -4,7 +4,7 @@ import Group from '@/models/Group'
 import User from '@/models/User'
 import TrainingSeries from '@/models/TrainingSeries'
 import SimpleUser from '@/models/SimpleUser'
-import type { AxiosInstance } from 'axios'
+import type { default as HttpClient } from '@/http/api'
 
 export const useMasterDataStore = defineStore('masterData', {
   state: () => ({
@@ -157,15 +157,15 @@ export const useMasterDataStore = defineStore('masterData', {
     setContents(contents: unknown[]) {
       this.contents = contents
     },
-    async loadAll(axiosInstance: AxiosInstance) {
+    async loadAll(httpClient: typeof HttpClient) {
       const [resBranches, resGroups, locations, contents, trainers, resUsers, resTrainingSeries] = await Promise.all([
-        axiosInstance.get('/branch'),
-        axiosInstance.get('/group'),
-        axiosInstance.get('/location'),
-        axiosInstance.get('/content'),
-        axiosInstance.get('/simpleuser/trainers'),
-        axiosInstance.get('/simpleuser'),
-        axiosInstance.get('/trainingSeries'),
+        httpClient.get('/branch'),
+        httpClient.get('/group'),
+        httpClient.get('/location'),
+        httpClient.get('/content'),
+        httpClient.get('/simpleuser/trainers'),
+        httpClient.get('/simpleuser'),
+        httpClient.get('/trainingSeries'),
       ])
 
       const branches = resBranches.data.data.map((b: any) => new Branch(b.id, b.name, b.shortName, b.colorHex))

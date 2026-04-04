@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 
 export default {
@@ -76,7 +76,7 @@ export default {
         return
       }
 
-      const response = await axios.post('/auth/email/verify', {
+      const response = await httpClient.post('/auth/email/verify', {
         token: token
       })
 
@@ -97,7 +97,7 @@ export default {
       if (!this.resendEmail) return
       try {
         this.resendLoading = true
-        await axios.post('/auth/email/send', {
+        await httpClient.post('/auth/email/send', {
           email: this.resendEmail
         })
         this.resendDialog = false

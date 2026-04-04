@@ -204,7 +204,7 @@ import GroupsSelect from "../components/GroupsSelect.vue";
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import User from '@/models/User'
 
@@ -275,7 +275,7 @@ export default {
     async uploadProfileImage() {
       let formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
-      const {data} = await axios.post('/user/me/uploadprofileimage',
+      const {data} = await httpClient.post('/user/me/uploadprofileimage',
           formData,
           {
             headers: {
@@ -310,10 +310,10 @@ export default {
           postData.profileImageName = imageName;
         }
 
-        let {data} = await axios.put('user/me', postData);
+        let {data} = await httpClient.put('user/me', postData);
         if (data.status == 'ok') {
           useSnackbarStore().show("Erfolgreich gespeichert", "success")
-          let {data: userData} = await axios.get('auth/me');
+          let {data: userData} = await httpClient.get('auth/me');
           const user = User.from(JSON.stringify(userData))
           useAuthStore().updateUser(user)
           this.assignCurrentUser();

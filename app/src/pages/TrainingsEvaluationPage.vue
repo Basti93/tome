@@ -346,7 +346,7 @@ import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
@@ -448,7 +448,7 @@ export default {
         this.dataLoaded = false;
         this.pastTrainings = [];
         //load data
-        const res = await axios.get('/trainingevaluation/' + this.loggedInUser.id);
+        const res = await httpClient.get('/trainingevaluation/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -480,7 +480,7 @@ export default {
           this.selectTraining(this.pastTrainings[0].id);
         }
         this.users = []
-        const userRes = await axios.get('/user');
+        const userRes = await httpClient.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
@@ -506,14 +506,14 @@ export default {
       }
     },
     async removeParticipant(userId) {
-      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
       if (data.status == 'ok') {
         this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
         useSnackbarStore().show("Benutzer entfernt", "success");
       }
     },
     async addParticipant(userId) {
-      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
       if (data.status == 'ok') {
         if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
           this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, true, null));
@@ -525,7 +525,7 @@ export default {
     },
     async evaluated() {
       this.confirmEvaluationDialog = false;
-      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
       if (data.status == 'ok') {
         this.selectedTraining.evaluated = true
         useSnackbarStore().show("Training abgeschlossen", "success");
@@ -553,7 +553,7 @@ export default {
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await axios.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
+      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
       if (data.status == 'ok') {
         selectedTrainer.accountingTimeStart = startDateTime;
         selectedTrainer.accountingTimeEnd = endDateTime;

@@ -205,7 +205,7 @@ import User from "../models/User";
 import Training from "../models/Training";
 import GroupChip from "./GroupChip.vue";
 import { useMasterDataStore } from '@/store/masterData'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 
 export default {
   name: "TrainingCheckIn",
@@ -300,7 +300,7 @@ export default {
           url += '/checkin/' + this.currentUser.id;
         }
         //send post
-        const {data} = await axios.post(url);
+        const {data} = await httpClient.post(url);
         if (data.status === 'ok') {
           this.$emit('checkedIn')
         }
@@ -324,7 +324,7 @@ export default {
           }
         }
         //send post
-        const {data} = await axios.post(url, postData);
+        const {data} = await httpClient.post(url, postData);
         if (data.status === 'ok') {
           this.cancelReason = null;
           this.showCancelDialog = false;

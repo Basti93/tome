@@ -17,6 +17,7 @@
 /server/node_modules
 /server/public/hot
 /server/public/storage
+/server/public_app
 /server/storage/*.key
 /server/vendor
 /server/.idea

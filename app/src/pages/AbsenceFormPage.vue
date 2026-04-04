@@ -194,7 +194,7 @@ import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 
 const authStore = useAuthStore()
@@ -271,7 +271,7 @@ function getAllSimpleUsersWithGroup() {
 async function loadAllAbsenceUsers() {
   loadingUsers.value = true
   absenceUsers.value = []
-  const { data } = await axios.get('user/allAbsence')
+  const { data } = await httpClient.get('user/allAbsence')
   if (data.data) {
     for (const userObj of data.data) {
       absenceUsers.value.push(new User(
@@ -303,7 +303,7 @@ async function sendAbsence() {
     absenceEnd: moment(absenceEnd.value, 'YYYY-MM-DD').format(),
     absenceReason: absenceReason.value
   }
-  const { data } = await axios.post('simpleuser/' + userId.value + '/storeAbsence', postData)
+  const { data } = await httpClient.post('simpleuser/' + userId.value + '/storeAbsence', postData)
   if (data.status === 'ok') {
     snackbarStore.show("Abwesenheit erfolgreich eingetragen", "success")
     resetFormData()
@@ -321,7 +321,7 @@ function confirmAndDelete(userIdVal: number) {
 async function deleteAbsence() {
   showConfirmDialog.value = false
   if (userIdToDelete.value) {
-    const { data } = await axios.put('user/' + userIdToDelete.value + '/removeAbsence')
+    const { data } = await httpClient.put('user/' + userIdToDelete.value + '/removeAbsence')
     if (data.status === 'ok') {
       snackbarStore.show("Abwesenheit erfolgreich gelöscht", "success")
       loadAllAbsenceUsers()

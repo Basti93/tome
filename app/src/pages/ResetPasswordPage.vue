@@ -111,7 +111,7 @@
 
 <script lang="ts">
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import { useRouter, useRoute } from 'vue-router'
 import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
 
@@ -179,7 +179,7 @@ export default {
     async requestResetEmail() {
       try {
         this.loading = true
-        await axios.post('/auth/recovery', { email: this.email })
+        await httpClient.post('/auth/recovery', { email: this.email })
         this.emailSent = true
         useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
       } catch (error) {
@@ -200,7 +200,7 @@ export default {
     async resetPassword() {
       try {
         this.loading = true
-        await axios.post('/auth/reset', {
+        await httpClient.post('/auth/reset', {
           email: this.email,
           token: this.token,
           password: this.password,

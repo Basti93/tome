@@ -110,7 +110,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import TrainingCheckIn from "../components/TrainingCheckIn.vue";
 import GroupSelect from "../components/GroupSelect.vue";
@@ -223,7 +223,7 @@ export default {
       return null;
     },
     async fetchSingleTraining(trainingId: Number) {
-      const {data} = await axios.get('/training/upcoming/' + trainingId);
+      const {data} = await httpClient.get('/training/upcoming/' + trainingId);
       if (data.data) {
         this.addToUpcomingTrainings(data.data);
       } else {
@@ -259,7 +259,7 @@ export default {
           url += '?branchId=' + this.filterBranchId;
         }
         //load data
-        const {data} = await axios.get(url);
+        const {data} = await httpClient.get(url);
         if (data.data && data.data.length > 0) {
           for (let trObj of data.data) {
             this.addToUpcomingTrainings(trObj);

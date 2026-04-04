@@ -4,13 +4,13 @@
 <script>
   import { useAuthStore } from '@/store/auth'
   import { useSnackbarStore } from '@/store/snackbar'
-  import axios from '@/axios'
+  import httpClient from '@/http/api'
 
   export default {
     name: 'LogoutComponent',
     async created () {
       try {
-        await axios.post('/auth/logout')
+        await httpClient.post('/auth/logout')
       } catch (e) {
         // ignore errors, still clear local state
       }

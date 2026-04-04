@@ -19,7 +19,7 @@
 import StatisticsFilter1 from "./StatisticsFilter1";
 import { useAuthStore } from '@/store/auth';
 import { useMasterDataStore } from '@/store/masterData';
-import axios from '@/axios';
+import httpClient from '@/http/api';
 import moment from 'moment';
 
 export default {
@@ -91,7 +91,7 @@ export default {
     async fetchData() {
       this.series = [];
       let url = '/trainingevaluation/accountingtimestatistics?year=' + this.filterYear + "&groupIds=" + this.filterGroupIds;
-      let {data} = await axios.get(url);
+      let {data} = await httpClient.get(url);
       for (let z = 0; z < data.length; z++) {
         let count = [];
         for (let i = 0; i < 12; i++) {

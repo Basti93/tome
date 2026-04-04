@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
-import axios from './axios'
+import httpClient from './http/api'
 import { useMasterDataStore } from './store/masterData'
 import VueApexCharts from 'vue3-apexcharts'
 
@@ -18,7 +18,7 @@ async function init() {
 
   const masterData = useMasterDataStore()
   try {
-    await masterData.loadAll(axios)
+    await masterData.loadAll(httpClient)
   } catch (e) {
     // offline — mount anyway
   }

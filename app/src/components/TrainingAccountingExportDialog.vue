@@ -92,7 +92,7 @@
 <script lang="ts">
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import { useAuthStore } from '@/store/auth'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 
 export default {
@@ -141,7 +141,7 @@ export default {
     async createExcelReport(): void {
       this.creatingExcelReport = true;
       try {
-        const {data} = await axios.post('/trainingevaluation/exportaccountingtimes',
+        const {data} = await httpClient.post('/trainingevaluation/exportaccountingtimes',
             {
               userId: this.loggedInUser.id,
               from: moment(this.dateFrom, 'YYYY-MM-DD').format(),

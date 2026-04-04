@@ -96,7 +96,7 @@
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
 import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
@@ -153,7 +153,7 @@ export default {
     async login() {
       try {
         this.loading = true
-        const {data} = await axios.post('/auth/login', {email: this.email, password: this.password})
+        const {data} = await httpClient.post('/auth/login', {email: this.email, password: this.password})
         if (data.status === 'error') {
           if (data.code === 'email_not_verified') {
             this.emailNotVerifiedError = true
@@ -200,7 +200,7 @@ export default {
     async resendVerificationEmail() {
       try {
         this.resendLoading = true
-        await axios.post('/auth/email/send', {
+        await httpClient.post('/auth/email/send', {
           email: this.emailForResend
         })
         useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet. Bitte überprüfen Sie Ihren E-Mail-Eingang.', 'success')

@@ -4,13 +4,13 @@
       <v-col>
         <v-card color="secondary">
           <v-toolbar flat>
-            <v-toolbar-title>Informationen</v-toolbar-title>
+            <v-toolbar-title>Informationent test</v-toolbar-title>
           </v-toolbar>
           <v-divider></v-divider>
           <v-card-text flat>
             <v-card class="mt-1">
               <v-card-title>Release Notes</v-card-title>
-              <v-card-text>
+              <v-card-text> 
                 <v-expansion-panels
                     flat
                     focusable
@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 
 const openedPanel = ref(0)
 const faqs = ref([])
@@ -86,9 +86,9 @@ const filePaths = ref([])
 const serverUrl = import.meta.env.VITE_IMAGE_FOLDER_URL
 
 async function fetchFaqs() {
-  const res = await axios.get('/faq/')
+  const res = await httpClient.get('/faq/')
   faqs.value = res.data
-  const filesRes = await axios.get('/faq/files')
+  const filesRes = await httpClient.get('/faq/files')
   filePaths.value = filesRes.data
 }
 

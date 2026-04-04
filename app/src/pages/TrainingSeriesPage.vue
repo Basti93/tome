@@ -231,7 +231,7 @@
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
@@ -325,12 +325,12 @@ export default {
         if (this.filterBranchId > 0) {
           seriesUrl += '?groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
         }
-        const response = await axios.get(seriesUrl);
+        const response = await httpClient.get(seriesUrl);
         for (const responseObject of response.data.data) {
           this.trainingSeriesList.push(TrainingSeries.from(responseObject))
         }
 
-        const trainerRes = await axios.get('/user/trainer');
+        const trainerRes = await httpClient.get('/user/trainer');
         this.trainers = trainerRes.data;
       } finally {
         this.loading = false;
@@ -352,7 +352,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let response = await axios.delete('/trainingSeries/' + this.itemToDelete.id);
+      let response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
         this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
@@ -379,9 +379,9 @@ export default {
       if (this.editedTrainingSeries.id) {
         url += '/' + this.editedTrainingSeries.id;
         postData.id = this.editedTrainingSeries.id;
-        res = await axios.put(url, postData);
+        res = await httpClient.put(url, postData);
       } else {
-        res = await axios.post(url, postData);
+        res = await httpClient.post(url, postData);
       }
 
       if (res.data.status == 'ok') {

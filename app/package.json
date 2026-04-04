@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:serve": "npm run build && npm run deploy",
-    "deploy": "rm -rf ../server/public/* && cp -r dist/* ../server/public/",
+    "deploy": "rm -rf ../server/public_app && mkdir -p ../server/public_app && cp -r dist/* ../server/public_app/",
     "watch": "npm run build -- --watch && npm run deploy",
     "watch:deploy": "chokidar 'src/**/*' -c 'npm run build:serve'",
     "preview": "vite preview",
@@ -15,7 +15,6 @@
   "dependencies": {
     "@mdi/font": "^7.4.0",
     "apexcharts": "^5.10.0",
-    "axios": "^1.6.0",
     "firebase": "^10.0.0",
     "jwt-decode": "^4.0.0",
     "moment": "^2.29.4",

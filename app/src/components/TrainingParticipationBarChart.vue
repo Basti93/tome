@@ -20,7 +20,7 @@
 import StatisticsFilter1 from "./StatisticsFilter1";
 import { useAuthStore } from '@/store/auth';
 import { useMasterDataStore } from '@/store/masterData';
-import axios from '@/axios';
+import httpClient from '@/http/api';
 import moment from 'moment';
 
 export default {
@@ -97,7 +97,7 @@ export default {
       if (this.filterGroupIds.length > 0 && this.filterYear) {
         try {
           let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
-          let {data} = await axios.get(url);
+          let {data} = await httpClient.get(url);
           let names = [];
           let count = [];
           for (let i = 0; i < data.length; i++) {

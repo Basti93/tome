@@ -134,7 +134,8 @@
 
 <script lang="ts">
 import { useDisplay } from 'vuetify';
-import axios from '@/axios';
+import httpClient from '@/http/api';
+import { useMasterDataStore } from '@/store/masterData';
 
 export default {
   setup() {
@@ -182,7 +183,7 @@ export default {
       }
     },
     async loadLocations() {
-      const {data} = await axios.get('/location')
+      const {data} = await httpClient.get('/location')
       this.locations = data.data;
       this.page = data.currentPage;
       this.total = data.total;
@@ -196,9 +197,9 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await axios.put('/location/' + this.editedItem.id, postData);
+          response = await httpClient.put('/location/' + this.editedItem.id, postData);
         } else {
-          response = await axios.post('/location', postData);
+          response = await httpClient.post('/location', postData);
         }
         if (response && response.data.error) {
           this.$emit("showSnackbar", "Ort konnte nicht gespeichert werden", "error")
@@ -227,7 +228,8 @@ export default {
       this.showDialog = false;
     },
     updateMasterData() {
-      this.$store.commit('masterData/setLocations', this.locations);
+      const masterDataStore = useMasterDataStore();
+      masterDataStore.setLocations(this.locations);
     },
   }
 }

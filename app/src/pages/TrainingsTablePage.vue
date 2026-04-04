@@ -187,7 +187,7 @@
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
-import axios from '@/axios'
+import httpClient from '@/http/api'
 import moment from 'moment'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase.vue";
@@ -340,7 +340,7 @@ export default {
       if (this.filterBranchId > 0) {
         url += '&groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
-      let p1 = axios.get(url).then(function (res) {
+      let p1 = httpClient.get(url).then(function (res) {
         for (const jsonObj of res.data.data) {
           this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
         }
@@ -349,7 +349,7 @@ export default {
         this.total = res.data.meta.total;
       }.bind(this));
 
-      let p2 = axios.get('/user/trainer').then(function (res) {
+      let p2 = httpClient.get('/user/trainer').then(function (res) {
         this.trainers = res.data;
       }.bind(this));
 
@@ -368,7 +368,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-        const {data} = await axios.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
+        const {data} = await httpClient.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
         if (data.status == 'ok') {
           useSnackbarStore().show("Training erfolgreich gelöscht", "success")
           this.loadData();
@@ -413,12 +413,12 @@ export default {
       }
       if (self.editedId) {
         postData.id = self.editedId;
-        axios.put('/training/' + self.editedId, postData)
+        httpClient.put('/training/' + self.editedId, postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()
                 useSnackbarStore().show("Training gespeichert", "success")
-                axios.get('/training/' + self.editedId)
+                httpClient.get('/training/' + self.editedId)
                     .then(function ({data}) {
                       const index = self.trainings.findIndex(t => (t && t.id == self.editedId));
                       self.trainings.splice(index, 1, data.data);
@@ -435,7 +435,7 @@ export default {
             })
       } else {
 
-        axios.post('/training', postData)
+        httpClient.post('/training', postData)
             .then(function (res) {
               if (!res.data.error) {
                 self.close()
