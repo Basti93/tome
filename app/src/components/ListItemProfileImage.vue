@@ -1,8 +1,8 @@
 <template>
-    <v-list-item-avatar>
-        <v-img v-if="imageUrl" :size="dSize" :src="imageUrl"></v-img>
+    <v-avatar :size="dSize">
+        <v-img v-if="imageUrl" :src="imageUrl"></v-img>
         <v-icon v-else :size="dSize">mdi-account-circle</v-icon>
-    </v-list-item-avatar>
+    </v-avatar>
 </template>
 
 <script lang="ts">

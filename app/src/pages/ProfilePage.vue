@@ -79,19 +79,18 @@
                                         v-model="birthdateMenu"
                                         :rules="requiredRule"
                                         required>
-                                      <template v-slot:activator="{ on }">
+                                      <template v-slot:activator="{ props }">
                                         <v-text-field
-                                            slot="activator"
                                             v-model="birthdateFormatted"
                                             required
                                             label="Geburtsdatum"
                                             prepend-icon="event"
                                             readonly
-                                            v-on="on"></v-text-field>
+                                            v-bind="props"></v-text-field>
                                       </template>
                                       <v-date-picker
                                           v-model="editUser.birthdate"
-                                          @input="birthdateMenu = false"
+                                          @update:modelValue="birthdateMenu = false"
                                           ref="birthdatePicker"
                                           :max="new Date().toISOString().substr(0, 10)"
                                           min="1950-01-01">

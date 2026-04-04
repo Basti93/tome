@@ -28,17 +28,17 @@
                                 sm="6"
                                 md="4"
                                 lg="3">
-                              <v-card :color="group.branch.colorHex">
+                              <v-card :color="getBranchColorByGroupId(group.id)">
                                 <v-card-title class="subheading font-weight-bold">
                                   {{ group.name }}
                                 </v-card-title>
                                 <v-card-subtitle>
-                                  {{ group.branch.name }}
+                                  {{ getBranchNameByGroupId(group.id) }}
                                 </v-card-subtitle>
 
                                 <v-divider></v-divider>
                                 <v-card-text>
-                                  <v-list subheader :color="group.branch.colorHex" dense>
+                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" dense>
                                     <v-list-subheader>Sportler</v-list-subheader>
 
                                     <v-list-item
@@ -47,7 +47,7 @@
                                       {{ user.getFullNameFamilyFirst() }}
                                     </v-list-item>
                                   </v-list>
-                                  <v-list subheader :color="group.branch.colorHex" dense>
+                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" dense>
                                     <v-list-subheader>Trainingszeiten</v-list-subheader>
 
                                     <v-list-item
@@ -120,6 +120,22 @@ export default {
     },
     getLocationNameById(locationId) {
       return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getBranchColorByGroupId(groupId) {
+      const group = useMasterDataStore().groups.find(g => g.id === groupId);
+      if (group) {
+        const branch = useMasterDataStore().branches.find(b => b.id === group.branchId);
+        return branch ? branch.colorHex : '#000000';
+      }
+      return '#000000';
+    },
+    getBranchNameByGroupId(groupId) {
+      const group = useMasterDataStore().groups.find(g => g.id === groupId);
+      if (group) {
+        const branch = useMasterDataStore().branches.find(b => b.id === group.branchId);
+        return branch ? branch.name : 'Unknown';
+      }
+      return 'Unknown';
     },
     dayArrayToString,
     formatDate,

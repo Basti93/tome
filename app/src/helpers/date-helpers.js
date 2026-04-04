@@ -1,7 +1,27 @@
 export function formatDate(date) {
     if (!date) return null
 
-    const [year, month, day] = date.split('-')
+    // Handle non-string inputs (Date objects, moment objects, etc.)
+    let dateString = date
+    if (typeof date !== 'string') {
+        // If it's a moment object
+        if (date.format && typeof date.format === 'function') {
+            dateString = date.format('YYYY-MM-DD')
+        }
+        // If it's a Date object
+        else if (date instanceof Date) {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            dateString = `${year}-${month}-${day}`
+        }
+        // Otherwise, try to convert to string and return as-is
+        else {
+            return null
+        }
+    }
+
+    const [year, month, day] = dateString.split('-')
     return `${day}.${month}.${year}`
 }
 

@@ -9,7 +9,7 @@
         >
           <template v-slot:activator="{ props }">
             <v-text-field
-                v-model="trainingDateFormatted"
+                :modelValue="trainingDateFormatted"
                 required
                 label="Datum"
                 prepend-icon="event"
@@ -17,7 +17,7 @@
                 v-bind="props"
             ></v-text-field>
           </template>
-          <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
+          <v-date-picker v-model="trainingDate" @update:modelValue="onDateChanged"></v-date-picker>
         </v-menu>
       </v-col>
       <v-col cols="6" md="3">
@@ -176,7 +176,7 @@ export default {
   },
   data: function () {
     return {
-      trainingDate: new Date().toISOString().substr(0, 10) as Date,
+      trainingDate: '2026-04-04' as String,
       dataId: null as Number,
       endTime: '12:00' as String,
       startTime: '09:00' as String,
@@ -216,6 +216,19 @@ export default {
   methods: {
     contentIdsChanged(contentIds: Array<Number>): void {
       this.selectedContentIds = contentIds;
+    },
+    onDateChanged(dateValue) {
+      // Convert Date object to YYYY-MM-DD string format
+      if (dateValue instanceof Date) {
+        const year = dateValue.getFullYear()
+        const month = String(dateValue.getMonth() + 1).padStart(2, '0')
+        const day = String(dateValue.getDate()).padStart(2, '0')
+        this.trainingDate = `${year}-${month}-${day}`
+      } else if (typeof dateValue === 'string') {
+        this.trainingDate = dateValue
+      }
+      // Close the date picker menu after selection
+      this.dateMenuOpened = false
     },
     fireChangeEvent() {
       this.$emit("change", {
@@ -257,7 +270,15 @@ export default {
     date: {
       immediate: true,
       handler(newVal) {
-        this.trainingDate = newVal;
+        // Convert Date object to YYYY-MM-DD string format
+        if (newVal instanceof Date) {
+          const year = newVal.getFullYear()
+          const month = String(newVal.getMonth() + 1).padStart(2, '0')
+          const day = String(newVal.getDate()).padStart(2, '0')
+          this.trainingDate = `${year}-${month}-${day}`
+        } else if (typeof newVal === 'string') {
+          this.trainingDate = newVal
+        }
       },
     },
     start: {

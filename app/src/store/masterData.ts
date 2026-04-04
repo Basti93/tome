@@ -102,6 +102,9 @@ export const useMasterDataStore = defineStore('masterData', {
       return state.simpleTrainers.find((g: any) => id === g.id)
     },
     getSimpleTrainersByIds: (state) => (ids: number[]) => {
+      if (!ids || !Array.isArray(ids)) {
+        return []
+      }
       return state.simpleTrainers.filter((g: any) => ids.includes(g.id))
     },
     getSimpleTrainersByGroupId: (state) => (groupId: number) => {
@@ -111,9 +114,15 @@ export const useMasterDataStore = defineStore('masterData', {
       return state.simpleTrainers.filter((st: any) => st.trainerBranchIds && st.trainerBranchIds.includes(branchId))
     },
     getGroupsByBranchIds: (state) => (ids: number[]) => {
+      if (!ids || !Array.isArray(ids)) {
+        return []
+      }
       return state.groups.filter(g => ids.includes(g.branchId as number))
     },
     getSimpleUsersByIds: (state) => (ids: number[]): SimpleUser[] => {
+      if (!ids || !Array.isArray(ids)) {
+        return []
+      }
       return state.simpleUsers.filter(g => ids.includes(g.id))
     },
     getTrainingSeriesByGroupId: (state) => (groupId: number): TrainingSeries[] => {
