@@ -10,6 +10,7 @@ use App\Api\V1\Requests\LoginRequest;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use Auth;
 use App\User;
+use App\Services\AuthLogService;
 
 class LoginController extends Controller
 {
@@ -28,6 +29,7 @@ class LoginController extends Controller
         $user = User::where('email', $request->input('email'))->first();
 
         if ($user && $user->locked_until && Carbon::parse($user->locked_until)->isFuture()) {
+            AuthLogService::loginFailed($request->input('email'), 'Account locked', $request);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Account locked due to too many failed login attempts. Please try again later.',
@@ -42,6 +44,7 @@ class LoginController extends Controller
                     $locked = $this->incrementFailedLoginAttempts($user);
 
                     if ($locked) {
+                        AuthLogService::loginFailed($request->input('email'), 'Too many failed attempts', $request);
                         return response()->json([
                             'status' => 'error',
                             'message' => 'Account locked due to too many failed login attempts. Please try again later.',
@@ -49,6 +52,7 @@ class LoginController extends Controller
                     }
                 }
 
+                AuthLogService::loginFailed($request->input('email'), 'Invalid credentials', $request);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Unauthorized',
@@ -61,6 +65,7 @@ class LoginController extends Controller
 
         // Check if email is verified
         if ($user && !$user->email_verified_at) {
+            AuthLogService::loginFailed($request->input('email'), 'Email not verified', $request);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Please verify your email before logging in.',
@@ -72,6 +77,7 @@ class LoginController extends Controller
             $user->failed_login_attempts = 0;
             $user->locked_until = null;
             $user->save();
+            AuthLogService::loginSuccess($request);
         }
 
         $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);

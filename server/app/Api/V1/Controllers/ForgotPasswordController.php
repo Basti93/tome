@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Password;
 use App\Api\V1\Requests\ForgotPasswordRequest;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Services\AuthLogService;
 
 class ForgotPasswordController extends Controller
 {
@@ -25,6 +26,8 @@ class ForgotPasswordController extends Controller
         if($sendingResponse !== Password::RESET_LINK_SENT) {
             throw new HttpException(500);
         }
+
+        AuthLogService::passwordResetRequested($request->get('email'), $request);
 
         return response()->json([
             'status' => 'ok'

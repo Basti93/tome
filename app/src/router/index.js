@@ -19,6 +19,7 @@ import Locations from "@/pages/LocationsPage";
 import Branches from "@/pages/BranchesTablePage";
 import GroupsOverview from "@/pages/GroupsOverviewPage";
 import AbsenceForm from "@/pages/AbsenceFormPage";
+import ResetPassword from "@/pages/ResetPasswordPage";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -128,6 +129,11 @@ const router = createRouter({
       path: '/verify-email',
       name: 'VerifyEmail',
       component: VerifyEmail
+    },
+    {
+      path: '/reset-password',
+      name: 'ResetPassword',
+      component: ResetPassword
     },
     {
       path: '/info',

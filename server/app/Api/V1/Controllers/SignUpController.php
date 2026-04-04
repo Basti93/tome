@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use Illuminate\Support\Str;
 use DateTime;
+use App\Services\AuthLogService;
 
 class SignUpController extends Controller
 {
@@ -27,6 +28,7 @@ class SignUpController extends Controller
             throw new HttpException(500);
         }
 
+        AuthLogService::signUp($request->input('email'), $request);
         $this->sendVerificationEmail($user);
 
         return response()->json([

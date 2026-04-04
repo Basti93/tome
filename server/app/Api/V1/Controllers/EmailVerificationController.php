@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Services\AuthLogService;
 
 class EmailVerificationController extends Controller
 {
@@ -97,6 +98,8 @@ class EmailVerificationController extends Controller
         $user->email_verified_at = Carbon::now();
         $user->email_verification_token = null;
         $user->save();
+
+        AuthLogService::emailVerified($user->id, $request);
 
         return response()->json([
             'status' => 'ok',

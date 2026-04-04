@@ -51,6 +51,7 @@ const router = createRouter({
     },
     { path: '/signup', name: 'Signup', component: () => import('@/pages/SignupPage.vue') },
     { path: '/verify-email', name: 'VerifyEmail', component: () => import('@/pages/VerifyEmailPage.vue') },
+    { path: '/reset-password', name: 'ResetPassword', component: () => import('@/pages/ResetPasswordPage.vue') },
     { path: '/info', name: 'Informationen', component: () => import('@/pages/InfoPage.vue') },
     { path: '/login', name: 'Login', component: () => import('@/pages/LoginPage.vue') },
     { path: '/logout', name: 'Logout', component: () => import('@/components/LogoutComponent.vue') },

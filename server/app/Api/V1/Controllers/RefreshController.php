@@ -9,6 +9,7 @@ use App\Api\V1\Requests\LoginRequest;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Auth;
+use App\Services\AuthLogService;
 
 class RefreshController extends Controller
 {
@@ -26,6 +27,11 @@ class RefreshController extends Controller
 
         // Invalidate the old token
         Auth::guard('api')->manager()->blacklist()->add($oldToken);
+
+        $userId = Auth::id();
+        if ($userId) {
+            AuthLogService::tokenRefresh($userId, request());
+        }
 
         $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);
         $secureCookie = app()->environment('production');

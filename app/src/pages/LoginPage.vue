@@ -64,7 +64,7 @@
               ></v-text-field>
 
               <div class="text-right mb-2">
-                <router-link to="/forgot-password" class="text-decoration-none">
+                <router-link to="/reset-password" class="text-decoration-none">
                   <small>Passwort vergessen?</small>
                 </router-link>
               </div>
