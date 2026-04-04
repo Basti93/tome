@@ -46,15 +46,14 @@
                                   offset-y
                                   min-width="auto"
                               >
-                                <template v-slot:activator="{ on, attrs }">
+                                <template v-slot:activator="{ props }">
                                   <v-text-field
                                       v-model="absenceStartFormatted"
                                       label="Beginn der Abwesenheit"
                                       required
                                       readonly
                                       :rules="requiredRule"
-                                      v-bind="attrs"
-                                      v-on="on"
+                                      v-bind="props"
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker
@@ -76,15 +75,14 @@
                                   offset-y
                                   min-width="auto"
                               >
-                                <template v-slot:activator="{ on, attrs }">
+                                <template v-slot:activator="{ props }">
                                   <v-text-field
                                       v-model="absenceEndFormatted"
                                       label="Ende der Abwesenheit"
                                       readonly
                                       :rules="requiredRule"
                                       required
-                                      v-bind="attrs"
-                                      v-on="on"
+                                      v-bind="props"
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker

@@ -149,7 +149,7 @@
 </template>
 
 <script lang="ts">
-import TrainingContent from "./TrainingContent"
+import TrainingContent from "./TrainingContent.vue"
 import {formatDate, parseDate} from "@/helpers/date-helpers"
 import Group from "../models/Group"
 import { useMasterDataStore } from "@/store/masterData"

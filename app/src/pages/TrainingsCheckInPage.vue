@@ -25,7 +25,7 @@
             <v-dialog
                 v-model="filterDialogVisible"
                 max-width="500px"
-                :fullscreen="xsOnly"
+                :fullscreen="xs"
                 persistent>
               <v-card>
                 <v-toolbar flat dense>
@@ -124,8 +124,8 @@ export default {
   name: "TrainingsCheckInPage",
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
   setup() {
-    const { xsOnly } = useDisplay()
-    return { xsOnly }
+    const { xs } = useDisplay()
+    return { xs }
   },
   data: function () {
     return {

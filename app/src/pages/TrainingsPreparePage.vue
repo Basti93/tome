@@ -304,7 +304,7 @@
         v-model="timeDialogOpened"
         max-width="800px"
         scrollable
-        :fullscreen="xsOnly"
+        :fullscreen="xs"
         persistent>
       <v-card>
         <v-card-title>
@@ -358,16 +358,16 @@ import axios from '@/axios'
 import moment from 'moment'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
-import TrainingContent from "@/components/TrainingContent"
-import ListItemProfileImage from "@/components/ListItemProfileImage"
+import TrainingContent from "@/components/TrainingContent.vue"
+import ListItemProfileImage from "@/components/ListItemProfileImage.vue"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
 export default {
   setup() {
-    const { xsOnly, mdAndUp } = useDisplay()
-    return { xsOnly, mdAndUp }
+    const { xs, md } = useDisplay()
+    return { xs, md }
   },
   name: "TrainingsPreparePage",
   components: {

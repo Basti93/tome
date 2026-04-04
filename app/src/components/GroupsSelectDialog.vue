@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" max-width="600px" :fullscreen="xsOnly" persistent>
+  <v-dialog v-model="show" max-width="600px" :fullscreen="xs" persistent>
     <v-card>
       <v-toolbar flat>
         <v-btn icon @click="show=false">
@@ -50,8 +50,8 @@ import { useMasterDataStore } from '@/store/masterData'
 export default {
   name: "GroupsSelectDialog",
   setup() {
-    const { xsOnly } = useDisplay()
-    return { xsOnly }
+    const { xs } = useDisplay()
+    return { xs }
   },
   props: {
     'visible': Boolean,

@@ -280,7 +280,7 @@
         v-model="timeDialogOpened"
         max-width="800px"
         scrollable
-        :fullscreen="xsOnly"
+        :fullscreen="xs"
         persistent>
       <v-card>
         <v-card-title>
@@ -351,15 +351,15 @@ import moment from 'moment'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
 import TrainingEvaluation from "@/models/TrainingEvaluation";
-import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog";
-import ListItemProfileImage from "../components/ListItemProfileImage"
+import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog.vue";
+import ListItemProfileImage from "../components/ListItemProfileImage.vue"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import User from "../models/User";
 
 export default {
   setup() {
-    const { xsOnly, mdAndUp } = useDisplay()
-    return { xsOnly, mdAndUp }
+    const { xs, md } = useDisplay()
+    return { xs, md }
   },
   name: "TrainingsEvaluationPage",
   components: {

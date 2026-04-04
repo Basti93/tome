@@ -233,7 +233,7 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import moment from 'moment'
-import EditTrainingBase from "../components/EditTrainingBase";
+import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";

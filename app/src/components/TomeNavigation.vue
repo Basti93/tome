@@ -4,7 +4,7 @@
         fixed
         v-model="drawer"
     >
-      <v-container fluid text class="pt-6 text-center" center v-if="loggedInUser" v-show="xsOnly">
+      <v-container fluid text class="pt-6 text-center" center v-if="loggedInUser" v-show="xs">
         <ProfileImage :firstName="loggedInUser.firstName"
                       :familyName="loggedInUser.familyName"
                       :imagePath="loggedInUser.profileImageName"
@@ -244,8 +244,8 @@ export default {
   name: "TomeNavigation",
   components: {ProfileImage},
   setup() {
-    const { xsOnly, mdAndUp } = useDisplay()
-    return { xsOnly, mdAndUp }
+    const { xs, md } = useDisplay()
+    return { xs, md }
   },
   data() {
     return {

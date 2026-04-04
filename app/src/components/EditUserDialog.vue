@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="show" max-width="1000px" :fullscreen="xsOnly" persistent>
+    <v-dialog v-model="show" max-width="1000px" :fullscreen="xs" persistent>
         <v-card>
             <v-toolbar flat>
                 <v-btn icon @click="show=false">
@@ -105,6 +105,10 @@ import { useDisplay } from 'vuetify'
     import {formatDate, parseDate} from "../helpers/date-helpers"
 
     export default {
+        setup() {
+            const { xs } = useDisplay();
+            return { xs };
+        },
         name: "EditUserDialog",
         components: {GroupsSelect, UploadProfileImage},
         props: [

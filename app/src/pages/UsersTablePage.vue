@@ -164,9 +164,9 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import moment from 'moment'
-import GroupsSelectDialog from "../components/GroupsSelectDialog";
+import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import User from "../models/User";
-import EditUserDialog from "../components/EditUserDialog";
+import EditUserDialog from "../components/EditUserDialog.vue";
 import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";

@@ -8,11 +8,11 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="xsOnly"
+                  :fullscreen="xs"
                   persistent
                   max-width="1000px"
               >
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn
                       title="Neuen Trainingsort erstellen"
                       fab
@@ -21,9 +21,8 @@
                       left
                       elevation="2"
                       color="primary"
-                      v-on="on"
-                      v-bind="attrs"
-                      v-on:click="createItem()">
+                      v-bind="props"
+                      @click="createItem()">
                     <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
@@ -139,8 +138,8 @@ import axios from '@/axios';
 
 export default {
   setup() {
-    const { xsOnly, mdAndUp } = useDisplay()
-    return { xsOnly, mdAndUp }
+    const { xs, md } = useDisplay()
+    return { xs, md }
   },
   name: "LocationsPage",
   data: function () {

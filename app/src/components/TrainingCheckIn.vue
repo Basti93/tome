@@ -199,8 +199,8 @@
 </template>
 
 <script lang="ts">
-import TrainingContent from "./TrainingContent";
-import ProfileImage from "../components/ProfileImage";
+import TrainingContent from "./TrainingContent.vue";
+import ProfileImage from "./ProfileImage.vue";
 import User from "../models/User";
 import Training from "../models/Training";
 import GroupChip from "./GroupChip.vue";

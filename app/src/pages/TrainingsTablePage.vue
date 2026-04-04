@@ -191,7 +191,7 @@ import { useSnackbarStore } from '@/store/snackbar'
 import axios from '@/axios'
 import moment from 'moment'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
-import EditTrainingBase from "../components/EditTrainingBase";
+import EditTrainingBase from "../components/EditTrainingBase.vue";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 import Training from "../models/Training";

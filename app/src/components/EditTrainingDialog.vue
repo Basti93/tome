@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" max-width="1000px" :fullscreen="xsOnly" persistent>
+    <v-dialog v-model="dialog" max-width="1000px" :fullscreen="xs" persistent>
         <v-card>
             <v-card-title>
                 <span class="title">Training Bearbeiten/Anlegen</span>
@@ -213,6 +213,10 @@ import { useDisplay } from 'vuetify';
 import Training from "../models/Training";
 
 export default {
+    setup() {
+        const { xs } = useDisplay();
+        return { xs };
+    },
     name: "EditTrainingDialog",
     data: function () {
         return {
