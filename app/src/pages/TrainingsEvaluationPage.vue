@@ -7,7 +7,7 @@
             <v-toolbar-title>Abgehaltene Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn
-                v-if="$vuetify.breakpoint.mobile"
+                v-if="xs"
                 color="primary"
                 outlined
                 title="Übungsleiter-Abrechnung exportieren"
