@@ -404,6 +404,12 @@ export default {
     weekdaysChanged(weekdays) {
       this.editedTrainingSeries.weekdays = weekdays;
     },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
+    },
     dayArrayToString,
     formatDate,
     parseDate,

@@ -452,6 +452,15 @@ export default {
             })
       }
     },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getSimpleTrainersByIds(trainerIds) {
+      return useMasterDataStore().getSimpleTrainersByIds(trainerIds);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
+    },
     formatDate,
     parseDate,
   },

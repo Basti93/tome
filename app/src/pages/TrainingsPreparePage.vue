@@ -620,6 +620,12 @@ export default {
       }
     },
     fullName: item => item.firstName + ' ' + item.familyName,
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
+    },
   },
 }
 

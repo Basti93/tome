@@ -574,6 +574,9 @@ export default {
     trainerFullName(id) {
       return this.fullName(useMasterDataStore().getSimpleTrainerById(id))
     },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
   },
 }
 

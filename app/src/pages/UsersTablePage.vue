@@ -346,6 +346,9 @@ export default {
       this.filterGroupId = null;
       this.loadData();
     },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
+    },
     formatDate,
   },
   watch: {
