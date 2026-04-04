@@ -210,7 +210,7 @@ export default {
     },
   }),
   mounted() {
-    this.focus = moment().format('YYYY-MM-DD')
+    this.focus = moment().format('YYYY-MM-DD');
   },
   computed: {
     branches() {
@@ -239,31 +239,31 @@ export default {
   },
   methods: {
     getBranchByGroupId(groupId: number) {
-      return useMasterDataStore().getBranchByGroupId(groupId)
+      return useMasterDataStore().getBranchByGroupId(groupId);
     },
     getSimpleTrainerById(trainerId: number) {
-      return useMasterDataStore().getSimpleTrainerById(trainerId)
+      return useMasterDataStore().getSimpleTrainerById(trainerId);
     },
     getLocationNameById(locationId: number) {
-      return useMasterDataStore().getLocationNameById(locationId)
+      return useMasterDataStore().getLocationNameById(locationId);
     },
     async loadData() {
       this.trainings = [];
       this.events = [];
       this.categories = [];
       this.categories = this.branches;
-      this.loadTrainingEvents();
-      this.loadPlannedTrainingEvents();
+      await this.loadTrainingEvents();
+      await this.loadPlannedTrainingEvents();
       if (this.privateMode) {
-        this.loadBirthdayEvents();
+        await this.loadBirthdayEvents();
       }
     },
     async loadTrainingEvents() {
-      let url = '/training/'
+      let url = '/training/';
       if (this.privateMode) {
-        url += 'calendar'
+        url += 'calendar';
       } else {
-        url += 'simplecalendar'
+        url += 'simplecalendar';
       }
       const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
@@ -285,7 +285,7 @@ export default {
               trainingData.evaluated === 1 ? true : false,
               trainingData.automaticAttend === 1 ? true : false
           );
-          this.trainings.push(training)
+          this.trainings.push(training);
 
           this.events.push({
             name: branch.shortName,
@@ -300,12 +300,12 @@ export default {
             color: branch.colorHex,
             evaluated: training.evaluated,
             category: branch.name
-          })
+          });
         }
       }
     },
     async loadPlannedTrainingEvents() {
-      let url = '/training/simplecalendar/planned'
+      let url = '/training/simplecalendar/planned';
       const {data} = await axios.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
       for (let trainingData of data.data) {
         let branch = null;
@@ -325,7 +325,7 @@ export default {
               false,
               false,
           );
-          this.trainings.push(training)
+          this.trainings.push(training);
 
           this.events.push({
             name: branch.shortName,
@@ -337,7 +337,7 @@ export default {
             type: 'planed-training',
             color: branch.colorHex,
             category: branch.name
-          })
+          });
         }
       }
     },
@@ -349,46 +349,46 @@ export default {
           start: this.start.date.slice(0, 4) + "-" + moment(birthdayData.birthdate).format('MM-DD'),
           color: '#F57F17',
           type: 'birthday',
-        })
+        });
       }
     },
     showEvent({nativeEvent, event}) {
       const open = () => {
-        this.selectedEvent = event
-        this.selectedElement = nativeEvent.target
+        this.selectedEvent = event;
+        this.selectedElement = nativeEvent.target;
         setTimeout(() => {
-          this.selectedOpen = true
-        }, 10)
-      }
+          this.selectedOpen = true;
+        }, 10);
+      };
 
       if (this.selectedOpen) {
-        this.selectedOpen = false
-        setTimeout(open, 10)
+        this.selectedOpen = false;
+        setTimeout(open, 10);
       } else {
-        open()
+        open();
       }
 
-      nativeEvent.stopPropagation()
+      nativeEvent.stopPropagation();
     },
     viewDay({date}): void {
-      this.focus = date
-      this.type = 'day'
+      this.focus = date;
+      this.type = 'day';
     },
     getEventColor(event) {
-      return event.color
+      return event.color;
     },
     setToday(): void {
       this.focus = new Date();
     },
     prev(): void {
-      this.$refs.calendar.prev()
+      this.$refs.calendar.prev();
     },
     next(): void {
-      this.$refs.calendar.next()
+      this.$refs.calendar.next();
     },
     updateRange({start, end}) {
-      this.start = start
-      this.end = end
+      this.start = start;
+      this.end = end;
       this.loadData();
     },
     formatDayTime(timeObj) {
