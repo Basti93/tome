@@ -123,7 +123,10 @@ export default {
       try {
         this.loading = true
         const {data} = await axios.post('/auth/login', {email: this.email, password: this.password})
-        if (!data.token) {
+        if (data.status === 'error') {
+          useSnackbarStore().show(data.message, "error")
+          useAuthStore().logout()
+        } else if (!data.token) {
           useSnackbarStore().show("Falsches Passwort oder E-Mail!", "error")
           useAuthStore().logout()
         } else {
@@ -134,7 +137,9 @@ export default {
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {
-        if (error?.data?.message) {
+        if (error?.status === 429) {
+          useSnackbarStore().show("Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.", "error")
+        } else if (error?.data?.message) {
           useSnackbarStore().show(error.data.message, "error")
         } else {
           useSnackbarStore().show("Anmeldung fehlgeschlagen", "error")

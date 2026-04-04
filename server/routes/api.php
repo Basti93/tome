@@ -53,7 +53,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('auth')->group(function () {
         Route::post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp')->middleware('throttle:3,1');
-        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:5,1');
+        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:10,1'); // Increased to allow account lockout to trigger
 
         Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
         Route::post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
