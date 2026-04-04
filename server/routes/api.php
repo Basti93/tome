@@ -52,10 +52,10 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::prefix('auth')->group(function () {
-        Route::post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp');
-        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login');
+        Route::post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp')->middleware('throttle:3,1');
+        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:5,1');
 
-        Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail');
+        Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
         Route::post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
 
         Route::post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
