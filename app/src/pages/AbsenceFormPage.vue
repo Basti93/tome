@@ -34,12 +34,12 @@
                                   label="Sportler auswählen"
                               >
                                 <template v-slot:selection="{ item }">
-                                  {{ item.getFullName() }}
+                                  {{ item.firstName }} {{ item.familyName }}
                                 </template>
                                 <template v-slot:item="{ item, props }">
                                   <v-list-item v-bind="props">
                                     <template #title>
-                                      {{ item.getFullName() }}
+                                      {{ item.firstName }} {{ item.familyName }}
                                     </template>
                                   </v-list-item>
                                 </template>
