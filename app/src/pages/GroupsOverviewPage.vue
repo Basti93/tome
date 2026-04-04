@@ -79,16 +79,16 @@
 <script lang="ts">
 import Group from "../models/Group";
 import User from "../models/User";
-import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
+import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers";
 import TrainingSeries from "../models/TrainingSeries";
-import { useAuthStore } from '@/store/auth'
-import { useMasterDataStore } from '@/store/masterData'
+import { useAuthStore } from '@/store/auth';
+import { useMasterDataStore } from '@/store/masterData';
 
 export default {
   name: "GroupsOverviewPage",
   components: {},
   data() {
-    const masterData = useMasterDataStore()
+    const masterData = useMasterDataStore();
     return {
       loading: false,
       trainingSeries: masterData.trainingSeries as TrainingSeries[],
@@ -99,21 +99,21 @@ export default {
         {text: 'Sparte', value: 'branchId', sortable: false},
         {text: 'Mitglieder', value: 'userCount', sortable: false},
       ],
-    }
+    };
   },
   created() {
   },
   computed: {
     loggedInUser() {
-      return useAuthStore().user
+      return useAuthStore().user;
     },
   },
   methods: {
     getSimpleUsersByIds(userIds) {
-      return useMasterDataStore().getSimpleUsersByIds(userIds)
+      return useMasterDataStore().getSimpleUsersByIds(userIds);
     },
     getSimpleTrainersByGroupId(groupId) {
-      return useMasterDataStore().getSimpleTrainersByGroupId(groupId)
+      return useMasterDataStore().getSimpleTrainersByGroupId(groupId);
     },
     getTrainingSeriesByGroupId(groupId) {
       return useMasterDataStore().getTrainingSeriesByGroupId(groupId);

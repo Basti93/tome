@@ -181,9 +181,9 @@
 
 <script lang="ts">
 import Training from "@/models/Training";
-import { useMasterDataStore } from '@/store/masterData'
-import axios from '@/axios'
-import moment from 'moment'
+import { useMasterDataStore } from '@/store/masterData';
+import axios from '@/axios';
+import moment from 'moment';
 
 export default {
   name: "TrainingCalendar",
