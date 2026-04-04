@@ -94,8 +94,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}

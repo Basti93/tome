@@ -65,14 +65,13 @@
                           :items="users"
                           item-key="id"
                           :loading="loading"
-                          :sort-desc.sync="sortDesc"
                           :server-items-length="total"
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
-                          :sort-by.sync="sortBy"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
+                          v-model:sort-by="sortBy"
                           :search="searchText"
                       >
                         <template v-slot:top>
@@ -189,7 +188,6 @@ export default {
       page: 1,
       itemsPerPage: 10,
       sortBy: [],
-      sortDesc: [],
       searchText: '',
       headers: [
         {text: 'Vorname', value: 'firstName', sortable: true},
@@ -380,16 +378,9 @@ export default {
       },
       deep: true,
     },
-    sortDesc: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
     birthdateMenu(val) {
-      val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+      // Vuetify 3 does not have activePicker API - removed this functionality
+      // val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
     },
   },
 }

@@ -55,11 +55,10 @@
                           :headers="headers"
                           :items="trainings"
                           :loading="loading"
-                          :sort-desc.sync="sortDesc"
                           :server-items-length="totalItems"
-                          :items-per-page.sync="itemsPerPage"
-                          :page.sync="page"
-                          :sort-by.sync="sortBy"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
+                          v-model:sort-by="sortBy"
                       >
                         <template v-slot:[`item.date`]="{ item }">
                           {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
@@ -214,8 +213,7 @@ export default {
       totalItems: 0,
       page: 1,
       itemsPerPage: 10,
-      sortBy: null,
-      sortDesc: null,
+      sortBy: [],
       initializing: true,
       editDialogDateMenu: false,
       editDialogStartMenu: false,
@@ -314,14 +312,6 @@ export default {
       },
       deep: true,
     },
-    sortDesc: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
     editedItemDate() {
       this.editedItem.dateFormatted = this.formatDate(this.editedItem.date)
     },
@@ -336,9 +326,10 @@ export default {
       this.trainings = [];
       let url = '/training';
       // get by sort option
-      if (this.sortBy) {
-        const direction = this.sortDesc ? 'desc' : 'asc';
-        url += '/sort?direction=' + direction + '&sortBy=' + this.sortBy + '&page=' + this.page + '&per_page=' + this.itemsPerPage
+      if (this.sortBy && this.sortBy.length > 0) {
+        const sortColumn = this.sortBy[0];
+        const direction = sortColumn.order === 'desc' ? 'desc' : 'asc';
+        url += '/sort?direction=' + direction + '&sortBy=' + sortColumn.key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
       } else {
         url += '?page=' + this.page + '&per_page=' + this.itemsPerPage
       }
