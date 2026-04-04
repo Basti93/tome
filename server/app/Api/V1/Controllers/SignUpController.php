@@ -9,7 +9,7 @@ use App\User;
 use Config;
 use Mail;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Tymon\JWTAuth\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use DateTime;
 
 class SignUpController extends Controller

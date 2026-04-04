@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers;
 
 use Config;
 use App\User;
-use Tymon\JWTAuth\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Password;
 use App\Api\V1\Requests\ResetPasswordRequest;
