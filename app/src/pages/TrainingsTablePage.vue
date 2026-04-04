@@ -15,7 +15,7 @@
                       :items="filterBranches"
                       v-model="filterBranchId"
                       v-on:change="filterChanged()"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
                       flat
                       dense

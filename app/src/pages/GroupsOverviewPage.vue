@@ -125,7 +125,7 @@ export default {
     formatDate,
     parseDate,
   },
-})
+});
 
 </script>
 

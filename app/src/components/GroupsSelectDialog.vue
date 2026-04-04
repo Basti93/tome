@@ -17,7 +17,7 @@
           v-model="valid">
         <v-select
           v-bind:items="branches"
-          item-text="name"
+          item-title="name"
           item-value="id"
           v-model="selectedBranchId"
           clearable
@@ -28,7 +28,7 @@
           v-bind:disabled="!selectedBranchId"
           v-bind:items="groupItems"
           v-model="selectedGroupIds"
-          item-text="name"
+          item-title="name"
           item-value="id"
           multiple
           clearable

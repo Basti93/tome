@@ -401,7 +401,7 @@ export default {
       return trainer.firstName + " " + trainer.familyName;
     }
   },
-})
+});
 </script>
 
 <style scoped>

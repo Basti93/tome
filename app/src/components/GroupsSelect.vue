@@ -3,12 +3,12 @@
         <v-autocomplete
                 v-bind:items="groups"
                 v-model="selectedGroupIds"
-                :item-text="branchAndGroupName"
+                :item-title="branchAndGroupName"
                 item-value="id"
                 multiple
                 clearable
                 chips
-                deletable-chips
+                closable-chips
                 label="Gruppen"
                 prepend-icon="group"
         >

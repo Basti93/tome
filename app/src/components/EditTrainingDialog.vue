@@ -7,19 +7,21 @@
 
             <v-card-text>
                 <v-tabs
+                        v-model="activeTab"
                         icons-and-text
                 >
-                    <v-tabs-slider color="yellow"></v-tabs-slider>
-                    <v-tab href="#tab-1">
+                    <v-tab>
                         Allgemein
                         <v-icon>mdi-calendar-month</v-icon>
                     </v-tab>
 
-                    <v-tab href="#tab-2">
+                    <v-tab>
                         Teilnehmer
                         <v-icon>mdi-account-multiple</v-icon>
                     </v-tab>
-                    <v-tab-item :value="'tab-1'">
+                </v-tabs>
+                <v-window v-model="activeTab">
+                    <v-window-item>
                         <v-container grid-list-md>
                             <v-layout wrap>
                                 <v-flex xs12 md6>
@@ -82,7 +84,7 @@
                                 <v-flex xs12>
                                     <v-autocomplete
                                             :items="locations"
-                                            item-text="name"
+                                            item-title="name"
                                             item-value="id"
                                             v-model="editedItem.locationId"
                                             clearable
@@ -96,11 +98,11 @@
                                             v-model="editedItem.trainerIds"
                                             :items="filterTrainers"
                                             item-value="id"
-                                            :item-text="fullName"
+                                            :item-title="fullName"
                                             attach
                                             clearable
                                             chips
-                                            deletable-chips
+                                            closable-chips
                                             label="Trainer"
                                             prepend-icon="verified_user"
                                             multiple
@@ -112,13 +114,13 @@
                                             :items="filterGroups"
                                             v-model="editedItem.groupIds"
                                             item-value="id"
-                                            item-text="name"
+                                            item-title="name"
                                             label="Gruppen"
                                             prepend-icon="groups"
                                             multiple
                                             clearable
                                             chips
-                                            deletable-chips>
+                                            closable-chips>
                                     </v-autocomplete>
                                 </v-flex>
                                 <v-flex xs12 ml-2 style="text-align: left;">
@@ -142,8 +144,8 @@
                                 </v-flex>
                             </v-layout>
                         </v-container>
-                    </v-tab-item>
-                    <v-tab-item :value="'tab-2'">
+                    </v-window-item>
+                    <v-window-item>
                         <v-container grid-list-md>
                             <v-layout wrap>
                                 <v-flex xs12>
@@ -176,7 +178,7 @@
                                             :items="editDialogFilteredUsers"
                                             v-model="editedItem.participantIds"
                                             item-value="id"
-                                            :item-text="fullName"
+                                            :item-title="fullName"
                                             label="Teilnehmer"
                                             prepend-icon="how_to_reg"
                                             multiple
@@ -193,8 +195,8 @@
                                 </v-flex>
                             </v-layout>
                         </v-container>
-                    </v-tab-item>
-                </v-tabs>
+                    </v-window-item>
+                </v-window>
             </v-card-text>
 
             <v-card-actions>
@@ -215,6 +217,7 @@ import { useDisplay } from 'vuetify'
         name: "EditTrainingDialog",
         data: function () {
             return {
+                activeTab: 0,
                 training: null as Training,
                 dateMenuOpened: false,
                 startMenuOpened: false,

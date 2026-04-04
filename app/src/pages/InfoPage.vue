@@ -76,31 +76,24 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 
-export default {
-  name: "InfoPage",
-  data: function () {
-    return {
-      openedPanel: 0,
-      faqs: [],
-      filePaths: [],
-      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
-    }
-  },
-  created(): void {
-    this.fetchFaqs();
-  },
-  methods: {
-    async fetchFaqs() {
-      let res = await axios.get('/faq/');
-      this.faqs = res.data;
-      res = await axios.get('/faq/files');
-      this.filePaths = res.data;
+const openedPanel = ref(0)
+const faqs = ref([])
+const filePaths = ref([])
+const serverUrl = import.meta.env.VITE_IMAGE_FOLDER_URL
 
-    },
-  },
+async function fetchFaqs() {
+  const res = await axios.get('/faq/')
+  faqs.value = res.data
+  const filesRes = await axios.get('/faq/files')
+  filePaths.value = filesRes.data
+}
+
+onMounted(() => {
+  fetchFaqs()
 })
 </script>
 

@@ -62,7 +62,7 @@
                               <v-col md="6" v-if="editingLocation">
                                 <v-select
                                     :items="locations"
-                                    item-text="name"
+                                    item-title="name"
                                     item-value="id"
                                     v-model="editLocationId"
                                     clearable

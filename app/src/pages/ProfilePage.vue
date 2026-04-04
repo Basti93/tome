@@ -26,19 +26,21 @@
 
                     <v-card-text>
                       <v-tabs
+                          v-model="activeTab"
                           icons-and-text
                       >
-                        <v-tabs-slider color="yellow"></v-tabs-slider>
 
-                        <v-tab href="#tab-1">
+                        <v-tab>
                           Benutzereinstellungen
                           <v-icon>mdi-account-circle</v-icon>
                         </v-tab>
-                        <v-tab href="#tab-2" v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
+                        <v-tab v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
                           Trainereinstellungen
                           <v-icon>mdi-shield-check</v-icon>
                         </v-tab>
-                        <v-tab-item :value="'tab-1'">
+                      </v-tabs>
+                      <v-window v-model="activeTab">
+                        <v-window-item>
                           <v-card flat>
                             <v-card-text>
                               <v-container>
@@ -149,8 +151,8 @@
                               </v-container>
                             </v-card-text>
                           </v-card>
-                        </v-tab-item>
-                        <v-tab-item :value="'tab-2'">
+                        </v-window-item>
+                        <v-window-item>
                           <v-card flat>
                             <v-card-text>
                               <v-container>
@@ -166,15 +168,14 @@
                                         class="pt-6"
                                         :items="branches"
                                         v-model="editUser.trainerBranchIds"
-                                        :item-text="shortNameAndName"
+                                        :item-title="shortNameAndName"
                                         item-value="id"
                                         multiple
-                                        flat
                                         chips
-                                        deletable-chips
+                                        closable-chips
                                         dense
                                         label="Hauptsparte auswählen"
-                                        prepend-icon="bubble_chart"
+                                        prepend-icon="mdi-bubble-chart"
                                     >
                                     </v-select>
                                   </v-col>
@@ -182,8 +183,8 @@
                               </v-container>
                             </v-card-text>
                           </v-card>
-                        </v-tab-item>
-                      </v-tabs>
+                        </v-window-item>
+                      </v-window>
                     </v-card-text>
                   </v-form>
                 </v-card>
@@ -213,6 +214,7 @@ export default {
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
   data: function () {
     return {
+      activeTab: 0,
       valid: true,
       birthdateMenu: false,
       showPasswordDialog: false,

@@ -31,7 +31,7 @@
           </v-alert>
           <v-select
             :items="branches"
-            item-text="name"
+            item-title="name"
             item-value="id"
             v-model="branchId"
             v-on:change="branchSelect"
@@ -41,7 +41,7 @@
           <v-select
             :disabled="!branchId"
             :items="branchGroups"
-            item-text="name"
+            item-title="name"
             item-value="id"
             v-model="groupId"
             v-on:change="groupSelect"
@@ -51,7 +51,7 @@
           <v-autocomplete
             :items="filteredUsers"
             v-model="userId"
-            :item-text="fullName"
+            :item-title="fullName"
             item-value="id"
             clearable
 

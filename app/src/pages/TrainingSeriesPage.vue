@@ -15,7 +15,7 @@
                       :items="filterBranches"
                       v-model="filterBranchId"
                       v-on:change="filterChanged()"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
                       flat
                       dense
@@ -61,21 +61,22 @@
                 <v-divider></v-divider>
                 <v-card-text>
                   <v-tabs
+                      v-model="activeTab"
                       icons-and-text
                   >
-                    <v-tabs-slider color="yellow"></v-tabs-slider>
 
-                    <v-tab href="#tab-1">
+                    <v-tab>
                       Serie
                       <v-icon>mdi-calendar-month</v-icon>
                     </v-tab>
 
-                    <v-tab href="#tab-2">
+                    <v-tab>
                       Trainingsdaten
                       <v-icon>mdi-account-multiple</v-icon>
                     </v-tab>
-
-                    <v-tab-item :value="'tab-1'">
+                  </v-tabs>
+                  <v-window v-model="activeTab">
+                    <v-window-item>
                       <v-container grid-list-md>
                         <v-layout wrap>
                           <v-flex xs12>
@@ -118,8 +119,8 @@
                           </v-flex>
                         </v-layout>
                       </v-container>
-                    </v-tab-item>
-                    <v-tab-item :value="'tab-2'">
+                    </v-window-item>
+                    <v-window-item>
                       <v-container grid-list-md>
                         <v-row>
                           <v-col>
@@ -143,8 +144,8 @@
                           </v-col>
                         </v-row>
                       </v-container>
-                    </v-tab-item>
-                  </v-tabs>
+                    </v-window-item>
+                  </v-window>
                 </v-card-text>
               </v-card>
             </v-dialog>
@@ -243,6 +244,7 @@ export default {
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
     return {
+      activeTab: 0,
       showFilterDialog: false,
       showConfirmDialog: false,
       itemToDelete: null,

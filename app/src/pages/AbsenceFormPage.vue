@@ -27,7 +27,7 @@
                                   :items="users"
                                   v-model="userId"
                                   item-value="id"
-                                  :item-text="fullName"
+                                  :item-title="fullName"
                                   clearable
                                   required
                                   :rules="requiredRule"
@@ -347,7 +347,7 @@ export default {
     fullName: item => item.firstName + ' ' + item.familyName,
     formatDate,
   },
-})
+});
 
 </script>
 

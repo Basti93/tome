@@ -67,7 +67,7 @@
         <v-select
             :items="locations"
             item-value="id"
-            item-text="name"
+            item-title="name"
             v-model="selectedLocationId"
             clearable
             required
@@ -87,11 +87,11 @@
             v-model="selectedTrainerIds"
             :items="trainers"
             item-value="id"
-            :item-text="fullName"
+            :item-title="fullName"
             attach
             clearable
             chips
-            deletable-chips
+            closable-chips
             label="Trainer"
             prepend-icon="verified_user"
             multiple
@@ -103,13 +103,13 @@
             :items="groups"
             v-model="selectedGroupIds"
             item-value="id"
-            :item-text="branchAndGroupName"
+            :item-title="branchAndGroupName"
             label="Gruppen"
             prepend-icon="groups"
             multiple
             clearable
             chips
-            deletable-chips>
+            closable-chips>
           <template v-slot:prepend-item>
             <v-list-item
                 @click="toggleSelectAllGroups"

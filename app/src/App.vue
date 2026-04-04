@@ -59,9 +59,11 @@
             </v-btn>
           </template>
         </v-snackbar>
-        <v-slide-y-transition mode="out-in">
-          <router-view/>
-        </v-slide-y-transition>
+        <router-view v-slot="{ Component }">
+          <v-slide-y-transition mode="out-in">
+            <component :is="Component" />
+          </v-slide-y-transition>
+        </router-view>
       </v-container>
     </v-main>
     <v-footer>
@@ -91,12 +93,12 @@ const currentYear = moment().year()
 
 const currentUser = computed(() => {
   return authStore.user || cookieAuthStore.cookieUser || null
-})
+});
 
 const pushPermissionSnackbarVisible = computed(() => {
   return isFirebaseSupported() && pushPermissionSnackbar.value &&
     Notification.permission !== 'granted' && Notification.permission !== 'denied'
-})
+});
 
 function refreshPage() {
   window.location.reload()
@@ -144,7 +146,7 @@ onMounted(() => {
   if (currentUser.value && import.meta.env.PROD) {
     getFirebaseToken()
   }
-})
+});
 </script>
 
 <style>

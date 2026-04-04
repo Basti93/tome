@@ -66,7 +66,7 @@
                                 label="Sparte"
                                 :rules="[v => !!v || 'Wird benötigt']"
                                 v-model="editedItem.branchId"
-                                :item-text="buildFullBranchname"
+                                :item-title="buildFullBranchname"
                                 prepend-icon="bubble_chart"
                                 item-value="id"
                             >
@@ -76,7 +76,7 @@
                           <v-col cols="12" md="6">
                             <v-autocomplete
                                 :items="filteredUsers"
-                                :item-text="fullName"
+                                :item-title="fullName"
                                 item-value="id"
                                 prepend-icon="group"
                                 v-model="selectedUserIds"
