@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\ZoomController;
 use App\Location;
 use App\Training;
 use Illuminate\Console\Command;
@@ -101,11 +100,6 @@ class TrainingSeriesCommand extends Command
                 $training->trainers()->attach($series->trainer_ids);
                 $training->groups()->attach($series->group_ids);
 
-                //is online training
-                if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-                    $zoom = new ZoomController();
-                    $zoom->updateOrCreate($training);
-                }
         }
     }
 }

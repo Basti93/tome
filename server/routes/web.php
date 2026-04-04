@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -11,8 +13,6 @@
 |
 */
 
-Route::get('reset_password/{token}', ['as' => 'password.reset', function($token)
-{
+Route::get('reset_password/{token}', ['as' => 'password.reset', function ($token) {
     // implement your reset password route here!
 }]);
-

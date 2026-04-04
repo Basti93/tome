@@ -4,7 +4,6 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ZoomController;
 use App\Http\Resources\Training as TrainingResource;
 use App\Location;
 use App\Training;
@@ -204,12 +203,6 @@ class TrainingController extends Controller
             $this->updateParticipants($participantIds, $training);
         }
 
-        //is online training
-        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-            $zoom = new ZoomController();
-            $zoom->create($training);
-        }
-
         return response()->json([
             'status' => 'ok',
             'start' => $training->start->format('Y-m-d\TH:i:s.000\Z')
@@ -341,12 +334,6 @@ class TrainingController extends Controller
             $this->updateParticipants($participantIds, $training);
         }
 
-        //is online training
-        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-            $zoom = new ZoomController();
-            $zoom->updateOrCreate($training);
-        }
-
         return response()->json([
             'status' => 'ok'
         ], 201);
@@ -389,12 +376,6 @@ class TrainingController extends Controller
         $training = Training::findOrFail($id);
         if ($training) {
             $training->delete();
-
-            //is online training
-            if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-                $zoom = new ZoomController();
-                $zoom->delete($training);
-            }
 
             return response()->json([
                 'status' => 'ok',
