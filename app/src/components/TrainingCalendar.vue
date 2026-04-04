@@ -180,7 +180,6 @@
 </template>
 
 <script lang="ts">
-;
 import Training from "@/models/Training";
 import { useMasterDataStore } from '@/store/masterData'
 import axios from '@/axios'
@@ -210,7 +209,6 @@ export default {
       category: 'Sparten',
     },
   }),
-  },
   mounted() {
     this.focus = moment().format('YYYY-MM-DD')
   },

@@ -28,27 +28,23 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import { useAuthStore } from '@/store/auth'
 
-export default {
-  name: "CalendarPage",
-  components: {TrainingCalendar},
+const authStore = useAuthStore()
 
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    userLoggedIn() {
-      if (this.loggedInUser) {
-        return true;
-      }
-      return false;
-    },
-  },
-});
+const loggedInUser = computed(() => {
+  return authStore.user
+})
 
+const userLoggedIn = computed(() => {
+  if (loggedInUser.value) {
+    return true
+  }
+  return false
+})
 </script>
 
 <style scoped lang="scss">
