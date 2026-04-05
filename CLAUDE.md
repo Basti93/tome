@@ -91,6 +91,11 @@ phpunit                       # Run tests
 - **Auth**: JWT via `tymon/jwt-auth`; roles/permissions via `spatie/laravel-permission`
 - **Key models**: `Training` (core entity) → has many `TrainingParticipation`, `TrainingTrainer`; belongs to many `Group`, `Content`. Trainings use soft deletes (marked, not hard-deleted).
 - **Integrations**: Firebase Cloud Messaging (push notifications), Zoom (`laravel-zoom`), Excel export (`maatwebsite/excel`), image processing (`intervention/image`)
+- **Push Notifications**: Firebase FCM (100% free, unlimited). Users can manage preferences via `notification_preferences` JSON column (defaults all enabled).
+  - Service: `/server/app/Services/NotificationPreferenceService.php` — checks if notification type enabled before sending
+  - All 6 notification commands check preferences: `SendNotificationsToUsers`, `SendTrainingNotificationsToUsers`, `UpcomingTrainingNotifications`, `TrainerUpcomingTrainingNotifications`, `CancelTrainingNotification`, `AbsenceNotification`
+  - Types: `trainer_upcoming`, `trainer_cancel_alert`, `participant_upcoming`, `absence_alert`, `admin_messages`
+  - API: `GET|PUT /v1/user/me/notification-preferences` — manage user preferences
 
 ### Frontend (Vue 3.4, TypeScript)
 - **UI**: Vuetify 3.5 (Material Design)
@@ -125,3 +130,7 @@ MAIL_*              # Email config for password reset + monthly stats
 - Unregistered users (cookie auth) are allowed to check in/out — do not gate this on a registered account
 - Vue 3 with Composition API and TypeScript for type safety
 - Pinia stores for state management (replacing Vuex)
+- **Always use `httpClient` (from `@/http/api`) for API calls, not raw `fetch()`** — ensures JWT auth headers and proper base path
+- User preferences use JSON columns with defaults in application code (DB constraints prevent JSON defaults)
+- Profile settings: Each user tab in `ProfilePage.vue` is a new `v-window-item` with its own form component
+- Notification preferences: 5 types managed via `NotificationPreferencesForm.vue` component in ProfilePage tab 3
