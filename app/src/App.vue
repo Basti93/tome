@@ -123,19 +123,35 @@ function getFirebaseToken() {
       import('firebase/messaging').then(({ getToken }) => {
         getToken(messaging).then((token: string) => {
           if (token && currentUser.value) {
+            console.log('Firebase token obtained:', token)
+            console.log('Token will be sent to server for user:', currentUser.value.id)
             sendTokenToServer(currentUser.value.id, token)
             pushPermissionSnackbar.value = false
           } else {
+            console.warn('Failed to get token. Token:', !!token, 'User:', !!currentUser.value)
             pushPermissionSnackbar.value = true
           }
+        }).catch((error) => {
+          console.error('Error getting Firebase token:', error)
+          pushPermissionSnackbar.value = true
         })
       })
+    } else {
+      console.error('Firebase messaging not available')
     }
   })
 }
 
 onMounted(() => {
-  if (currentUser.value && import.meta.env.PROD) {
+  // Register service worker for push notifications
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js').catch((error) => {
+      console.error('Service Worker registration failed:', error)
+    })
+  }
+
+  // Get Firebase token for push notifications (both dev and prod)
+  if (currentUser.value) {
     getFirebaseToken()
   }
 });
