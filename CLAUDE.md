@@ -92,16 +92,16 @@ phpunit                       # Run tests
 - **Key models**: `Training` (core entity) → has many `TrainingParticipation`, `TrainingTrainer`; belongs to many `Group`, `Content`. Trainings use soft deletes (marked, not hard-deleted).
 - **Integrations**: Firebase Cloud Messaging (push notifications), Zoom (`laravel-zoom`), Excel export (`maatwebsite/excel`), image processing (`intervention/image`)
 
-### Frontend (Vue 2, TypeScript/JS mix)
-- **UI**: Vuetify 2 (Material Design)
-- **State**: Vuex with modules: `auth` (JWT token), `cookieAuth` (unregistered user session), `masterData` (branches, groups, locations, trainers, training series), `snackbar`
-- **Router**: `/src/router/index.js` — 18 routes with login/auth guards
-- **Models**: TypeScript classes in `/src/models/` (Training, User, Branch, Group, etc.)
-- **Axios**: `/src/axios/index.js` — interceptors auto-attach JWT and handle 401s by calling the refresh token endpoint
+### Frontend (Vue 3.4, TypeScript)
+- **UI**: Vuetify 3.5 (Material Design)
+- **State**: Pinia 2.1 stores for auth (JWT token), data management, and UI state
+- **Router**: `/src/router/index.ts` — 18 routes with login/auth guards
+- **HTTP**: Fetch API with JWT interceptors for API calls
+- **Build**: Vite 5.2 for fast dev server and production builds
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
 
 ### Authentication Flow
-Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger automatic token refresh via the Axios response interceptor.
+Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger automatic token refresh via HTTP interceptors.
 
 ## Setup
 
@@ -120,7 +120,8 @@ MAIL_*              # Email config for password reset + monthly stats
 ```
 
 ## Key Conventions
-- Frontend is a TypeScript/JavaScript hybrid — some files are `.ts`, others are `.js`; both exist intentionally
 - API responses are camelCase (handled automatically by `laravel-camelcase-json`)
 - Trainings use soft deletes — check for `markedForDeletion` flags rather than assuming hard deletion
 - Unregistered users (cookie auth) are allowed to check in/out — do not gate this on a registered account
+- Vue 3 with Composition API and TypeScript for type safety
+- Pinia stores for state management (replacing Vuex)
