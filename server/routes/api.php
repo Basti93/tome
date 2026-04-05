@@ -80,6 +80,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
             Route::post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
             Route::post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
+            Route::get('/me/notification-preferences', 'App\\Api\\V1\\Controllers\\UserController@getNotificationPreferences');
+            Route::put('/me/notification-preferences', 'App\\Api\\V1\\Controllers\\UserController@updateNotificationPreferences');
         });
 
         Route::prefix('group')->group(function () {

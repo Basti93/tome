@@ -18,11 +18,26 @@ export default class User {
     absenceStart: moment.Moment;
     absenceEnd: moment.Moment;
     absenceReason: string;
+    notificationPreferences: {
+        trainer_upcoming: boolean;
+        trainer_cancel_alert: boolean;
+        participant_upcoming: boolean;
+        absence_alert: boolean;
+        admin_messages: boolean;
+    };
 
     static from(jsonString) {
         try {
             const jsonObj = JSON.parse(jsonString);
-            return new User(jsonObj.id, jsonObj.email, jsonObj.firstName, jsonObj.familyName, jsonObj.birthdate, jsonObj.active === 1 ? true : false, jsonObj.groupIds, jsonObj.roleNames, jsonObj.trainerBranchIds, jsonObj.registered === 1 ? true : false, jsonObj.profileImageName, jsonObj.absenceStart, jsonObj.absenceEnd, jsonObj.absenceReason)
+            const user = new User(jsonObj.id, jsonObj.email, jsonObj.firstName, jsonObj.familyName, jsonObj.birthdate, jsonObj.active === 1 ? true : false, jsonObj.groupIds, jsonObj.roleNames, jsonObj.trainerBranchIds, jsonObj.registered === 1 ? true : false, jsonObj.profileImageName, jsonObj.absenceStart, jsonObj.absenceEnd, jsonObj.absenceReason)
+            user.notificationPreferences = jsonObj.notification_preferences || {
+                trainer_upcoming: true,
+                trainer_cancel_alert: true,
+                participant_upcoming: true,
+                absence_alert: true,
+                admin_messages: true,
+            }
+            return user
         } catch (_) {
             return null
         }
@@ -44,6 +59,13 @@ export default class User {
         this.absenceStart = absenceStart
         this.absenceEnd = absenceEnd
         this.absenceReason = absenceReason
+        this.notificationPreferences = {
+            trainer_upcoming: true,
+            trainer_cancel_alert: true,
+            participant_upcoming: true,
+            absence_alert: true,
+            admin_messages: true,
+        }
         if (this.roleNames) {
             this.isAdmin = this.roleNames.includes('admin')
             this.isTrainer = this.roleNames.includes('trainer')

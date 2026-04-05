@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use App\UserTrainingNotification;
 use LaravelFCM\Facades\FCM;
 use LaravelFCM\Message\PayloadDataBuilder;
+use App\Services\NotificationPreferenceService;
 
 class SendTrainingNotificationsToUsers extends Command
 {
@@ -52,9 +53,17 @@ class SendTrainingNotificationsToUsers extends Command
 
         $this->info('storeStatus '.$this->option('storeStatus'));
 
+        $notificationPreferenceService = new NotificationPreferenceService();
+        $preferenceKey = $this->getPreferenceKeyForType($notificationType);
+
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
         foreach ($users as $user) {
+            // Check if notification type is enabled for this user
+            if ($preferenceKey && !$notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
+                $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has disabled this notification type');
+                continue;
+            }
             //check if notifications is already sent
             $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has ' . count($user->notificationTokens) . ' tokens');
             if (!$storeStatus || !UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
@@ -98,5 +107,21 @@ class SendTrainingNotificationsToUsers extends Command
                 $utn->save();
             }
         }
+    }
+
+    /**
+     * Map notification type to preference key.
+     *
+     * @param int $type
+     * @return string|null
+     */
+    private function getPreferenceKeyForType($type)
+    {
+        $typeMap = [
+            1 => 'trainer_upcoming',
+            2 => 'trainer_cancel_alert',
+            3 => 'participant_upcoming',
+        ];
+        return $typeMap[$type] ?? null;
     }
 }

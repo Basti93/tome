@@ -46,6 +46,10 @@
                           Trainereinstellungen
                           <v-icon>mdi-shield-check</v-icon>
                         </v-tab>
+                        <v-tab>
+                          Benachrichtigungseinstellungen
+                          <v-icon>mdi-bell</v-icon>
+                        </v-tab>
                       </v-tabs>
                       <v-window v-model="activeTab">
                         <v-window-item>
@@ -191,6 +195,13 @@
                             </v-card-text>
                           </v-card>
                         </v-window-item>
+                        <v-window-item>
+                          <v-card flat>
+                            <v-card-text>
+                              <NotificationPreferencesForm />
+                            </v-card-text>
+                          </v-card>
+                        </v-window-item>
                       </v-window>
                     </v-card-text>
                   </v-form>
@@ -207,6 +218,7 @@
 <script>
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
 import UploadProfileImage from "@/components/UploadProfileImage.vue";
+import NotificationPreferencesForm from "@/components/NotificationPreferencesForm.vue";
 import {formatDate} from "../helpers/date-helpers"
 import GroupsSelect from "../components/GroupsSelect.vue";
 import { useAuthStore } from '@/store/auth'
@@ -221,7 +233,7 @@ export default {
     return { moment };
   },
   name: "ProfilePage",
-  components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
+  components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage, NotificationPreferencesForm},
   data: function () {
     return {
       activeTab: 0,

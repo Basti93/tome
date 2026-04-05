@@ -12,6 +12,8 @@ use DateTime;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Services\NotificationPreferenceService;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -310,6 +312,42 @@ class UserController extends Controller
         } else {
             return response()->json(error);
         }
+    }
+
+    /**
+     * Get notification preferences for the authenticated user
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNotificationPreferences()
+    {
+        $user = Auth::guard('api')->user();
+        $service = new NotificationPreferenceService();
+
+        return response()->json([
+            'notification_preferences' => $service->getPreferences($user)
+        ], 200);
+    }
+
+    /**
+     * Update notification preferences for the authenticated user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateNotificationPreferences(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+        $service = new NotificationPreferenceService();
+
+        $preferences = $request->input('notification_preferences', []);
+
+        $service->updatePreferences($user, $preferences);
+
+        return response()->json([
+            'status' => 'ok',
+            'notification_preferences' => $user->notification_preferences
+        ], 200);
     }
 
 }

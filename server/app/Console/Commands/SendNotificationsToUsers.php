@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use App\UserTrainingNotification;
 use LaravelFCM\Facades\FCM;
 use LaravelFCM\Message\PayloadDataBuilder;
+use App\Services\NotificationPreferenceService;
 
 class SendNotificationsToUsers extends Command
 {
@@ -16,7 +17,7 @@ class SendNotificationsToUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'notification:sendToUsers {userIds} {title} {data} {--url}';
+    protected $signature = 'notification:sendToUsers {userIds} {title} {data} {--url} {--type=admin_messages}';
 
     /**
      * The console command description.
@@ -46,10 +47,17 @@ class SendNotificationsToUsers extends Command
         $title = $this->argument('title');
         $data = $this->argument('data');
         $url = $this->option('url');
+        $type = $this->option('type') ?: 'admin_messages';
 
+        $notificationPreferenceService = new NotificationPreferenceService();
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
         foreach ($users as $user) {
+            // Check if notification type is enabled for this user
+            if (!$notificationPreferenceService->isNotificationEnabled($user, $type)) {
+                $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has disabled ' . $type . ' notifications');
+                continue;
+            }
             //check if notifications is already sent
             $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has ' . count($user->notificationTokens) . ' tokens');
             foreach ($user->notificationTokens as $token) {
