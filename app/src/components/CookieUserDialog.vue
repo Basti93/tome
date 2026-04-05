@@ -9,12 +9,12 @@
     <v-card>
       <v-toolbar flat>
         <v-btn icon @click="show=false">
-          <v-icon>close</v-icon>
+          <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>Wer bist du?</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" @click="done"><v-icon left>check</v-icon>Auswählen</v-btn>
+          <v-btn text color="primary" @click="done"><v-icon left>mdi-check</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
         <v-divider></v-divider>
@@ -30,8 +30,8 @@
             Wähle deinen Namen aus um deine Trainings zu sehen.
           </v-alert>
           <v-select
-            :items="$store.state.masterData.branches"
-            item-text="name"
+            :items="branches"
+            item-title="name"
             item-value="id"
             v-model="branchId"
             v-on:change="branchSelect"
@@ -41,7 +41,7 @@
           <v-select
             :disabled="!branchId"
             :items="branchGroups"
-            item-text="name"
+            item-title="name"
             item-value="id"
             v-model="groupId"
             v-on:change="groupSelect"
@@ -51,7 +51,7 @@
           <v-autocomplete
             :items="filteredUsers"
             v-model="userId"
-            :item-text="fullName"
+            :item-title="fullName"
             item-value="id"
             clearable
 
@@ -63,7 +63,8 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
+  import { useMasterDataStore } from '@/store/masterData'
+  import { useCookieAuthStore } from '@/store/cookieAuth'
 
   export default {
     name: "CookieUserDialog",
@@ -71,7 +72,6 @@
     data() {
       return {
         branchGroups: [],
-        users: this.$store.state.masterData.simpleUsers,
         filteredUsers: [],
         userId: null,
         branchId: null,
@@ -83,7 +83,12 @@
       this.filteredUsers = this.users
     },
     computed: {
-      ...mapGetters({cookieUser: 'cookieUser'}),
+      users() {
+        return useMasterDataStore().simpleUsers
+      },
+      branches() {
+        return useMasterDataStore().branches
+      },
       show: {
         get() {
           return this.visible;
@@ -103,7 +108,8 @@
       branchSelect: function (id) {
         this.reset();
         this.branchGroups = [];
-        this.$store.state.masterData.groups.forEach(function (item) {
+        const masterData = useMasterDataStore()
+        masterData.groups.forEach(function (item) {
           if (id === item.branchId) {
             this.branchGroups.push(item);
           }
@@ -117,7 +123,7 @@
       fullName: item => item.firstName + ' ' + item.familyName,
       done: function () {
         if (this.userId) {
-          this.$store.dispatch('selectCookieUser', {cookieUser: JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0])})
+          useCookieAuthStore().selectCookieUser(JSON.stringify(this.filteredUsers.filter(u => u.id === this.userId)[0]))
           this.$emit('close')
         }
       },

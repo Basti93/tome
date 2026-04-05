@@ -10,7 +10,7 @@
                 title="Liste nach Sparte und Gruppe filtern"
                 color="primary"
                 v-on:click="showFilterDialog = true">
-              <v-icon left>filter_list</v-icon>
+              <v-icon left>mdi-filter-variant</v-icon>
               Filtern
             </v-btn>
 
@@ -33,7 +33,7 @@
                         small
                         outlined
                         class="pl-2 pr-2 ml-2 mr-2">
-                      <v-icon left color="primary">group</v-icon>
+                      <v-icon left color="primary">mdi-account</v-icon>
                       {{ item.getWithBranchName() }}
                     </v-chip>
                   </v-col>
@@ -49,7 +49,7 @@
                   elevation="2"
                   color="primary"
                   @click="editItem()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </template>
           </v-toolbar>
@@ -65,14 +65,13 @@
                           :items="users"
                           item-key="id"
                           :loading="loading"
-                          :sort-desc.sync="sortDesc"
                           :server-items-length="total"
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
-                          :sort-by.sync="sortBy"
+                          v-model:items-per-page="itemsPerPage"
+                          v-model:page="page"
+                          v-model:sort-by="sortBy"
                           :search="searchText"
                       >
                         <template v-slot:top>
@@ -108,22 +107,24 @@
                               class="mr-2"
                               v-if="canEditUser(item)"
                               @click="editItem(item)"
-                              color="success">edit
+                              color="success">mdi-pencil
                           </v-icon>
                           <v-icon
                               v-if="canDeleteUser(item)"
                               @click="confirmAndDelete(item)"
-                              color="error">delete
+                              color="error">mdi-trash-can
                           </v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
-                            <v-layout row justify-center>
-                              <v-btn color="error" :disabled="loading" @click="reset()">
-                                <v-icon left>cached</v-icon>
-                                Keine Daten gefunden
-                              </v-btn>
-                            </v-layout>
+                            <v-row justify="center">
+                              <v-col cols="auto">
+                                <v-btn color="error" :disabled="loading" @click="reset()">
+                                  <v-icon left>mdi-refresh</v-icon>
+                                  Keine Daten gefunden
+                                </v-btn>
+                              </v-col>
+                            </v-row>
                           </v-container>
                         </template>
                       </v-data-table>
@@ -159,15 +160,22 @@
 </template>
 
 <script lang="ts">
-import {mapGetters} from 'vuex'
-import GroupsSelectDialog from "../components/GroupsSelectDialog";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
+import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import User from "../models/User";
-import EditUserDialog from "../components/EditUserDialog";
+import EditUserDialog from "../components/EditUserDialog.vue";
 import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
   data: function () {
@@ -185,7 +193,6 @@ export default {
       page: 1,
       itemsPerPage: 10,
       sortBy: [],
-      sortDesc: [],
       searchText: '',
       headers: [
         {text: 'Vorname', value: 'firstName', sortable: true},
@@ -221,31 +228,25 @@ export default {
     }
   },
   created() {
-    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.trainerBranchIds[0];
-      this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+    const masterData = useMasterDataStore();
+    const loggedInUser = useAuthStore().user;
+    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = loggedInUser.trainerBranchIds[0];
+      this.filterGroupIds = masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
     }
     this.loadData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getGroupById: 'getGroupById',
-      getGroupsByIds: 'getGroupsByIds',
-      getGroupsByBranchId: 'getGroupsByBranchId',
-      getBranchById: 'getBranchById',
-      getBranchByGroupId: 'getBranchByGroupId'
-    }),
+    loggedInUser() { return useAuthStore().user },
     trainerBranchIds() {
-      return this.loggedInUser.trainerBranchIds
+      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
     },
     filterGroups(): Array<Group> {
+      const masterData = useMasterDataStore();
       if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        let groups = this.getGroupsByIds(this.filterGroupIds);
-        return groups
+        return masterData.getGroupsByIds(this.filterGroupIds);
       } else if (this.filterBranchId) {
-        let groups = this.getGroupsByBranchId(this.filterBranchId);
-        return groups
+        return masterData.getGroupsByBranchId(this.filterBranchId);
       }
       return [];
     },
@@ -258,7 +259,7 @@ export default {
       this.filterGroupIds = groupIds;
       this.filterBranchId = branchId;
       if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
-        this.filterGroupIds = this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+        this.filterGroupIds = useMasterDataStore().getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
       this.loadData();
     },
@@ -282,7 +283,7 @@ export default {
       }
 
       try {
-        const request = await this.$http.get(url);
+        const request = await httpClient.get(url);
         this.dataLoaded(request)
       } catch (error) {
         console.error(error)
@@ -300,15 +301,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? self.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? self.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
             userObj.absenceReason
         ))
       }
@@ -335,17 +336,20 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false;
-      let response = await this.$http.delete('/user/' + this.itemToDelete.id);
+      let response = await httpClient.delete('/user/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
-        this.$emit("showSnackbar", "Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(this.itemToDelete), 1)
       } else {
-        this.$emit("showSnackbar", "Benutzer konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Benutzer konnte nicht gelöscht werden", "error")
       }
     },
     reset() {
       this.filterGroupId = null;
       this.loadData();
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
     },
     formatDate,
   },
@@ -382,16 +386,9 @@ export default {
       },
       deep: true,
     },
-    sortDesc: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
     birthdateMenu(val) {
-      val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
+      // Vuetify 3 does not have activePicker API - removed this functionality
+      // val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
     },
   },
 }

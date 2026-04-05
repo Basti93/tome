@@ -8,7 +8,7 @@
         <v-btn
             icon
             @click="show=false">
-          <v-icon>close</v-icon>
+          <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>Übungsleiter-Abrechnung</v-toolbar-title>
       </v-toolbar>
@@ -67,7 +67,7 @@
                     color="primary"
                     :disabled="!valid"
                     @click="createExcelReport()">
-                  <v-icon left>update</v-icon>
+                  <v-icon left>mdi-refresh</v-icon>
                   Erstellen
                 </v-btn>
                 <v-btn
@@ -77,7 +77,7 @@
                     download
                     color="primary"
                 >
-                  <v-icon left>save_alt</v-icon>
+                  <v-icon left>mdi-download</v-icon>
                   Download Excel
                 </v-btn>
               </v-col>
@@ -90,11 +90,12 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import {mapGetters} from 'vuex'
 import {formatDate, parseDate} from "../helpers/date-helpers"
+import { useAuthStore } from '@/store/auth'
+import httpClient from '@/http/api'
+import moment from 'moment'
 
-export default Vue.extend({
+export default {
   name: "TrainingAccountingExportDialog",
   props: {
     'visible': Boolean,
@@ -108,11 +109,13 @@ export default Vue.extend({
       toDateMenuOpened: false,
       url: null,
       creatingExcelReport: false,
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     fromDateFormatted(): String {
       return this.formatDate(this.dateFrom)
     },
@@ -138,12 +141,13 @@ export default Vue.extend({
     async createExcelReport(): void {
       this.creatingExcelReport = true;
       try {
-        const {data} = await this.$http.post('/trainingevaluation/exportaccountingtimes',
+        const {data} = await httpClient.post('/trainingevaluation/exportaccountingtimes',
             {
               userId: this.loggedInUser.id,
-              from: this.moment(this.dateFrom, 'YYYY-MM-DD').format(),
-              to: this.moment(this.dateTo, 'YYYY-MM-DD').format(),
-            });
+              from: moment(this.dateFrom, 'YYYY-MM-DD').format(),
+              to: moment(this.dateTo, 'YYYY-MM-DD').format(),
+            }
+        )
         if (data.status == 'ok') {
           this.url = this.serverUrl + "/" + data.fileName;
         }
@@ -152,12 +156,11 @@ export default Vue.extend({
       } finally {
         this.creatingExcelReport = false;
       }
-
     },
     formatDate,
     parseDate,
   }
-});
+}
 </script>
 
 <style scoped>

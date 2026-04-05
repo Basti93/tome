@@ -4,37 +4,48 @@
       <v-col
           cols="12"
           align="center">
-        <v-avatar
-            v-if="imageUrl"
-            class="profile"
-            color="grey"
-            size="164"
-            tile
-        >
-          <v-img :src="imageUrl"></v-img>
-        </v-avatar>
-        <v-avatar
-            v-else
-            cols="12"
-            size="128">
-          <v-icon size="128">account_circle</v-icon>
-        </v-avatar>
+        <div class="avatar-container">
+          <v-avatar
+              v-if="imageUrl"
+              class="profile"
+              color="grey"
+              size="164"
+              tile
+          >
+            <v-img :src="imageUrl"></v-img>
+          </v-avatar>
+          <v-avatar
+              v-else
+              cols="12"
+              size="128">
+            <v-icon size="128">mdi-account-circle</v-icon>
+          </v-avatar>
+          <v-badge
+              v-if="hasChanges"
+              color="amber"
+              icon="mdi-pencil"
+              overlap
+              bordered
+          ></v-badge>
+        </div>
       </v-col>
       <v-col
           cols="12"
-          v-if="imageUrl"
           align="center"
       >
         <v-btn
+            v-if="imageUrl"
             @click="removeImage"
             color="error"
-            title="Profilbild löschen">
-          <v-icon left>delete</v-icon>
+            title="Profilbild löschen"
+            size="small">
+          <v-icon left>mdi-trash-can</v-icon>
           Löschen
         </v-btn>
       </v-col>
 
       <v-file-input
+          ref="fileInput"
           class="mt-5"
           :rules="imageRule"
           accept="image/png, image/jpeg, image/bmp"
@@ -42,6 +53,7 @@
           show-size
           v-model="files"
           @change="imageChanged"
+          @update:modelValue="imageChanged"
           label="Lade ein Profilbild hoch"
       >
       </v-file-input>
@@ -50,10 +62,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
 
-export default Vue.extend({
+export default {
   name: "UploadProfileImage",
   props: {
     imagePath: String,
@@ -64,9 +75,9 @@ export default Vue.extend({
       uploading: false,
       changeImage: false,
       files: [],
-      serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
       imageRule: [
-        value => !value.size || value.size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
+        value => !value || !Array.isArray(value) || value.length === 0 || value[0].size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
       ],
     }
   },
@@ -74,14 +85,34 @@ export default Vue.extend({
     this.editImagePath = this.imagePath;
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    },
     imageUrl() {
-      if ((this.files && this.files.size) || this.files.length > 0) {
-        return URL.createObjectURL(this.files);
+      let file = null;
+
+      // Handle both single File object and array of Files
+      if (this.files) {
+        if (Array.isArray(this.files)) {
+          file = this.files.length > 0 ? this.files[0] : null;
+        } else if (this.files instanceof File) {
+          file = this.files;
+        }
+      }
+
+      if (file) {
+        return URL.createObjectURL(file);
       } else if (this.editImagePath && this.serverUrl) {
         return this.serverUrl + "/" + this.editImagePath;
       }
       return null;
+    },
+    hasChanges() {
+      if (!this.files) return false;
+      if (Array.isArray(this.files)) {
+        return this.files.length > 0;
+      }
+      return this.files instanceof File;
     }
   },
   methods: {
@@ -91,8 +122,19 @@ export default Vue.extend({
       this.$emit('imageRemoved')
     },
     imageChanged() {
-      if (this.files && this.files.size) {
-        this.$emit('imageChanged', this.files)
+      let file = null;
+
+      // Handle both single File object and array of Files
+      if (this.files) {
+        if (Array.isArray(this.files)) {
+          file = this.files.length > 0 ? this.files[0] : null;
+        } else if (this.files instanceof File) {
+          file = this.files;
+        }
+      }
+
+      if (file) {
+        this.$emit('imageChanged', file)
       } else {
         this.$emit('imageChanged', null)
       }
@@ -109,11 +151,14 @@ export default Vue.extend({
         this.resetLocalFile();
         this.editImagePath = newVal;
       },
-    },
+    }
   }
-});
+}
 </script>
 
 <style scoped>
-
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
 </style>

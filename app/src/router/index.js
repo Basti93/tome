@@ -1,10 +1,10 @@
-import Vue from 'vue'
-import store from '@/store/index'
-import Router from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
 import TrainingsCheckIn from '@/pages/TrainingsCheckInPage'
 import TrainingsPrepare from '@/pages/TrainingsPreparePage'
 import TrainingsEvaluation from '@/pages/TrainingsEvaluationPage'
 import Signup from "@/pages/SignupPage";
+import VerifyEmail from "@/pages/VerifyEmailPage";
 import Login from "@/pages/LoginPage";
 import Logout from "@/components/LogoutComponent";
 import Users from "@/pages/UsersTablePage";
@@ -19,13 +19,10 @@ import Locations from "@/pages/LocationsPage";
 import Branches from "@/pages/BranchesTablePage";
 import GroupsOverview from "@/pages/GroupsOverviewPage";
 import AbsenceForm from "@/pages/AbsenceFormPage";
+import ResetPassword from "@/pages/ResetPasswordPage";
 
-
-Vue.use(Router)
-
-const router = new Router({
-  mode: 'hash',
-  base: '/',
+const router = createRouter({
+  history: createWebHashHistory(),
   routes: [
     {
       path: '/',
@@ -129,6 +126,16 @@ const router = new Router({
       component: Signup
     },
     {
+      path: '/verify-email',
+      name: 'VerifyEmail',
+      component: VerifyEmail
+    },
+    {
+      path: '/reset-password',
+      name: 'ResetPassword',
+      component: ResetPassword
+    },
+    {
       path: '/info',
       name: 'Informationen',
       component: Infos
@@ -158,17 +165,15 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.state.auth.user) {
-      next({
-        path: '/login',
-        params: {nextUrl: to.fullPath}
-      })
+    const authStore = useAuthStore()
+    if (!authStore.user) {
+      next({ path: '/login', query: { nextUrl: to.fullPath } })
     } else {
       if (to.matched.some(record => record.meta.forTrainers)) {
-        if (store.state.auth.user.isTrainer || store.state.auth.user.isAdmin) {
+        if (authStore.user.isTrainer || authStore.user.isAdmin) {
           next()
         } else {
-          next({name: '/'})
+          next({ path: '/' })
         }
       } else {
         next()

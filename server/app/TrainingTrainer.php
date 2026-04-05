@@ -9,9 +9,9 @@ class TrainingTrainer extends Pivot
     protected $appends = ['accountingHours', 'accountingMinutes'];
     protected $hidden = ['id'];
     public $timestamps = false;
-    protected $dates = [
-        'accounting_time_start',
-        'accounting_time_end',
+    protected $casts = [
+        'accounting_time_start' => 'datetime',
+        'accounting_time_end' => 'datetime',
     ];
 
     public function user()

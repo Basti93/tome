@@ -8,13 +8,13 @@
                 <v-btn
                         icon
                         @click="show=false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                 </v-btn>
                 <v-toolbar-title>Passwort ändern</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
                     <v-btn text color="primary" @click="save()" :disabled="!valid">
-                        <v-icon right>done</v-icon>
+                        <v-icon right>mdi-check</v-icon>
                         Speichern
                     </v-btn>
                 </v-toolbar-items>
@@ -24,25 +24,27 @@
                 <v-form
                         ref="form"
                         v-model="valid">
-                    <v-flex xs12>
-                        <v-text-field
-                                type="password"
-                                :rules="passwordRules"
-                                v-model="password"
-                                prepend-icon="security"
-                                label="Passwort"
-                                required
-                        ></v-text-field>
+                    <v-row>
+                        <v-col cols="12">
+                            <v-text-field
+                                    type="password"
+                                    :rules="passwordRules"
+                                    v-model="password"
+                                    prepend-icon="security"
+                                    label="Passwort"
+                                    required
+                            ></v-text-field>
 
-                        <v-text-field
-                                type="password"
-                                :rules="[ confirmPassword ]"
-                                v-model="passwordConfirm"
-                                prepend-icon="security"
-                                label="Passwort bestätigen"
-                                required
-                        ></v-text-field>
-                    </v-flex>
+                            <v-text-field
+                                    type="password"
+                                    :rules="[ confirmPassword ]"
+                                    v-model="passwordConfirm"
+                                    prepend-icon="security"
+                                    label="Passwort bestätigen"
+                                    required
+                            ></v-text-field>
+                        </v-col>
+                    </v-row>
                 </v-form>
             </v-card-text>
         </v-card>
@@ -50,61 +52,67 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-    import {mapGetters} from 'vuex'
+import httpClient from '@/http/api'
+import { useSnackbarStore } from '@/store/snackbar'
 
-    export default Vue.extend({
-        name: "ChangePasswordDialog",
-        props: {
-            'visible': Boolean,
-        },
-        data: function () {
-            return {
-                valid: true,
-                password: null,
-                passwordConfirm: null,
-                passwordRules: [
-                    v => !!v || 'Wird benötigt',
-                ],
+export default {
+    name: "ChangePasswordDialog",
+    props: {
+        'visible': Boolean,
+    },
+    data: function () {
+        return {
+            valid: true,
+            password: null,
+            passwordConfirm: null,
+            passwordRules: [
+                v => !!v || 'Wird benötigt',
+            ],
+        }
+    },
+    computed: {
+        show: {
+            get() {
+                return this.visible;
+            },
+            set(value) {
+                if (!value) {
+                    this.reset();
+                    this.$emit('close')
+                }
             }
         },
-        computed: {
-            ...mapGetters({loggedInUser: 'loggedInUser'}),
-            show: {
-                get() {
-                    return this.visible;
-                },
-                set(value) {
-                    if (!value) {
-                        this.reset();
-                        this.$emit('close')
-                    }
-                }
-            },
+    },
+    methods: {
+        reset() {
+            this.password = null;
+            this.passwordConfirm = null;
         },
-        methods: {
-            reset() {
-                this.password = null;
-                this.passwordConfirm = null;
-            },
-            confirmPassword(password) {
-                if (!password) {
-                    return "Bitte passwort bestätigen"
-                }
-                if (this.password === password) {
-                    return true;
-                } else {
-                    return "Passwörter müssen identisch sein!"
-                }
-            },
-            async save() {
-                const response = await this.$http.post('/user/me/changepassword', {'password': this.password});
+        confirmPassword(password) {
+            if (!password) {
+                return "Bitte passwort bestätigen"
+            }
+            if (this.password === password) {
+                return true;
+            } else {
+                return "Passwörter müssen identisch sein!"
+            }
+        },
+        async save() {
+            try {
+                const response = await httpClient.post('/user/me/changepassword', {'password': this.password})
                 if (response.data.status === 'ok') {
+                    useSnackbarStore().show("Passwort geändert", "success")
                     this.show = false;
+                } else {
+                    useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
                 }
+            } catch (error) {
+                useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
             }
         }
-    });
+    }
+}
 </script>
 
 <style scoped>

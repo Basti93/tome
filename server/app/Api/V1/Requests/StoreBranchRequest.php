@@ -3,7 +3,7 @@
 namespace App\Api\V1\Requests;
 
 use Config;
-use Dingo\Api\Http\FormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBranchRequest extends FormRequest
 {

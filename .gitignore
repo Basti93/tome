@@ -17,6 +17,7 @@
 /server/node_modules
 /server/public/hot
 /server/public/storage
+/server/public_app
 /server/storage/*.key
 /server/vendor
 /server/.idea
@@ -27,6 +28,10 @@
 /server/.env
 /server/composer.lock
 /server/config/database_prod.php
+/server/.phpunit.result.cache
+/server/.phpunit.cache
+/server/.phpunit/
+/server/phpunit*.cache
 
 
 

@@ -24,24 +24,15 @@
                                 md="4"
                             >
                               <v-autocomplete
-                                  :items="users"
+                                  :items="formattedUsers"
                                   v-model="userId"
                                   item-value="id"
-                                  :item-text="fullName"
+                                  item-title="displayName"
                                   clearable
                                   required
                                   :rules="requiredRule"
                                   label="Sportler auswählen"
-                              >
-
-                                <template v-slot:selection="data">
-                                  {{ data.item.getFullName() }}
-                                </template>
-                                <template v-slot:item="data">
-                                  {{ data.item.getFullName() }}
-                                </template>
-
-                              </v-autocomplete>
+                              ></v-autocomplete>
                             </v-col>
                             <v-col
                                 cols="12"
@@ -55,15 +46,14 @@
                                   offset-y
                                   min-width="auto"
                               >
-                                <template v-slot:activator="{ on, attrs }">
+                                <template v-slot:activator="{ props }">
                                   <v-text-field
                                       v-model="absenceStartFormatted"
                                       label="Beginn der Abwesenheit"
                                       required
                                       readonly
                                       :rules="requiredRule"
-                                      v-bind="attrs"
-                                      v-on="on"
+                                      v-bind="props"
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker
@@ -85,15 +75,14 @@
                                   offset-y
                                   min-width="auto"
                               >
-                                <template v-slot:activator="{ on, attrs }">
+                                <template v-slot:activator="{ props }">
                                   <v-text-field
                                       v-model="absenceEndFormatted"
                                       label="Ende der Abwesenheit"
                                       readonly
                                       :rules="requiredRule"
                                       required
-                                      v-bind="attrs"
-                                      v-on="on"
+                                      v-bind="props"
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker
@@ -144,8 +133,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:itemsPerPage="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.firstName`]="{ item }">
                           {{ item.firstName }}
@@ -163,14 +152,14 @@
                           {{ item.absenceReason }}
                         </template>
                         <template v-slot:[`item.action`]="{ item }">
-                          <v-icon v-on:click="confirmAndDelete(item.id)" color="error">delete</v-icon>
+                          <v-icon v-on:click="confirmAndDelete(item.id)" color="error">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loadingUsers" v-on:click="loadAllAbsenceUsers()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -196,152 +185,168 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { formatDate } from "@/helpers/date-helpers"
+import User from "../models/User"
+import ConfirmDialog from "../components/ConfirmDialog.vue"
+import { useAuthStore } from '@/store/auth'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
 
-import Vue from "vue";
-import {mapGetters} from "vuex";
-import {formatDate} from "@/helpers/date-helpers"
-import User from "../models/User";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
+const authStore = useAuthStore()
+const cookieAuthStore = useCookieAuthStore()
+const masterDataStore = useMasterDataStore()
+const snackbarStore = useSnackbarStore()
 
-export default Vue.extend({
-  name: "AbsenceFormPage",
-  components: {ConfirmDialog},
-  data: () => ({
-    absenceUsers: [],
-    total: null,
-    rowsPerPageItems: [5, 10, 20, 50],
-    page: 1,
-    itemsPerPage: 10,
-    headers: [
-      {text: 'Vorname', value: 'firstName', sortable: false},
-      {text: 'Nachname', value: 'familyName', sortable: false},
-      {text: 'Von', value: 'absenceStart', sortable: false},
-      {text: 'Bis', value: 'absenceEnd', sortable: false},
-      {text: 'Grund', value: 'absenceReason', sortable: false},
-      {text: 'Löschen', value: 'action', sortable: false},
-    ],
-    loadingUsers: false,
-    absenceStart: new Date().toISOString().substr(0, 10),
-    absenceEnd: null,
-    absenceReason: null,
-    menuStart: false,
-    menuEnd: false,
-    valid: true,
-    userId: null,
-    users: [],
-    requiredRule: [
-      v => !!v || 'Bitte ausfüllen'
-    ],
-    showConfirmDialog: false,
-    userIdToDelete: null,
-  }),
-  created() {
-    this.users = this.getAllSimpleUsersWithGroup();
-    if (this.currentUserId) {
-      this.userId = this.currentUserId;
-    }
-    this.loadAllAbsenceUsers();
-  },
-  computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
-    ...mapGetters('masterData', {
-      getAllSimpleUsersWithGroup: 'getAllSimpleUsersWithGroup',
-    }),
-    absenceStartFormatted(): String {
-      return this.formatDate(this.absenceStart)
-    },
-    absenceEndFormatted(): String {
-      return this.formatDate(this.absenceEnd)
-    },
-    currentUser() {
-      if (this.loggedInUser) {
-        return this.loggedInUser;
-      } else if (this.cookieUser) {
-        return this.cookieUser;
-      }
-      return null;
-    },
-    currentUserId() {
-      if (this.currentUser) {
-        return this.currentUser.id;
-      }
-      return null;
-    },
-  },
-  methods: {
-    async loadAllAbsenceUsers() {
-      this.loadingUsers = true;
-      this.absenceUsers = [];
-      const {data} = await this.$http.get('user/allAbsence');
-      if (data.data) {
-        for (const userObj of data.data) {
-            this.absenceUsers.push(new User(
-                userObj.id,
-                userObj.email,
-                userObj.firstName,
-                userObj.familyName,
-                userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
-                userObj.active === 1 ? true : false,
-                userObj.groupIds,
-                userObj.roleNames,
-                userObj.trainerBranchIds,
-                userObj.registered,
-                userObj.profileImageName,
-                userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-                userObj.absenceEnd ? this.moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
-                userObj.absenceReason
-            ))
-        }
-        this.page = data.currentPage;
-        this.total = data.total;
-      }
-      this.loadingUsers = false;
-    },
-    async sendAbsence() {
-      if (this.$refs.form.validate()) {
-        let postData = {
-          absenceStart: this.moment(this.absenceStart, 'YYYY-MM-DDTHH:mm').format(),
-          absenceEnd: this.moment(this.absenceEnd, 'YYYY-MM-DDTHH:mm').format(),
-          absenceReason: this.absenceReason
-        }
-        const {data} = await this.$http.post('simpleuser/' + this.userId + '/storeAbsence', postData);
-        if (data.status === 'ok') {
-          this.$emit("showSnackbar", "Abwesenheit erfolgreich eingetragen", "success");
-          this.resetFormData();
-          this.loadAllAbsenceUsers();
-        } else if (data.status === 'absence_exists') {
-          this.$emit("showSnackbar", "Eine Abwesenheit ist für diesen Benutzer bereits eingetragen. Bitte kontaktiere einen Trainer um sie zu ändern.", "error");
-        }
-      }
-    },
-    confirmAndDelete(userId: number) {
-      this.showConfirmDialog = true;
-      this.userIdToDelete = userId;
-    },
-    async deleteAbsence() {
-      this.showConfirmDialog = false;
-      if (this.userIdToDelete) {
-        const {data} = await this.$http.put('user/' + this.userIdToDelete + '/removeAbsence');
-        if (data.status === 'ok') {
-          this.$emit("showSnackbar", "Abwesenheit erfolgreich gelöscht", "success");
-          this.loadAllAbsenceUsers();
-        }
-      }
-    },
-    resetFormData() {
-      this.absenceReason = null;
-      this.absenceStart = new Date().toISOString().substr(0, 10);
-      this.absenceEnd = null;
-      this.userId = null;
-      this.$refs.form.reset()
-    },
-    fullName: item => item.firstName + ' ' + item.familyName,
-    formatDate
-  },
+const absenceUsers = ref([])
+const total = ref(null)
+const rowsPerPageItems = [5, 10, 20, 50]
+const page = ref(1)
+const itemsPerPage = ref(10)
+const headers = [
+  { text: 'Vorname', value: 'firstName', sortable: false },
+  { text: 'Nachname', value: 'familyName', sortable: false },
+  { text: 'Von', value: 'absenceStart', sortable: false },
+  { text: 'Bis', value: 'absenceEnd', sortable: false },
+  { text: 'Grund', value: 'absenceReason', sortable: false },
+  { text: 'Löschen', value: 'action', sortable: false },
+]
+const loadingUsers = ref(false)
+const absenceStart = ref(new Date().toISOString().substr(0, 10))
+const absenceEnd = ref(null)
+const absenceReason = ref(null)
+const menuStart = ref(false)
+const menuEnd = ref(false)
+const valid = ref(true)
+const userId = ref(null)
+const users = ref([])
+const requiredRule = [
+  v => !!v || 'Bitte ausfüllen'
+]
+const showConfirmDialog = ref(false)
+const userIdToDelete = ref(null)
 
+const loggedInUser = computed(() => authStore.user)
+const cookieUser = computed(() => cookieAuthStore.cookieUser)
+
+const currentUser = computed(() => {
+  if (loggedInUser.value) {
+    return loggedInUser.value
+  } else if (cookieUser.value) {
+    return cookieUser.value
+  }
+  return null
 })
 
+const currentUserId = computed(() => {
+  if (currentUser.value) {
+    return currentUser.value.id
+  }
+  return null
+})
+
+const absenceStartFormatted = computed(() => {
+  return formatDate(absenceStart.value)
+})
+
+const absenceEndFormatted = computed(() => {
+  return formatDate(absenceEnd.value)
+})
+
+const formattedUsers = computed(() => {
+  return users.value.map(user => ({
+    ...user,
+    displayName: `${user.firstName} ${user.familyName}`
+  }))
+})
+
+function getAllSimpleUsersWithGroup() {
+  return masterDataStore.getAllSimpleUsersWithGroup()
+}
+
+async function loadAllAbsenceUsers() {
+  loadingUsers.value = true
+  absenceUsers.value = []
+  const { data } = await httpClient.get('user/allAbsence')
+  if (data.data) {
+    for (const userObj of data.data) {
+      absenceUsers.value.push(new User(
+        userObj.id,
+        userObj.email,
+        userObj.firstName,
+        userObj.familyName,
+        userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.active === 1 ? true : false,
+        userObj.groupIds,
+        userObj.roleNames,
+        userObj.trainerBranchIds,
+        userObj.registered,
+        userObj.profileImageName,
+        userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.absenceEnd ? moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.absenceReason
+      ))
+    }
+    page.value = data.currentPage
+    total.value = data.total
+  }
+  loadingUsers.value = false
+}
+
+async function sendAbsence() {
+  const postData = {
+    absenceStart: moment(absenceStart.value, 'YYYY-MM-DD').format(),
+    absenceEnd: moment(absenceEnd.value, 'YYYY-MM-DD').format(),
+    absenceReason: absenceReason.value
+  }
+  const { data } = await httpClient.post('simpleuser/' + userId.value + '/storeAbsence', postData)
+  if (data.status === 'ok') {
+    snackbarStore.show("Abwesenheit erfolgreich eingetragen", "success")
+    resetFormData()
+    loadAllAbsenceUsers()
+  } else if (data.status === 'absence_exists') {
+    snackbarStore.show("Eine Abwesenheit ist für diesen Benutzer bereits eingetragen. Bitte kontaktiere einen Trainer um sie zu ändern.", "error")
+  }
+}
+
+function confirmAndDelete(userIdVal: number) {
+  showConfirmDialog.value = true
+  userIdToDelete.value = userIdVal
+}
+
+async function deleteAbsence() {
+  showConfirmDialog.value = false
+  if (userIdToDelete.value) {
+    const { data } = await httpClient.put('user/' + userIdToDelete.value + '/removeAbsence')
+    if (data.status === 'ok') {
+      snackbarStore.show("Abwesenheit erfolgreich gelöscht", "success")
+      loadAllAbsenceUsers()
+    }
+  }
+}
+
+function resetFormData() {
+  absenceReason.value = null
+  absenceStart.value = new Date().toISOString().substr(0, 10)
+  absenceEnd.value = null
+  userId.value = null
+}
+
+function fullName(item) {
+  return item.firstName + ' ' + item.familyName
+}
+
+onMounted(() => {
+  users.value = getAllSimpleUsersWithGroup()
+  if (currentUserId.value) {
+    userId.value = currentUserId.value
+  }
+  loadAllAbsenceUsers()
+})
 </script>
 
 <style scoped lang="scss">

@@ -4,11 +4,11 @@
       <v-col cols="12" md="4">
         <v-select
             v-bind:items="branches"
-            item-text="name"
+            item-title="name"
             item-value="id"
             v-model="selectedBranchId"
             label="Sparte"
-            prepend-icon="bubble_chart"
+            prepend-icon="mdi-chart-bubble"
         ></v-select>
       </v-col>
       <v-col cols="12" md="4">
@@ -16,15 +16,15 @@
             v-bind:disabled="!selectedBranchId"
             v-bind:items="groupItems"
             v-model="selectedGroupIds"
-            item-text="name"
+            item-title="name"
             item-value="id"
             multiple
             clearable
             chips
-            deletable-chips
+            closable-chips
             @change="selectedGroupIdsChanged()"
             label="Gruppen"
-            prepend-icon="group"
+            prepend-icon="mdi-account"
         ></v-autocomplete>
       </v-col>
       <v-col cols="12" md="4">
@@ -33,7 +33,7 @@
             v-model="selectedYear"
             label="Jahr"
             @change="selectedYearChanged()"
-            prepend-icon="date_range"
+            prepend-icon="mdi-calendar"
         ></v-select>
       </v-col>
     </v-row>
@@ -41,10 +41,10 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex'
+import { useMasterDataStore } from '@/store/masterData'
+import moment from 'moment'
 
 export default {
-
   name: "StatisticsFilter1",
   props: {
     'branchIds': Array,
@@ -70,11 +70,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('masterData', {getBranchByGroupId: 'getBranchByGroupId'}),
-    ...mapState('masterData', {
-      groups: 'groups',
-      branches: 'branches',
-    }),
+    groups() {
+      return useMasterDataStore().groups
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
   },
   methods: {
     initSelect: function () {
@@ -90,8 +91,8 @@ export default {
     },
     lastFiveYears() {
       const years = []
-      const dateEnd = this.moment().subtract(4, 'y')
-      const dateStart = this.moment()
+      const dateEnd = moment().subtract(4, 'y')
+      const dateStart = moment()
       while (dateEnd.diff(dateStart, 'years') <= 0) {
         years.push(dateStart.year())
         dateStart.subtract(1, 'year')

@@ -7,18 +7,17 @@
             :close-on-content-click="false"
             v-model="dateMenuOpened"
         >
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
-                v-model="trainingDateFormatted"
+                :modelValue="trainingDateFormatted"
                 required
                 label="Datum"
                 prepend-icon="event"
                 readonly
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
-          <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
+          <v-date-picker v-model="trainingDate" @update:modelValue="onDateChanged"></v-date-picker>
         </v-menu>
       </v-col>
       <v-col cols="6" md="3">
@@ -26,21 +25,19 @@
             ref="startMenuOpened"
             v-model="startMenuOpened"
             :close-on-content-click="false">
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
                 v-model="startTime"
                 label="Start"
                 required
                 prepend-icon="schedule"
                 readonly
-                lazy
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
           <v-time-picker
               v-model="startTime"
-              @click:minute="$refs.startMenuOpened.save(startTime)"
+              @click:minute="startMenuOpened = false"
               format="24hr">
           </v-time-picker>
         </v-menu>
@@ -50,16 +47,14 @@
             ref="endMenuOpened"
             :close-on-content-click="false"
             v-model="endMenuOpened">
-          <template v-slot:activator="{ on }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-                slot="activator"
                 v-model="endTime"
                 required
                 label="Ende"
                 prepend-icon="schedule"
                 readonly
-                lazy
-                v-on="on"
+                v-bind="props"
             ></v-text-field>
           </template>
           <v-time-picker
@@ -72,7 +67,7 @@
         <v-select
             :items="locations"
             item-value="id"
-            item-text="name"
+            item-title="name"
             v-model="selectedLocationId"
             clearable
             required
@@ -92,11 +87,11 @@
             v-model="selectedTrainerIds"
             :items="trainers"
             item-value="id"
-            :item-text="fullName"
+            :item-title="fullName"
             attach
             clearable
             chips
-            deletable-chips
+            closable-chips
             label="Trainer"
             prepend-icon="verified_user"
             multiple
@@ -108,28 +103,25 @@
             :items="groups"
             v-model="selectedGroupIds"
             item-value="id"
-            :item-text="branchAndGroupName"
+            :item-title="branchAndGroupName"
             label="Gruppen"
             prepend-icon="groups"
             multiple
             clearable
             chips
-            deletable-chips>
+            closable-chips>
           <template v-slot:prepend-item>
             <v-list-item
-                ripple
                 @click="toggleSelectAllGroups"
             >
-              <v-list-item-action>
+              <template v-slot:prepend>
                 <v-icon :color="selectedGroupIds.length > 0 ? 'indigo darken-4' : ''">
                   {{ allGroupsSelectedIcon }}
                 </v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>
-                  Alle Selektieren
-                </v-list-item-title>
-              </v-list-item-content>
+              </template>
+              <v-list-item-title>
+                Alle Selektieren
+              </v-list-item-title>
             </v-list-item>
             <v-divider class="mt-2"></v-divider>
           </template>
@@ -157,13 +149,12 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import TrainingContent from "./TrainingContent"
+import TrainingContent from "./TrainingContent.vue"
 import {formatDate, parseDate} from "@/helpers/date-helpers"
-import {mapGetters, mapState} from 'vuex'
-import Group from "../models/Group";
+import Group from "../models/Group"
+import { useMasterDataStore } from "@/store/masterData"
 
-export default Vue.extend({
+export default {
   name: "EditTrainingBase",
   components: {TrainingContent},
   props: {
@@ -185,7 +176,7 @@ export default Vue.extend({
   },
   data: function () {
     return {
-      trainingDate: new Date().toISOString().substr(0, 10) as Date,
+      trainingDate: '2026-04-04' as String,
       dataId: null as Number,
       endTime: '12:00' as String,
       startTime: '09:00' as String,
@@ -201,15 +192,14 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
-    ...mapGetters('masterData', {getContentIdsByBranchId: 'getContentIdsByBranchId', getBranchById: 'getBranchById', getGroupById: 'getGroupById'}),
+    locations() {
+      return useMasterDataStore().locations
+    },
     trainingDateFormatted(): String {
       return this.formatDate(this.trainingDate)
     },
     branchContentIds(): Array<Number> {
-      return this.getContentIdsByBranchId(this.branchId);
+      return useMasterDataStore().getContentIdsByBranchId(this.branchId)
     },
     allGroupsSelected() {
       return this.selectedGroupIds.length === this.groups.length
@@ -226,6 +216,19 @@ export default Vue.extend({
   methods: {
     contentIdsChanged(contentIds: Array<Number>): void {
       this.selectedContentIds = contentIds;
+    },
+    onDateChanged(dateValue) {
+      // Convert Date object to YYYY-MM-DD string format
+      if (dateValue instanceof Date) {
+        const year = dateValue.getFullYear()
+        const month = String(dateValue.getMonth() + 1).padStart(2, '0')
+        const day = String(dateValue.getDate()).padStart(2, '0')
+        this.trainingDate = `${year}-${month}-${day}`
+      } else if (typeof dateValue === 'string') {
+        this.trainingDate = dateValue
+      }
+      // Close the date picker menu after selection
+      this.dateMenuOpened = false
     },
     fireChangeEvent() {
       this.$emit("change", {
@@ -267,7 +270,15 @@ export default Vue.extend({
     date: {
       immediate: true,
       handler(newVal) {
-        this.trainingDate = newVal;
+        // Convert Date object to YYYY-MM-DD string format
+        if (newVal instanceof Date) {
+          const year = newVal.getFullYear()
+          const month = String(newVal.getMonth() + 1).padStart(2, '0')
+          const day = String(newVal.getDate()).padStart(2, '0')
+          this.trainingDate = `${year}-${month}-${day}`
+        } else if (typeof newVal === 'string') {
+          this.trainingDate = newVal
+        }
       },
     },
     start: {
@@ -350,7 +361,7 @@ export default Vue.extend({
       this.fireChangeEvent();
     },
   },
-})
+}
 </script>
 
 <style scoped>

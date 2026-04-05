@@ -2,32 +2,30 @@
     <v-card flat>
         <v-select
           v-bind:items="branches"
-          item-text="name"
+          item-title="name"
           item-value="id"
           v-model="selectedBranchId"
           clearable
-          single-line
           label="Sparte"
-          prepend-icon="bubble_chart"
+          prepend-icon="mdi-chart-bubble"
         ></v-select>
         <v-select
           v-bind:disabled="!selectedBranchId"
           v-bind:items="groupItems"
           v-model="selectedGroupId"
-          item-text="name"
+          item-title="name"
           item-value="id"
           clearable
           label="Gruppe"
-          prepend-icon="group"
+          prepend-icon="mdi-account"
         ></v-select>
     </v-card>
 </template>
 
 <script>
-  import {mapGetters, mapState} from 'vuex'
+  import { useMasterDataStore } from '@/store/masterData'
 
   export default {
-
     name: "GroupSelect",
     props: {
       'branchId': Number,
@@ -41,11 +39,12 @@
       }
     },
     computed: {
-      ...mapGetters('masterData', {getBranchByGroupId: 'getBranchByGroupId'}),
-      ...mapState('masterData', {
-        groups: 'groups',
-        branches: 'branches',
-      }),
+      groups() {
+        return useMasterDataStore().groups
+      },
+      branches() {
+        return useMasterDataStore().branches
+      },
     },
     methods: {
       fillGroupSelect: function () {

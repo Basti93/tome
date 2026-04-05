@@ -5,8 +5,10 @@ namespace App;
 use Hash;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Mail\ResetPassword;
 
 
 class User extends Authenticatable implements JWTSubject
@@ -28,7 +30,12 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'updated_at', 'created_at', 'roles'
+        'password', 'remember_token', 'updated_at', 'created_at', 'roles', 'email_verification_token'
+    ];
+
+    protected $casts = [
+        'locked_until' => 'datetime',
+        'email_verified_at' => 'datetime',
     ];
 
     protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];
@@ -107,6 +114,18 @@ class User extends Authenticatable implements JWTSubject
     public function getRoleNamesAttribute()
     {
         return $this->getRoleNames();
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $resetUrl = config('app.vue_url', 'http://localhost:8080') . '/#/reset-password?token=' . $token . '&email=' . urlencode($this->email);
+        Mail::to($this->email)->send(new ResetPassword($this, $resetUrl));
     }
 
 }

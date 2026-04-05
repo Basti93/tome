@@ -10,12 +10,12 @@
             <v-col>
               <span class="label text-small">Von</span>
               <v-chip small outlined class="ma-1">
-                <v-icon left color="primary">query_builder</v-icon>
+                <v-icon left color="primary">mdi-clock-outline</v-icon>
                 {{ start.format('HH:mm') }}
               </v-chip>
               <span class="label text-small">bis</span>
               <v-chip small outlined class="ml-1">
-                <v-icon left color="primary">query_builder</v-icon>
+                <v-icon left color="primary">mdi-clock-outline</v-icon>
                 {{ end.format('HH:mm') }}
               </v-chip>
             </v-col>
@@ -23,7 +23,7 @@
           <v-row>
             <v-col>
               <v-chip outlined small class="ma-1">
-                <v-icon left color="primary">room</v-icon>
+                <v-icon left color="primary">mdi-map-marker</v-icon>
                 {{ location }}
               </v-chip>
             </v-col>
@@ -38,7 +38,7 @@
                   class="ma-2"
                   @click="currentUser ? participate() : showCookieUserLogin()">
                 Teilnehmen
-                <v-icon right>thumb_up</v-icon>
+                <v-icon right>mdi-thumb-up</v-icon>
               </v-btn>
               <v-btn
                   style="min-width: 150px"
@@ -47,7 +47,7 @@
                   color="red lighten-2"
                   class="ma-2"
                   @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
-                <v-icon left>thumb_down</v-icon>
+                <v-icon left>mdi-thumb-down</v-icon>
                 Absagen
               </v-btn>
               <v-alert
@@ -104,7 +104,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text class="tp-upcoming-training__text">
-        <v-container grid-list-md>
+        <v-container>
           <TrainingContent
               :contentIds="contentIds"
               :initContentIds="contentIds"
@@ -148,7 +148,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Kurzfristige Absage</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -157,7 +157,7 @@
                    color="primary"
                    @click="cancelParticipation(cancelReason)"
                    :disabled="!cancelDialogValid">
-              <v-icon left>check</v-icon>
+              <v-icon left>mdi-check</v-icon>
               Absage abschicken
             </v-btn>
           </v-toolbar-items>
@@ -165,9 +165,9 @@
         <v-divider></v-divider>
         <v-card-text>
           <v-form v-model="cancelDialogValid">
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
                   <v-alert
                       type="warning"
                       outlined
@@ -178,8 +178,8 @@
                     Das Training findet innerhalb der nächsten 24 Stunden statt. Bitte gib einen Grund für deine Absage
                     an.
                   </v-alert>
-                </v-flex>
-                <v-flex xs12>
+                </v-col>
+                <v-col cols="12">
                   <v-textarea
                       filled
                       label="Gib hier einen Grund an"
@@ -188,8 +188,8 @@
                       v-model="cancelReason">
 
                   </v-textarea>
-                </v-flex>
-              </v-layout>
+                </v-col>
+              </v-row>
             </v-container>
           </v-form>
         </v-card-text>
@@ -199,12 +199,13 @@
 </template>
 
 <script lang="ts">
-import TrainingContent from "./TrainingContent";
-import ProfileImage from "../components/ProfileImage";
+import TrainingContent from "./TrainingContent.vue";
+import ProfileImage from "./ProfileImage.vue";
 import User from "../models/User";
 import Training from "../models/Training";
-import {mapGetters} from 'vuex'
 import GroupChip from "./GroupChip.vue";
+import { useMasterDataStore } from '@/store/masterData'
+import httpClient from '@/http/api'
 
 export default {
   name: "TrainingCheckIn",
@@ -235,12 +236,13 @@ export default {
     }
   },
   created() {
+    const store = useMasterDataStore()
     this.id = this.training.id;
     this.start = this.training.start;
     this.end = this.training.end;
-    this.location = this.getLocationNameById(this.training.locationId);
-    this.groups = this.getGroupsByIds(this.training.groupIds);
-    this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
+    this.location = store.getLocationNameById(this.training.locationId);
+    this.groups = store.getGroupsByIds(this.training.groupIds);
+    this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
     this.contentIds = this.training.contentIds;
     this.comment = this.training.comment;
     this.automaticAttend = this.training.automaticAttend;
@@ -262,21 +264,16 @@ export default {
     participantCount: function () {
       return this.training.participants ? this.training.participants.filter(p => p.attend).length : null;
     },
-    ...mapGetters('masterData', {
-      getLocationNameById: 'getLocationNameById',
-      getGroupsByIds: 'getGroupsByIds',
-      getBranchById: 'getBranchById',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds',
-    }),
   },
   watch: {
     training: function () {
+      const store = useMasterDataStore()
       this.id = this.training.id;
       this.start = this.training.start;
       this.end = this.training.end;
-      this.location = this.getLocationNameById(this.training.locationId);
-      this.groups = this.getGroupsByIds(this.training.groupIds);
-      this.trainers = this.getSimpleTrainersByIds(this.training.trainerIds);
+      this.location = store.getLocationNameById(this.training.locationId);
+      this.groups = store.getGroupsByIds(this.training.groupIds);
+      this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
       this.contentIds = this.training.contentIds;
       this.comment = this.training.comment;
 
@@ -303,7 +300,7 @@ export default {
           url += '/checkin/' + this.currentUser.id;
         }
         //send post
-        const {data} = await this.$http.post(url);
+        const {data} = await httpClient.post(url);
         if (data.status === 'ok') {
           this.$emit('checkedIn')
         }
@@ -327,7 +324,7 @@ export default {
           }
         }
         //send post
-        const {data} = await this.$http.post(url, postData);
+        const {data} = await httpClient.post(url, postData);
         if (data.status === 'ok') {
           this.cancelReason = null;
           this.showCancelDialog = false;

@@ -8,11 +8,11 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="$vuetify.breakpoint.xsOnly"
+                  :fullscreen="xs"
                   persistent
                   max-width="1000px"
               >
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn
                       title="Neue Gruppe erstellen"
                       fab
@@ -21,23 +21,22 @@
                       left
                       elevation="2"
                       color="primary"
-                      v-on="on"
-                      v-bind="attrs"
-                      v-on:click="createItem()">
-                    <v-icon>add</v-icon>
+                      v-bind="props"
+                      @click="createItem()">
+                    <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
 
                 <v-card>
                   <v-toolbar flat>
                     <v-btn icon v-on:click="closeDialog()">
-                      <v-icon>close</v-icon>
+                      <v-icon>mdi-close</v-icon>
                     </v-btn>
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                       <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>check</v-icon>
+                        <v-icon left>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -66,7 +65,7 @@
                                 label="Sparte"
                                 :rules="[v => !!v || 'Wird benötigt']"
                                 v-model="editedItem.branchId"
-                                :item-text="buildFullBranchname"
+                                :item-title="buildFullBranchname"
                                 prepend-icon="bubble_chart"
                                 item-value="id"
                             >
@@ -76,7 +75,7 @@
                           <v-col cols="12" md="6">
                             <v-autocomplete
                                 :items="filteredUsers"
-                                :item-text="fullName"
+                                :item-title="fullName"
                                 item-value="id"
                                 prepend-icon="group"
                                 v-model="selectedUserIds"
@@ -100,7 +99,7 @@
                                 color="primary"
                                 elevation="1"
                                 v-on:click="addSelectedUsersToGroup()">
-                              <v-icon left>add</v-icon>
+                              <v-icon left>mdi-plus</v-icon>
                               Hinzufügen
                             </v-btn>
                           </v-col>
@@ -111,18 +110,20 @@
                                   v-for="item in editedUsers"
                                   :key="item.id"
                               >
-                                <tome-list-item-profile-image
-                                    :image-path="item.profileImageName"
-                                ></tome-list-item-profile-image>
+                                <template v-slot:prepend>
+                                  <tome-list-item-profile-image
+                                      :image-path="item.profileImageName"
+                                  ></tome-list-item-profile-image>
+                                </template>
                                 {{ fullName(item) }}
-                                <v-list-item-action>
+                                <template v-slot:append>
                                   <v-btn
                                       icon
+                                      size="x-small"
                                       v-on:click="removeUserFromGroup(item.id)">
-                                    <v-icon>cancel</v-icon>
+                                    <v-icon>mdi-cancel</v-icon>
                                   </v-btn>
-
-                                </v-list-item-action>
+                                </template>
                               </v-list-item>
                             </v-list>
                           </v-col>
@@ -150,8 +151,8 @@
                           :footer-props="{
                                 itemsPerPageOptions: rowsPerPageItems,
                             }"
-                          :itemsPerPage.sync="itemsPerPage"
-                          :page.sync="page"
+                          v-model:itemsPerPage="itemsPerPage"
+                          v-model:page="page"
                       >
                         <template v-slot:[`item.name`]="{ item }">
                           {{ item.name }}
@@ -166,17 +167,17 @@
                             <v-icon
                                 class="mr-2"
                                 v-on:click="editItem(item)"
-                                color="success">edit</v-icon>
+                                color="success">mdi-pencil</v-icon>
                             <v-icon
                                 v-on:click="confirmAndDelete(item)"
-                                color="error">delete</v-icon>
+                                color="error">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
                           <v-container>
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>cached</v-icon>
+                                  <v-icon left>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -203,14 +204,23 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
 import Group from "../models/Group";
-import {mapGetters, mapState} from "vuex";
 import Branch from "../models/Branch";
 import User from "../models/User"
 import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
 
 export default {
+  setup() {
+    const { xs, md } = useDisplay()
+    return { xs, md }
+  },
   name: "GroupsTablePage",
   components: {ConfirmDialog, TomeListItemProfileImage},
   data: function () {
@@ -253,18 +263,20 @@ export default {
     this.loadData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getBranchById: 'getBranchById',
-    }),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
     editedUsers() {
       return this.users.filter(u => this.editedItem.userIds.indexOf(u.id) >= 0)
     },
   },
   methods: {
+    getBranchById(branchId) {
+      return useMasterDataStore().getBranchById(branchId)
+    },
     async loadData() {
       this.loading = true
       try {
@@ -276,7 +288,7 @@ export default {
       }
     },
     async loadGroups() {
-      const {data} = await this.$http.get('/group')
+      const {data} = await httpClient.get('/group')
       this.groups = [];
       for (let i = 0; i < data.data.length; i++) {
         let groupObj = data.data[i];
@@ -287,22 +299,22 @@ export default {
     },
     async loadUsers() {
       this.users = [];
-      const userRes = await this.$http.get('/user');
+      const userRes = await httpClient.get('/user');
       for (const userObj of userRes.data) {
         this.users.push(new User(
             userObj.id,
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
             userObj.absenceReason
         ));
       }
@@ -318,14 +330,14 @@ export default {
 
         let response = null;
         if (this.editedItem.id) {
-          response = await this.$http.put('/group/' + this.editedItem.id, postData);
+          response = await httpClient.put('/group/' + this.editedItem.id, postData);
         } else {
-          response = await this.$http.post('/group', postData);
+          response = await httpClient.post('/group', postData);
         }
         if (response && response.data.error) {
-          this.$emit("showSnackbar", "Gruppe konnte nicht gespeichert werden", "error")
+          useSnackbarStore().show("Gruppe konnte nicht gespeichert werden", "error")
         } else {
-          this.$emit("showSnackbar", "Gruppe gespeichert", "success")
+          useSnackbarStore().show("Gruppe gespeichert", "success")
           this.showDialog = false;
           await this.loadData();
           this.updateMasterData();
@@ -354,14 +366,14 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let {data} = await this.$http.delete('/group/' + this.itemToDelete.id);
+      let {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
       await this.loadData();
       this.updateMasterData();
 
       if (data.status === 'ok') {
-        this.$emit("showSnackbar", "Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
       } else {
-        this.$emit("showSnackbar", "Gruppe konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Gruppe konnte nicht gelöscht werden", "error")
       }
     },
     addSelectedUsersToGroup() {
@@ -378,7 +390,7 @@ export default {
       this.showDialog = false;
     },
     updateMasterData() {
-      this.$store.commit('masterData/setGroups', this.groups);
+      useMasterDataStore().setGroups(this.groups);
     },
     buildFullBranchname(item: Branch) {
       return item.getShortNameAndName();

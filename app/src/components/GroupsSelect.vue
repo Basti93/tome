@@ -3,12 +3,12 @@
         <v-autocomplete
                 v-bind:items="groups"
                 v-model="selectedGroupIds"
-                :item-text="branchAndGroupName"
+                :item-title="branchAndGroupName"
                 item-value="id"
                 multiple
                 clearable
                 chips
-                deletable-chips
+                closable-chips
                 label="Gruppen"
                 prepend-icon="group"
         >
@@ -17,11 +17,10 @@
 </template>
 
 <script lang="ts">
-    import {mapGetters, mapState} from 'vuex'
     import Group from "../models/Group";
+    import { useMasterDataStore } from '@/store/masterData'
 
     export default {
-
         name: "GroupsSelect",
         props: {
             groupIds: Array,
@@ -31,14 +30,10 @@
                 selectedGroupIds: [],
             }
         },
-        created() {
-
-        },
         computed: {
-            ...mapGetters('masterData', {getBranchById: 'getBranchById'}),
-            ...mapState('masterData', {
-                groups: 'groups',
-            }),
+            groups() {
+                return useMasterDataStore().groups
+            },
         },
         methods: {
             branchAndGroupName(item: Group) {

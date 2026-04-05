@@ -16,17 +16,22 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
 import StatisticsFilter1 from "./StatisticsFilter1";
+import { useAuthStore } from '@/store/auth';
+import { useMasterDataStore } from '@/store/masterData';
+import httpClient from '@/http/api';
+import moment from 'moment';
 
 export default {
   name: "TrainerTimeline",
   components: {StatisticsFilter1},
   props: ['trainerId'],
   data: function () {
+    const authStore = useAuthStore();
     return {
-      filterBranchIds: [],
-      filterYear: null,
+      filterBranchIds: authStore.user?.isTrainer ? authStore.user.trainerBranchIds : [],
+      filterYear: moment().year(),
+      filterGroupIds: [],
       options: {
         chart: {
           id: 'trainerTimeLineChart',
@@ -54,7 +59,7 @@ export default {
         tooltip: {
           y: {
             formatter: function (val) {
-              return val + " Trainingsstunden"
+              return val + " Trainingsstunden";
             }
           }
         },
@@ -66,26 +71,27 @@ export default {
         },
       },
       series: [],
-    }
+    };
   },
   created() {
-    if (this.loggedInUser.isTrainer) {
-      this.filterBranchIds = this.loggedInUser.trainerBranchIds;
-    }
-    this.filterYear = this.moment().year();
+    this.fetchData();
   },
   computed: {
-    ...mapGetters('masterData', {
-      getGroupColorById: 'getGroupColorById',
-      getGroupIdsByBranchId: 'getGroupIdsByBranchId'
-    }),
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user;
+    },
   },
   methods: {
+    getGroupColorById(groupId) {
+      return useMasterDataStore().getGroupColorById(groupId);
+    },
+    getGroupIdsByBranchId(branchId) {
+      return useMasterDataStore().getGroupIdsByBranchId(branchId);
+    },
     async fetchData() {
       this.series = [];
       let url = '/trainingevaluation/accountingtimestatistics?year=' + this.filterYear + "&groupIds=" + this.filterGroupIds;
-      let {data} = await this.$http.get(url);
+      let {data} = await httpClient.get(url);
       for (let z = 0; z < data.length; z++) {
         let count = [];
         for (let i = 0; i < 12; i++) {

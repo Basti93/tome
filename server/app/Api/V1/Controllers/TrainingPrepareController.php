@@ -3,7 +3,6 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ZoomController;
 use App\Location;
 use App\Training;
 use DateTime;
@@ -56,12 +55,6 @@ class TrainingPrepareController extends Controller
         $training->end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
         $training->save();
 
-        //is online training
-        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-            $zoom = new ZoomController();
-            $zoom->updateOrCreate($training);
-        }
-
         return response()->json([
             'status' => 'ok'
         ], 200);
@@ -74,12 +67,6 @@ class TrainingPrepareController extends Controller
 
         $training->location_id = $request->input('locationId');
         $training->save();
-
-        //is online training
-        if ($training->location_id === Location::where('name', 'Online')->first()->id) {
-            $zoom = new ZoomController();
-            $zoom->updateOrCreate($training);
-        }
 
         return response()->json([
             'status' => 'ok'

@@ -13,12 +13,13 @@ class ResetPasswordControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
         $user = new User([
-            'name' => 'Test User',
+            'firstName' => 'Test',
+            'familyName' => 'User',
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -33,7 +34,7 @@ class ResetPasswordControllerTest extends TestCase
 
     public function testResetSuccessfully()
     {
-        $this->post('api/auth/reset', [
+        $this->post('api/v1/auth/reset', [
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
             'password' => 'mynewpass',
@@ -47,7 +48,7 @@ class ResetPasswordControllerTest extends TestCase
     {
         Config::set('boilerplate.reset_password.release_token', true);
 
-        $this->post('api/auth/reset', [
+        $this->post('api/v1/auth/reset', [
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
             'password' => 'mynewpass',
@@ -62,7 +63,7 @@ class ResetPasswordControllerTest extends TestCase
 
     public function testResetReturnsProcessError()
     {
-        $this->post('api/auth/reset', [
+        $this->post('api/v1/auth/reset', [
             'email' => 'unknown@email.com',
             'token' => 'this_code_is_invalid',
             'password' => 'mynewpass',
@@ -74,7 +75,7 @@ class ResetPasswordControllerTest extends TestCase
 
     public function testResetReturnsValidationError()
     {
-        $this->post('api/auth/reset', [
+        $this->post('api/v1/auth/reset', [
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
             'password' => 'mynewpass'

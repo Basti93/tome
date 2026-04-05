@@ -17,16 +17,32 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
 import StatisticsFilter1 from "./StatisticsFilter1";
+import { useAuthStore } from '@/store/auth';
+import { useMasterDataStore } from '@/store/masterData';
+import httpClient from '@/http/api';
+import moment from 'moment';
 
 export default {
   name: "TrainingParticipationBarChart",
   components: {StatisticsFilter1},
   data: function () {
+    const authStore = useAuthStore();
+    const masterData = useMasterDataStore();
+    const user = authStore.user;
+    let filterBranchIds = [];
+    if (user?.isTrainer) {
+      filterBranchIds = user.trainerBranchIds;
+    } else {
+      if (user?.groupIds && user.groupIds.length > 0) {
+        const branch = masterData.getBranchByGroupId(user.groupIds[0]);
+        if (branch) filterBranchIds.push(branch.id);
+      }
+    }
     return {
-      filterBranchIds: [],
-      filterYear: null,
+      filterBranchIds: filterBranchIds,
+      filterYear: moment().year(),
+      filterGroupIds: [],
       options: {
         chart: {
           id: 'training-participation',
@@ -56,47 +72,49 @@ export default {
         name: 'Teilnahmen',
         data: []
       }],
-    }
+    };
   },
   created() {
-    if (this.loggedInUser.isTrainer) {
-      this.filterBranchIds = this.loggedInUser.trainerBranchIds;
-    } else {
-      if (this.loggedInUser.groupIds && this.loggedInUser.groupIds.length > 0) {
-        this.filterBranchIds.push(this.getBranchByGroupId(this.loggedInUser.groupIds[0].id));
-      }
-    }
-    this.filterYear = this.moment().year();
+    this.fetchData();
   },
   computed: {
-    ...mapGetters('masterData', {
-      getGroupColorById: 'getGroupColorById',
-      getGroupIdsByBranchId: 'getGroupIdsByBranchId',
-      getBranchByGroupId: 'getBranchByGroupId',
-    }),
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user;
+    },
   },
   methods: {
+    getGroupColorById(groupId) {
+      return useMasterDataStore().getGroupColorById(groupId);
+    },
+    getGroupIdsByBranchId(branchId) {
+      return useMasterDataStore().getGroupIdsByBranchId(branchId);
+    },
+    getBranchByGroupId(groupId) {
+      return useMasterDataStore().getBranchByGroupId(groupId);
+    },
     async fetchData() {
       this.series = [];
       if (this.filterGroupIds.length > 0 && this.filterYear) {
-        let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
-        let {data} = await this.$http.get(url);
-        let names = [];
-        let count = [];
-        for (let i = 0; i < data.length; i++) {
-          names.push(data[i].firstName + " " + data[i].familyName)
-          count.push(data[i].total)
+        try {
+          let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
+          let {data} = await httpClient.get(url);
+          let names = [];
+          let count = [];
+          for (let i = 0; i < data.length; i++) {
+            names.push(data[i].firstName + " " + data[i].familyName);
+            count.push(data[i].total);
+          }
+          this.options = {
+            xaxis: {
+              categories: names,
+            },
+          };
+          this.series = [{
+            data: count
+          }];
+        } catch (error) {
+          console.error('Error fetching participation data:', error);
         }
-        this.options = {
-          xaxis: {
-            categories: names,
-          },
-        };
-        this.series = [{
-          data: count
-        }];
-
       }
     },
     filterGroupIdsChanged: function (groupIds) {

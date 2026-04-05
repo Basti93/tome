@@ -175,12 +175,23 @@ class UserController extends Controller
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
         $user->email = $request->input('email');
-        $user->birthdate = DateTime::createFromFormat(DateTime::ISO8601, $request->input('birthdate'));
+
+        // Handle birthdate - only set if provided and not empty
+        $birthdateInput = $request->input('birthdate');
+        if (!empty($birthdateInput)) {
+            $parsedDate = DateTime::createFromFormat(DateTime::ISO8601, $birthdateInput);
+            if ($parsedDate !== false) {
+                $user->birthdate = $parsedDate;
+            }
+        } else {
+            // Explicitly set to null if empty to avoid storing invalid dates
+            $user->birthdate = null;
+        }
 
         //delete old image because there is a new one
         if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
             Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public')->delete("/" . $user->profile_image_name);
+            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
         }
         //set new profile image
         $user->profile_image_name = $request->input('profileImageName');
@@ -206,7 +217,7 @@ class UserController extends Controller
         //delete old image because there is a new one
         if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
             Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public')->delete("/" . $user->profile_image_name);
+            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
         }
         //set new profile image
         $user->profile_image_name = $request->input('profileImageName');
@@ -240,7 +251,7 @@ class UserController extends Controller
         //delete old image because there is a new one
         if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
             Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public')->delete("/" . $user->profile_image_name);
+            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
         }
         //set new profile image
         $user->profile_image_name = $request->input('profileImageName');

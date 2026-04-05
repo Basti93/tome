@@ -2,11 +2,20 @@
   <div></div>
 </template>
 <script>
+  import { useAuthStore } from '@/store/auth'
+  import { useSnackbarStore } from '@/store/snackbar'
+  import httpClient from '@/http/api'
+
   export default {
     name: 'LogoutComponent',
-    created () {
-      this.$store.dispatch('logout')
-      this.$emit("showSnackbar", "Erfolgreich abgemeldet", "info");
+    async created () {
+      try {
+        await httpClient.post('/auth/logout')
+      } catch (e) {
+        // ignore errors, still clear local state
+      }
+      useAuthStore().logout()
+      useSnackbarStore().show("Erfolgreich abgemeldet", "info");
       this.$router.push('/')
     }
   }

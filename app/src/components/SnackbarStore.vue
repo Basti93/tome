@@ -9,15 +9,18 @@
   </v-snackbar>
 </template>
 <script>
-  import { mapMutations } from "vuex"
+  import { useSnackbarStore } from '@/store/snackbar'
+
   export default {
     computed: {
       snackbar() {
-        return this.$store.state.snackbar
+        return useSnackbarStore()
       }
     },
     methods: {
-      ...mapMutations(["closeSnackbar"])
+      closeSnackbar() {
+        useSnackbarStore().hide()
+      }
     }
   }
 </script>

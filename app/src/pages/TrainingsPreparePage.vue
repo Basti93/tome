@@ -62,7 +62,7 @@
                               <v-col md="6" v-if="editingLocation">
                                 <v-select
                                     :items="locations"
-                                    item-text="name"
+                                    item-title="name"
                                     item-value="id"
                                     v-model="editLocationId"
                                     clearable
@@ -73,12 +73,12 @@
                                 <v-btn @click="saveEditLocation()"
                                        color="primary"
                                        text>
-                                  <v-icon>check</v-icon>
+                                  <v-icon>mdi-check</v-icon>
                                 </v-btn>
                                 <v-btn @click="cancelEditLocation()"
                                        color="primary"
                                        text>
-                                  <v-icon>cancel</v-icon>
+                                  <v-icon>mdi-cancel</v-icon>
                                 </v-btn>
                               </v-col>
                               <v-col v-else>
@@ -102,7 +102,7 @@
                                     :href="sharelink"
                                     target="_blank"
                                     color="primary">
-                                  <v-icon left>share</v-icon>
+                                  <v-icon left>mdi-share-variant</v-icon>
                                   Mit Whatsapp teilen
                                 </v-btn>
                               </v-col>
@@ -144,14 +144,14 @@
                                     @click="saveEditComment()"
                                     color="primary"
                                 >
-                                  <v-icon>check</v-icon>
+                                  <v-icon>mdi-check</v-icon>
                                 </v-btn>
                                 <v-btn
                                     class="ma-2"
                                     @click="cancelEditComment()"
                                     color="error"
                                 >
-                                  <v-icon>cancel</v-icon>
+                                  <v-icon>mdi-cancel</v-icon>
                                 </v-btn>
                               </v-col>
                             </v-row>
@@ -206,10 +206,7 @@
                           >
                             <template slot="activator">
                               <v-list-item>
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt
-                                  </v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt</v-list-item-title>
                               </v-list-item>
                             </template>
                             <v-list-item
@@ -220,14 +217,12 @@
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-content>
-                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
+                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                              </v-list-item-subtitle>
                             </v-list-item>
                           </v-list-group>
                           <v-list-group
@@ -238,32 +233,29 @@
                           >
                             <template slot="activator">
                               <v-list-item>
-                                <v-list-item-content>
-                                  <v-list-item-title>{{ canceledUsers.length }} <span
-                                      v-if="canceledUsers.length == 1">Absage</span><span
-                                      v-else>Absagen</span></v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ canceledUsers.length }} <span
+                                    v-if="canceledUsers.length == 1">Absage</span><span
+                                    v-else>Absagen</span></v-list-item-title>
                               </v-list-item>
                             </template>
                             <v-list-item
                                 v-for="(item) in canceledUsers"
                                 :key="item.id"
+                                @click="openCancelReasonDialog(item.id)"
                             >
                               <tome-list-item-profile-image
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-content @click="openCancelReasonDialog(item.id)">
-                                <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
-                                <v-list-item-subtitle>
-                                  <span class="label">{{
-                                      getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
-                                    }}</span>
-                                </v-list-item-subtitle>
-                                <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
-                                  {{ getCancelReason(item.id) }}
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
+                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-subtitle>
+                                <span class="label">{{
+                                    getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
+                                  }}</span>
+                              </v-list-item-subtitle>
+                              <v-list-item-subtitle v-if="getCancelReason(item.id)" class="warning--text">Grund:
+                                {{ getCancelReason(item.id) }}
+                              </v-list-item-subtitle>
                             </v-list-item>
                           </v-list-group>
                         </v-card-text>
@@ -292,7 +284,7 @@
       <v-card>
         <v-toolbar flat>
           <v-btn icon @click="showCancelReasonDialog=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>
         </v-toolbar>
@@ -304,17 +296,17 @@
         v-model="timeDialogOpened"
         max-width="800px"
         scrollable
-        :fullscreen="$vuetify.breakpoint.xsOnly"
+        :fullscreen="xs"
         persistent>
       <v-card>
         <v-card-title>
           <v-btn icon @click="timeDialogOpened=false">
-            <v-icon>close</v-icon>
+            <v-icon>mdi-close</v-icon>
           </v-btn>
           Trainingszeit ändern
           <v-spacer></v-spacer>
           <v-btn text color="primary" @click="updateTrainingTime">
-            <v-icon left>check</v-icon>
+            <v-icon left>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>
@@ -349,18 +341,26 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from 'vuetify'
 
-import Vue from "vue";
-import {mapGetters, mapState} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
-import TrainingContent from "@/components/TrainingContent"
-import ListItemProfileImage from "@/components/ListItemProfileImage"
+import TrainingContent from "@/components/TrainingContent.vue"
+import ListItemProfileImage from "@/components/ListItemProfileImage.vue"
 import TrainingSelector from "../components/TrainingSelector.vue";
 import GroupChip from "../components/GroupChip.vue";
 import User from "../models/User";
 
-export default Vue.extend({
+export default {
+  setup() {
+    const { xs, md } = useDisplay()
+    return { xs, md }
+  },
   name: "TrainingsPreparePage",
   components: {
     GroupChip,
@@ -394,25 +394,14 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupById: 'getGroupById',
-      getBranchById: 'getBranchById',
-      getLocationNameById: 'getLocationNameById',
-      getContentIdsByBranchId: 'getContentIdsByBranchId',
-      getGroupsByIds: 'getGroupsByIds',
-      getContentIdsByGroupIds: 'getContentIdsByGroupIds',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds',
-    }),
-    ...mapState('masterData', {
-      locations: 'locations',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    locations() { return useMasterDataStore().locations },
     branchContentIds(): Array<Number> {
+      const masterData = useMasterDataStore();
       //check if multiple branches are in the play
-      let groupBranchIds = this.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
+      let groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
       if (groupBranchIds.every(v => v === groupBranchIds[0])) {
-        return this.getContentIdsByGroupIds(this.selectedTraining.groupIds);
+        return masterData.getContentIdsByGroupIds(this.selectedTraining.groupIds);
       }
       return [];
     },
@@ -420,7 +409,7 @@ export default Vue.extend({
       return this.getUpcomingTrainingById(this.selectedTrainingId);
     },
     groups() {
-      return this.getGroupsByIds(this.selectedTraining.groupIds);
+      return useMasterDataStore().getGroupsByIds(this.selectedTraining.groupIds);
     },
     participatingUsers() {
       if (this.selectedTraining.participants) {
@@ -447,7 +436,8 @@ export default Vue.extend({
       return null
     },
     sharelink() {
-      let trainers = this.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
+      const masterData = useMasterDataStore();
+      let trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
       let trainerText = "";
       for (let i = 0; i < trainers.length; i++) {
         trainerText += trainers[i].firstName + " " + trainers[i].familyName
@@ -461,7 +451,7 @@ export default Vue.extend({
           + "\r\n"
           + "Uhrzeit: " + this.selectedTraining.start.format('HH:mm') + " - " + this.selectedTraining.end.format('HH:mm') + " Uhr"
           + "\r\n"
-          + "Ort: " + this.getLocationNameById(this.selectedTraining.locationId)
+          + "Ort: " + masterData.getLocationNameById(this.selectedTraining.locationId)
           + "\r\n"
           + "Trainer: " + trainerText
           + "\r\n"
@@ -493,7 +483,7 @@ export default Vue.extend({
         this.dataLoaded = false;
         this.upcomingTrainings = [];
         //load data
-        const res = await this.$http.get('/trainingprepare/' + this.loggedInUser.id);
+        const res = await httpClient.get('/trainingprepare/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
           for (let trObj of res.data.data) {
@@ -501,28 +491,28 @@ export default Vue.extend({
             for (let partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
-            this.upcomingTrainings.push(new Training(trObj.id, this.moment(trObj.start, 'YYYY-MM-DDTHH:mm'), this.moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
+            this.upcomingTrainings.push(new Training(trObj.id, moment(trObj.start, 'YYYY-MM-DDTHH:mm'), moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
           }
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
         }
         this.users = []
-        const userRes = await this.$http.get('/user');
+        const userRes = await httpClient.get('/user');
         for (const userObj of userRes.data) {
           this.users.push(new User(
               userObj.id,
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? this.moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? this.moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }
@@ -533,10 +523,11 @@ export default Vue.extend({
       }
     },
     selectTraining(id) {
+      const masterData = useMasterDataStore();
       this.animationTrigger = false;
       this.selectedTrainingId = id;
       if (this.selectedTraining.groupIds && this.selectedTraining.groupIds.length > 0) {
-        this.branchId = this.getBranchByGroupId(this.selectedTraining.groupIds[0]).id;
+        this.branchId = masterData.getBranchByGroupId(this.selectedTraining.groupIds[0]).id;
       }
       setTimeout(() => {
         this.animationTrigger = true;
@@ -562,11 +553,11 @@ export default Vue.extend({
       const postData = {
         'comment': this.editComment,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatecomment', postData)
       if (data.status == 'ok') {
         this.selectedTraining.comment = this.editComment;
         this.cancelEditComment();
-        this.$emit("showSnackbar", "Kommentar aktualisiert", "success");
+        useSnackbarStore().show("Kommentar aktualisiert", "success");
       }
     },
     cancelEditComment() {
@@ -578,21 +569,21 @@ export default Vue.extend({
       const postData = {
         'contentIds': selectedContentIds,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatecontent', postData)
       if (data.status == 'ok') {
         this.selectedTraining.contentIds = selectedContentIds;
-        this.$emit("showSnackbar", "Trainingsinhalte aktualisiert", "success");
+        useSnackbarStore().show("Trainingsinhalte aktualisiert", "success");
       }
     },
     async saveEditLocation() {
       const postData = {
         'locationId': this.editLocationId,
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatelocation', postData)
       if (data.status == 'ok') {
         this.selectedTraining.locationId = this.editLocationId;
         this.cancelEditLocation();
-        this.$emit("showSnackbar", "Ort aktualisiert", "success");
+        useSnackbarStore().show("Ort aktualisiert", "success");
       }
     },
     cancelEditLocation() {
@@ -613,16 +604,22 @@ export default Vue.extend({
         'start': startDateTime.format(),
         'end': endDateTime.format(),
       };
-      const {data} = await this.$http.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
+      const {data} = await httpClient.post('/trainingprepare/' + this.selectedTraining.id + '/updatetrainingtime', postData)
       if (data.status == 'ok') {
         this.selectedTraining.start = startDateTime;
         this.selectedTraining.end = endDateTime;
-        this.$emit("showSnackbar", "Zeiten aktualisiert", "success");
+        useSnackbarStore().show("Zeiten aktualisiert", "success");
       }
     },
     fullName: item => item.firstName + ' ' + item.familyName,
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
+    },
   },
-})
+}
 
 </script>
 

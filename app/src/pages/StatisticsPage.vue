@@ -41,15 +41,17 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
 import TrainingParticipationBarChart from "@/components/TrainingParticipationBarChart.vue";
 import TrainerTimeline from "@/components/TrainerTimeline.vue";
+import { useAuthStore } from '@/store/auth'
 
 export default {
   name: "StatisticsPage",
   components: {TrainerTimeline, TrainingParticipationBarChart},
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
+    loggedInUser() {
+      return useAuthStore().user
+    }
   }
 }
 </script>

@@ -1,41 +1,20 @@
-import User from '../models/User'
-import * as MutationTypes from './mutation-types'
-import { setCookie, getCookie, eraseCookie } from "../helpers/cookie-helper"
+import { defineStore } from 'pinia'
+import User from '@/models/User'
+import { setCookie, getCookie, eraseCookie } from '@/helpers/cookie-helper'
 
-const state = {
-  cookieUser: User.from(getCookie('cookieUser'))
-}
-
-const mutations = {
-  [MutationTypes.SELECT_COOKIE_USER] (state, { cookieUser }) {
-    state.cookieUser = User.from(cookieUser)
-    setCookie('cookieUser', cookieUser, null)
-  },
-  [MutationTypes.ERASE_COOKIE_USER] (state) {
-    state.cookieUser = null
-    eraseCookie('cookieUser')
+export const useCookieAuthStore = defineStore('cookieAuth', {
+  state: () => ({
+    cookieUser: User.from(getCookie('cookieUser')) as User | null
+  }),
+  actions: {
+    selectCookieUser(cookieUser: unknown) {
+      const serialized = typeof cookieUser === 'string' ? cookieUser : JSON.stringify(cookieUser)
+      this.cookieUser = User.from(serialized)
+      setCookie('cookieUser', serialized, 0)
+    },
+    eraseCookieUser() {
+      this.cookieUser = null
+      eraseCookie('cookieUser')
+    }
   }
-}
-
-const getters = {
-  cookieUser (state) {
-    return state.cookieUser
-  }
-}
-
-const actions = {
-  selectCookieUser ({ commit }, payload) {
-    commit(MutationTypes.SELECT_COOKIE_USER, payload)
-  },
-
-  eraseCookieUser ({ commit }) {
-    commit(MutationTypes.ERASE_COOKIE_USER)
-  }
-}
-
-export default {
-  state,
-  mutations,
-  getters,
-  actions
-}
+})

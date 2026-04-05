@@ -9,11 +9,19 @@
             <v-btn
                 elevation="1"
                 color="primary"
-                   v-bind:disabled="!valid"
+                v-bind:disabled="!valid || !hasUnsavedChanges"
                 @click="save()"
+                :class="{ 'pulse': hasUnsavedChanges }"
             >
-              <v-icon left>save</v-icon>
+              <v-icon left>mdi-content-save</v-icon>
               Speichern
+              <v-badge
+                  v-if="hasUnsavedChanges"
+                  color="amber"
+                  content="!"
+                  inline
+                  class="ml-2"
+              ></v-badge>
             </v-btn>
           </v-toolbar>
           <v-card-text class="pa-0 pa-md-4">
@@ -26,19 +34,21 @@
 
                     <v-card-text>
                       <v-tabs
+                          v-model="activeTab"
                           icons-and-text
                       >
-                        <v-tabs-slider color="yellow"></v-tabs-slider>
 
-                        <v-tab href="#tab-1">
+                        <v-tab>
                           Benutzereinstellungen
-                          <v-icon>account_circle</v-icon>
+                          <v-icon>mdi-account-circle</v-icon>
                         </v-tab>
-                        <v-tab href="#tab-2" v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
+                        <v-tab v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
                           Trainereinstellungen
-                          <v-icon>verified_user</v-icon>
+                          <v-icon>mdi-shield-check</v-icon>
                         </v-tab>
-                        <v-tab-item :value="'tab-1'">
+                      </v-tabs>
+                      <v-window v-model="activeTab">
+                        <v-window-item>
                           <v-card flat>
                             <v-card-text>
                               <v-container>
@@ -77,19 +87,18 @@
                                         v-model="birthdateMenu"
                                         :rules="requiredRule"
                                         required>
-                                      <template v-slot:activator="{ on }">
+                                      <template v-slot:activator="{ props }">
                                         <v-text-field
-                                            slot="activator"
                                             v-model="birthdateFormatted"
                                             required
                                             label="Geburtsdatum"
                                             prepend-icon="event"
                                             readonly
-                                            v-on="on"></v-text-field>
+                                            v-bind="props"></v-text-field>
                                       </template>
                                       <v-date-picker
                                           v-model="editUser.birthdate"
-                                          @input="birthdateMenu = false"
+                                          @update:modelValue="birthdateMenu = false"
                                           ref="birthdatePicker"
                                           :max="new Date().toISOString().substr(0, 10)"
                                           min="1950-01-01">
@@ -114,7 +123,7 @@
                                         elevation="1"
                                         @click="showPasswordDialog = true"
                                     >
-                                      <v-icon left>security</v-icon>
+                                      <v-icon left>mdi-shield-lock</v-icon>
                                       Passwort ändern
                                     </v-btn>
                                   </v-col>
@@ -149,8 +158,8 @@
                               </v-container>
                             </v-card-text>
                           </v-card>
-                        </v-tab-item>
-                        <v-tab-item :value="'tab-2'">
+                        </v-window-item>
+                        <v-window-item>
                           <v-card flat>
                             <v-card-text>
                               <v-container>
@@ -166,15 +175,14 @@
                                         class="pt-6"
                                         :items="branches"
                                         v-model="editUser.trainerBranchIds"
-                                        :item-text="shortNameAndName"
+                                        :item-title="shortNameAndName"
                                         item-value="id"
                                         multiple
-                                        flat
                                         chips
-                                        deletable-chips
+                                        closable-chips
                                         dense
                                         label="Hauptsparte auswählen"
-                                        prepend-icon="bubble_chart"
+                                        prepend-icon="mdi-bubble-chart"
                                     >
                                     </v-select>
                                   </v-col>
@@ -182,8 +190,8 @@
                               </v-container>
                             </v-card-text>
                           </v-card>
-                        </v-tab-item>
-                      </v-tabs>
+                        </v-window-item>
+                      </v-window>
                     </v-card-text>
                   </v-form>
                 </v-card>
@@ -197,18 +205,26 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from 'vuex'
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
 import UploadProfileImage from "@/components/UploadProfileImage.vue";
 import {formatDate} from "../helpers/date-helpers"
 import GroupsSelect from "../components/GroupsSelect.vue";
-
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
+import User from '@/models/User'
 
 export default {
+  setup() {
+    return { moment };
+  },
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage},
   data: function () {
     return {
+      activeTab: 0,
       valid: true,
       birthdateMenu: false,
       showPasswordDialog: false,
@@ -236,18 +252,32 @@ export default {
     this.assignCurrentUser();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapState('masterData', {
-      branches: 'branches',
-    }),
+    loggedInUser() {
+      return useAuthStore().user
+    },
+    branches() {
+      return useMasterDataStore().branches
+    },
     birthdateFormatted() {
       return this.formatDate(this.editUser.birthdate)
     },
+    hasUnsavedChanges() {
+      if (!this.loggedInUser) return false;
+      return (
+        this.editUser.firstName !== this.loggedInUser.firstName ||
+        this.editUser.familyName !== this.loggedInUser.familyName ||
+        this.editUser.email !== this.loggedInUser.email ||
+        this.editUser.birthdate !== this.loggedInUser.birthdate ||
+        this.imageToUpload !== null ||
+        this.editUser.profileImageName !== this.loggedInUser.profileImageName ||
+        JSON.stringify(this.editUser.groupIds) !== JSON.stringify(this.loggedInUser.groupIds) ||
+        JSON.stringify(this.editUser.trainerBranchIds) !== JSON.stringify(this.loggedInUser.trainerBranchIds)
+      );
+    }
   },
   methods: {
     assignCurrentUser: function () {
       this.editUser = {...this.loggedInUser}
-      //this.editUser.birthdate = this.logged
     },
     groupsChanged: function ({groupIds}) {
       this.editUser.groupIds = groupIds;
@@ -266,18 +296,12 @@ export default {
     async uploadProfileImage() {
       let formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
-      const {data} = await this.$http.post('/user/me/uploadprofileimage',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
+      const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
       if (data.status === 'ok') {
         console.log("Image uploaded")
         return data.imageUrl;
       }
-      this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
+      useSnackbarStore().show("Fehler beim Hochladen des Bildes.", "error")
       throw "Image upload error";
     },
     async save() {
@@ -286,7 +310,7 @@ export default {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,
           email: this.editUser.email,
-          birthdate: this.moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format(),
+          birthdate: this.editUser.birthdate ? moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format() : null,
           groupIds: this.editUser.groupIds,
           trainerBranchIds: this.editUser.trainerBranchIds,
         };
@@ -301,17 +325,18 @@ export default {
           postData.profileImageName = imageName;
         }
 
-        let {data} = await this.$http.put('user/me', postData);
+        let {data} = await httpClient.put('user/me', postData);
         if (data.status == 'ok') {
-          this.$emit("showSnackbar", "Erfolgreich gespeichert", "success");
-          let {data} = await this.$http.get('auth/me');
-          this.$store.dispatch('updateUser', {user: JSON.stringify(data)})
+          useSnackbarStore().show("Erfolgreich gespeichert", "success")
+          let {data: userData} = await httpClient.get('auth/me');
+          const user = User.from(JSON.stringify(userData))
+          useAuthStore().updateUser(user)
           this.assignCurrentUser();
         } else {
-          this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+          useSnackbarStore().show("Fehler beim Speichern.", "error")
         }
-      } catch {
-        this.$emit("showSnackbar", "Fehler beim Speichern.", "error");
+      } catch (error) {
+        useSnackbarStore().show("Fehler beim Speichern.", "error")
       }
     },
     formatDate,
@@ -319,14 +344,23 @@ export default {
       return branch.name + ' (' + branch.shortName + ')';
     }
   },
-  watch: {
-    birthdateMenu(val) {
-      val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
-    },
-  },
 }
 </script>
 
 <style scoped>
+.pulse {
+  animation: pulse 2s infinite;
+}
 
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
 </style>

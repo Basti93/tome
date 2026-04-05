@@ -7,11 +7,11 @@
             <v-toolbar-title>Aktuelle Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-chip outlined>
-              <v-icon left color="primary">group</v-icon>
+              <v-icon left color="primary">mdi-account</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
             <v-btn icon color="primary" @click="filterDialogVisible = true">
-              <v-icon>filter_list</v-icon>
+              <v-icon>mdi-filter-variant</v-icon>
             </v-btn>
             <template v-slot:extension v-if="cookieUser">
               <v-chip
@@ -25,18 +25,18 @@
             <v-dialog
                 v-model="filterDialogVisible"
                 max-width="500px"
-                :fullscreen="$vuetify.breakpoint.xsOnly"
+                :fullscreen="xs"
                 persistent>
               <v-card>
                 <v-toolbar flat dense>
                   <v-btn icon @click="filterDialogVisible = false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>Filter ändern</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn text color="primary" @click="filterDone">
-                      <v-icon>done</v-icon>
+                      <v-icon>mdi-check</v-icon>
                     </v-btn>
                   </v-toolbar-items>
                 </v-toolbar>
@@ -65,7 +65,7 @@
                   ></TrainingSelector>
                 </v-col>
                 <v-col md="9">
-                  <div v-show="dataLoaded" class="tp-training-check-in">
+                  <div v-show="dataLoaded" class="tp-training-check-in" :style="{ '--selected-color': selectedTrainingColor } as any">
                     <v-slide-x-transition>
                       <TrainingCheckIn
                           v-if="selectedTraining && animationTrigger"
@@ -106,18 +106,27 @@
 
 <script lang="ts">
 
-import Vue from "vue";
-import {mapGetters} from 'vuex'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useCookieAuthStore } from '@/store/cookieAuth'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
 import TrainingCheckIn from "../components/TrainingCheckIn.vue";
 import GroupSelect from "../components/GroupSelect.vue";
 import CookieUserDialog from "../components/CookieUserDialog.vue";
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingSelector from "../components/TrainingSelector.vue";
+import { useDisplay } from 'vuetify'
 
-export default Vue.extend({
+export default {
   name: "TrainingsCheckInPage",
   components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
+  setup() {
+    const { xs } = useDisplay()
+    return { xs }
+  },
   data: function () {
     return {
       initalSelectedTrainingId: null,
@@ -135,12 +144,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser', cookieUser: 'cookieUser'}),
-    ...mapGetters('masterData', {
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupById: 'getGroupById',
-      getBranchById: 'getBranchById',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    cookieUser() { return useCookieAuthStore().cookieUser },
     currentUser() {
       if (this.loggedInUser) {
         return this.loggedInUser;
@@ -155,6 +160,16 @@ export default Vue.extend({
     selectedTraining() {
       return this.getUpcomingTrainingById(this.selectedTrainingId);
     },
+    selectedTrainingColor() {
+      if (this.selectedTraining) {
+        const masterData = useMasterDataStore();
+        const mainBranch = masterData.getBranchByGroupIds(this.selectedTraining.groupIds);
+        if (mainBranch) {
+          return mainBranch.colorHex;
+        }
+      }
+      return '#64b5f6';
+    },
     currentUserGroupId() {
       if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
         return this.currentUser.groupIds[0]
@@ -162,13 +177,14 @@ export default Vue.extend({
       return null
     },
     filterDisplayValue() {
+      const masterData = useMasterDataStore();
       if (this.filterGroupId) {
-        let group = this.getGroupById(this.filterGroupId)
+        let group = masterData.getGroupById(this.filterGroupId)
         if (group) {
           return group.name;
         }
       } else if (this.filterBranchId) {
-        let branch = this.getBranchById(this.filterBranchId)
+        let branch = masterData.getBranchById(this.filterBranchId)
         if (branch) {
           return branch.name;
         }
@@ -212,12 +228,12 @@ export default Vue.extend({
     },
     findBranch(groupIds) {
       if (groupIds && groupIds.length > 0) {
-        return this.getBranchByGroupId(groupIds[0]);
+        return useMasterDataStore().getBranchByGroupId(groupIds[0]);
       }
       return null;
     },
     async fetchSingleTraining(trainingId: Number) {
-      const {data} = await this.$http.get('/training/upcoming/' + trainingId);
+      const {data} = await httpClient.get('/training/upcoming/' + trainingId);
       if (data.data) {
         this.addToUpcomingTrainings(data.data);
       } else {
@@ -253,7 +269,7 @@ export default Vue.extend({
           url += '?branchId=' + this.filterBranchId;
         }
         //load data
-        const {data} = await this.$http.get(url);
+        const {data} = await httpClient.get(url);
         if (data.data && data.data.length > 0) {
           for (let trObj of data.data) {
             this.addToUpcomingTrainings(trObj);
@@ -271,7 +287,7 @@ export default Vue.extend({
         participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
       }
       if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
-        this.upcomingTrainings.push(new Training(trainingJson.id, this.moment(trainingJson.start, 'YYYY-MM-DDTHH:mm'), this.moment(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
+        this.upcomingTrainings.push(new Training(trainingJson.id, moment(trainingJson.start, 'YYYY-MM-DDTHH:mm'), moment(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
       }
       this.upcomingTrainings.sort(function (a: Training, b: Training) {
         return a.start - b.start;
@@ -282,21 +298,21 @@ export default Vue.extend({
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
         participant[0].attend = true;
-        this.$set(this.selectedTraining.participants[index], 'attend', true);
+        this.selectedTraining.participants[index].attend = true;
       } else {
         this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, true, null));
       }
-      this.$emit("showSnackbar", "Für das Training angemeldet", "success");
+      useSnackbarStore().show("Für das Training angemeldet", "success");
     },
     updateCheckedOut() {
       let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
-        this.$set(this.selectedTraining.participants[index], 'attend', false);
+        this.selectedTraining.participants[index].attend = false;
       } else {
         this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, false, null));
       }
-      this.$emit("showSnackbar", "Vom Training abgemeldet", "info");
+      useSnackbarStore().show("Vom Training abgemeldet", "info");
     },
     showCookieUserLogin() {
       this.cookieUserDialogVisible = true;
@@ -315,7 +331,7 @@ export default Vue.extend({
       return null;
     },
     removeCookieUser() {
-      this.$store.dispatch('eraseCookieUser')
+      useCookieAuthStore().eraseCookieUser()
     },
     attendingStatus(trainingId) {
       const training = this.getUpcomingTrainingById(trainingId);
@@ -351,10 +367,39 @@ export default Vue.extend({
       }
     }
   }
-})
+}
 
 </script>
 
 <style scoped lang="scss">
+.tp-training-check-in {
+  --selected-color: #64b5f6;
+  position: relative;
 
+  .tp-training-check-in__card {
+    position: relative;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--selected-color) 8%, white) 0%,
+      transparent 25%
+    );
+    margin-left: 6px;
+
+    :deep(.v-card__title) {
+      justify-content: center !important;
+      text-align: center !important;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background-color: var(--selected-color);
+      border-radius: 4px 0 0 4px;
+    }
+  }
+}
 </style>

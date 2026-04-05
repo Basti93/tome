@@ -11,12 +11,13 @@ class RefreshControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
         $user = new User([
-            'name' => 'Test',
+            'firstName' => 'Test',
+            'familyName' => 'User',
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -26,7 +27,7 @@ class RefreshControllerTest extends TestCase
 
     public function testRefresh()
     {
-        $response = $this->post('api/auth/login', [
+        $response = $this->post('api/v1/auth/login', [
             'email' => 'test@email.com',
             'password' => '123456'
         ]);
@@ -36,18 +37,18 @@ class RefreshControllerTest extends TestCase
         $responseJSON = json_decode($response->getContent(), true);
         $token = $responseJSON['token'];
 
-        $this->post('api/auth/refresh', [], [
+        $this->post('api/v1/auth/refresh', [], [
             'Authorization' => 'Bearer ' . $token
         ])->assertJsonStructure([
             'status',
             'token',
-            'expires_in'
+            'expiresIn'
         ])->isOk();
     }
 
     public function testRefreshWithError()
     {
-        $response = $this->post('api/auth/refresh', [], [
+        $response = $this->post('api/v1/auth/refresh', [], [
             'Authorization' => 'Bearer Wrong'
         ]);
 

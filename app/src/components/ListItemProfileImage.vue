@@ -1,14 +1,12 @@
 <template>
-    <v-list-item-avatar>
-        <v-img v-if="imageUrl" :size="dSize" :src="imageUrl"></v-img>
-        <v-icon v-else :size="dSize">account_circle</v-icon>
-    </v-list-item-avatar>
+    <v-avatar :size="dSize">
+        <v-img v-if="imageUrl" :src="imageUrl"></v-img>
+        <v-icon v-else :size="dSize">mdi-account-circle</v-icon>
+    </v-avatar>
 </template>
 
 <script lang="ts">
-    import Vue from 'vue'
-
-    export default Vue.extend({
+    export default {
         name: "tome-list-item-profile-image",
         props: {
             imagePath: String,
@@ -17,7 +15,7 @@
         data: function () {
             return {
                 dSize: 24,
-                serverUrl: process.env.VUE_APP_IMAGE_FOLDER_URL,
+                serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
             }
         },
         created() {
@@ -33,5 +31,5 @@
                 return null;
             },
         },
-    });
+    }
 </script>

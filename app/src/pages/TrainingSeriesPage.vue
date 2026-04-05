@@ -15,7 +15,7 @@
                       :items="filterBranches"
                       v-model="filterBranchId"
                       v-on:change="filterChanged()"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
                       flat
                       dense
@@ -37,7 +37,7 @@
                   elevation="2"
                   color="primary"
                   @click="openCreateDialog()">
-                <v-icon>add</v-icon>
+                <v-icon>mdi-plus</v-icon>
 
               </v-btn>
             </template>
@@ -47,13 +47,13 @@
               <v-card>
                 <v-toolbar flat>
                   <v-btn icon @click="showCreateDialog = false">
-                    <v-icon>close</v-icon>
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>{{editDialogTitle}}</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn text color="primary" @click="save()">
-                      <v-icon left>check</v-icon>
+                      <v-icon left>mdi-check</v-icon>
                       Speichern
                     </v-btn>
                   </v-toolbar-items>
@@ -61,24 +61,25 @@
                 <v-divider></v-divider>
                 <v-card-text>
                   <v-tabs
+                      v-model="activeTab"
                       icons-and-text
                   >
-                    <v-tabs-slider color="yellow"></v-tabs-slider>
 
-                    <v-tab href="#tab-1">
+                    <v-tab>
                       Serie
-                      <v-icon>event</v-icon>
+                      <v-icon>mdi-calendar-month</v-icon>
                     </v-tab>
 
-                    <v-tab href="#tab-2">
+                    <v-tab>
                       Trainingsdaten
-                      <v-icon>groups</v-icon>
+                      <v-icon>mdi-account-multiple</v-icon>
                     </v-tab>
-
-                    <v-tab-item :value="'tab-1'">
-                      <v-container grid-list-md>
-                        <v-layout wrap>
-                          <v-flex xs12>
+                  </v-tabs>
+                  <v-window v-model="activeTab">
+                    <v-window-item>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12">
                             <v-alert
                                 type="info"
                                 class="text-small"
@@ -87,15 +88,15 @@
                                 outlined>
                               Trainings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                             </v-alert>
-                          </v-flex>
-                          <v-flex xs12 md9 offset-md-1>
+                          </v-col>
+                          <v-col cols="12" md="9" offset-md="1">
                             <v-label>Wochentage</v-label>
                             <WeekdaysComponent
                                 :weekdays="editedTrainingSeries.weekdays"
                                 v-on:change="weekdaysChanged"
                             ></WeekdaysComponent>
-                          </v-flex>
-                          <v-flex xs12 md3 offset-md-1>
+                          </v-col>
+                          <v-col cols="12" md="3" offset-md="1">
                             <v-menu
                                 ref="deferUntilMenuOpened"
                                 :close-on-content-click="false"
@@ -115,12 +116,12 @@
                               <v-date-picker v-model="editedTrainingSeries.deferUntil"
                                              @input="deferUntilMenuOpened = false"></v-date-picker>
                             </v-menu>
-                          </v-flex>
-                        </v-layout>
+                          </v-col>
+                        </v-row>
                       </v-container>
-                    </v-tab-item>
-                    <v-tab-item :value="'tab-2'">
-                      <v-container grid-list-md>
+                    </v-window-item>
+                    <v-window-item>
+                      <v-container>
                         <v-row>
                           <v-col>
                             <EditTrainingBase
@@ -143,8 +144,8 @@
                           </v-col>
                         </v-row>
                       </v-container>
-                    </v-tab-item>
-                  </v-tabs>
+                    </v-window-item>
+                  </v-window>
                 </v-card-text>
               </v-card>
             </v-dialog>
@@ -202,10 +203,10 @@
                             <v-icon
                                 class="mr-2"
                                 @click="editItem(item)"
-                                color="success">edit</v-icon>
+                                color="success">mdi-pencil</v-icon>
                             <v-icon
                                 @click="confirmAndDelete(item)"
-                                color="error">delete</v-icon>
+                                color="error">mdi-trash-can</v-icon>
                         </template>
                       </v-data-table>
                     </v-col>
@@ -227,19 +228,26 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import EditTrainingBase from "../components/EditTrainingBase";
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import { useSnackbarStore } from '@/store/snackbar'
+import httpClient from '@/http/api'
+import moment from 'moment'
+import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
-import {mapGetters, mapState} from 'vuex'
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
 import WeekdaysComponent from "../components/WeekdaysComponent.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
 
-export default Vue.extend({
+export default {
+  setup() {
+    return { moment };
+  },
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
   data() {
     return {
+      activeTab: 0,
       showFilterDialog: false,
       showConfirmDialog: false,
       itemToDelete: null,
@@ -266,34 +274,29 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.trainerBranchIds && this.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.getBranchById(this.trainerBranchIds[0]).id;
+    const masterData = useMasterDataStore();
+    const loggedInUser = useAuthStore().user;
+    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+      this.filterBranchId = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id;
     }
-    this.filterBranches = this.filterBranches.concat(this.branches)
+    this.filterBranches = this.filterBranches.concat(masterData.branches)
     this.fetchData();
   },
   computed: {
-    ...mapGetters({loggedInUser: 'loggedInUser'}),
-    ...mapGetters('masterData', {
-      getGroupsByIds: 'getGroupsByIds',
-      getBranchByGroupId: 'getBranchByGroupId',
-      getGroupsByBranchId: 'getGroupsByBranchId',
-      getBranchById: 'getBranchById',
-      getSimpleTrainersByIds: 'getSimpleTrainersByIds'
-    }),
-    ...mapState('masterData', {
-      groups: 'groups',
-      branches: 'branches',
-    }),
+    loggedInUser() { return useAuthStore().user },
+    groups() { return useMasterDataStore().groups },
+    branches() { return useMasterDataStore().branches },
     trainerGroupIds() {
-      return this.loggedInUser.trainerGroupIds
+      return this.loggedInUser ? this.loggedInUser.trainerGroupIds : []
     },
     deferUntilFormatted(): String {
       return this.formatDate(this.editedTrainingSeries.deferUntil)
     },
     trainerBranchIds() {
-      return this.loggedInUser.trainerBranchIds
+      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
     },
+    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
+    getSimpleTrainersByIds() { return (ids) => useMasterDataStore().getSimpleTrainersByIds(ids) },
   },
   methods: {
     openCreateDialog() {
@@ -317,16 +320,17 @@ export default Vue.extend({
         this.loading = true;
         this.trainingSeriesList = [];
         let seriesUrl = '/trainingSeries';
+        const masterData = useMasterDataStore();
         // Don't set filter with the general item 'Allgemein'
         if (this.filterBranchId > 0) {
-          seriesUrl += '?groupIds=' + this.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
+          seriesUrl += '?groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
         }
-        const response = await this.$http.get(seriesUrl);
+        const response = await httpClient.get(seriesUrl);
         for (const responseObject of response.data.data) {
           this.trainingSeriesList.push(TrainingSeries.from(responseObject))
         }
 
-        const trainerRes = await this.$http.get('/user/trainer');
+        const trainerRes = await httpClient.get('/user/trainer');
         this.trainers = trainerRes.data;
       } finally {
         this.loading = false;
@@ -336,7 +340,7 @@ export default Vue.extend({
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      let momDeferUntil = this.moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      let momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
       if (momDeferUntil.isValid()) {
         this.editedTrainingSeries.deferUntil = momDeferUntil.format('Y-MM-DD')
       }
@@ -348,16 +352,16 @@ export default Vue.extend({
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let response = await this.$http.delete('/trainingSeries/' + this.itemToDelete.id);
+      let response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
-        this.$emit("showSnackbar", "Serie erfolgreich gelöscht", "success")
+        useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
         this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
       } else {
-        this.$emit("showSnackbar", "Serie konnte nicht gelöscht werden", "error")
+        useSnackbarStore().show("Serie konnte nicht gelöscht werden", "error")
       }
     },
     async save() {
-      const momDeferUntil = this.moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
       let postData = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,
@@ -375,15 +379,15 @@ export default Vue.extend({
       if (this.editedTrainingSeries.id) {
         url += '/' + this.editedTrainingSeries.id;
         postData.id = this.editedTrainingSeries.id;
-        res = await this.$http.put(url, postData);
+        res = await httpClient.put(url, postData);
       } else {
-        res = await this.$http.post(url, postData);
+        res = await httpClient.post(url, postData);
       }
 
       if (res.data.status == 'ok') {
         this.showCreateDialog = false;
         this.fetchData();
-        this.$emit('showSnackbar', 'Serie erfolgreich erstellt');
+        useSnackbarStore().show('Serie erfolgreich erstellt');
       }
 
     },
@@ -394,17 +398,23 @@ export default Vue.extend({
       return time ? time.substring(0, time.length - 3) : '';
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
-      const momDeferUntil = this.moment(item.deferUntil);
-      return momDeferUntil.isValid() && momDeferUntil >= this.moment().startOf('day');
+      const momDeferUntil = moment(item.deferUntil);
+      return momDeferUntil.isValid() && momDeferUntil >= moment().startOf('day');
     },
     weekdaysChanged(weekdays) {
       this.editedTrainingSeries.weekdays = weekdays;
+    },
+    getLocationNameById(locationId) {
+      return useMasterDataStore().getLocationNameById(locationId);
+    },
+    getGroupsByIds(groupIds) {
+      return useMasterDataStore().getGroupsByIds(groupIds);
     },
     dayArrayToString,
     formatDate,
     parseDate,
   },
-})
+}
 </script>
 
 <style scoped>

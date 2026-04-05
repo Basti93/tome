@@ -1,167 +1,158 @@
 <?php
 
-use Dingo\Api\Routing\Router;
+use Illuminate\Support\Facades\Route;
 
-/** @var Router $api */
-$api = app(Router::class);
+Route::prefix('v1')->group(function () {
 
-$api->version('v1', function (Router $api) {
-
-    //free for all
-    $api->group(['prefix' => 'training'], function(Router $api) {
-        $api->get('/simplecalendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getSimpleTrainings');
-        $api->get('/simplecalendar/planned', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getPlannedTrainings');
-        $api->get('/upcoming', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainings');
-        $api->get('/upcoming/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTraining');
-        $api->post('{id}/checkinunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkInUnregistered');
-        $api->post('{id}/checkoutunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOutUnregistered');
+    // Free for all
+    Route::prefix('training')->group(function () {
+        Route::get('/simplecalendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getSimpleTrainings');
+        Route::get('/simplecalendar/planned', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getPlannedTrainings');
+        Route::get('/upcoming', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainings');
+        Route::get('/upcoming/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTraining');
+        Route::post('{id}/checkinunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkInUnregistered');
+        Route::post('{id}/checkoutunregistered/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOutUnregistered');
     });
 
-    $api->group(['prefix' => 'branch'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\BranchController@index');
+    Route::prefix('branch')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\BranchController@index');
     });
 
-    $api->group(['prefix' => 'faq'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\FaqController@index');
-        $api->get('/files', 'App\\Api\\V1\\Controllers\\FaqController@getAllInfoDocuments');
+    Route::prefix('faq')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\FaqController@index');
+        Route::get('/files', 'App\\Api\\V1\\Controllers\\FaqController@getAllInfoDocuments');
     });
 
-    $api->group(['prefix' => 'notifications'], function(Router $api) {
-        $api->post('/subscribe', 'App\\Api\\V1\\Controllers\\NotificationController@subscribe');
+    Route::prefix('notifications')->group(function () {
+        Route::post('/subscribe', 'App\\Api\\V1\\Controllers\\NotificationController@subscribe');
     });
 
-    $api->group(['prefix' => 'content'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\ContentController@index');
+    Route::prefix('content')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\ContentController@index');
     });
 
-    $api->group(['prefix' => 'location'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\LocationController@index');
+    Route::prefix('location')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\LocationController@index');
     });
 
-    $api->group(['prefix' => 'group'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\GroupController@index');
-        $api->get('/branch/{id}', 'App\\Api\\V1\\Controllers\\GroupController@getByBranchId');
+    Route::prefix('group')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\GroupController@index');
+        Route::get('/branch/{id}', 'App\\Api\\V1\\Controllers\\GroupController@getByBranchId');
     });
 
-    $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
+    Route::prefix('trainingSeries')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@index');
     });
 
-    $api->group(['prefix' => 'simpleuser'], function(Router $api) {
-        $api->get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
-        $api->post('{id}/storeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@storeAbsence');
-        $api->post('{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@removeAbsence');
-        $api->get('/trainers', 'App\\Api\\V1\\Controllers\\SimpleUserController@getTrainers');
+    Route::prefix('simpleuser')->group(function () {
+        Route::get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
+        Route::post('{id}/storeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@storeAbsence');
+        Route::post('{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@removeAbsence');
+        Route::get('/trainers', 'App\\Api\\V1\\Controllers\\SimpleUserController@getTrainers');
     });
 
-    $api->group(['prefix' => 'auth'], function(Router $api) {
-        $api->post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp');
-        $api->post('login', 'App\\Api\\V1\\Controllers\\LoginController@login');
+    Route::prefix('auth')->group(function () {
+        Route::post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp')->middleware('throttle:3,1');
+        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:10,1'); // Increased to allow account lockout to trigger
 
-        $api->post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail');
-        $api->post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
+        Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
+        Route::post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
 
-        $api->post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
-        $api->post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
-        $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
+        Route::post('email/send', 'App\\Api\\V1\\Controllers\\EmailVerificationController@sendVerificationEmail')->middleware('throttle:3,1');
+        Route::post('email/verify', 'App\\Api\\V1\\Controllers\\EmailVerificationController@verifyEmail')->middleware('throttle:5,1');
+
+        Route::post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
+        Route::post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
+        Route::get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
     });
 
-    $api->group(['middleware' => 'jwt.auth'], function(Router $api) {
-        Route::resource('roles','RoleController');
-        Route::resource('users','UserController');
-        Route::resource('trainings','TrainingController');
-
-        $api->group(['prefix' => 'user'], function(Router $api) {
-            $api->get('/', 'App\\Api\\V1\\Controllers\\UserController@index');
-            $api->get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');
-            $api->get('/trainer', 'App\\Api\\V1\\Controllers\\UserController@getTrainers');
-            $api->get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
-            $api->get('/allAbsence', 'App\\Api\\V1\\Controllers\\UserController@getAllAbsenceUsers');
-            $api->put('/{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\UserController@removeAbsence');
-            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
-            $api->put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
-            $api->post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
-            $api->post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
-            $api->post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
+    Route::middleware('jwt.auth')->group(function () {
+        Route::prefix('user')->group(function () {
+            Route::get('/', 'App\\Api\\V1\\Controllers\\UserController@index');
+            Route::get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');
+            Route::get('/trainer', 'App\\Api\\V1\\Controllers\\UserController@getTrainers');
+            Route::get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
+            Route::get('/allAbsence', 'App\\Api\\V1\\Controllers\\UserController@getAllAbsenceUsers');
+            Route::put('/{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\UserController@removeAbsence');
+            Route::delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
+            Route::put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
+            Route::post('/unregistered', 'App\\Api\\V1\\Controllers\\UserController@createUnregistered');
+            Route::post('/me/changepassword', 'App\\Api\\V1\\Controllers\\ChangePasswordController@changePassword');
+            Route::post('/me/uploadprofileimage', 'App\\Api\\V1\\Controllers\\ImageController@uploadProfileImage');
         });
 
-        $api->group(['prefix' => 'group'], function(Router $api) {
-            $api->post('/', 'App\\Api\\V1\\Controllers\\GroupController@store');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\GroupController@update');
-            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\GroupController@destroy');
+        Route::prefix('group')->group(function () {
+            Route::post('/', 'App\\Api\\V1\\Controllers\\GroupController@store');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\GroupController@update');
+            Route::delete('{id}', 'App\\Api\\V1\\Controllers\\GroupController@destroy');
         });
 
-        $api->group(['prefix' => 'location'], function(Router $api) {
-            $api->post('/', 'App\\Api\\V1\\Controllers\\LocationController@store');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\LocationController@update');
+        Route::prefix('location')->group(function () {
+            Route::post('/', 'App\\Api\\V1\\Controllers\\LocationController@store');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\LocationController@update');
         });
 
-        $api->group(['prefix' => 'branch'], function(Router $api) {
-            $api->post('/', 'App\\Api\\V1\\Controllers\\BranchController@store');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\BranchController@update');
+        Route::prefix('branch')->group(function () {
+            Route::post('/', 'App\\Api\\V1\\Controllers\\BranchController@store');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\BranchController@update');
         });
 
-        $api->group(['prefix' => 'trainingSeries'], function(Router $api) {
-            $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@update');
-            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@destroy');
+        Route::prefix('trainingSeries')->group(function () {
+            Route::post('/', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@store');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@update');
+            Route::delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingSeriesController@destroy');
         });
 
-        $api->group(['prefix' => 'trainingevaluation'], function(Router $api) {
-            $api->get('/accountingtimestatistics', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getAccountingTimeStatistics');
-            $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getPastTrainingsForTrainer');
-            $api->post('/exportaccountingtimes', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@exportAccountingTimes');
-            $api->post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@removeParticipant');
-            $api->post('{id}/addparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@addParticipant');
-            $api->post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@trainingEvaluated');
-            $api->post('{id}/updateaccountingtime', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateAccountingTime');
+        Route::prefix('trainingevaluation')->group(function () {
+            Route::get('/accountingtimestatistics', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getAccountingTimeStatistics');
+            Route::get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getPastTrainingsForTrainer');
+            Route::post('/exportaccountingtimes', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@exportAccountingTimes');
+            Route::post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@removeParticipant');
+            Route::post('{id}/addparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@addParticipant');
+            Route::post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@trainingEvaluated');
+            Route::post('{id}/updateaccountingtime', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateAccountingTime');
         });
 
-        $api->group(['prefix' => 'trainingprepare'], function(Router $api) {
-            $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@getUpcomingTrainingsForTrainer');
-            $api->post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@trainingEvaluated');
-            $api->post('{id}/updatetrainingtime', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateTrainingTime');
-            $api->post('{id}/updatelocation', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateLocation');
-            $api->post('{id}/updatecomment', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateComment');
-            $api->post('{id}/updatecontent', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateContent');
+        Route::prefix('trainingprepare')->group(function () {
+            Route::get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@getUpcomingTrainingsForTrainer');
+            Route::post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@trainingEvaluated');
+            Route::post('{id}/updatetrainingtime', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateTrainingTime');
+            Route::post('{id}/updatelocation', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateLocation');
+            Route::post('{id}/updatecomment', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateComment');
+            Route::post('{id}/updatecontent', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateContent');
         });
 
-        $api->group(['prefix' => 'training'], function(Router $api) {
-            $api->get('/participationcount', 'App\\Api\\V1\\Controllers\\TrainingController@getParticipationCount');
-            $api->get('/calendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getTrainings');
-            $api->get('/', 'App\\Api\\V1\\Controllers\\TrainingController@index');
-            $api->get('/sort', 'App\\Api\\V1\\Controllers\\TrainingController@getBySort');
-            $api->get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getById');
-            $api->post('/', 'App\\Api\\V1\\Controllers\\TrainingController@store');
-            $api->post('{id}/checkin/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkIn');
-            $api->post('{id}/checkout/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOut');
-            $api->post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingController@trainingPrepared');
-            $api->patch('{id}/deleteinfuture', 'App\\Api\\V1\\Controllers\\TrainingController@deleteinfuture');
-            $api->put('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@update');
-            $api->get('{id}/trainingscount/{year}', 'App\\Api\\V1\\Controllers\\TrainingController@getTrainingTimeline');
-            $api->get('/upcoming/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainingsForUser');
-
-            $api->delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@destroy');
+        Route::prefix('training')->group(function () {
+            Route::get('/participationcount', 'App\\Api\\V1\\Controllers\\TrainingController@getParticipationCount');
+            Route::get('/calendar', 'App\\Api\\V1\\Controllers\\TrainingCalendarController@getTrainings');
+            Route::get('/', 'App\\Api\\V1\\Controllers\\TrainingController@index');
+            Route::get('/sort', 'App\\Api\\V1\\Controllers\\TrainingController@getBySort');
+            Route::get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getById');
+            Route::post('/', 'App\\Api\\V1\\Controllers\\TrainingController@store');
+            Route::post('{id}/checkin/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkIn');
+            Route::post('{id}/checkout/{userId}', 'App\\Api\\V1\\Controllers\\TrainingController@checkOut');
+            Route::post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingController@trainingPrepared');
+            Route::patch('{id}/deleteinfuture', 'App\\Api\\V1\\Controllers\\TrainingController@deleteinfuture');
+            Route::put('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@update');
+            Route::get('{id}/trainingscount/{year}', 'App\\Api\\V1\\Controllers\\TrainingController@getTrainingTimeline');
+            Route::get('/upcoming/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainingsForUser');
+            Route::delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@destroy');
         });
 
-        $api->get('refresh', [
-            'middleware' => 'jwt.refresh',
-            function() {
-                return response()->json([
-                    'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!'
-                ]);
-            }
-        ]);
+        Route::get('refresh', function () {
+            return response()->json([
+                'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!'
+            ]);
+        })->middleware('jwt.refresh');
     });
 
-    $api->get('/hello',function(){
+    Route::get('/hello', function () {
         return 'Hello World!';
     });
-    $api->get('/mailtest',function(){
-        \Illuminate\Support\Facades\Mail::raw('Test Mail', function ($message){
+    Route::get('/mailtest', function () {
+        \Illuminate\Support\Facades\Mail::raw('Test Mail', function ($message) {
             $message->to('bindersebastian@online.de');
         });
     });
-
 });
