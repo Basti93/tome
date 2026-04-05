@@ -110,10 +110,38 @@ Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginControll
 
 ## Setup
 
-### Frontend `.env.local` (Optional)
+### Frontend `.env.local` (Development)
+Required for local development. Copy from `.env.local.example`:
+
+```bash
+cp app/.env.local.example app/.env.local
 ```
-# Optional: Override API URL (defaults to /api/v1 which is relative to the server)
+
+Then edit with your development values:
+
+```
+# Firebase Cloud Messaging (development project recommended)
+VITE_FIREBASE_API_KEY=your_dev_api_key
+VITE_FIREBASE_AUTH_DOMAIN=ssc-tome-dev.firebaseapp.com
+VITE_FIREBASE_DATABASE_URL=https://ssc-tome-dev.firebaseio.com
+VITE_FIREBASE_PROJECT_ID=ssc-tome-dev
+VITE_FIREBASE_STORAGE_BUCKET=ssc-tome-dev.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_dev_sender_id
+VITE_FIREBASE_APP_ID=your_dev_app_id
+
+# Optional: Override API URL (defaults to /api/v1)
 VITE_APP_API_URL=http://localhost:8000/api/v1
+```
+
+**Never commit `.env.local`** - it contains sensitive credentials.
+
+### Frontend `.env.production` (Optional)
+For production builds (`npm run build`). If omitted, uses variables from `.env.local`:
+
+```
+VITE_FIREBASE_API_KEY=your_prod_api_key
+VITE_FIREBASE_AUTH_DOMAIN=ssc-tome.firebaseapp.com
+# ... other production values
 ```
 
 ### Backend `.env` (key vars)
