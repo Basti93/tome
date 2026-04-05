@@ -94,6 +94,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useAuthStore } from '@/store/auth'
+import httpClient from '@/http/api'
+import { useSnackbarStore } from '@/store/snackbar'
 
 interface NotificationPreferences {
   trainer_upcoming: boolean
@@ -138,42 +140,34 @@ export default defineComponent({
   methods: {
     async loadPreferences() {
       try {
-        const response = await fetch('/api/v1/user/me/notification-preferences', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        if (response.ok) {
-          const data = await response.json()
+        const { data } = await httpClient.get('/user/me/notification-preferences')
+        if (data && data.notification_preferences) {
           this.preferences = data.notification_preferences
           this.originalPreferences = { ...this.preferences }
         }
       } catch (error) {
         console.error('Error loading notification preferences:', error)
+        useSnackbarStore().show('Fehler beim Laden der Benachrichtigungseinstellungen', 'error')
       }
     },
     async save() {
       this.loading = true
       try {
-        const response = await fetch('/api/v1/user/me/notification-preferences', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ notification_preferences: this.preferences }),
+        const { data } = await httpClient.put('/user/me/notification-preferences', {
+          notification_preferences: this.preferences,
         })
-        if (response.ok) {
-          const data = await response.json()
+        if (data && data.status === 'ok') {
           this.originalPreferences = { ...this.preferences }
           this.authStore.updateUser({
             ...this.authStore.user,
             notification_preferences: data.notification_preferences,
           })
+          useSnackbarStore().show('Benachrichtigungseinstellungen gespeichert', 'success')
           this.$emit('saved', data.notification_preferences)
         }
       } catch (error) {
         console.error('Error saving notification preferences:', error)
+        useSnackbarStore().show('Fehler beim Speichern der Benachrichtigungseinstellungen', 'error')
       } finally {
         this.loading = false
       }
