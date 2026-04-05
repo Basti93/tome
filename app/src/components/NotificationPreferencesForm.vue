@@ -1,7 +1,6 @@
 <template>
   <div class="notification-preferences-form">
-    <v-form v-model="valid">
-      <v-container>
+    <v-container>
         <v-row>
           <v-col cols="12">
             <v-card flat class="mb-4">
@@ -10,24 +9,19 @@
                 Trainer-Benachrichtigungen
               </v-card-title>
               <v-card-text>
-                <v-row>
-                  <v-col cols="12">
-                    <v-checkbox
-                      v-model="preferences.trainer_upcoming"
-                      label="Erinnerung vor Training"
-                      hint="Benachrichtigung 4 Stunden vor einem Training"
-                      persistent-hint
-                    ></v-checkbox>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-checkbox
-                      v-model="preferences.trainer_cancel_alert"
-                      label="Absagen-Benachrichtigungen"
-                      hint="Benachrichtigung wenn ein Sportler das Training absagt"
-                      persistent-hint
-                    ></v-checkbox>
-                  </v-col>
-                </v-row>
+                <v-checkbox
+                  v-model="preferences.trainer_upcoming"
+                  label="Erinnerung vor Training"
+                  hint="Benachrichtigung 4 Stunden vor einem Training"
+                  persistent-hint
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.trainer_cancel_alert"
+                  label="Absagen-Benachrichtigungen"
+                  hint="Benachrichtigung wenn ein Sportler das Training absagt"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -38,16 +32,12 @@
                 Sportler-Benachrichtigungen
               </v-card-title>
               <v-card-text>
-                <v-row>
-                  <v-col cols="12">
-                    <v-checkbox
-                      v-model="preferences.participant_upcoming"
-                      label="Training-Erinnerungen"
-                      hint="Benachrichtigung 4 Stunden vor einem Training"
-                      persistent-hint
-                    ></v-checkbox>
-                  </v-col>
-                </v-row>
+                <v-checkbox
+                  v-model="preferences.participant_upcoming"
+                  label="Training-Erinnerungen"
+                  hint="Benachrichtigung 4 Stunden vor einem Training"
+                  persistent-hint
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -58,53 +48,46 @@
                 Sonstige Benachrichtigungen
               </v-card-title>
               <v-card-text>
-                <v-row>
-                  <v-col cols="12">
-                    <v-checkbox
-                      v-model="preferences.absence_alert"
-                      label="Abwesenheits-Benachrichtigungen"
-                      hint="Benachrichtigung wenn ein Sportler Abwesenheit meldet"
-                      persistent-hint
-                    ></v-checkbox>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-checkbox
-                      v-model="preferences.admin_messages"
-                      label="Administrator-Nachrichten"
-                      hint="Nachrichten von Administratoren"
-                      persistent-hint
-                    ></v-checkbox>
-                  </v-col>
-                </v-row>
+                <v-checkbox
+                  v-model="preferences.absence_alert"
+                  label="Abwesenheits-Benachrichtigungen"
+                  hint="Benachrichtigung wenn ein Sportler Abwesenheit meldet"
+                  persistent-hint
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.admin_messages"
+                  label="Administrator-Nachrichten"
+                  hint="Nachrichten von Administratoren"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
+        <v-row class="mt-4">
+          <v-col cols="12" class="text-right">
+            <v-btn
+              text
+              @click="reset"
+              :disabled="!hasChanges"
+              class="mr-2"
+            >
+              Zurücksetzen
+            </v-btn>
+            <v-btn
+              color="primary"
+              elevation="1"
+              @click="save"
+              :disabled="!hasChanges || loading"
+              :loading="loading"
+            >
+              <v-icon left>mdi-content-save</v-icon>
+              Speichern
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-container>
-    </v-form>
-
-    <v-row class="mt-4">
-      <v-col cols="12" class="text-right">
-        <v-btn
-          text
-          @click="reset"
-          :disabled="!hasChanges"
-          class="mr-2"
-        >
-          Zurücksetzen
-        </v-btn>
-        <v-btn
-          color="primary"
-          elevation="1"
-          @click="save"
-          :disabled="!hasChanges || loading"
-          :loading="loading"
-        >
-          <v-icon left>mdi-content-save</v-icon>
-          Speichern
-        </v-btn>
-      </v-col>
-    </v-row>
   </div>
 </template>
 
@@ -138,7 +121,6 @@ export default defineComponent({
         absence_alert: true,
         admin_messages: true,
       } as NotificationPreferences,
-      valid: true,
       loading: false,
     }
   },
