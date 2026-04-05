@@ -6,8 +6,7 @@ use App\NotificationToken;
 use App\User;
 use Illuminate\Console\Command;
 use App\UserTrainingNotification;
-use LaravelFCM\Facades\FCM;
-use LaravelFCM\Message\PayloadDataBuilder;
+use App\Services\FirebaseMessagingService;
 use App\Services\NotificationPreferenceService;
 
 class SendTrainingNotificationsToUsers extends Command
@@ -79,20 +78,20 @@ class SendTrainingNotificationsToUsers extends Command
         if (empty($recipientTokens)) {
             return;
         }
-        //TODO: create table for notification types and add the click_action url
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData([
-            'title' => $title,
-            'body' => $data,
-            'click_action' => empty($url) ? config('app.vue_url') : $url,
-        ]);
-        $data = $dataBuilder->build();
-        $downstreamResponse = FCM::sendTo($recipientTokens, null, null, $data);
 
-        $this->info('Message successfully send to ' . $downstreamResponse->numberSuccess() . ' recipients');
-        $this->info('Failed to send message to ' . $downstreamResponse->numberFailure() . ' recipients');
-        //clean up the unused tokens
-        foreach ($downstreamResponse->tokensToDelete() as $tokenToDelete) {
+        // Send via Firebase
+        $firebaseService = new FirebaseMessagingService();
+        $dataPayload = [
+            'click_action' => empty($url) ? config('app.vue_url') : $url,
+        ];
+
+        $result = $firebaseService->sendToDevices($recipientTokens, $title, $data, $dataPayload);
+
+        $this->info('Message successfully sent to ' . $result['success'] . ' recipients');
+        $this->info('Failed to send message to ' . $result['failure'] . ' recipients');
+
+        // Clean up invalid tokens
+        foreach ($result['tokensToDelete'] as $tokenToDelete) {
             NotificationToken::whereToken($tokenToDelete)->delete();
         }
 

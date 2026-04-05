@@ -8,7 +8,6 @@ use Illuminate\Console\Command;
 use App\Training;
 use App\UserTrainingNotification;
 use DateTime;
-use LaravelFCM\Facades\FCM;
 
 class CancelTrainingNotification extends Command
 {

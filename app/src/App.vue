@@ -28,7 +28,7 @@
           </template>
         </v-banner>
         <v-snackbar
-            v-if="currentUser"
+            v-if="pushPermissionSnackbarVisible"
             v-model="pushPermissionSnackbar"
             location="bottom right"
             :timeout="-1"
@@ -118,39 +118,37 @@ function sendTokenToServer(userId: number, token: string) {
 }
 
 function getFirebaseToken() {
-  import('@/firebase-config').then(({ default: messaging }) => {
-    if (messaging) {
-      import('firebase/messaging').then(({ getToken }) => {
-        getToken(messaging).then((token: string) => {
-          if (token && currentUser.value) {
-            console.log('Firebase token obtained:', token)
-            console.log('Token will be sent to server for user:', currentUser.value.id)
-            sendTokenToServer(currentUser.value.id, token)
-            pushPermissionSnackbar.value = false
-          } else {
-            console.warn('Failed to get token. Token:', !!token, 'User:', !!currentUser.value)
+  import('@/firebase-config').then(({ initializeMessaging }) => {
+    initializeMessaging().then((messaging: any) => {
+      if (messaging) {
+        import('firebase/messaging').then(({ getToken }) => {
+          getToken(messaging).then((token: string) => {
+            if (token && currentUser.value) {
+              console.log('Firebase token obtained:', token)
+              console.log('Token will be sent to server for user:', currentUser.value.id)
+              sendTokenToServer(currentUser.value.id, token)
+              pushPermissionSnackbar.value = false
+            } else {
+              console.warn('Failed to get token. Token:', !!token, 'User:', !!currentUser.value)
+              pushPermissionSnackbar.value = true
+            }
+          }).catch((error: any) => {
+            console.error('Error getting Firebase token:', error)
             pushPermissionSnackbar.value = true
-          }
-        }).catch((error) => {
-          console.error('Error getting Firebase token:', error)
-          pushPermissionSnackbar.value = true
+          })
         })
-      })
-    } else {
-      console.error('Firebase messaging not available')
-    }
+      } else {
+        console.error('Firebase messaging not available')
+      }
+    }).catch((error: any) => {
+      console.error('Error initializing Firebase messaging:', error)
+    })
   })
 }
 
 onMounted(() => {
-  // Register service worker for push notifications
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js').catch((error) => {
-      console.error('Service Worker registration failed:', error)
-    })
-  }
-
   // Get Firebase token for push notifications (both dev and prod)
+  // Firebase automatically handles service worker registration
   if (currentUser.value) {
     getFirebaseToken()
   }
