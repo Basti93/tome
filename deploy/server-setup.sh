@@ -320,6 +320,30 @@ php_admin_value[opcache.validate_timestamps] = 0
 php_admin_value[opcache.revalidate_freq] = 0
 EOF
   chmod 644 "${FPM_POOL_DIR}/tome.conf"
+  # Die Worker laufen als ${TOME_USER} und koennen in /var/log nichts anlegen: Logdatei vorher erstellen
+  fpm_log="/var/log/php${PHP_VERSION}-fpm-tome.log"
+  [[ -e "$fpm_log" ]] || install -o "$TOME_USER" -g adm -m 640 /dev/null "$fpm_log"
+  cat > "${LOGROTATE_DIR:-/etc/logrotate.d}/php-fpm-tome" <<LR
+${fpm_log} {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 640 ${TOME_USER} adm
+}
+/var/log/php${PHP_VERSION}-fpm-tome-slow.log {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
+LR
+  chmod 644 "${LOGROTATE_DIR:-/etc/logrotate.d}/php-fpm-tome"
   # FPM-Konfigurationstest vor dem Reload
   if "php-fpm${PHP_VERSION}" -t >/dev/null 2>&1 || "/usr/sbin/php-fpm${PHP_VERSION}" -t >/dev/null 2>&1; then
     "$SYSTEMCTL" reload "$FPM_SERVICE"

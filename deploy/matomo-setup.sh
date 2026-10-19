@@ -276,6 +276,21 @@ php_admin_flag[session.cookie_httponly] = on
 php_admin_flag[session.cookie_secure] = on
 EOF
   chmod 644 "${FPM_POOL_DIR}/matomo.conf"
+  # Die Worker laufen als matomo und koennen in /var/log nichts anlegen: Logdatei vorher erstellen
+  fpm_log="/var/log/php${PHP_VERSION}-fpm-matomo.log"
+  [[ -e "$fpm_log" ]] || install -o "$MATOMO_USER" -g adm -m 640 /dev/null "$fpm_log"
+  cat > "${LOGROTATE_DIR:-/etc/logrotate.d}/php-fpm-matomo" <<LR
+${fpm_log} {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 640 ${MATOMO_USER} adm
+}
+LR
+  chmod 644 "${LOGROTATE_DIR:-/etc/logrotate.d}/php-fpm-matomo"
   if "php-fpm${PHP_VERSION}" -t >/dev/null 2>&1 || "/usr/sbin/php-fpm${PHP_VERSION}" -t >/dev/null 2>&1; then
     "$SYSTEMCTL" reload "$FPM_SERVICE"
     ok "Pool geschrieben, FPM neu geladen: ${FPM_SOCKET}"
