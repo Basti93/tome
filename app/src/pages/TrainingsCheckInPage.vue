@@ -10,7 +10,7 @@
               <v-icon start color="primary">mdi-account</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
-            <v-btn icon color="primary" @click="filterDialogVisible = true">
+            <v-btn icon color="primary" aria-label="Filter ändern" @click="filterDialogVisible = true">
               <v-icon>mdi-filter-variant</v-icon>
             </v-btn>
             <template v-slot:extension v-if="cookieUser">
@@ -28,7 +28,7 @@
                 persistent>
               <v-card>
                 <v-toolbar flat dense>
-                  <v-btn icon @click="filterDialogVisible = false">
+                  <v-btn icon aria-label="Schließen" @click="filterDialogVisible = false">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>Filter ändern</v-toolbar-title>

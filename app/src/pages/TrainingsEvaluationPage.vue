@@ -10,6 +10,7 @@
                 v-if="xs"
                 color="primary"
                 title="Übungsleiter-Abrechnung exportieren"
+                aria-label="Übungsleiter-Abrechnung exportieren"
                 size="small"
                 v-on:click="showAccountingDialog = true" variant="outlined"
             >
@@ -345,24 +346,23 @@
         :fullscreen="xs"
         persistent>
       <v-card>
-        <v-card-title>
-          <v-btn icon @click="timeDialogOpened=false">
+        <v-toolbar flat>
+          <v-btn icon aria-label="Schließen" @click="timeDialogOpened=false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          Abrechnungszeitraum ändern
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="updateAccountingTime" variant="text">
+          <v-toolbar-title>Abrechnungszeitraum ändern</v-toolbar-title>
+          <v-btn color="primary" @click="updateAccountingTime" variant="text" class="mr-1">
             <v-icon start>mdi-check</v-icon>
             Speichern
           </v-btn>
-        </v-card-title>
+        </v-toolbar>
         <v-divider></v-divider>
         <v-card-text>
           <v-row
               justify="space-around"
               align="center"
           >
-            <v-col style="width: 350px; flex: 0 1 auto;">
+            <v-col style="width: 350px; flex: 0 1 auto;" class="d-flex flex-column align-center">
               <h2>Von</h2>
               <v-time-picker
                   flat
@@ -370,7 +370,7 @@
                   format="24hr"
               ></v-time-picker>
             </v-col>
-            <v-col style="width: 350px; flex: 0 1 auto;">
+            <v-col style="width: 350px; flex: 0 1 auto;" class="d-flex flex-column align-center">
               <h2>Bis</h2>
               <v-time-picker
                   v-model="editEndTime"
@@ -387,7 +387,7 @@
         max-width="800px">
       <v-card>
         <v-toolbar flat>
-          <v-btn icon @click="showCancelReasonDialog=false">
+          <v-btn icon aria-label="Schließen" @click="showCancelReasonDialog=false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>

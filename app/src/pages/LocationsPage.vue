@@ -16,9 +16,7 @@
                   <v-btn
                       title="Neuen Trainingsort erstellen"
                       icon
-                      position="absolute"
-                      location="bottom left"
-                      class="ml-4"
+                      class="ma-2"
                       elevation="1"
                       color="primary"
                       v-bind="props"
@@ -67,7 +65,7 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-8 pa-0 pa-md-4">
+          <v-card-text class="pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>

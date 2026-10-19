@@ -37,7 +37,7 @@
                                       size="small"
                                       color="primary"
                                       start>
-                                    edit
+                                    mdi-pencil
                                   </v-icon>
                                   {{ selectedTraining.start.format('HH:mm') }}
                                 </v-chip>
@@ -49,7 +49,7 @@
                                       size="small"
                                       color="primary"
                                       start>
-                                    edit
+                                    mdi-pencil
                                   </v-icon>
                                   {{ selectedTraining.end.format('HH:mm') }}
                                 </v-chip>
@@ -87,7 +87,7 @@
                                       size="small"
                                       color="primary"
                                       start>
-                                    edit
+                                    mdi-pencil
                                   </v-icon>
                                   {{ getLocationNameById(selectedTraining.locationId) }}
                                 </v-chip>

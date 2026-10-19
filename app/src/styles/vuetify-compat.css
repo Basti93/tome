@@ -118,3 +118,19 @@
     padding: 4px;
   }
 }
+
+/* The footer must not stretch over the free space of short pages. */
+.v-footer {
+  flex: 0 0 auto;
+}
+
+/* Page toolbars with an extension row (title row + filter chips / add button) grow with their content. */
+.v-card > .v-toolbar:has(.v-toolbar__extension) {
+  height: auto !important;
+}
+.v-card > .v-toolbar > .v-toolbar__extension {
+  height: auto !important;
+  min-height: 48px;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}

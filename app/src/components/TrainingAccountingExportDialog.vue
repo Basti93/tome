@@ -2,11 +2,13 @@
   <v-dialog
       :model-value="visible"
       max-width="400px"
+      :fullscreen="xs"
       persistent>
     <v-card>
       <v-toolbar flat>
         <v-btn
             icon
+            aria-label="Schließen"
             @click="close">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -59,12 +61,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs from '@/helpers/dayjs'
 import { filenameFromContentDisposition, saveBlob } from '@/helpers/download'
 
+const { xs } = useDisplay()
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 

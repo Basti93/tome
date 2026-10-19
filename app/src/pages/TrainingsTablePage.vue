@@ -4,35 +4,25 @@
       <v-col>
         <v-card color="secondary">
           <v-toolbar>
-            <v-container fluid>
-              <v-row class="align-center">
-                <v-col cols="6">
-                  <v-toolbar-title>Trainings</v-toolbar-title>
-                </v-col>
-                <v-col cols="6">
-                  <v-select
-                      class="pt-6"
-                      :items="filterBranches"
-                      v-model="filterBranchId"
-                      @update:model-value="filterChanged()"
-                      item-title="name"
-                      item-value="id"
-                      flat
-                      density="compact"
-                      label="Sparte auswählen"
-                      prepend-icon="bubble_chart"
-                  >
-                  </v-select>
-                </v-col>
-              </v-row>
-            </v-container>
+            <v-toolbar-title>Trainings</v-toolbar-title>
+            <v-select
+                class="mr-2 trainings-branch-filter"
+                :items="filterBranches"
+                v-model="filterBranchId"
+                @update:model-value="filterChanged()"
+                item-title="name"
+                item-value="id"
+                flat
+                hide-details
+                density="compact"
+                label="Sparte auswählen"
+            >
+            </v-select>
             <template v-slot:extension>
               <v-btn
                   title="Neues Training anlegen"
                   icon
-                  position="absolute"
-                  location="bottom left"
-                  class="ml-4"
+                  class="ma-2"
                   elevation="1"
                   color="primary"
                   @click="create()">
@@ -41,7 +31,7 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-8 pa-0 pa-md-4">
+          <v-card-text class="pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>
@@ -466,5 +456,7 @@ export default {
 </script>
 
 <style scoped>
-
+.trainings-branch-filter {
+  max-width: 220px;
+}
 </style>
