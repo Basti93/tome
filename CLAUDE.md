@@ -186,7 +186,7 @@ MAIL_*              # Email config for password reset + monthly stats
   cd server && vendor/bin/phpunit   # or: php artisan test --filter=LoginTest
   ```
 - Connection settings are defaults in `server/phpunit.xml` (127.0.0.1:3306, root/root); override them with the `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` environment variables (CI does this). Use `make check SKIP_TEST_DB=1` if a MySQL is already running elsewhere.
-- `Tests\TestCase` seeds the production roles/permissions (admin, trainer, member), fakes mail and mocks the FCM facade, so nothing leaves the process. Use the factories in `server/database/factories` and the helpers `makeUser($role)`, `actingAsJwt($user)` (HttpOnly cookie) and `actingAsBearer($user)`.
+- `Tests\TestCase` seeds the production roles/permissions (admin, trainer, member), fakes mail. Firebase is never contacted: `FirebaseMessagingService` throws without credentials, and `tests/Feature/Notifications/PushDispatchTest.php` replaces it with an overload mock (hence one PHP process per test), while `tests/Unit/Services/FirebaseMessagingServiceTest.php` mocks kreait's `Messaging`. Use the factories in `server/database/factories` and the helpers `makeUser($role)`, `actingAsJwt($user)` (HttpOnly cookie) and `actingAsBearer($user)`.
 - Tests that pin known bugs say `BUG` in a comment or use `markTestSkipped('BUG: ...')`.
 - Static analysis: `cd server && vendor/bin/phpstan analyse` (config `phpstan.neon`, baseline `phpstan-baseline.neon`); style: `vendor/bin/pint` (laravel preset; `--test` only checks).
 

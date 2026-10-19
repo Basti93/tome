@@ -279,12 +279,4 @@ class UserManagementTest extends TestCase
         ], ['Accept' => 'application/json'])
             ->assertStatus(500)->assertExactJson(['status' => 'error', 'message' => 'Failed to upload image']);
     }
-
-    public function test_notification_preferences_endpoint(): void
-    {
-        $this->markTestSkipped(
-            'BUG/DOC: CLAUDE.md documents GET|PUT /v1/user/me/notification-preferences, but this branch has no such route, '
-            .'NotificationPreferenceService or notification_preferences column (the feature lives on branch feature/configurable-push-notifications).'
-        );
-    }
 }
