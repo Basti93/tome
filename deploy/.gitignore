@@ -1,0 +1,3 @@
+.build/
+.env.production
+prod-sim/work/
