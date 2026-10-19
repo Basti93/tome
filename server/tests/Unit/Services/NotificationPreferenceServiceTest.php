@@ -16,7 +16,7 @@ class NotificationPreferenceServiceTest extends TestCase
         $this->service = new NotificationPreferenceService;
     }
 
-    public function test_defaults_enable_all_five_types(): void
+    public function test_defaults_enable_all_types(): void
     {
         $this->assertSame([
             'trainer_upcoming' => true,
@@ -24,6 +24,7 @@ class NotificationPreferenceServiceTest extends TestCase
             'participant_upcoming' => true,
             'absence_alert' => true,
             'admin_messages' => true,
+            'trainer_evaluation_reminder' => true,
         ], $this->service->getDefaultPreferences());
     }
 

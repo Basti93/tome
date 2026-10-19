@@ -9,6 +9,7 @@ use App\Http\Resources\TrainingEvaluation as TrainingEvaluationResource;
 use App\Training;
 use App\TrainingTrainer;
 use App\User;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +26,7 @@ class TrainingEvaluationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant', 'updateAccountingTime', 'getAccountingTimeStatistics', 'exportAccountingTimes']]);
+        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant', 'updateAccountingTime', 'getAccountingTimeStatistics', 'exportAccountingTimes', 'completeTraining', 'getTrainingDetail']]);
     }
 
     public function getPastTrainingsForTrainer($userId)
@@ -64,6 +65,94 @@ class TrainingEvaluationController extends Controller
         $filename = 'abrechnung_'.$from->format('Y-m-d').'_'.$to->format('Y-m-d').'.xlsx';
 
         return Excel::download(new TrainingTrainerExport($user, $from, $to), $filename, \Maatwebsite\Excel\Excel::XLSX);
+    }
+
+    /**
+     * One training for the quick evaluation page (same access rule as completeTraining).
+     */
+    public function getTrainingDetail(Request $request, $trainingId)
+    {
+        $training = $this->findAccessibleTraining($request, $trainingId);
+
+        return TrainingEvaluationResource::make($training);
+    }
+
+    /**
+     * Quick evaluation in one step: attendance, trainer accounting times and the evaluated flag in one transaction.
+     * Body: { attendeeIds: number[], trainerTimes: [{userId, start, end}] }
+     * Calling it again with the same data changes nothing (idempotent).
+     */
+    public function completeTraining(Request $request, $trainingId)
+    {
+        $training = $this->findAccessibleTraining($request, $trainingId);
+
+        $data = $request->validate([
+            'attendeeIds' => 'present|array',
+            'attendeeIds.*' => 'integer|distinct|exists:users,id',
+            'trainerTimes' => 'sometimes|array',
+            'trainerTimes.*.userId' => 'required|integer',
+            'trainerTimes.*.start' => 'required|date',
+            'trainerTimes.*.end' => 'required|date',
+        ]);
+
+        $trainerIds = TrainingTrainer::where('training_id', $training->id)->pluck('user_id')->all();
+        $times = [];
+        foreach ($data['trainerTimes'] ?? [] as $i => $row) {
+            if (! in_array((int) $row['userId'], $trainerIds, true)) {
+                throw ValidationException::withMessages(["trainerTimes.$i.userId" => ['Dieser Trainer gehört nicht zum Training.']]);
+            }
+            $start = Carbon::parse($row['start'])->timezone(config('app.timezone'));
+            $end = Carbon::parse($row['end'])->timezone(config('app.timezone'));
+            if ($end->lessThanOrEqualTo($start) || ! $start->isSameDay($end)) {
+                throw ValidationException::withMessages(["trainerTimes.$i.end" => ['Die Endzeit muss nach der Startzeit am selben Tag liegen.']]);
+            }
+            $times[(int) $row['userId']] = [$start, $end];
+        }
+
+        DB::transaction(function () use ($training, $data, $times) {
+            $attendeeIds = array_map('intval', $data['attendeeIds']);
+
+            $existing = $training->trainingParticipation()->pluck('attend', 'user_id');
+            foreach ($existing as $userId => $attend) {
+                $shouldAttend = in_array((int) $userId, $attendeeIds, true) ? 1 : 0;
+                if ((int) $attend !== $shouldAttend) {
+                    $training->participants()->updateExistingPivot($userId, ['attend' => $shouldAttend], false);
+                }
+            }
+            foreach ($attendeeIds as $userId) {
+                if (! $existing->has($userId)) {
+                    $training->participants()->attach($userId, ['attend' => 1]);
+                }
+            }
+
+            foreach (TrainingTrainer::where('training_id', $training->id)->get() as $tt) {
+                if (isset($times[$tt->user_id])) {
+                    [$tt->accounting_time_start, $tt->accounting_time_end] = $times[$tt->user_id];
+                } else {
+                    // like the plain "evaluated" call: fall back to the training times
+                    $tt->accounting_time_start = $tt->accounting_time_start ?: $training->start;
+                    $tt->accounting_time_end = $tt->accounting_time_end ?: $training->end;
+                }
+                $tt->save();
+            }
+
+            $training->evaluated = true;
+            $training->save();
+        });
+
+        return TrainingEvaluationResource::make(Training::findOrFail($training->id));
+    }
+
+    /** Admins may use any training, other users only trainings they are a trainer of. */
+    private function findAccessibleTraining(Request $request, $trainingId): Training
+    {
+        $training = Training::where('deleted', false)->findOrFail($trainingId);
+        $user = $request->user('api');
+        if (! $user->hasRole('admin') && ! $training->trainers()->where('users.id', $user->id)->exists()) {
+            abort(403, 'Forbidden');
+        }
+
+        return $training;
     }
 
     public function trainingEvaluated($trainingId)

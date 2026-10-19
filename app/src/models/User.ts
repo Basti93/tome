@@ -24,6 +24,7 @@ export default class User {
         participant_upcoming: boolean;
         absence_alert: boolean;
         admin_messages: boolean;
+        trainer_evaluation_reminder: boolean;
     };
 
     static from(jsonString) {
@@ -36,6 +37,7 @@ export default class User {
                 participant_upcoming: true,
                 absence_alert: true,
                 admin_messages: true,
+                trainer_evaluation_reminder: true,
             }
             return user
         } catch (_) {
@@ -65,6 +67,7 @@ export default class User {
             participant_upcoming: true,
             absence_alert: true,
             admin_messages: true,
+            trainer_evaluation_reminder: true,
         }
         if (this.roleNames) {
             this.isAdmin = this.roleNames.includes('admin')
