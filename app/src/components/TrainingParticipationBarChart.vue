@@ -96,10 +96,10 @@ export default {
       this.series = [];
       if (this.filterGroupIds.length > 0 && this.filterYear) {
         try {
-          let url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
-          let {data} = await httpClient.get(url);
-          let names = [];
-          let count = [];
+          const url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
+          const {data} = await httpClient.get(url);
+          const names = [];
+          const count = [];
           for (let i = 0; i < data.length; i++) {
             names.push(data[i].firstName + " " + data[i].familyName);
             count.push(data[i].total);

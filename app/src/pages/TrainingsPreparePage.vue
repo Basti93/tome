@@ -204,7 +204,7 @@
                               group="participants"
                               no-action
                           >
-                            <template slot="activator">
+                            <template v-slot:activator>
                               <v-list-item>
                                 <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt</v-list-item-title>
                               </v-list-item>
@@ -231,7 +231,7 @@
                               group="canceledusers"
                               no-action
                           >
-                            <template slot="activator">
+                            <template v-slot:activator>
                               <v-list-item>
                                 <v-list-item-title>{{ canceledUsers.length }} <span
                                     v-if="canceledUsers.length == 1">Absage</span><span
@@ -400,7 +400,7 @@ export default {
     branchContentIds(): Array<Number> {
       const masterData = useMasterDataStore();
       //check if multiple branches are in the play
-      let groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
+      const groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
       if (groupBranchIds.every(v => v === groupBranchIds[0])) {
         return masterData.getContentIdsByGroupIds(this.selectedTraining.groupIds);
       }
@@ -438,7 +438,7 @@ export default {
     },
     sharelink() {
       const masterData = useMasterDataStore();
-      let trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
+      const trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
       let trainerText = "";
       for (let i = 0; i < trainers.length; i++) {
         trainerText += trainers[i].firstName + " " + trainers[i].familyName
@@ -487,9 +487,9 @@ export default {
         const res = await httpClient.get('/trainingprepare/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
-          for (let trObj of res.data.data) {
-            let participants = [] as TrainingParticipant[];
-            for (let partObj of trObj.participants) {
+          for (const trObj of res.data.data) {
+            const participants = [] as TrainingParticipant[];
+            for (const partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
             this.upcomingTrainings.push(new Training(trObj.id, moment(trObj.start, 'YYYY-MM-DDTHH:mm'), moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));

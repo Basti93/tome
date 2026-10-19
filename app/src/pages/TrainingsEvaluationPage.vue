@@ -508,15 +508,15 @@ export default {
         const res = await httpClient.get('/trainingevaluation/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
-          for (let trObj of res.data.data) {
-            let participants = [] as TrainingParticipant[];
-            for (let partObj of trObj.participants) {
+          for (const trObj of res.data.data) {
+            const participants = [] as TrainingParticipant[];
+            for (const partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
-            let trainers = [] as TrainingTrainer[];
+            const trainers = [] as TrainingTrainer[];
             const trainingStartTime = moment(trObj.start, 'YYYY-MM-DDTHH:mm');
             const trainingEndTime = moment(trObj.end, 'YYYY-MM-DDTHH:mm');
-            for (let partObj of trObj.trainers) {
+            for (const partObj of trObj.trainers) {
               let timeStart;
               if (partObj.accountingTimeStart != null) {
                 timeStart = moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');

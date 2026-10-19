@@ -292,7 +292,7 @@ export default {
       const {data} = await httpClient.get('/group')
       this.groups = [];
       for (let i = 0; i < data.data.length; i++) {
-        let groupObj = data.data[i];
+        const groupObj = data.data[i];
         this.groups.push(new Group(groupObj.id, groupObj.name, groupObj.branchId, this.getBranchById(groupObj.branchId), groupObj.userIds));
       }
       this.page = data.currentPage;
@@ -323,7 +323,7 @@ export default {
     async save() {
       this.$refs.form.validate();
       try {
-        let postData = {
+        const postData = {
           name: this.editedItem.name,
           branchId: this.editedItem.branchId,
           userIds: this.editedItem.userIds,
@@ -367,7 +367,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
+      const {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
       await this.loadData();
       this.updateMasterData();
 

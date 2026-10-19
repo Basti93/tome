@@ -207,7 +207,7 @@ export default {
     async save() {
       this.$refs.form.validate();
       try {
-        let postData = {
+        const postData = {
           name: this.editedItem.name,
           shortName: this.editedItem.shortName,
           colorHex: this.editedItem.color,

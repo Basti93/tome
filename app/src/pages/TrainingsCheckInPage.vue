@@ -180,12 +180,12 @@ export default {
     filterDisplayValue() {
       const masterData = useMasterDataStore();
       if (this.filterGroupId) {
-        let group = masterData.getGroupById(this.filterGroupId)
+        const group = masterData.getGroupById(this.filterGroupId)
         if (group) {
           return group.name;
         }
       } else if (this.filterBranchId) {
-        let branch = masterData.getBranchById(this.filterBranchId)
+        const branch = masterData.getBranchById(this.filterBranchId)
         if (branch) {
           return branch.name;
         }
@@ -272,7 +272,7 @@ export default {
         //load data
         const {data} = await httpClient.get(url);
         if (data.data && data.data.length > 0) {
-          for (let trObj of data.data) {
+          for (const trObj of data.data) {
             this.addToUpcomingTrainings(trObj);
           }
         }
@@ -283,8 +283,8 @@ export default {
       }
     },
     addToUpcomingTrainings(trainingJson) {
-      let participants = [] as TrainingParticipant[];
-      for (let partObj of trainingJson.participants) {
+      const participants = [] as TrainingParticipant[];
+      for (const partObj of trainingJson.participants) {
         participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
       }
       if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
@@ -295,7 +295,7 @@ export default {
       });
     },
     updateCheckedIn() {
-      let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
         participant[0].attend = true;
@@ -306,7 +306,7 @@ export default {
       useSnackbarStore().show("Für das Training angemeldet", "success");
     },
     updateCheckedOut() {
-      let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
         this.selectedTraining.participants[index].attend = false;

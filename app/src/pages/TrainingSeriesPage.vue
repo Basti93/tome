@@ -341,7 +341,7 @@ export default {
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      let momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
       if (momDeferUntil.isValid()) {
         this.editedTrainingSeries.deferUntil = momDeferUntil.format('Y-MM-DD')
       }
@@ -353,7 +353,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
+      const response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
         this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
@@ -363,7 +363,7 @@ export default {
     },
     async save() {
       const momDeferUntil = moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
-      let postData = {
+      const postData = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,
         weekdays: this.editedTrainingSeries.weekdays,

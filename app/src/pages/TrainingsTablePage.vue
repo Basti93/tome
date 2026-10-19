@@ -341,7 +341,7 @@ export default {
       if (this.filterBranchId > 0) {
         url += '&groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
-      let p1 = httpClient.get(url).then(function (res) {
+      const p1 = httpClient.get(url).then(function (res) {
         for (const jsonObj of res.data.data) {
           this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
         }
@@ -350,7 +350,7 @@ export default {
         this.total = res.data.meta.total;
       }.bind(this));
 
-      let p2 = httpClient.get('/user/trainer').then(function (res) {
+      const p2 = httpClient.get('/user/trainer').then(function (res) {
         this.trainers = res.data;
       }.bind(this));
 

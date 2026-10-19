@@ -160,7 +160,7 @@ import httpClient from '@/http/api'
             async save() {
                 this.$refs.form.validate();
                 try {
-                    let postData = {
+                    const postData = {
                         firstName: this.firstName,
                         familyName: this.familyName,
                         groupIds: this.groupIds,
@@ -219,7 +219,7 @@ import httpClient from '@/http/api'
               this.imageToUpload = null;
             },
             async uploadProfileImage() {
-                let formData = new FormData();
+                const formData = new FormData();
                 formData.append('profile_image', this.imageToUpload);
                 const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
                 if (data.status === 'ok') {

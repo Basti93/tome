@@ -48,7 +48,7 @@ export default class User {
         this.id = id
         this.active = active
         this.groupIds = groupIds
-        this.email = email // eslint-disable-line camelcase
+        this.email = email  
         this.firstName = firstName
         this.familyName = familyName
         this.birthdate = birthdate

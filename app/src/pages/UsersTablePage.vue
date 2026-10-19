@@ -296,7 +296,7 @@ export default {
       this.users = [];
       const self = this;
       for (let i = 0; i < res.data.data.length; i++) {
-        let userObj = res.data.data[i];
+        const userObj = res.data.data[i];
         self.users.push(new User(
             userObj.id,
             userObj.email,
@@ -337,7 +337,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false;
-      let response = await httpClient.delete('/user/' + this.itemToDelete.id);
+      const response = await httpClient.delete('/user/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(this.itemToDelete), 1)

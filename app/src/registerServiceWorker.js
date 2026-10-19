@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'production') {
     },
     updated () {
       console.log('New content is available; please refresh.')
-      let updateBanner = document.querySelector('#update-banner');
+      const updateBanner = document.querySelector('#update-banner');
       if(updateBanner) {
         updateBanner.style.display = '';
       }

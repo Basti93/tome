@@ -267,13 +267,13 @@ export default {
         url += 'simplecalendar';
       }
       const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (let trainingData of data.data) {
+      for (const trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
           branch = this.getBranchByGroupId(trainingData.groupIds[0]);
         }
         if (branch) {
-          let training = new Training(trainingData.id,
+          const training = new Training(trainingData.id,
               moment(trainingData.start),
               moment(trainingData.end),
               trainingData.locationId,
@@ -306,15 +306,15 @@ export default {
       }
     },
     async loadPlannedTrainingEvents() {
-      let url = '/training/simplecalendar/planned';
+      const url = '/training/simplecalendar/planned';
       const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (let trainingData of data.data) {
+      for (const trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
           branch = this.getBranchByGroupId(trainingData.groupIds[0]);
         }
         if (branch) {
-          let training = new Training(trainingData.id,
+          const training = new Training(trainingData.id,
               moment(trainingData.start),
               moment(trainingData.end),
               trainingData.locationId,
@@ -344,7 +344,7 @@ export default {
     },
     async loadBirthdayEvents() {
       const {data} = await httpClient.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
-      for (let birthdayData of data) {
+      for (const birthdayData of data) {
         this.events.push({
           name: birthdayData.firstName + " " + birthdayData.familyName,
           start: this.start.date.slice(0, 4) + "-" + moment(birthdayData.birthdate).format('MM-DD'),
@@ -396,7 +396,7 @@ export default {
       return timeObj.time;
     },
     getFullName(trainerId) {
-      let trainer = this.getSimpleTrainerById(trainerId);
+      const trainer = this.getSimpleTrainerById(trainerId);
       return trainer.firstName + " " + trainer.familyName;
     }
   },

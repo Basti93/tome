@@ -109,7 +109,7 @@ export default {
           this.selectedGroupIds = [];
           this.groupItems = [];
           //add all groups of branch to groupItems
-          for (let group of this.groups) {
+          for (const group of this.groups) {
             if (this.selectedBranchId === group.branchId) {
               this.groupItems.push(group);
               this.selectedGroupIds.push(group.id);

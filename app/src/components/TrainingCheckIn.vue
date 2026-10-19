@@ -345,7 +345,7 @@ export default {
     fullName: item => item.firstName + ' ' + item.familyName,
     urlify(text) {
       if (text) {
-        var urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.replace(urlRegex, function (url) {
           return '<a target="_blank" href="' + url + '">' + url + '</a>';
         })

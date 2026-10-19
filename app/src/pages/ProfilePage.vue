@@ -306,7 +306,7 @@ export default {
       this.editUser.profileImageName = null;
     },
     async uploadProfileImage() {
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
       const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
       if (data.status === 'ok') {
@@ -337,10 +337,10 @@ export default {
           postData.profileImageName = imageName;
         }
 
-        let {data} = await httpClient.put('user/me', postData);
+        const {data} = await httpClient.put('user/me', postData);
         if (data.status == 'ok') {
           useSnackbarStore().show("Erfolgreich gespeichert", "success")
-          let {data: userData} = await httpClient.get('auth/me');
+          const {data: userData} = await httpClient.get('auth/me');
           const user = User.from(JSON.stringify(userData))
           useAuthStore().updateUser(user)
           this.assignCurrentUser();

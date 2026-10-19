@@ -261,7 +261,7 @@ export default {
       return this.loggedInUser && (this.loggedInUser.isTrainer || this.loggedInUser.isAdmin);
     },
     currentUserGroupName: function () {
-      let group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
+      const group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
       if (group) {
         return group.name
       }

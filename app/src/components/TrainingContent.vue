@@ -59,7 +59,7 @@ export default {
     selectContent: function (contentId) {
       console.log("selected", this.selectedContentIds)
       if (this.selectable) {
-        let index = this.selectedContentIds.indexOf(contentId);
+        const index = this.selectedContentIds.indexOf(contentId);
         if (index === -1) {
           this.selectedContentIds.push(contentId);
         } else {
