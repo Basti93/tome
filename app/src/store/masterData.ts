@@ -10,11 +10,11 @@ export const useMasterDataStore = defineStore('masterData', {
   state: () => ({
     branches: [] as Branch[],
     groups: [] as Group[],
-    locations: [] as unknown[],
-    trainers: [] as unknown[],
-    simpleTrainers: [] as unknown[],
+    locations: [] as any[],
+    trainers: [] as any[],
+    simpleTrainers: [] as any[],
     simpleUsers: [] as SimpleUser[],
-    contents: [] as unknown[],
+    contents: [] as any[],
     trainingSeries: [] as TrainingSeries[],
   }),
   getters: {
@@ -146,13 +146,13 @@ export const useMasterDataStore = defineStore('masterData', {
     setGroups(groups: Group[]) {
       this.groups = groups
     },
-    setLocations(locations: unknown[]) {
+    setLocations(locations: any[]) {
       this.locations = locations
     },
-    setTrainers(trainers: unknown[]) {
+    setTrainers(trainers: any[]) {
       this.trainers = trainers
     },
-    setSimpleTrainers(trainers: unknown[]) {
+    setSimpleTrainers(trainers: any[]) {
       this.simpleTrainers = trainers
     },
     setSimpleUsers(users: SimpleUser[]) {
@@ -161,7 +161,7 @@ export const useMasterDataStore = defineStore('masterData', {
     setTrainingSeries(trainingSeries: TrainingSeries[]) {
       this.trainingSeries = trainingSeries
     },
-    setContents(contents: unknown[]) {
+    setContents(contents: any[]) {
       this.contents = contents
     },
     async loadAll(httpClient: typeof HttpClient) {

@@ -14,7 +14,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 2 pre-existing vue-tsc errors in this file; fix them and remove this line
     export default {
         name: "WeekdaysComponent",
         props: {
@@ -22,9 +21,9 @@
         },
         data: function () {
             return {
-                weekdaysStrings: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as String[],
-                weekdaysNumbers: [1, 2, 3, 4, 5, 6, 7] as Number[],
-                weekdaysSelected: [] as Number[],
+                weekdaysStrings: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as string[],
+                weekdaysNumbers: [1, 2, 3, 4, 5, 6, 7] as number[],
+                weekdaysSelected: [] as number[],
             }
         },
         methods: {
@@ -38,7 +37,7 @@
             },
             weekdays: {
                 immediate: true,
-                handler(newVal: Number[]) {
+                handler(newVal: number[]) {
                     this.weekdaysSelected = newVal;
                 },
             },

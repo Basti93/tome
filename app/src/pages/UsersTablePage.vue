@@ -168,7 +168,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
@@ -327,7 +326,7 @@ export default {
       self.page = res.data.currentPage;
       self.total = res.data.total;
     },
-    editItem(item) {
+    editItem(item?) {
       if (item) {
         this.editedItem = {...item}
       } else {

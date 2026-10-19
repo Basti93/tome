@@ -88,7 +88,6 @@
       <v-card-text>
         <v-alert
             class="tp-upcoming-training__text ma-1"
-            text
             style="white-space: pre-line;word-break: break-all;"
             type="info"
             dense
@@ -199,7 +198,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 2 pre-existing vue-tsc errors in this file; fix them and remove this line
 import TrainingContent from "./TrainingContent.vue";
 import ProfileImage from "./ProfileImage.vue";
 import User from "../models/User";
@@ -312,7 +310,7 @@ export default {
         console.error(error);
       }
     },
-    async cancelParticipation(reason) {
+    async cancelParticipation(reason?: string) {
       try {
         let url = 'training/' + this.id;
         if (this.isCookieUser) {

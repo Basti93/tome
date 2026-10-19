@@ -16,10 +16,9 @@
             <template v-slot:extension v-if="cookieUser">
               <v-chip
                   class="ml-2"
-                  close
+                  closable
                   color="primary"
-                  @click:close="removeCookieUser()"
-                  v-model="cookieUser">{{ cookieUser.getFullName() }}
+                  @click:close="removeCookieUser()">{{ cookieUser.getFullName() }}
               </v-chip>
             </template>
             <v-dialog
@@ -105,7 +104,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 3 pre-existing vue-tsc errors in this file; fix them and remove this line
 
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
@@ -291,7 +289,7 @@ export default {
         this.upcomingTrainings.push(new Training(trainingJson.id, dayjs(trainingJson.start, 'YYYY-MM-DDTHH:mm'), dayjs(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
       }
       this.upcomingTrainings.sort(function (a: Training, b: Training) {
-        return a.start - b.start;
+        return a.start.valueOf() - b.start.valueOf();
       });
     },
     updateCheckedIn() {

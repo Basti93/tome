@@ -103,7 +103,7 @@
                                 @click="confirmAndDelete(item)">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
-                          <v-btn color="primary" :disabled="loading" @click="reset()">
+                          <v-btn color="primary" :disabled="loading" @click="loadData()">
                             <v-icon left>mdi-refresh</v-icon>
                             Keine Daten gefunden
                           </v-btn>
@@ -184,7 +184,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 3 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'

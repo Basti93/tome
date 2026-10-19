@@ -25,6 +25,11 @@ describe('dayjs helper', () => {
     expect(d.format('dddd [den] DD.MM.YYYY')).toBe('Dienstag den 05.03.2024')
   })
 
+  it('supports relative time (fromNow) and ordinal day tokens in German', () => {
+    expect(dayjs().add(2, 'hour').fromNow()).toBe('in 2 Stunden')
+    expect(dayjs('2024-03-05', 'YYYY-MM-DD').format('dddd, Do MMMM')).toBe('Dienstag, 5. März')
+  })
+
   it('format() without arguments returns an ISO string with offset', () => {
     expect(dayjs('2024-03-05', 'YYYY-MM-DD').format()).toMatch(/^2024-03-05T00:00:00[+-]\d\d:\d\d$/)
   })

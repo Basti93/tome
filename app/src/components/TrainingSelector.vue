@@ -102,7 +102,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { defineComponent, ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import Training from "../models/Training";
@@ -113,7 +112,8 @@ import { useMasterDataStore } from '@/store/masterData'
 export default defineComponent({
   name: "TrainingSelector",
   props: {
-    trainings: Array as () => Training[],
+    // Training and TrainingEvaluation both work; the selector only reads their shared fields
+    trainings: Array as () => any[],
     application: String,
     selectedTrainingId: Number,
   },

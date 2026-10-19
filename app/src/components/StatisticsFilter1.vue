@@ -90,14 +90,9 @@ export default {
       this.$emit('groupsSelected', this.selectedGroupIds)
     },
     lastFiveYears() {
-      const years = []
-      const dateEnd = dayjs().subtract(4, 'y')
-      const dateStart = dayjs()
-      while (dateEnd.diff(dateStart, 'years') <= 0) {
-        years.push(dateStart.year())
-        dateStart.subtract(1, 'year')
-      }
-      return years
+      // current year and the four years before it (dayjs is immutable, no mutation loop)
+      const currentYear = dayjs().year()
+      return Array.from({ length: 5 }, (_, i) => currentYear - i)
     }
   },
   watch: {

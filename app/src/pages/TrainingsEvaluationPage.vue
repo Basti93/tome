@@ -61,14 +61,14 @@
                                 Training abgeschlossen
                               </v-alert>
                               <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
-                                <template v-slot:activator="{ on }">
+                                <template v-slot:activator="{ props }">
                                   <v-btn
                                       class="mt-2 mb-2"
                                       elevation="1"
                                       v-show="!selectedTraining.evaluated"
                                       @click="confirmEvaluationDialog = true"
                                       color="primary"
-                                      v-on="on">
+                                      v-bind="props">
                                     Abschließen
                                   </v-btn>
                                 </template>
@@ -398,7 +398,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 3 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
@@ -438,8 +437,8 @@ export default {
       canceledUserListGroupActive: true,
       undecidedUsersListGroupActive: true,
       confirmEvaluationDialog: false,
-      editStartTime: null as String,
-      editEndTime: null as String,
+      editStartTime: null as string | null,
+      editEndTime: null as string | null,
       timeDialogOpened: false,
       showCancelReasonDialog: false,
       cancelReasonDialogText: null,

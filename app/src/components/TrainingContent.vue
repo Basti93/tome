@@ -12,7 +12,7 @@
           md="2">
         <figure
             class="tp-training-content__item"
-            :class="{'tp-training-content__item--selected' : isSelected(item, selectedContentIds)}"
+            :class="{'tp-training-content__item--selected' : isSelected(item)}"
         >
           <img class="tp-training-content__icon"
                :src="getImagePath(item.imageName)"
@@ -28,7 +28,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useMasterDataStore } from '@/store/masterData'
 
 export default {
