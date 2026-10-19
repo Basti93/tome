@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
 import { fileURLToPath, URL } from 'node:url'
 import { tomeManifest } from './vite-manifest'
 
 export default defineConfig({
-  plugins: [vue(), tomeManifest()],
+  plugins: [vue(), vuetify({ autoImport: true }), tomeManifest()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
