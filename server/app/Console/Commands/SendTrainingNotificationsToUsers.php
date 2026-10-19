@@ -44,7 +44,7 @@ class SendTrainingNotificationsToUsers extends Command
     {
         $userIds = explode(',', $this->argument('userIds'));
         $trainingId = $this->argument('trainingId');
-        $notificationType = $this->argument('notificationType');
+        $notificationType = (int) $this->argument('notificationType');
         $title = $this->argument('title');
         $data = $this->argument('data');
         $url = $this->option('url');
@@ -112,10 +112,9 @@ class SendTrainingNotificationsToUsers extends Command
     /**
      * Map notification type to preference key.
      *
-     * @param  int  $type
      * @return string|null
      */
-    private function getPreferenceKeyForType($type)
+    private function getPreferenceKeyForType(int $type)
     {
         $typeMap = [
             1 => 'trainer_upcoming',

@@ -67,18 +67,6 @@ parameters:
 			path: app/Api/V1/Controllers/LocationController.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Guard\:\:token\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Api/V1/Controllers/RefreshController.php
-
-		-
-			message: '#^Call to an undefined method PHPOpenSourceSaver\\JWTAuth\\Manager\:\:blacklist\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Api/V1/Controllers/RefreshController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$password\.$#'
 			identifier: property.notFound
 			count: 1

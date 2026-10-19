@@ -165,6 +165,22 @@ class PushDispatchTest extends TestCase
         $this->assertSame(['on', 'other'], $this->allTokens(), 'only the preference matching the type is evaluated');
     }
 
+    public function test_training_context_type_given_as_a_string_still_maps_to_the_preference_and_is_stored_as_int(): void
+    {
+        $off = $this->userWithToken('off', ['participant_upcoming' => false]);
+        $on = $this->userWithToken('on');
+        $training = TrainingFactory::new()->create();
+
+        // console arguments always arrive as strings
+        $this->artisan('notification:sendToUsersTrainingContext', [
+            'userIds' => "{$off->id},{$on->id}", 'trainingId' => (string) $training->id, 'title' => 't', 'data' => 'd',
+            'notificationType' => '3', '--storeStatus' => true,
+        ])->assertSuccessful();
+
+        $this->assertSame(['on'], $this->allTokens());
+        $this->assertSame(3, UserTrainingNotification::where('user_id', $on->id)->value('type'));
+    }
+
     public function test_training_context_with_an_unknown_type_ignores_preferences(): void
     {
         $user = $this->userWithToken('tok', ['trainer_upcoming' => false, 'trainer_cancel_alert' => false, 'participant_upcoming' => false]);
