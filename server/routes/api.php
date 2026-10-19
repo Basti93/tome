@@ -141,3 +141,9 @@ Route::prefix('v1')->group(function () {
         });
     });
 });
+
+// Legacy clients (old PWA builds) still call /api/api/*: tell them to reload. nginx answers this
+// itself in docker; this route covers setups without nginx (php artisan serve).
+Route::any('api/{any}', function () {
+    return response()->json(['message' => 'Diese App-Version ist veraltet. Bitte Seite neu laden.'], 410);
+})->where('any', '.*');

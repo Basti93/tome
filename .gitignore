@@ -49,3 +49,6 @@
 
 # Local DB dumps
 /backup_*.sql
+
+# Claude Code worktrees
+/.claude/worktrees/
