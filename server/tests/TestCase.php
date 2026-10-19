@@ -79,7 +79,13 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     /** Authenticate subsequent requests like the browser does: HttpOnly `jwt_token` cookie. */
     protected function actingAsJwt(User $user): static
     {
-        return $this->withUnencryptedCookie('jwt_token', $this->jwtFor($user));
+        return $this->withJwtCookie($this->jwtFor($user));
+    }
+
+    /** Send the given raw JWT as the `jwt_token` cookie (JSON requests only carry cookies with credentials). */
+    protected function withJwtCookie(string $token): static
+    {
+        return $this->withCredentials()->withUnencryptedCookie('jwt_token', $token);
     }
 
     /** Authenticate subsequent requests with an Authorization bearer header. */
