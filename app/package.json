@@ -9,7 +9,6 @@
     "build:serve": "npm run build && npm run deploy",
     "deploy": "rm -rf ../server/public_app && mkdir -p ../server/public_app && cp -r dist/* ../server/public_app/",
     "watch": "npm run build -- --watch && npm run deploy",
-    "watch:deploy": "chokidar 'src/**/*' -c 'npm run build:serve'",
     "preview": "vite preview",
     "lint": "eslint --fix .",
     "lint:check": "eslint .",
@@ -34,9 +33,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
     "@vitejs/plugin-vue": "^6.0.10",
-    "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.5.1",
-    "chokidar-cli": "^3.0.0",
     "eslint": "^10.13.0",
     "eslint-plugin-vue": "^10.11.1",
     "globals": "^17.13.0",
@@ -46,6 +43,10 @@
     "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.5",
+    "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.13"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.6"
   }
 }
