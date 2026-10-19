@@ -57,6 +57,15 @@
                                        v-if="selectedTraining.evaluated" variant="outlined">
                                 Training abgeschlossen
                               </v-alert>
+                              <v-btn
+                                  class="mt-2 mb-2 mr-2"
+                                  elevation="1"
+                                  v-show="!selectedTraining.evaluated"
+                                  color="primary"
+                                  data-test="quick-evaluation"
+                                  :to="'/abschluss/' + selectedTraining.id">
+                                Schnell abschließen
+                              </v-btn>
                               <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
                                 <template v-slot:activator="{ props }">
                                   <v-btn

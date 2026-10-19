@@ -37,7 +37,6 @@ export default class User {
                 participant_upcoming: true,
                 absence_alert: true,
                 admin_messages: true,
-            trainer_evaluation_reminder: true,
                 trainer_evaluation_reminder: true,
             }
             return user
