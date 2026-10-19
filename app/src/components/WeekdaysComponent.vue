@@ -13,37 +13,33 @@
     </v-row>
 </template>
 
-<script lang="ts">
-    export default {
-        name: "WeekdaysComponent",
-        emits: ['change'],
-        props: {
-          weekdays: Array,
-        },
-        data: function () {
-            return {
-                weekdaysStrings: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as string[],
-                weekdaysNumbers: [1, 2, 3, 4, 5, 6, 7] as number[],
-                weekdaysSelected: [] as number[],
-            }
-        },
-        methods: {
-           getWeekdayString(weekday: number): string {
-               return this.weekdaysStrings[weekday - 1];
-           }
-        },
-        watch: {
-            weekdaysSelected() {
-              this.$emit("change", this.weekdaysSelected)
-            },
-            weekdays: {
-                immediate: true,
-                handler(newVal: number[]) {
-                    this.weekdaysSelected = newVal;
-                },
-            },
-        }
-    }
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+const props = defineProps<{
+  weekdays?: number[]
+}>()
+
+const emit = defineEmits<{
+  change: [weekdays: number[]]
+}>()
+
+const weekdaysStrings = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+const weekdaysNumbers = [1, 2, 3, 4, 5, 6, 7]
+const weekdaysSelected = ref<number[]>([])
+
+function getWeekdayString(weekday: number): string {
+  return weekdaysStrings[weekday - 1]
+}
+
+watch(weekdaysSelected, () => emit('change', weekdaysSelected.value))
+watch(
+  () => props.weekdays,
+  (newVal) => {
+    weekdaysSelected.value = newVal as number[]
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

@@ -27,39 +27,34 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed } from 'vue'
 
-export default {
-  name: "ConfirmDialog",
-  emits: ['canceled', 'confirmed'],
-  props: {
-    show: Boolean,
-    actionText: String,
-  },
-  data: function () {
-    return {}
+const props = defineProps<{
+  show?: boolean
+  actionText?: string
+}>()
 
-  },
-  computed: {
-    visible: {
-      get() {
-        return this.show;
-      },
-      set(value) {
-        if (!value) {
-          this.$emit('canceled')
-        }
-      }
-    }
-  },
-  methods: {
-    confirm() {
-      this.$emit('confirmed')
-    },
-    cancel() {
-      this.$emit('canceled')
+const emit = defineEmits<{
+  canceled: []
+  confirmed: []
+}>()
+
+const visible = computed({
+  get: () => props.show,
+  set: (value) => {
+    if (!value) {
+      emit('canceled')
     }
   }
+})
+
+function confirm() {
+  emit('confirmed')
+}
+
+function cancel() {
+  emit('canceled')
 }
 </script>
 

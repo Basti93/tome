@@ -7,19 +7,8 @@
     {{ snackbar.text }}
   </v-snackbar>
 </template>
-<script>
-  import { useSnackbarStore } from '@/store/snackbar'
+<script setup lang="ts">
+import { useSnackbarStore } from '@/store/snackbar'
 
-  export default {
-    computed: {
-      snackbar() {
-        return useSnackbarStore()
-      }
-    },
-    methods: {
-      closeSnackbar() {
-        useSnackbarStore().hide()
-      }
-    }
-  }
+const snackbar = useSnackbarStore()
 </script>
