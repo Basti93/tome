@@ -57,6 +57,16 @@ describe('service worker', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('never intercepts Matomo pages, not even navigations', () => {
+    const { listeners, fetchMock } = loadWorker()
+    for (const url of ['/matomo', '/matomo/', '/matomo/index.php?module=CoreHome', '/matomo/matomo.js']) {
+      const { event, result } = fetchEvent(url, 'GET', 'navigate')
+      listeners.fetch(event)
+      expect(result(), url).toBeUndefined()
+    }
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('clones the response before returning it, so the page can still read the body', async () => {
     const { listeners, fetchMock, store } = loadWorker()
     fetchMock.mockResolvedValue(new Response('<html>shell</html>', { status: 200 }))

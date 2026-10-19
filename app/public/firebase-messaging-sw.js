@@ -13,7 +13,7 @@ const STATIC_ASSETS = [
 
 /**
  * Decides how a request is handled. Pure function (unit tested).
- *  - 'network-only': not intercepted at all (non-GET, other origins, /api/, anything that is not static)
+ *  - 'network-only': not intercepted at all (non-GET, other origins, /api/, /matomo/, anything that is not static)
  *  - 'cache-first':  hashed build files under /assets/ (never change for a given URL)
  *  - 'network-first': app shell (navigations, index.html, manifest, icons), cached copy only as offline fallback
  * API responses contain personal data and auth dependent content and must never be cached.
@@ -29,6 +29,8 @@ function routeRequest(method, urlString, origin, mode) {
   if (url.origin !== origin) return 'network-only'
   const path = url.pathname
   if (path === '/api' || path.startsWith('/api/')) return 'network-only'
+  // Matomo (analytics server and admin pages) is never cached
+  if (path === '/matomo' || path.startsWith('/matomo/')) return 'network-only'
   if (path.startsWith('/assets/')) return 'cache-first'
   if (mode === 'navigate' || path === '/' || path === '/index.html' || path === '/manifest.json' || path.startsWith('/img/')) {
     return 'network-first'
