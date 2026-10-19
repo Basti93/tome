@@ -18,7 +18,7 @@ describe('InfoPage', () => {
     expect(w.text()).not.toContain('Informationent')
     expect(w.text()).not.toContain('Release Notes')
     expect(w.text()).toContain('Was ist T.O.M.E.?')
-    expect(w.text()).toContain('Keine Tracking-Cookies')
+    expect(w.text()).toContain('Anonyme Nutzungsstatistik ohne Cookies (Matomo)')
     expect(httpClient.get).not.toHaveBeenCalled()
   })
 })
