@@ -49,10 +49,24 @@ class PublicTrainingTest extends TestCase
         $this->assertSame(0, $item['evaluated']);
         $this->assertSame(1, $item['automaticAttend']);
 
-        // participants are the raw participation rows (pivot rows, 'id' hidden)
+        // without login only ids and the attendance flag are exposed, never the cancel reason
         $this->assertCount(1, $item['participants']);
         $this->assertSame(
-            ['attend' => 1, 'cancelreason' => null, 'trainingId' => $training->id, 'userId' => $participant->id],
+            ['attend' => 1, 'trainingId' => $training->id, 'userId' => $participant->id],
+            $item['participants'][0]
+        );
+    }
+
+    public function test_logged_in_users_still_get_the_full_participation_rows(): void
+    {
+        $participant = UserFactory::new()->create();
+        $training = TrainingFactory::new()->between('2099-03-05 18:00:00', '2099-03-05 19:30:00')->create();
+        $training->participants()->attach($participant->id, ['attend' => 0, 'cancelreason' => 'krank']);
+
+        $item = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/training/upcoming')->assertOk()->json('data.0');
+
+        $this->assertSame(
+            ['attend' => 0, 'cancelreason' => 'krank', 'trainingId' => $training->id, 'userId' => $participant->id],
             $item['participants'][0]
         );
     }

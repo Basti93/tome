@@ -17,7 +17,7 @@ use Tests\TestCase;
  */
 class MasterDataTest extends TestCase
 {
-    public function test_simple_users_expose_only_non_sensitive_fields_of_active_users(): void
+    public function test_simple_users_expose_only_minimal_data_without_login(): void
     {
         $branch = BranchFactory::new()->create();
         $group = GroupFactory::new()->create(['branch_id' => $branch->id]);
@@ -26,17 +26,49 @@ class MasterDataTest extends TestCase
         ]);
         UserFactory::new()->inactive()->create();
 
+        // anonymous: "Vorname M." and no photo
         $this->getJson('/api/v1/simpleuser')
             ->assertOk()
             ->assertExactJson(['data' => [[
                 'id' => $user->id,
                 'firstName' => 'Anna',
-                'familyName' => 'Alt',
+                'familyName' => 'A.',
                 'groupIds' => [$group->id],
-                'profileImageName' => 'profile_images/a.jpg',
+                'profileImageName' => null,
                 'trainerBranchIds' => [$branch->id],
                 'active' => 1,
             ]]]);
+    }
+
+    public function test_simple_users_expose_full_names_and_photos_to_logged_in_users(): void
+    {
+        $user = UserFactory::new()->create(['firstName' => 'Anna', 'familyName' => 'Alt', 'profile_image_name' => 'profile_images/a.jpg']);
+
+        $response = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/simpleuser')->assertOk();
+
+        $row = collect($response->json('data'))->firstWhere('id', $user->id);
+        $this->assertSame('Alt', $row['familyName']);
+        $this->assertSame('profile_images/a.jpg', $row['profileImageName']);
+    }
+
+    public function test_simple_user_initial_handles_empty_and_multibyte_names(): void
+    {
+        $empty = UserFactory::new()->create(['familyName' => '']);
+        $umlaut = UserFactory::new()->create(['familyName' => 'ünal']);
+
+        $rows = collect($this->getJson('/api/v1/simpleuser')->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame('', $rows[$empty->id]['familyName']);
+        $this->assertSame('Ü.', $rows[$umlaut->id]['familyName']);
+    }
+
+    public function test_an_invalid_token_is_treated_like_no_login(): void
+    {
+        UserFactory::new()->create(['familyName' => 'Alt']);
+
+        $this->withJwtCookie('garbage')->getJson('/api/v1/simpleuser')
+            ->assertOk()
+            ->assertJsonPath('data.0.familyName', 'A.');
     }
 
     public function test_simple_users_can_be_filtered_by_group_ids(): void
@@ -61,6 +93,7 @@ class MasterDataTest extends TestCase
 
         $this->assertSame([$trainer->id], collect($response->json('data'))->pluck('id')->all());
         $response->assertJsonStructure(['data' => [['id', 'firstName', 'familyName', 'groupIds', 'profileImageName', 'trainerBranchIds', 'active']]]);
+        $this->assertNull($response->json('data.0.profileImageName'));
     }
 
     public function test_branches_are_paginated_and_sorted_by_name(): void
@@ -96,21 +129,32 @@ class MasterDataTest extends TestCase
             ->assertJsonPath('data.1.name', 'Turnhalle');
     }
 
-    public function test_groups_expose_branch_and_active_user_ids(): void
+    public function test_groups_hide_their_member_ids_without_login(): void
     {
         $branch = BranchFactory::new()->create();
         $group = GroupFactory::new()->create(['name' => 'Kids', 'branch_id' => $branch->id]);
-        $active = UserFactory::new()->inGroups([$group])->create();
-        UserFactory::new()->inactive()->inGroups([$group])->create();
+        UserFactory::new()->inGroups([$group])->create();
 
         $this->getJson('/api/v1/group')->assertOk()
             ->assertJsonPath('data.0', [
                 'id' => $group->id,
                 'name' => 'Kids',
                 'branchId' => $branch->id,
-                'userIds' => [$active->id],
+                'userIds' => [],
             ])
             ->assertJsonStructure(['data', 'links', 'meta']);
+        $this->getJson("/api/v1/group/branch/{$branch->id}")->assertOk()->assertJsonPath('data.0.userIds', []);
+    }
+
+    public function test_groups_expose_the_active_user_ids_to_logged_in_users(): void
+    {
+        $branch = BranchFactory::new()->create();
+        $group = GroupFactory::new()->create(['name' => 'Kids', 'branch_id' => $branch->id]);
+        $active = UserFactory::new()->inGroups([$group])->create();
+        UserFactory::new()->inactive()->inGroups([$group])->create();
+
+        $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/group')->assertOk()
+            ->assertJsonPath('data.0.userIds', [$active->id]);
     }
 
     public function test_groups_are_sorted_by_branch_then_name(): void

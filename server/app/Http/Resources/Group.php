@@ -19,7 +19,8 @@ class Group extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'branchId' => $this->branch_id,
-            'userIds' => $this->user_ids,
+            // the member list of a group is only visible to logged in users
+            'userIds' => auth('api')->check() ? $this->user_ids : [],
         ];
     }
 }

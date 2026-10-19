@@ -16,6 +16,8 @@ class Training extends JsonResource
      */
     public function toArray($request)
     {
+        $participation = $this->trainingParticipation;
+
         return [
             'id' => $this->id,
             'start' => DateTime::createFromFormat('Y-m-d H:i:s', $this->start)->format(DateTime::ATOM),
@@ -23,7 +25,14 @@ class Training extends JsonResource
             'locationId' => $this->location_id,
             'groupIds' => $this->group_ids,
             'trainerIds' => $this->trainer_ids,
-            'participants' => $this->trainingParticipation,
+            // without login (public check-in page) only the ids and the attendance flag, no cancel reasons
+            'participants' => auth('api')->check()
+                ? $participation
+                : $participation->map(fn ($p) => [
+                    'attend' => $p->attend,
+                    'trainingId' => $p->training_id,
+                    'userId' => $p->user_id,
+                ])->values(),
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
             'prepared' => $this->prepared,
