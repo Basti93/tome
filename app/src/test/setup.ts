@@ -34,3 +34,14 @@ class MemoryStorage implements Storage {
 for (const name of ['localStorage', 'sessionStorage']) {
   Object.defineProperty(globalThis, name, { value: new MemoryStorage(), configurable: true, writable: true })
 }
+
+// Browser APIs Vuetify overlays/layout rely on and jsdom does not provide.
+const g = globalThis as any
+g.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} }
+g.visualViewport ??= { width: 1024, height: 768, addEventListener() {}, removeEventListener() {} }
+if (typeof window !== 'undefined') {
+  window.matchMedia ??= ((query: string) => ({
+    matches: false, media: query, onchange: null,
+    addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent: () => false,
+  })) as any
+}

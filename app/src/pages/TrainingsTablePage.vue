@@ -14,7 +14,7 @@
                       class="pt-6"
                       :items="filterBranches"
                       v-model="filterBranchId"
-                      v-on:change="filterChanged()"
+                      @update:model-value="filterChanged()"
                       item-title="name"
                       item-value="id"
                       flat

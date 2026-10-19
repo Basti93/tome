@@ -22,7 +22,7 @@
             clearable
             chips
             closable-chips
-            @change="selectedGroupIdsChanged()"
+            @update:model-value="selectedGroupIdsChanged()"
             label="Gruppen"
             prepend-icon="mdi-account"
         ></v-autocomplete>
@@ -32,7 +32,7 @@
             :items="years"
             v-model="selectedYear"
             label="Jahr"
-            @change="selectedYearChanged()"
+            @update:model-value="selectedYearChanged()"
             prepend-icon="mdi-calendar"
         ></v-select>
       </v-col>

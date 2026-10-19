@@ -52,7 +52,6 @@
           prepend-icon="add_a_photo"
           show-size
           v-model="files"
-          @change="imageChanged"
           @update:modelValue="imageChanged"
           label="Lade ein Profilbild hoch"
       >
