@@ -94,6 +94,8 @@ ask() {
 env_get() { [[ -f "$ENV_FILE" ]] && grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }
 env_force() {
   local key="$1" value="$2" tmp
+  # Werte mit Leerzeichen oder # muessen in der .env in Anfuehrungszeichen stehen (sonst Parse-Fehler)
+  if [[ "$value" =~ [[:space:]\#] && ! "$value" =~ ^[\"\'] ]]; then value="\"${value//\"/\\\"}\""; fi
   if grep -qE "^${key}=" "$ENV_FILE" 2>/dev/null; then
     tmp="$(mktemp)"
     K="$key" V="$value" awk 'BEGIN{FS=OFS="="} $1==ENVIRON["K"]{print ENVIRON["K"] "=" ENVIRON["V"]; next} {print}' "$ENV_FILE" > "$tmp"
