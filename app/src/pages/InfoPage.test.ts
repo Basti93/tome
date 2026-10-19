@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -20,5 +20,25 @@ describe('InfoPage', () => {
     expect(w.text()).toContain('Was ist T.O.M.E.?')
     expect(w.text()).toContain('Anonyme Nutzungsstatistik ohne Cookies (Matomo)')
     expect(httpClient.get).not.toHaveBeenCalled()
+  })
+
+  describe('organisation name', () => {
+    afterEach(() => vi.unstubAllEnvs())
+
+    it('is neutral without VITE_ORG_NAME', async () => {
+      vi.stubEnv('VITE_ORG_NAME', '')
+      vi.resetModules()
+      const Page = (await import('./InfoPage.vue')).default
+      const w = mount(Page, { global: { plugins: [createVuetify({ components, directives })] } })
+      expect(w.text()).toContain('Trainingsplanung: kommende Trainings')
+    })
+
+    it('uses VITE_ORG_NAME when set', async () => {
+      vi.stubEnv('VITE_ORG_NAME', 'Test-Verein')
+      vi.resetModules()
+      const Page = (await import('./InfoPage.vue')).default
+      const w = mount(Page, { global: { plugins: [createVuetify({ components, directives })] } })
+      expect(w.text()).toContain('Trainingsplanung des Test-Verein: kommende Trainings')
+    })
   })
 })

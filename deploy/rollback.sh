@@ -2,9 +2,9 @@
 # =============================================================================
 # T.O.M.E. Rollback auf ein frueheres Release (nur Code; Datenbank-Migrationen bleiben bestehen!)
 #
-#   deploy/rollback.sh --host training.ssc-landau.de            # auf das vorherige Release
-#   deploy/rollback.sh --host training.ssc-landau.de RELEASE    # auf ein bestimmtes Release
-#   deploy/rollback.sh --host training.ssc-landau.de --list     # Releases anzeigen
+#   deploy/rollback.sh --host <host>            # auf das vorherige Release
+#   deploy/rollback.sh --host <host> RELEASE    # auf ein bestimmtes Release
+#   deploy/rollback.sh --host <host> --list     # Releases anzeigen
 # =============================================================================
 set -euo pipefail
 # shellcheck source=lib.sh

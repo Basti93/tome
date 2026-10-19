@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# T.O.M.E. - Matomo einrichten (selbst gehostet unter https://training.ssc-landau.de/matomo/)
+# T.O.M.E. - Matomo einrichten (selbst gehostet unter https://<SITE_HOST>/matomo/)
 #
 # Als root auf dem Server ausfuehren (Ubuntu 24.04, Apache 2.4, PHP 8.4-FPM, MySQL 8):
 #
@@ -44,8 +44,6 @@ DB_HOST_APP="${DB_HOST_APP:-localhost}"       # Datenbankserver fuer den Web-Ins
 MYSQL_ADMIN_CMD="${MYSQL_ADMIN_CMD:-mysql}"   # root-Zugang; Produktion: mysql --defaults-extra-file=/root/.my-backup.cnf
 CRON_DIR="${CRON_DIR:-/etc/cron.d}"
 CRED_FILE="${CRED_FILE:-/root/matomo-db.txt}"
-SITE_HOST="${SITE_HOST:-training.ssc-landau.de}"
-MATOMO_BASE_URL="${MATOMO_BASE_URL:-https://${SITE_HOST}/matomo/}"
 DOWNLOAD_URL="${DOWNLOAD_URL:-https://builds.matomo.org}"
 # Offizieller Matomo-Signaturschluessel ("Matomo <hello@matomo.org>"), siehe
 # https://matomo.org/faq/how-to-install/faq_20171/ . Der Schluessel wird von builds.matomo.org geladen
@@ -53,6 +51,10 @@ DOWNLOAD_URL="${DOWNLOAD_URL:-https://builds.matomo.org}"
 MATOMO_KEY_FPR="F529A27008477483777FC23D63BB30D0E5D2C749"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PHP_BIN="php${PHP_VERSION}"
+# shellcheck source=site-env.sh
+source "${SCRIPT_DIR}/site-env.sh"
+require_site_vars SITE_HOST
+MATOMO_BASE_URL="${MATOMO_BASE_URL:-https://${SITE_HOST}/matomo/}"
 
 # ----------------------------------------------------------------- Hilfsfunktionen
 ONLY=""

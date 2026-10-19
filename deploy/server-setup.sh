@@ -10,7 +10,7 @@
 #   sudo ./server-setup.sh --list      # Abschnitte auflisten
 #
 # Das Skript fasst ausschliesslich TOME-spezifische Dinge an. Die WordPress-Seite
-# (ssc-landau.de, /var/www/wp-website, Vhosts website.conf / wp-website.conf) und der
+# (die Website des Vereins, /var/www/wp-website, Vhosts website.conf / wp-website.conf) und der
 # Standard-FPM-Pool "www" bleiben unveraendert.
 #
 # Abschnitte:
@@ -56,9 +56,11 @@ APACHE_DIR="${APACHE_DIR:-/etc/apache2}"
 VHOST_NAME="training.conf"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/tome}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Standort (Host, Zertifikat, Mail-Absender) aus site.env neben diesem Skript (Vorlage: site.env.example)
+# shellcheck source=site-env.sh
+source "${SCRIPT_DIR}/site-env.sh"
 SHARED="${TOME_ROOT}/shared"
 ENV_FILE="${SHARED}/.env"
-APP_PUBLIC_URL="https://training.ssc-landau.de"
 
 # ----------------------------------------------------------------- Hilfsfunktionen
 ASSUME_YES=0
@@ -127,6 +129,9 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+require_site_vars SITE_HOST SITE_ALIAS SITE_CERT_DIR SITE_ADMIN_EMAIL MAIL_FROM_ADDRESS MAIL_FROM_NAME
+APP_PUBLIC_URL="https://${SITE_HOST}"
 
 # ============================================================================
 # Abschnitt 1: Voraussetzungen
@@ -205,9 +210,9 @@ if ask 2 "Systembenutzer ${TOME_USER}"; then
   chmod 600 "/home/${TOME_USER}/.ssh/authorized_keys"
   # Ist die Datei leer, die Schluessel des aufrufenden Admins uebernehmen (idempotent: nur fehlende Zeilen anhaengen).
   AUTH_KEYS="/home/${TOME_USER}/.ssh/authorized_keys"
-  ADMIN_USER="${SUDO_USER:-sbinder}"
+  ADMIN_USER="${SUDO_USER:-}"
   ADMIN_KEYS="$(getent passwd "$ADMIN_USER" | cut -d: -f6)/.ssh/authorized_keys"
-  if [ ! -s "$AUTH_KEYS" ] && [ -r "$ADMIN_KEYS" ]; then
+  if [ -n "$ADMIN_USER" ] && [ ! -s "$AUTH_KEYS" ] && [ -r "$ADMIN_KEYS" ]; then
     copied=0
     while IFS= read -r line; do
       case "$line" in ''|'#'*) continue ;; esac
@@ -426,8 +431,8 @@ if ask 7 ".env aus Vorlage (${ENV_FILE})"; then
   env_default MAIL_USERNAME "AENDERN_benutzer"
   env_default MAIL_PASSWORD "AENDERN_passwort"
   env_default MAIL_ENCRYPTION tls
-  env_default MAIL_FROM_ADDRESS "AENDERN_noreply@ssc-landau.de"
-  env_default MAIL_FROM_NAME "SSC Landau Training"
+  env_default MAIL_FROM_ADDRESS "$MAIL_FROM_ADDRESS"
+  env_default MAIL_FROM_NAME "$MAIL_FROM_NAME"
   chown "$TOME_USER:$TOME_USER" "$ENV_FILE"; chmod 640 "$ENV_FILE"
   ok ".env bereit (640 ${TOME_USER}:${TOME_USER}): ${ENV_FILE}"
   if grep -q "AENDERN_" "$ENV_FILE"; then
@@ -519,13 +524,18 @@ fi
 
 # ============================================================================
 # Abschnitt 11: Neuen Vhost ablegen (NOCH NICHT aktiv)
-# Schreibt deploy/apache/training.conf nach sites-available/training.conf.new. Apache laedt
+# Rendert deploy/apache/training.conf (Platzhalter aus site.env) nach sites-available/training.conf.new. Apache laedt
 # nur *.conf aus sites-enabled, die .new-Datei hat also keine Wirkung.
 # ============================================================================
 if ask 11 "Neuen Vhost als training.conf.new ablegen"; then
   src="${SCRIPT_DIR}/apache/${VHOST_NAME}"
   [[ -f "$src" ]] || die "Vhost-Vorlage nicht gefunden: ${src} (das ganze deploy/-Verzeichnis auf den Server kopieren)"
-  install -o root -g root -m 644 "$src" "${APACHE_DIR}/sites-available/${VHOST_NAME}.new"
+  # Platzhalter @SITE_HOST@, @SITE_ALIAS@, @SITE_CERT_DIR@, @SITE_ADMIN_EMAIL@ aus site.env einsetzen
+  rendered="$(mktemp)"
+  sed -e "s|@SITE_HOST@|${SITE_HOST}|g" -e "s|@SITE_ALIAS@|${SITE_ALIAS}|g" -e "s|@SITE_CERT_DIR@|${SITE_CERT_DIR}|g" -e "s|@SITE_ADMIN_EMAIL@|${SITE_ADMIN_EMAIL}|g" "$src" > "$rendered"
+  ! grep -q '@SITE_[A-Z_]*@' "$rendered" || die "Unersetzte Platzhalter in der Vhost-Vorlage"
+  install -o root -g root -m 644 "$rendered" "${APACHE_DIR}/sites-available/${VHOST_NAME}.new"
+  rm -f "$rendered"
   ok "Abgelegt: ${APACHE_DIR}/sites-available/${VHOST_NAME}.new (inaktiv)"
   info "Vergleich mit dem aktuellen Vhost: diff -u ${APACHE_DIR}/sites-enabled/${VHOST_NAME} ${APACHE_DIR}/sites-available/${VHOST_NAME}.new"
 fi

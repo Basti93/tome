@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Smoke-Tests gegen die Simulation (oder gegen Produktion: BASE und RESOLVE anpassen).
 #   deploy/prod-sim/smoke.sh
-# Standard: https://training.ssc-landau.de:18443 -> 127.0.0.1 (self-signed, -k)
+# Standard: https://training.example.org:18443 -> 127.0.0.1 (self-signed, -k)
 set -uo pipefail
 PORT="${PORT:-18443}"
 HTTP_PORT="${HTTP_PORT:-18080}"
-HOSTN="${SITE_HOST:-training.ssc-landau.de}"
+HOSTN="${SITE_HOST:-training.example.org}"
 BASE="https://${HOSTN}:${PORT}"
-C=(curl -sk -m 15 --resolve "${HOSTN}:${PORT}:127.0.0.1" --resolve "ssc-landau.de:${PORT}:127.0.0.1" --resolve "${HOSTN}:${HTTP_PORT}:127.0.0.1")
+C=(curl -sk -m 15 --resolve "${HOSTN}:${PORT}:127.0.0.1" --resolve "example.org:${PORT}:127.0.0.1" --resolve "${HOSTN}:${HTTP_PORT}:127.0.0.1")
 pass=0; fail=0
 check() { # check NAME BEDINGUNG(0=ok) [DETAIL]
   if [[ "$2" == 0 ]]; then printf 'PASS  %-58s %s\n' "$1" "${3:-}"; pass=$((pass+1)); else printf 'FAIL  %-58s %s\n' "$1" "${3:-}"; fail=$((fail+1)); fi
@@ -57,8 +57,8 @@ h="$(hdrs "$BASE/firebase-messaging-sw.js")"; grep -qi "^cache-control: no-cache
 h="$(hdrs "http://${HOSTN}:${HTTP_PORT}/foo")"
 [[ "$h" == *"301"* && "$h" == *"https://${HOSTN}/foo"* ]]; check "HTTP -> HTTPS Redirect" $?
 
-out="$("${C[@]}" "https://ssc-landau.de:${PORT}/")"
-[[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert (ssc-landau.de)" $?
+out="$("${C[@]}" "https://example.org:${PORT}/")"
+[[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert (example.org)" $?
 
 # JWT: Login und Authorization-Header muss bei PHP ankommen
 tok="$("${C[@]}" -X POST -H 'Content-Type: application/json' -d '{"email":"admin@tome.local","password":"password"}' "$BASE/api/v1/auth/login" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("token") or d.get("data",{}).get("token") or "")' 2>/dev/null)"

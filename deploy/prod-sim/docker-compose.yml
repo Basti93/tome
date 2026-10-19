@@ -21,6 +21,9 @@ services:
     ports:
       - "18443:443"
       - "18080:80"
+    environment:
+      # Standort der Simulation (Beispielwerte statt der echten deploy/site.env)
+      SITE_ENV_FILE: /opt/tome-deploy/prod-sim/site.env.sim
     volumes:
       # server-setup.sh liest die Vhost-Vorlage neben sich (apache/training.conf)
       - ..:/opt/tome-deploy:ro

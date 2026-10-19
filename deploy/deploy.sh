@@ -2,9 +2,9 @@
 # =============================================================================
 # T.O.M.E. Deploy (vom Mac aus)
 #
-#   deploy/deploy.sh --host training.ssc-landau.de [--dry-run] [--skip-build]
+#   deploy/deploy.sh --host <host> [--dry-run] [--skip-build]
 #
-#   --host        Server (SSH als Benutzer "tome", Schluessel-Login)
+#   --host        Server (SSH als Benutzer "tome", Schluessel-Login); Standard: SITE_HOST aus deploy/site.env
 #   --dry-run     baut und stellt das Release zusammen, uebertraegt aber nichts (rsync -n)
 #   --skip-build  verwendet das zuletzt gebaute Release in deploy/.build/release erneut
 #

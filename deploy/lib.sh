@@ -5,14 +5,17 @@
 # fuehrt TOME_TRANSPORT=docker dieselben Befehle per "docker exec" im Container TOME_CONTAINER aus,
 # damit exakt dieselbe Skriptlogik getestet wird.
 
+# shellcheck source=site-env.sh
+source "$(dirname "${BASH_SOURCE[0]}")/site-env.sh"
+require_site_vars SITE_HOST
+
 TOME_ROOT="${TOME_ROOT:-/var/www/tome-app}"
 TOME_PHP="${TOME_PHP:-php8.4}"
 TOME_TRANSPORT="${TOME_TRANSPORT:-ssh}"
 TOME_CONTAINER="${TOME_CONTAINER:-tome-sim-vm}"
-SITE_HOST="${SITE_HOST:-training.ssc-landau.de}"
 HEALTH_PORT="${TOME_HEALTH_PORT:-443}"
 CURL_OPTS="${TOME_CURL_OPTS:-}"          # Simulation: -k (selbstsigniertes Zertifikat)
-HOST="${HOST:-}"
+HOST="${HOST:-$SITE_HOST}"   # --host ueberschreibt
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }

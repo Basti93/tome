@@ -18,7 +18,7 @@ export function buildManifest(env: Record<string, string | undefined>): Record<s
 }
 
 /**
- * Serves/emits /manifest.json from manifest.template.json with VITE_APP_SHORT_NAME and VITE_APP_NAME
+ * Replaces %VITE_TITLE% in index.html, serves/emits /manifest.json from manifest.template.json with VITE_APP_SHORT_NAME and VITE_APP_NAME
  * and sets the iOS home screen title to the short name.
  */
 export function tomeManifest(): Plugin {
@@ -37,14 +37,18 @@ export function tomeManifest(): Plugin {
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'manifest.json', source: JSON.stringify(buildManifest(env), null, 2) })
     },
-    transformIndexHtml() {
-      return [
-        {
-          tag: 'meta',
-          attrs: { name: 'apple-mobile-web-app-title', content: (buildManifest(env).short_name as string) },
-          injectTo: 'head',
-        },
-      ]
+    transformIndexHtml(html) {
+      return {
+        // %VITE_TITLE% is the page title (default: the app name)
+        html: html.replace('%VITE_TITLE%', env.VITE_TITLE || DEFAULT_SHORT_NAME),
+        tags: [
+          {
+            tag: 'meta',
+            attrs: { name: 'apple-mobile-web-app-title', content: buildManifest(env).short_name as string },
+            injectTo: 'head' as const,
+          },
+        ],
+      }
     },
   }
 }

@@ -12,7 +12,7 @@
               <v-card-title>Was ist T.O.M.E.?</v-card-title>
               <v-card-text>
                 <ul class="info-list">
-                  <li>Trainingsplanung des SSC Landau: kommende Trainings mit Zeit, Ort und Gruppe auf einen Blick</li>
+                  <li>{{ intro }}: kommende Trainings mit Zeit, Ort und Gruppe auf einen Blick</li>
                   <li>Zum Training an- und abmelden ohne eigenes Konto – einfach unter „Wer bist du?“ den eigenen Namen wählen</li>
                   <li>Längere Abwesenheiten (z. B. Urlaub, Verletzung) unter „Abwesenheit eintragen“ melden</li>
                   <li>Für Trainer: Trainings vorbereiten und nachbereiten, Teilnahme erfassen, Abrechnung als Excel herunterladen</li>
@@ -54,6 +54,9 @@
 </template>
 
 <script setup lang="ts">
+// Optional: VITE_ORG_NAME (build time) names the club in the first bullet
+const orgName = import.meta.env.VITE_ORG_NAME
+const intro = orgName ? `Trainingsplanung des ${orgName}` : 'Trainingsplanung'
 </script>
 
 <style scoped>

@@ -3,7 +3,7 @@
 #   deploy/prod-sim/smoke-matomo.sh [--installed]   (--installed: nach Web-Installer, prueft Tracking)
 set -uo pipefail
 PORT="${PORT:-18443}"
-HOSTN="${SITE_HOST:-training.ssc-landau.de}"
+HOSTN="${SITE_HOST:-training.example.org}"
 BASE="https://${HOSTN}:${PORT}"
 C=(curl -sk -m 20 --resolve "${HOSTN}:${PORT}:127.0.0.1")
 pass=0; fail=0
@@ -25,11 +25,11 @@ h="$("${C[@]}" -D - -o /dev/null "$BASE/")"
 h="$("${C[@]}" -D - -o /dev/null "$BASE/matomo/")"; grep -qi "^content-security-policy:.*unsafe-eval" <<<"$h"; check "/matomo/ hat eigene CSP" $?
 grep -qi "^x-frame-options: SAMEORIGIN" <<<"$h"; check "/matomo/ X-Frame-Options SAMEORIGIN" $?
 c=$(code "$BASE/trainings/deep/link"); [[ "$c" == 200 ]]; check "SPA-Deep-Link weiter ok" $? "HTTP $c"
-out="$("${C[@]}" "https://ssc-landau.de:${PORT}/" --resolve "ssc-landau.de:${PORT}:127.0.0.1")"; [[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert" $?
+out="$("${C[@]}" "https://example.org:${PORT}/" --resolve "example.org:${PORT}:127.0.0.1")"; [[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert" $?
 
 if [[ "${1:-}" == "--installed" ]]; then
   c=$(code "$BASE/matomo/index.php?module=Login"); [[ "$c" == 200 ]]; check "Login-Seite" $? "HTTP $c"
-  c=$(code "$BASE/matomo/matomo.php?idsite=1&rec=1&action_name=smoke&url=https%3A%2F%2Ftraining.ssc-landau.de%2Fsmoke"); [[ "$c" == 200 || "$c" == 204 ]]; check "Tracking-Request (matomo.php, idsite=1)" $? "HTTP $c"
+  c=$(code "$BASE/matomo/matomo.php?idsite=1&rec=1&action_name=smoke&url=https%3A%2F%2Ftraining.example.org%2Fsmoke"); [[ "$c" == 200 || "$c" == 204 ]]; check "Tracking-Request (matomo.php, idsite=1)" $? "HTTP $c"
 fi
 echo "---- ${pass} bestanden, ${fail} fehlgeschlagen"
 [[ "$fail" == 0 ]]

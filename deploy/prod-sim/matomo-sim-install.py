@@ -3,12 +3,12 @@
 
   python3 deploy/prod-sim/matomo-sim-install.py <db-passwort>
 
-Spricht https://training.ssc-landau.de:18443/matomo/ (-> 127.0.0.1, self-signed). Legt den Super-User
-admin / Sim-Passwort-123 und die Website "TOME" (https://training.ssc-landau.de) an.
+Spricht https://training.example.org:18443/matomo/ (-> 127.0.0.1, self-signed). Legt den Super-User
+admin / Sim-Passwort-123 und die Website "TOME" (https://training.example.org) an.
 """
 import http.cookiejar, re, socket, ssl, sys, urllib.parse, urllib.request
 
-HOST, PORT = "training.ssc-landau.de", 18443
+HOST, PORT = "training.example.org", 18443
 real = socket.getaddrinfo
 socket.getaddrinfo = lambda h, *a, **k: real("127.0.0.1" if h == HOST else h, *a, **k)
 ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
@@ -41,7 +41,7 @@ def main(db_pw):
     post("setupSuperUser", {"login": "admin", "password": "Sim-Passwort-123", "password_bis": "Sim-Passwort-123",
                             "email": "admin@example.org", "form_nonce": nonce(html), "submit": "Next"})
     html = get("firstWebsiteSetup")
-    post("firstWebsiteSetup", {"siteName": "TOME", "url": "https://training.ssc-landau.de", "timezone": "Europe/Berlin",
+    post("firstWebsiteSetup", {"siteName": "TOME", "url": "https://training.example.org", "timezone": "Europe/Berlin",
                                "ecommerce": "0", "form_nonce": nonce(html), "submit": "Next"})
     html = get("finished")
     post("finished", {"setup_geoip2": "0", "do_not_track": "1", "anonymise_ip": "1",

@@ -1,3 +1,4 @@
 .build/
 .env.production
 prod-sim/work/
+site.env
