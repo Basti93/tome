@@ -2,7 +2,14 @@
     "name": "tome/tomeapi",
     "version": "1.0.0",
     "description": "The backend/server/api for T.O.M.E. - Training Organization Made Easy ",
-    "keywords": ["laravel", "api", "boilerplate", "jwt", "auth", "rest"],
+    "keywords": [
+        "laravel",
+        "api",
+        "boilerplate",
+        "jwt",
+        "auth",
+        "rest"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
@@ -35,7 +42,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\": "tests/"
+            "App\\": "tests/",
+            "Tests\\": "tests/",
+            "Database\\Factories\\": "database/factories/"
         }
     },
     "scripts": {

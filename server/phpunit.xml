@@ -6,25 +6,37 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="Application Test Suite">
-            <directory suffix="Test.php">./tests</directory>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Console">
+            <directory suffix="Test.php">./tests/Console</directory>
         </testsuite>
     </testsuites>
-    <source>
+    <source ignoreIndirectDeprecations="true">
         <include>
             <directory suffix=".php">./app</directory>
         </include>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:dGVzdGluZ2tleXRlc3Rpbmdrb2V5dGVzdGluZzEyMzQ="/>
+        <env name="JWT_SECRET" value="phpunit-jwt-secret-phpunit-jwt-secret-1234567890"/>
         <env name="DB_CONNECTION" value="mysql"/>
-        <env name="DB_HOST" value="localhost"/>
-        <env name="DB_DATABASE" value="tp2"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="tome_test"/>
         <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
+        <env name="DB_PASSWORD" value="root"/>
         <env name="CACHE_DRIVER" value="array"/>
+        <env name="CACHE_STORE" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
-        <env name="MAIL_MAILER" value="log"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
     </php>
 </phpunit>
