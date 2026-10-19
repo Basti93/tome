@@ -181,4 +181,17 @@ class CompleteTrainingTest extends TestCase
             ->assertJsonPath('data.trainers.0.userId', $trainer->id)
             ->assertJsonPath('data.participants.0.userId', $a->id);
     }
+
+    public function test_accounting_times_are_returned_as_local_time_with_offset(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $t = $this->training([$trainer]);
+
+        $this->actingAsJwt($trainer)->postJson($this->url($t), [
+            'attendeeIds' => [],
+            'trainerTimes' => [['userId' => $trainer->id, 'start' => '2099-01-10T18:15:00+01:00', 'end' => '2099-01-10T19:00:00+01:00']],
+        ])->assertOk()
+            ->assertJsonPath('data.trainers.0.accountingTimeStart', '2099-01-10T18:15:00+01:00')
+            ->assertJsonPath('data.trainers.0.accountingTimeEnd', '2099-01-10T19:00:00+01:00');
+    }
 }

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
 
 class TrainingTrainer extends Pivot
 {
@@ -16,6 +17,15 @@ class TrainingTrainer extends Pivot
         'accounting_time_start' => 'datetime',
         'accounting_time_end' => 'datetime',
     ];
+
+    /**
+     * Local time with offset like Training start/end ("2099-01-10T18:15:00+01:00"). The default (UTC "Z") would
+     * be shown two hours early because the app reads API times as local time and ignores the offset.
+     */
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return Carbon::instance($date)->setTimezone(config('app.timezone'))->format(\DATE_ATOM);
+    }
 
     public function user()
     {
