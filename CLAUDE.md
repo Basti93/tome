@@ -174,7 +174,7 @@ VITE_FIREBASE_AUTH_DOMAIN=ssc-tome.firebaseapp.com
 ```
 DB_HOST / DB_PORT / DB_DATABASE / DB_USERNAME / DB_PASSWORD
 JWT_SECRET          # generate with: php artisan jwt:secret -f
-FCM_SERVER_KEY / FCM_SENDER_ID   # Firebase push notifications
+FIREBASE_CREDENTIALS_PATH         # Firebase service account JSON, see server/FIREBASE_SETUP.md
 MAIL_*              # Email config for password reset + monthly stats
 ```
 
@@ -194,13 +194,26 @@ MAIL_*              # Email config for password reset + monthly stats
 - Profile settings: Each user tab in `ProfilePage.vue` is a new `v-window-item` with its own form component
 - Notification preferences: 5 types managed via `NotificationPreferencesForm.vue` component in ProfilePage tab 3
 
-## Production
+## Production / Betrieb
 
-- Live at https://training.ssc-landau.de on an IONOS Ubuntu 24.04 server (Apache + PHP-FPM 8.4 + MySQL 8.0); SSH access details are in `docs/internal/`.
-- **Production still runs the 2021 code** (Vue 2 SPA in `/var/www/tome`, Laravel 8 + Dingo in `/var/www/tome/api`, API under `/api/api/*`, not a git checkout). Everything on the current branches is not yet deployed.
+- Live at https://training.ssc-landau.de (went live 2026-10-19) on an IONOS Ubuntu 24.04 server: Apache + PHP-FPM 8.4 + MySQL 8. Security audit: `docs/internal/` (gitignored, the GitHub repo is public: never commit server details, secrets or personal data).
 - **The same server hosts the club's WordPress site ssc-landau.de (`/var/www/wp-website`). Never touch it**, and don't change shared Apache/PHP/MySQL config without explicit approval.
-- Migration plan and security audit: `docs/internal/` (gitignored — the GitHub repo is public, never commit server details or personal data).
 - The DB contains personal data of minors: query only aggregates, never print names/emails.
+
+**Layout**: `/var/www/tome-app/{releases,current,shared}`; `current` is a symlink to `releases/<time>-<sha>`; `shared` holds `.env`, `storage/` (uploads, logs) and `firebase-service-account.json`. Runs as user `tome` in its own FPM pool (socket `/run/php/php8.4-fpm-tome.sock`). Apache vhost: `deploy/apache/training.conf`. URLs: `/` SPA, `/api/v1/*` API, `/api/storage/*` uploads (static), `/api/api/*` answers 410 (stale 2021 app version).
+
+**Deploy** (from the Mac): `deploy/deploy.sh --host training.ssc-landau.de` (`--dry-run` available). Needs a clean git tree; `deploy/.env.production` (gitignored, template `deploy/.env.production.example`) holds the `VITE_*` values incl. the VAPID key. It builds, uploads a release, dumps the DB (`/var/backups/tome/pre-deploy-*.sql.gz`) before `migrate`, switches `current` and rolls back automatically if the health check (`/api/v1/health`) fails.
+**Rollback**: `deploy/rollback.sh --host training.ssc-landau.de [release]` (`--list` shows releases). Code only, migrations stay.
+**First-time setup** of a server: `sudo bash deploy/server-setup.sh` (idempotent, `--only N` repeats one section). Already done on prod.
+
+**Scheduler**: `/etc/cron.d/tome-scheduler` runs `schedule:run` every minute (schedule in `server/routes/console.php`).
+**Backups**: `/usr/local/sbin/tome-backup`, daily, 14 days, in `/var/backups/tome`.
+**Retention**: `tome:retention` runs monthly (1st, 03:00). Prod `.env` has `RETENTION_ENABLED=true` and `RETENTION_INACTIVE_MONTHS=12`; trainers/admins are never deleted. Preview with `php artisan tome:retention --dry-run`.
+**Push**: the Firebase service account is `shared/firebase-service-account.json`; the VAPID key is in `deploy/.env.production`. Test: `php artisan notification:test <token> <title> <text>`.
+
+**Follow-up cleanup, due ~2026-11-02** (two weeks after go-live, if all is stable):
+- Server: remove the old app `/var/www/tome` and the old vhost backup `/root/tome-vhost-backup`; remove root's old crontab lines (commented old `schedule:run`, rsync/tar lines for `/var/backup/tome`); drop the old global-privilege MySQL user of the old app; delete the old backups in `~sbinder/backups/2026-10-19`.
+- Mac: delete `/Users/sbinder/Backups/tome-2026-10-19` and the local docker DB `tome` (a prod copy).
 
 ## Checks & Tests
 
@@ -220,5 +233,5 @@ MAIL_*              # Email config for password reset + monthly stats
 
 ### Frontend tests (`/app`)
 - `npm run test` (vitest, jsdom; `npm run test:watch` for watch mode). Tests live next to the code as `*.test.ts`; `@/http/api` is mocked for store tests.
-- Files with pre-existing type errors carry a `// @ts-nocheck TODO(safety-net)` marker at the top of their `<script>` (2 left: `EditTrainingDialog.vue`, `TrainingCalendar.vue`); remove the marker once the file's errors are fixed.
+- Files with pre-existing type errors carry a `// @ts-nocheck TODO(safety-net)` marker at the top of their `<script>` (currently only `helpers/helpers.test.ts`); remove the marker once the file's errors are fixed.
 - Services with tests: `analytics` (cookieless/DNT/no PII), `push` (mocked firebase), `userInvite`; helpers: `dayjs`, `download`, `profile-image`.
