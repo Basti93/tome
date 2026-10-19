@@ -224,41 +224,20 @@
   </div>
 </template>
 
-<script>
-import ProfileImage from "@/components/ProfileImage.vue";
-import { useAuthStore } from '@/store/auth'
-import { useMasterDataStore } from '@/store/masterData'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
+import ProfileImage from '@/components/ProfileImage.vue'
+import { useAuthStore } from '@/store/auth'
 
-export default {
-  name: "TomeNavigation",
-  components: {ProfileImage},
-  setup() {
-    const { xs, mdAndUp } = useDisplay()
-    return { xs, mdAndUp }
-  },
-  data() {
-    return {
-      drawer: false,
-      title: import.meta.env.VITE_TITLE,
-    }
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    hasRoles: function () {
-      return this.loggedInUser && (this.loggedInUser.isTrainer || this.loggedInUser.isAdmin);
-    },
-    currentUserGroupName: function () {
-      const group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
-      if (group) {
-        return group.name
-      }
-      return undefined;
-    },
-  },
-}
+const { xs, mdAndUp } = useDisplay()
+
+const drawer = ref(false)
+const title = import.meta.env.VITE_TITLE
+
+const authStore = useAuthStore()
+const loggedInUser = computed(() => authStore.user)
+const hasRoles = computed(() => loggedInUser.value && (loggedInUser.value.isTrainer || loggedInUser.value.isAdmin))
 </script>
 
 <style scoped>

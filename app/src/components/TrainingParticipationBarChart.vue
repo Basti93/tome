@@ -16,117 +16,99 @@
   </v-card>
 </template>
 
-<script>
-import StatisticsFilter1 from "./StatisticsFilter1";
-import { useAuthStore } from '@/store/auth';
-import { useMasterDataStore } from '@/store/masterData';
-import httpClient from '@/http/api';
+<script setup lang="ts">
+import { ref } from 'vue'
+import StatisticsFilter1 from './StatisticsFilter1.vue'
+import { useAuthStore } from '@/store/auth'
+import { useMasterDataStore } from '@/store/masterData'
+import httpClient from '@/http/api'
 import dayjs from '@/helpers/dayjs'
 
-export default {
-  name: "TrainingParticipationBarChart",
-  components: {StatisticsFilter1},
-  data: function () {
-    const authStore = useAuthStore();
-    const masterData = useMasterDataStore();
-    const user = authStore.user;
-    let filterBranchIds = [];
-    if (user?.isTrainer) {
-      filterBranchIds = user.trainerBranchIds;
-    } else {
-      if (user?.groupIds && user.groupIds.length > 0) {
-        const branch = masterData.getBranchByGroupId(user.groupIds[0]);
-        if (branch) filterBranchIds.push(branch.id);
-      }
+const user = useAuthStore().user
+const masterData = useMasterDataStore()
+
+let initialBranchIds: any[] = []
+if (user?.isTrainer) {
+  initialBranchIds = user.trainerBranchIds
+} else if (user?.groupIds && user.groupIds.length > 0) {
+  const branch = masterData.getBranchByGroupId(user.groupIds[0])
+  if (branch) initialBranchIds.push(branch.id)
+}
+
+const filterBranchIds = ref<any[]>(initialBranchIds)
+const filterYear = ref(dayjs().year())
+const filterGroupIds = ref<any[]>([])
+const options = ref<any>({
+  chart: {
+    id: 'training-participation',
+    height: 400
+  },
+  colors: ['#60cb69'],
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      distributed: true
     }
-    return {
-      filterBranchIds: filterBranchIds,
-      filterYear: dayjs().year(),
-      filterGroupIds: [],
-      options: {
-        chart: {
-          id: 'training-participation',
-          height: 400,
-        },
-        colors: ['#60cb69'],
-        plotOptions: {
-          bar: {
-            horizontal: true,
-            distributed: true,
-          }
-        },
-        legend: {
-          show: false,
-        },
-        dataLabels: {
-          style: {
-            colors: ['#000']
-          },
-        },
+  },
+  legend: {
+    show: false
+  },
+  dataLabels: {
+    style: {
+      colors: ['#000']
+    }
+  },
+  xaxis: {
+    type: 'category',
+    categories: []
+  }
+})
+const series = ref<any[]>([
+  {
+    name: 'Teilnahmen',
+    data: []
+  }
+])
+
+async function fetchData() {
+  series.value = []
+  if (filterGroupIds.value.length > 0 && filterYear.value) {
+    try {
+      const url = '/training/participationcount?groupIds=' + filterGroupIds.value + '&year=' + filterYear.value
+      const { data } = await httpClient.get(url)
+      const names: string[] = []
+      const count: number[] = []
+      for (let i = 0; i < data.length; i++) {
+        names.push(data[i].firstName + ' ' + data[i].familyName)
+        count.push(data[i].total)
+      }
+      options.value = {
         xaxis: {
-          type: 'category',
-          categories: [],
-        },
-      },
-      series: [{
-        name: 'Teilnahmen',
-        data: []
-      }],
-    };
-  },
-  created() {
-    this.fetchData();
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user;
-    },
-  },
-  methods: {
-    getGroupColorById(groupId) {
-      return useMasterDataStore().getGroupColorById(groupId);
-    },
-    getGroupIdsByBranchId(branchId) {
-      return useMasterDataStore().getGroupIdsByBranchId(branchId);
-    },
-    getBranchByGroupId(groupId) {
-      return useMasterDataStore().getBranchByGroupId(groupId);
-    },
-    async fetchData() {
-      this.series = [];
-      if (this.filterGroupIds.length > 0 && this.filterYear) {
-        try {
-          const url = '/training/participationcount?groupIds=' + this.filterGroupIds + '&year=' + this.filterYear;
-          const {data} = await httpClient.get(url);
-          const names = [];
-          const count = [];
-          for (let i = 0; i < data.length; i++) {
-            names.push(data[i].firstName + " " + data[i].familyName);
-            count.push(data[i].total);
-          }
-          this.options = {
-            xaxis: {
-              categories: names,
-            },
-          };
-          this.series = [{
-            data: count
-          }];
-        } catch (error) {
-          console.error('Error fetching participation data:', error);
+          categories: names
         }
       }
-    },
-    filterGroupIdsChanged: function (groupIds) {
-      this.filterGroupIds = groupIds;
-      this.fetchData();
-    },
-    filterYearChanged: function (year) {
-      this.filterYear = year;
-      this.fetchData();
-    },
-  },
+      series.value = [
+        {
+          data: count
+        }
+      ]
+    } catch (error) {
+      console.error('Error fetching participation data:', error)
+    }
+  }
 }
+
+function filterGroupIdsChanged(groupIds: any[]) {
+  filterGroupIds.value = groupIds
+  fetchData()
+}
+
+function filterYearChanged(year: number) {
+  filterYear.value = year
+  fetchData()
+}
+
+fetchData()
 </script>
 
 <style scoped>

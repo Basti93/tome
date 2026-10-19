@@ -60,98 +60,81 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { profileImageUrl } from '@/helpers/profile-image'
-import { useAuthStore } from '@/store/auth'
 
-export default {
-  name: "UploadProfileImage",
-  emits: ['imageChanged', 'imageRemoved'],
-  props: {
-    imagePath: String,
-  },
-  data: function () {
-    return {
-      editImagePath: null,
-      uploading: false,
-      changeImage: false,
-      files: [],
-      imageRule: [
-        value => !value || !Array.isArray(value) || value.length === 0 || value[0].size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
-      ],
-    }
-  },
-  created() {
-    this.editImagePath = this.imagePath;
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    imageUrl() {
-      let file = null;
+const props = defineProps<{
+  imagePath?: string | null
+}>()
 
-      // Handle both single File object and array of Files
-      if (this.files) {
-        if (Array.isArray(this.files)) {
-          file = this.files.length > 0 ? this.files[0] : null;
-        } else if (this.files instanceof File) {
-          file = this.files;
-        }
-      }
+const emit = defineEmits<{
+  imageChanged: [file: File | null]
+  imageRemoved: []
+}>()
 
-      if (file) {
-        return URL.createObjectURL(file);
-      }
-      return profileImageUrl(this.editImagePath);
-    },
-    hasChanges() {
-      if (!this.files) return false;
-      if (Array.isArray(this.files)) {
-        return this.files.length > 0;
-      }
-      return this.files instanceof File;
-    }
-  },
-  methods: {
-    removeImage() {
-      this.resetLocalFile();
-      this.editImagePath = null;
-      this.$emit('imageRemoved')
-    },
-    imageChanged() {
-      let file = null;
+const editImagePath = ref<string | null | undefined>(props.imagePath)
+const files = ref<File | File[] | null>([])
+const imageRule = [
+  (value: any) =>
+    !value ||
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value[0].size < 10000000 ||
+    'Bildgröße muss kleiner wie 10 MB sein!'
+]
 
-      // Handle both single File object and array of Files
-      if (this.files) {
-        if (Array.isArray(this.files)) {
-          file = this.files.length > 0 ? this.files[0] : null;
-        } else if (this.files instanceof File) {
-          file = this.files;
-        }
-      }
-
-      if (file) {
-        this.$emit('imageChanged', file)
-      } else {
-        this.$emit('imageChanged', null)
-      }
-    },
-    resetLocalFile() {
-      this.files = null;
-      this.files = [];
-    }
-  },
-  watch: {
-    imagePath: {
-      immediate: true,
-      handler(newVal) {
-        this.resetLocalFile();
-        this.editImagePath = newVal;
-      },
+// Handle both single File object and array of Files
+function currentFile(): File | null {
+  if (files.value) {
+    if (Array.isArray(files.value)) {
+      return files.value.length > 0 ? files.value[0] : null
+    } else if (files.value instanceof File) {
+      return files.value
     }
   }
+  return null
 }
+
+const imageUrl = computed(() => {
+  const file = currentFile()
+  if (file) {
+    return URL.createObjectURL(file)
+  }
+  return profileImageUrl(editImagePath.value)
+})
+
+const hasChanges = computed(() => {
+  if (!files.value) return false
+  if (Array.isArray(files.value)) {
+    return files.value.length > 0
+  }
+  return files.value instanceof File
+})
+
+function resetLocalFile() {
+  files.value = null
+  files.value = []
+}
+
+function removeImage() {
+  resetLocalFile()
+  editImagePath.value = null
+  emit('imageRemoved')
+}
+
+function imageChanged() {
+  emit('imageChanged', currentFile())
+}
+
+watch(
+  () => props.imagePath,
+  (newVal) => {
+    resetLocalFile()
+    editImagePath.value = newVal
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

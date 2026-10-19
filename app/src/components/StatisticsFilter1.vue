@@ -40,84 +40,75 @@
   </v-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useMasterDataStore } from '@/store/masterData'
 import dayjs from '@/helpers/dayjs'
 
-export default {
-  name: "StatisticsFilter1",
-  emits: ['groupsSelected', 'yearSelected'],
-  props: {
-    'branchIds': Array,
-    'year': Number,
-  },
-  created() {
-    this.initializing = true;
-    this.years = this.lastFiveYears();
-    this.selectedYear = this.year;
-    this.initialGroupIds = this.groupIds;
-    this.initSelect()
-    this.initializing = false;
-  },
-  data() {
-    return {
-      selectedBranchId: null,
-      selectedGroupIds: [],
-      initialGroupIds: [],
-      groupItems: [],
-      selectedYear: null,
-      years: [],
-      initializing: false,
-    }
-  },
-  computed: {
-    groups() {
-      return useMasterDataStore().groups
-    },
-    branches() {
-      return useMasterDataStore().branches
-    },
-  },
-  methods: {
-    initSelect: function () {
-      if (this.branchIds && this.branchIds.length > 0) {
-        this.selectedBranchId = this.branchIds[0];
-      }
-    },
-    selectedYearChanged: function () {
-      this.$emit('yearSelected', this.selectedYear)
-    },
-    selectedGroupIdsChanged() {
-      this.$emit('groupsSelected', this.selectedGroupIds)
-    },
-    lastFiveYears() {
-      // current year and the four years before it (dayjs is immutable, no mutation loop)
-      const currentYear = dayjs().year()
-      return Array.from({ length: 5 }, (_, i) => currentYear - i)
-    }
-  },
-  watch: {
-    selectedBranchId: {
-      immediate: true,
-      handler(newVal, oldVal) {
-        if (newVal && newVal != oldVal) {
-          //reset group data
-          this.selectedGroupIds = [];
-          this.groupItems = [];
-          //add all groups of branch to groupItems
-          for (const group of this.groups) {
-            if (this.selectedBranchId === group.branchId) {
-              this.groupItems.push(group);
-              this.selectedGroupIds.push(group.id);
-            }
-          }
-          this.$emit('groupsSelected', this.selectedGroupIds)
-        }
-      },
+const props = defineProps<{
+  branchIds?: any[]
+  year?: number
+}>()
 
-    },
+const emit = defineEmits<{
+  groupsSelected: [groupIds: any[]]
+  yearSelected: [year: number | null]
+}>()
+
+const masterData = useMasterDataStore()
+
+const selectedBranchId = ref<number | null>(null)
+const selectedGroupIds = ref<any[]>([])
+const groupItems = ref<any[]>([])
+const selectedYear = ref<number | null | undefined>(null)
+
+const groups = computed(() => masterData.groups)
+const branches = computed(() => masterData.branches)
+
+// current year and the four years before it (dayjs is immutable, no mutation loop)
+function lastFiveYears() {
+  const currentYear = dayjs().year()
+  return Array.from({ length: 5 }, (_, i) => currentYear - i)
+}
+
+const years = lastFiveYears()
+
+function initSelect() {
+  if (props.branchIds && props.branchIds.length > 0) {
+    selectedBranchId.value = props.branchIds[0]
   }
 }
+
+function selectedYearChanged() {
+  emit('yearSelected', selectedYear.value as number | null)
+}
+
+function selectedGroupIdsChanged() {
+  emit('groupsSelected', selectedGroupIds.value)
+}
+
+watch(
+  selectedBranchId,
+  (newVal, oldVal) => {
+    if (newVal && newVal != oldVal) {
+      // reset group data
+      selectedGroupIds.value = []
+      groupItems.value = []
+      // add all groups of branch to groupItems
+      for (const group of groups.value) {
+        if (selectedBranchId.value === group.branchId) {
+          groupItems.value.push(group)
+          selectedGroupIds.value.push(group.id)
+        }
+      }
+      emit('groupsSelected', selectedGroupIds.value)
+    }
+  },
+  { immediate: true }
+)
+
+selectedYear.value = props.year
+initSelect()
 </script>
 
 <style scoped>
