@@ -225,4 +225,25 @@ class TrainingCrudTest extends TestCase
             ['id' => $busy->id, 'firstName' => 'Busy', 'familyName' => 'Bee', 'total' => 2],
         ]);
     }
+
+    public function test_participation_count_with_several_groups_counts_each_training_once_and_includes_new_years_eve(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $g1 = GroupFactory::new()->create();
+        $g2 = GroupFactory::new()->create();
+        $user = UserFactory::new()->inGroups([$g1, $g2])->create();
+
+        $first = TrainingFactory::new()->between('2025-12-31 18:00:00', '2025-12-31 19:00:00')->forGroups([$g1, $g2])->create(['evaluated' => 1]);
+        $first->participants()->attach($user->id, ['attend' => 1]);
+        $other = TrainingFactory::new()->between('2025-03-01 18:00:00', '2025-03-01 19:00:00')->forGroups([$g1])->create(['evaluated' => 1]);
+        $other->participants()->attach($user->id, ['attend' => 1]);
+        $nextYear = TrainingFactory::new()->between('2026-01-01 18:00:00', '2026-01-01 19:00:00')->forGroups([$g1])->create(['evaluated' => 1]);
+        $nextYear->participants()->attach($user->id, ['attend' => 1]);
+
+        $this->actingAsJwt($trainer)
+            ->getJson("/api/v1/training/participationcount?groupIds={$g1->id},{$g2->id}&year=2025")
+            ->assertOk()
+            ->assertJsonPath('0.id', $user->id)
+            ->assertJsonPath('0.total', 2);
+    }
 }

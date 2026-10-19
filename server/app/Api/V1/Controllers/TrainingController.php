@@ -132,15 +132,15 @@ class TrainingController extends Controller
                     ->whereIn('user_group.group_id', preg_split('/,/', $groupIds));
             })
             ->when($year, function ($query, $year) {
-                $from = date($year.'-01-01');
-                $to = date($year.'-12-31');
-                $query->whereBetween('trainings.start', [$from, $to]);
+                $year = (int) $year;
+                // the whole last day counts (a plain '-12-31' bound is midnight)
+                $query->whereBetween('trainings.start', [$year.'-01-01 00:00:00', $year.'-12-31 23:59:59']);
             })
             ->where('training_participation.attend', 1)
             ->where('users.active', 1)
             ->where('trainings.evaluated', 1)
             ->groupBy('users.id', 'users.firstName', 'users.familyName')
-            ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(*) as total'))
+            ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(distinct trainings.id) as total'))
             ->orderBy('total', 'desc')
             ->get();
 

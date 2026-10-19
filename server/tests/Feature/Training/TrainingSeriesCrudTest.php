@@ -67,7 +67,6 @@ class TrainingSeriesCrudTest extends TestCase
             'deferUntil' => null,
         ]))->assertStatus(201);
 
-        $this->assertGreaterThan(0, Training::count());
         $training = Training::firstOrFail();
         $this->assertSame(TrainingSeries::firstOrFail()->id, (int) $training->training_series_id);
         $this->assertSame([$group->id], $training->groups()->pluck('groups.id')->all());
@@ -140,5 +139,29 @@ class TrainingSeriesCrudTest extends TestCase
         $this->artisan('training:series')->assertSuccessful();
 
         $this->assertSame(0, Training::where('training_series_id', $bad->id)->count());
+    }
+
+    public function test_the_exact_payload_of_the_vuetify_4_dialog_is_stored_as_a_json_list(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $group = GroupFactory::new()->create();
+
+        // as sent by TrainingSeriesPage.save(): times without seconds, nulls, the id repeated in the body
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', [
+            'startTime' => '09:00', 'endTime' => '12:00', 'weekdays' => [1, 3], 'comment' => null,
+            'locationId' => null, 'trainerIds' => [], 'groupIds' => [$group->id], 'contentIds' => [],
+            'deferUntil' => null, 'automaticAttend' => true,
+        ])->assertStatus(201);
+
+        $series = TrainingSeries::firstOrFail();
+        $this->assertSame('[1,3]', $series->weekdays);
+
+        $this->actingAsJwt($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", [
+            'id' => $series->id, 'startTime' => '09:00', 'endTime' => '12:00', 'weekdays' => [2, 4], 'comment' => 'x',
+            'locationId' => null, 'trainerIds' => [], 'groupIds' => [$group->id], 'contentIds' => [],
+            'deferUntil' => null, 'automaticAttend' => false,
+        ])->assertStatus(201);
+
+        $this->assertSame('[2,4]', $series->fresh()->weekdays);
     }
 }

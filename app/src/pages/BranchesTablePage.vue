@@ -18,6 +18,7 @@
                       icon
                       position="absolute"
                       location="bottom left"
+                      class="ml-4"
                       elevation="1"
                       color="primary"
                       v-bind="props"
