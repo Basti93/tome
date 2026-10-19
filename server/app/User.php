@@ -5,6 +5,7 @@ namespace App;
 use App\Mail\InvitePassword;
 use App\Mail\ResetPassword;
 use Hash;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
@@ -106,7 +107,8 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Group', 'user_group', 'user_id');
     }
 
-    public function notificationTokens()
+    /** @return HasMany<NotificationToken, $this> */
+    public function notificationTokens(): HasMany
     {
         return $this->hasMany(NotificationToken::class);
     }

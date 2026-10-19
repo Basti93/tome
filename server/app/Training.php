@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Training extends Model
 {
@@ -21,7 +22,8 @@ class Training extends Model
         return $this->hasMany(TrainingParticipation::class, 'training_id');
     }
 
-    public function trainers()
+    /** @return BelongsToMany<User, $this> */
+    public function trainers(): BelongsToMany
     {
         return $this->belongsToMany('App\User', 'training_trainer', 'training_id', 'user_id');
     }
@@ -31,7 +33,8 @@ class Training extends Model
         return $this->hasMany('App\TrainingTrainer');
     }
 
-    public function groups()
+    /** @return BelongsToMany<Group, $this> */
+    public function groups(): BelongsToMany
     {
         return $this->belongsToMany('App\Group', 'training_group', 'training_id', 'group_id');
     }

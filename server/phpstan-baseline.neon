@@ -97,12 +97,6 @@ parameters:
 			path: app/Api/V1/Controllers/TrainingCalendarController.php
 
 		-
-			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Api/V1/Controllers/TrainingCalendarController.php
-
-		-
 			message: '#^Relation ''groups'' is not found in App\\TrainingSeries model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -169,12 +163,6 @@ parameters:
 			path: app/Api/V1/Controllers/TrainingController.php
 
 		-
-			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
 			message: '#^Access to an undefined property App\\TrainingTrainer\:\:\$month\.$#'
 			identifier: property.notFound
 			count: 3
@@ -205,12 +193,6 @@ parameters:
 			path: app/Api/V1/Controllers/TrainingEvaluationController.php
 
 		-
-			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Api/V1/Controllers/TrainingEvaluationController.php
-
-		-
 			message: '#^Relation ''training'' is not found in App\\TrainingTrainer model\.$#'
 			identifier: larastan.relationExistence
 			count: 5
@@ -227,12 +209,6 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: app/Api/V1/Controllers/TrainingEvaluationController.php
-
-		-
-			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Api/V1/Controllers/TrainingPrepareController.php
 
 		-
 			message: '#^Call to static method make\(\) on an unknown class App\\Api\\V1\\Controllers\\View\.$#'
@@ -355,12 +331,6 @@ parameters:
 			path: app/Console/Commands/AbsenceNotification.php
 
 		-
-			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
-
-		-
 			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -379,27 +349,9 @@ parameters:
 			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
 
 		-
-			message: '#^Access to an undefined property App\\User\:\:\$notificationTokens\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/SendNotificationsToUsers.php
-
-		-
-			message: '#^Access to an undefined property App\\User\:\:\$notificationTokens\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
-
-		-
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
-			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
-
-		-
-			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
 
 		-
@@ -896,18 +848,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Training\:\:\$contents\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Training.php
-
-		-
-			message: '#^Access to an undefined property App\\Training\:\:\$groups\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Training.php
-
-		-
-			message: '#^Access to an undefined property App\\Training\:\:\$trainers\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Training.php

@@ -136,7 +136,7 @@ class TrainingEvaluationController extends Controller
                 $tt->save();
             }
 
-            $training->evaluated = 1;
+            $training->evaluated = true;
             $training->save();
         });
 
