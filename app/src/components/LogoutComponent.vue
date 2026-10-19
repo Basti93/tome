@@ -5,6 +5,7 @@
   import { useAuthStore } from '@/store/auth'
   import { useSnackbarStore } from '@/store/snackbar'
   import httpClient from '@/http/api'
+  import { analytics } from '@/services/analytics'
 
   export default {
     name: 'LogoutComponent',
@@ -14,6 +15,9 @@
       } catch (e) {
         // ignore errors, still clear local state
       }
+      // Track logout event
+      analytics.trackEvent('Authentication', 'Logout')
+      analytics.resetUserId()
       useAuthStore().logout()
       useSnackbarStore().show("Erfolgreich abgemeldet", "info");
       this.$router.push('/')

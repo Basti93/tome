@@ -100,6 +100,7 @@ import httpClient from '@/http/api'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
 import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
+import { analytics } from '@/services/analytics'
 
 export default {
   name: "LoginPage",
@@ -172,6 +173,8 @@ export default {
           useAuthStore().login(user)
           useCookieAuthStore().eraseCookieUser()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
+          // Track successful login
+          analytics.trackEvent('Authentication', 'Login', user.role || 'unknown')
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {

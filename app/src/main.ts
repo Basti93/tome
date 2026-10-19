@@ -6,6 +6,7 @@ import vuetify from './plugins/vuetify'
 import httpClient from './http/api'
 import { useMasterDataStore } from './store/masterData'
 import VueApexCharts from 'vue3-apexcharts'
+import { analytics } from './services/analytics'
 
 // @ts-ignore
 import moment from 'moment'
@@ -15,6 +16,9 @@ import 'moment/locale/de'
 moment.locale('de')
 
 async function init() {
+  // Initialize Matomo analytics early
+  analytics.init()
+
   const app = createApp(App)
   const pinia = createPinia()
 

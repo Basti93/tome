@@ -61,7 +61,7 @@ services:
     networks:
       - tome-network
 
-  # MySQL database
+  # MySQL database (shared by Laravel app and Matomo analytics)
   mysql:
     image: mysql:8.0
     container_name: tome-mysql
@@ -75,10 +75,16 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - tome-network
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # Mailpit for testing emails
   mailpit:
@@ -108,8 +114,32 @@ services:
       - tome-network
     restart: unless-stopped
 
+  # Matomo Analytics (privacy-friendly, self-hosted)
+  # Uses shared MySQL database (same as Laravel app)
+  matomo:
+    image: matomo:latest
+    container_name: tome-matomo
+    ports:
+      - "8002:80"
+    volumes:
+      - matomo_config:/var/www/html/config
+      - matomo_data:/var/www/html/misc/user
+    environment:
+      - MATOMO_DATABASE_HOST=mysql
+      - MATOMO_DATABASE_DBNAME=matomo
+      - MATOMO_DATABASE_USERNAME=tome
+      - MATOMO_DATABASE_PASSWORD=tome
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - tome-network
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  matomo_config:
+  matomo_data:
 
 networks:
   tome-network:

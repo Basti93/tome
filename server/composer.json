@@ -7,7 +7,7 @@
     "type": "project",
     "require": {
         "php": ">=8.2",
-        "code-lts/laravel-fcm": "^1.6.0",
+        "kreait/firebase-php": "^7.0",
         "doctrine/dbal": "^3.0",
         "grohiro/laravel-camelcase-json": "^2.0.0",
         "guzzlehttp/guzzle": "^7.0.1",

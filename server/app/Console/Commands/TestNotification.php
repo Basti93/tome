@@ -6,8 +6,7 @@ use App\NotificationToken;
 use App\User;
 use Illuminate\Console\Command;
 use App\UserTrainingNotification;
-use LaravelFCM\Facades\FCM;
-use LaravelFCM\Message\PayloadDataBuilder;
+use App\Services\FirebaseMessagingService;
 
 class TestNotification extends Command
 {
@@ -46,20 +45,23 @@ class TestNotification extends Command
         $title = $this->argument('title');
         $text = $this->argument('text');
 
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData([
+        $firebaseService = new FirebaseMessagingService();
+
+        // Include data payload so onMessage handler is triggered
+        $dataPayload = [
             'title' => $title,
             'body' => $text,
-        ]);
-        $data = $dataBuilder->build();
-        $downstreamResponse = FCM::sendTo($token, null, null, $data);
+            'click_action' => config('app.vue_url'),
+        ];
 
-        $this->info('Message successfully send to ' . $downstreamResponse->numberSuccess() . ' recipients');
-        $this->info('Failed to send message to ' . $downstreamResponse->numberFailure() . ' recipients');
-        //clean up the unused tokens
-        foreach ($downstreamResponse->tokensToDelete() as $tokenToDelete) {
+        $result = $firebaseService->sendToDevices($token, $title, $text, $dataPayload);
+
+        $this->info('Message successfully sent to ' . $result['success'] . ' recipients');
+        $this->info('Failed to send message to ' . $result['failure'] . ' recipients');
+
+        // Clean up invalid tokens
+        foreach ($result['tokensToDelete'] as $tokenToDelete) {
             NotificationToken::whereToken($tokenToDelete)->delete();
         }
-
     }
 }

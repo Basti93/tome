@@ -7,9 +7,9 @@
 /app/npm-debug.log*
 /app/yarn-debug.log*
 /app/yarn-error.log*
-/app/package-lock.json
 /app/.env
 /app/.env.test
+/app/.env.local
 /app/.env.production
 /app/public/manifest.json
 
@@ -26,7 +26,6 @@
 /server/npm-debug.log
 /server/yarn-error.log
 /server/.env
-/server/composer.lock
 /server/config/database_prod.php
 /server/.phpunit.result.cache
 /server/.phpunit.cache
@@ -44,3 +43,9 @@
 *.sln
 *.sw*
 *.iml
+
+# Internal docs (security audit, server details) - repo is public
+/docs/internal/
+
+# Local DB dumps
+/backup_*.sql

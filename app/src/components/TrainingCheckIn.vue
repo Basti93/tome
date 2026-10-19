@@ -206,6 +206,7 @@ import Training from "../models/Training";
 import GroupChip from "./GroupChip.vue";
 import { useMasterDataStore } from '@/store/masterData'
 import httpClient from '@/http/api'
+import { analytics } from '@/services/analytics'
 
 export default {
   name: "TrainingCheckIn",
@@ -302,6 +303,8 @@ export default {
         //send post
         const {data} = await httpClient.post(url);
         if (data.status === 'ok') {
+          // Track check-in event
+          analytics.trackEvent('Training', 'CheckIn', `training_${this.id}`)
           this.$emit('checkedIn')
         }
       } catch (error) {
@@ -326,6 +329,8 @@ export default {
         //send post
         const {data} = await httpClient.post(url, postData);
         if (data.status === 'ok') {
+          // Track check-out event
+          analytics.trackEvent('Training', 'CheckOut', `training_${this.id}`, reason ? 1 : 0)
           this.cancelReason = null;
           this.showCancelDialog = false;
           this.$emit('checkedOut')

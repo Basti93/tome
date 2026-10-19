@@ -21,7 +21,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'firstName', 'familyName', 'email', 'password', 'group_id', 'birthdate'
+        'firstName', 'familyName', 'email', 'password', 'group_id', 'birthdate', 'notification_preferences'
     ];
 
     /**
@@ -36,6 +36,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'locked_until' => 'datetime',
         'email_verified_at' => 'datetime',
+        'notification_preferences' => 'array',
     ];
 
     protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];
@@ -73,6 +74,18 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * Check if a notification type is enabled for this user.
+     *
+     * @param string $type
+     * @return bool
+     */
+    public function isNotificationEnabled($type)
+    {
+        $preferences = $this->notification_preferences ?? [];
+        return $preferences[$type] ?? true;
     }
 
 
