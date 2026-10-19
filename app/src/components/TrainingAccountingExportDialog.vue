@@ -1,84 +1,52 @@
 <template>
   <v-dialog
-      v-model="show"
+      :model-value="visible"
       max-width="400px"
       persistent>
     <v-card>
       <v-toolbar flat>
         <v-btn
             icon
-            @click="show=false">
+            @click="close">
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>Übungsleiter-Abrechnung</v-toolbar-title>
       </v-toolbar>
       <v-divider></v-divider>
       <v-card-text>
-        <v-form
-            ref="form"
-            v-model="valid">
+        <v-form v-model="valid">
           <v-container>
             <v-row>
               <v-col>
-                <v-menu
-                    ref="fromDateMenuOpened"
-                    :close-on-content-click="false"
-                    v-model="fromDateMenuOpened">
-                  <template v-slot:activator="{ on }">
-                    <v-text-field
-                        slot="activator"
-                        v-model="fromDateFormatted"
-                        required
-                        label="Von"
-                        prepend-icon="event"
-                        readonly
-                        v-on="on"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker v-model="dateFrom" @input="fromDateMenuOpened = false"></v-date-picker>
-                </v-menu>
+                <v-text-field
+                    v-model="dateFrom"
+                    type="date"
+                    label="Von"
+                    prepend-icon="mdi-calendar"
+                    :rules="[required]"
+                ></v-text-field>
               </v-col>
             </v-row>
             <v-row>
               <v-col>
-                <v-menu
-                    ref="toDateMenuOpened"
-                    :close-on-content-click="false"
-                    v-model="toDateMenuOpened">
-                  <template v-slot:activator="{ on }">
-                    <v-text-field
-                        slot="activator"
-                        v-model="toDateFormatted"
-                        required
-                        label="Bis"
-                        prepend-icon="event"
-                        readonly
-                        v-on="on"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker v-model="dateTo" @input="toDateMenuOpened = false"></v-date-picker>
-                </v-menu>
+                <v-text-field
+                    v-model="dateTo"
+                    type="date"
+                    label="Bis"
+                    prepend-icon="mdi-calendar"
+                    :rules="[required]"
+                ></v-text-field>
               </v-col>
             </v-row>
             <v-row>
               <v-col>
                 <v-btn
-                    v-if="!creatingExcelReport && !url"
                     color="primary"
-                    :disabled="!valid"
-                    @click="createExcelReport()">
-                  <v-icon left>mdi-refresh</v-icon>
-                  Erstellen
-                </v-btn>
-                <v-btn
-                    v-else
+                    :disabled="!valid || !loggedInUser"
                     :loading="creatingExcelReport"
-                    :href="url"
-                    download
-                    color="primary"
-                >
-                  <v-icon left>mdi-download</v-icon>
-                  Download Excel
+                    @click="downloadExcelReport()">
+                  <v-icon start>mdi-download</v-icon>
+                  Excel herunterladen
                 </v-btn>
               </v-col>
             </v-row>
@@ -89,81 +57,53 @@
   </v-dialog>
 </template>
 
-<script lang="ts">
-// @ts-nocheck TODO(safety-net): 5 pre-existing vue-tsc errors in this file; fix them and remove this line
-import {formatDate, parseDate} from "../helpers/date-helpers"
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useAuthStore } from '@/store/auth'
+import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs from '@/helpers/dayjs'
+import { filenameFromContentDisposition, saveBlob } from '@/helpers/download'
 
-export default {
-  name: "TrainingAccountingExportDialog",
-  props: {
-    'visible': Boolean,
-  },
-  data: function () {
-    return {
-      valid: true,
-      dateFrom: new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString().substr(0, 10) as Date,
-      dateTo: new Date().toISOString().substr(0, 10) as Date,
-      fromDateMenuOpened: false,
-      toDateMenuOpened: false,
-      url: null,
-      creatingExcelReport: false,
-      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
-    }
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    fromDateFormatted(): String {
-      return this.formatDate(this.dateFrom)
-    },
-    toDateFormatted(): String {
-      return this.formatDate(this.dateTo)
-    },
-    show: {
-      get() {
-        return this.visible;
+defineProps<{ visible: boolean }>()
+const emit = defineEmits<{ (e: 'close'): void }>()
+
+const authStore = useAuthStore()
+const snackbar = useSnackbarStore()
+const loggedInUser = computed(() => authStore.user)
+
+const valid = ref(true)
+const dateFrom = ref(dayjs().subtract(6, 'month').format('YYYY-MM-DD'))
+const dateTo = ref(dayjs().format('YYYY-MM-DD'))
+const creatingExcelReport = ref(false)
+
+const required = (value: string) => !!value || 'Pflichtfeld'
+
+function close() {
+  emit('close')
+}
+
+/** The endpoint answers with the XLSX file itself (Content-Disposition: attachment). */
+async function downloadExcelReport() {
+  if (!loggedInUser.value) return
+  creatingExcelReport.value = true
+  try {
+    const response = await httpClient.post<Blob>(
+      '/trainingevaluation/exportaccountingtimes',
+      {
+        userId: loggedInUser.value.id,
+        from: dayjs(dateFrom.value, 'YYYY-MM-DD').format(),
+        to: dayjs(dateTo.value, 'YYYY-MM-DD').format(),
       },
-      set(value) {
-        if (!value) {
-          this.reset();
-          this.$emit('close')
-        }
-      }
-    },
-  },
-  methods: {
-    reset(): void {
-      this.url = null;
-    },
-    async createExcelReport(): void {
-      this.creatingExcelReport = true;
-      try {
-        const {data} = await httpClient.post('/trainingevaluation/exportaccountingtimes',
-            {
-              userId: this.loggedInUser.id,
-              from: dayjs(this.dateFrom, 'YYYY-MM-DD').format(),
-              to: dayjs(this.dateTo, 'YYYY-MM-DD').format(),
-            }
-        )
-        if (data.status == 'ok') {
-          this.url = this.serverUrl + "/" + data.fileName;
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.creatingExcelReport = false;
-      }
-    },
-    formatDate,
-    parseDate,
+      { responseType: 'blob' },
+    )
+    const filename = filenameFromContentDisposition(response.headers?.get('content-disposition'), 'abrechnung.xlsx')
+    saveBlob(response.data, filename)
+  } catch (error) {
+    console.error(error)
+    snackbar.show('Die Abrechnung konnte nicht erstellt werden', 'error')
+  } finally {
+    creatingExcelReport.value = false
   }
 }
 </script>
-
-<style scoped>
-
-</style>

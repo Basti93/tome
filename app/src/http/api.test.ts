@@ -57,6 +57,18 @@ describe('httpClient', () => {
     ])
   })
 
+  it('returns a Blob and the response headers for responseType blob', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('xlsx-bytes', { status: 200, headers: { 'content-disposition': 'attachment; filename="a.xlsx"' } }),
+    )
+
+    const res = await httpClient.post('/trainingevaluation/exportaccountingtimes', { userId: 1 }, { responseType: 'blob' })
+
+    expect(res.data).toBeInstanceOf(Blob)
+    expect(await res.data.text()).toBe('xlsx-bytes')
+    expect(res.headers.get('content-disposition')).toBe('attachment; filename="a.xlsx"')
+  })
+
   it('does not set a JSON content type for FormData (browser sets the multipart boundary)', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ status: 'ok' }, 201))
     const form = new FormData()
