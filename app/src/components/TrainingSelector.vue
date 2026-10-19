@@ -46,7 +46,7 @@
       title="Training auswählen"
       @click="showMobileList = true"
       fab
-      elevation="6"
+      elevation="3"
       fixed
       bottom
       right

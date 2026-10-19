@@ -5,7 +5,7 @@
         <v-card color="secondary">
           <v-toolbar>
             <v-container fluid>
-              <v-row align="center">
+              <v-row class="align-center">
                 <v-col cols="6">
                   <v-toolbar-title>Trainings</v-toolbar-title>
                 </v-col>
@@ -33,7 +33,7 @@
                   absolute
                   bottom
                   left
-                  elevation="2"
+                  elevation="1"
                   color="primary"
                   @click="create()">
                 <v-icon>mdi-plus</v-icon>

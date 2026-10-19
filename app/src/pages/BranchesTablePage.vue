@@ -19,7 +19,7 @@
                       absolute
                       bottom
                       left
-                      elevation="2"
+                      elevation="1"
                       color="primary"
                       v-bind="props"
                       @click="createItem()">

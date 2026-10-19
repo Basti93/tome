@@ -46,7 +46,7 @@
                   absolute
                   bottom
                   left
-                  elevation="2"
+                  elevation="1"
                   color="primary"
                   @click="editItem()">
                 <v-icon>mdi-plus</v-icon>
@@ -117,7 +117,7 @@
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
-                            <v-row justify="center">
+                            <v-row class="justify-center">
                               <v-col cols="auto">
                                 <v-btn color="error" :disabled="loading" @click="reset()">
                                   <v-icon left>mdi-refresh</v-icon>

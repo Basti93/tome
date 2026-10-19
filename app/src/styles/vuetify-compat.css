@@ -1,0 +1,12 @@
+/* Restore the Vuetify 3 look where Vuetify 4 changed defaults. */
+@layer vuetify-core.reset {
+  ul, ol, figure, details, summary, h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Vuetify 4 no longer uppercases buttons by default. */
+.v-btn {
+  text-transform: uppercase;
+}
