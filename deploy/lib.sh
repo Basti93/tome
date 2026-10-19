@@ -68,10 +68,10 @@ health_check() {
           warn "Versuch $i: / lieferte HTTP $code ohne App-Shell"
         fi
       else
-        warn "Versuch $i: /api/v1/health lieferte HTTP ${code:-?}: ${body:0:120}"
+        warn "Versuch $i: /api/v1/health lieferte HTTP ${code:-?}: $(head -c 120 <<<"$body" | tr "\n" " ")"
       fi
     else
-      warn "Versuch $i: ${out:0:160}"
+      warn "Versuch $i: $(head -c 160 <<<"$out" | tr "\n" " ")"
     fi
     sleep 2
   done
