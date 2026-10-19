@@ -10,11 +10,12 @@
                 elevation="1"
                 color="primary"
                 v-bind:disabled="!valid || !hasUnsavedChanges"
+                aria-label="Speichern"
                 @click="save()"
                 :class="{ 'pulse': hasUnsavedChanges }"
             >
-              <v-icon start>mdi-content-save</v-icon>
-              Speichern
+              <v-icon :start="!xs">mdi-content-save</v-icon>
+              <span v-if="!xs">Speichern</span>
               <v-badge
                   v-if="hasUnsavedChanges"
                   color="amber"
@@ -227,10 +228,12 @@ import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import User from '@/models/User'
+import { useDisplay } from 'vuetify'
 
 export default {
   setup() {
-    return { dayjs, parseApiDate };
+    const { xs } = useDisplay()
+    return { dayjs, parseApiDate, xs };
   },
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage, NotificationPreferencesForm},

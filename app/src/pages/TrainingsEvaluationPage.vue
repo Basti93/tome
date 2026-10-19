@@ -10,6 +10,7 @@
                 v-if="xs"
                 color="primary"
                 title="Übungsleiter-Abrechnung exportieren"
+                aria-label="Übungsleiter-Abrechnung exportieren"
                 size="small"
                 v-on:click="showAccountingDialog = true" variant="outlined"
             >
@@ -30,7 +31,7 @@
             <div v-show="dataLoaded" class="tp-training-prepare">
               <v-container class="pa-0">
                 <v-row no-gutters>
-                  <v-col md="3" cols="0">
+                  <v-col cols="12" md="3" class="pa-0">
                     <TrainingSelector
                         application="evaluation"
                         :trainings="pastTrainings"
@@ -38,7 +39,7 @@
                         v-on:change="selectTraining"
                     ></TrainingSelector>
                   </v-col>
-                  <v-col md="9">
+                  <v-col cols="12" md="9">
                     <v-slide-x-transition v-if="selectedTraining">
                       <div v-if="animationTrigger">
                           <v-card class="ma-1">
@@ -164,7 +165,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>
@@ -177,7 +178,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
@@ -225,7 +226,7 @@
                                             icon
                                             variant="text"
                                             @click="openCancelReasonDialog(item.id)"
-                                            size="x-small">
+                                            size="default">
                                           <v-icon size="small">mdi-magnify</v-icon>
                                         </v-btn>
                                       </template>
@@ -237,7 +238,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
@@ -250,7 +251,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
@@ -293,7 +294,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
@@ -306,7 +307,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipantAsCanceled(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>
@@ -345,24 +346,23 @@
         :fullscreen="xs"
         persistent>
       <v-card>
-        <v-card-title>
-          <v-btn icon @click="timeDialogOpened=false">
+        <v-toolbar flat>
+          <v-btn icon aria-label="Schließen" @click="timeDialogOpened=false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          Abrechnungszeitraum ändern
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="updateAccountingTime" variant="text">
+          <v-toolbar-title>Abrechnungszeitraum ändern</v-toolbar-title>
+          <v-btn color="primary" @click="updateAccountingTime" variant="text" class="mr-1">
             <v-icon start>mdi-check</v-icon>
             Speichern
           </v-btn>
-        </v-card-title>
+        </v-toolbar>
         <v-divider></v-divider>
         <v-card-text>
           <v-row
               justify="space-around"
               align="center"
           >
-            <v-col style="width: 350px; flex: 0 1 auto;">
+            <v-col style="width: 350px; flex: 0 1 auto;" class="d-flex flex-column align-center">
               <h2>Von</h2>
               <v-time-picker
                   flat
@@ -370,7 +370,7 @@
                   format="24hr"
               ></v-time-picker>
             </v-col>
-            <v-col style="width: 350px; flex: 0 1 auto;">
+            <v-col style="width: 350px; flex: 0 1 auto;" class="d-flex flex-column align-center">
               <h2>Bis</h2>
               <v-time-picker
                   v-model="editEndTime"
@@ -387,7 +387,7 @@
         max-width="800px">
       <v-card>
         <v-toolbar flat>
-          <v-btn icon @click="showCancelReasonDialog=false">
+          <v-btn icon aria-label="Schließen" @click="showCancelReasonDialog=false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Grund</v-toolbar-title>

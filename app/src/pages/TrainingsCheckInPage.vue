@@ -10,7 +10,7 @@
               <v-icon start color="primary">mdi-account</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
-            <v-btn icon color="primary" @click="filterDialogVisible = true">
+            <v-btn icon color="primary" aria-label="Filter ändern" @click="filterDialogVisible = true">
               <v-icon>mdi-filter-variant</v-icon>
             </v-btn>
             <template v-slot:extension v-if="cookieUser">
@@ -28,7 +28,7 @@
                 persistent>
               <v-card>
                 <v-toolbar flat dense>
-                  <v-btn icon @click="filterDialogVisible = false">
+                  <v-btn icon aria-label="Schließen" @click="filterDialogVisible = false">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title>Filter ändern</v-toolbar-title>
@@ -55,7 +55,7 @@
           <v-card-text class="pa-0 pa-md-4">
             <v-container>
               <v-row no-gutters>
-                <v-col cols="0" md="3">
+                <v-col cols="12" md="3" class="pa-0">
                   <TrainingSelector
                       application="checkin"
                       :trainings="upcomingTrainings"
@@ -63,7 +63,7 @@
                       v-on:change="selectTraining"
                   ></TrainingSelector>
                 </v-col>
-                <v-col md="9">
+                <v-col cols="12" md="9">
                   <div v-show="dataLoaded" class="tp-training-check-in" :style="{ '--selected-color': selectedTrainingColor } as any">
                     <v-slide-x-transition>
                       <TrainingCheckIn

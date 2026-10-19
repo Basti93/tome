@@ -1,5 +1,5 @@
 <template>
-  <v-container class="quick-evaluation pa-2 pa-sm-4">
+  <v-container class="quick-evaluation">
     <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
 
     <v-alert v-else-if="loadError" type="error" variant="tonal" data-test="load-error">
@@ -24,8 +24,9 @@
       <v-card class="mb-3">
         <v-card-title class="text-subtitle-1">Trainer (ÜL-Abrechnung)</v-card-title>
         <v-card-text>
-          <div v-for="t in trainerRows" :key="t.userId" class="d-flex align-center mb-2" data-test="trainer-row">
-            <div class="flex-grow-1 text-truncate mr-2">{{ t.name }}</div>
+          <div v-for="t in trainerRows" :key="t.userId" class="d-flex align-center flex-wrap ga-2 mb-2" data-test="trainer-row">
+            <div class="trainer-name">{{ t.name }}</div>
+            <div class="d-flex ga-2 flex-grow-1 justify-end">
             <v-text-field
               v-model="t.start"
               type="time"
@@ -33,7 +34,7 @@
               density="compact"
               variant="outlined"
               hide-details
-              class="time-field mr-2"
+              class="time-field"
               :data-test="`trainer-start-${t.userId}`"
             ></v-text-field>
             <v-text-field
@@ -46,6 +47,7 @@
               class="time-field"
               :data-test="`trainer-end-${t.userId}`"
             ></v-text-field>
+            </div>
           </div>
         </v-card-text>
       </v-card>
@@ -73,7 +75,7 @@
                 :color="presentIds.has(m.id) ? 'success' : undefined"
                 :variant="presentIds.has(m.id) ? 'flat' : 'outlined'"
                 :icon="presentIds.has(m.id) ? 'mdi-check' : 'mdi-close'"
-                size="large"
+                size="default"
                 :aria-label="presentIds.has(m.id) ? `${m.name} ist da` : `${m.name} fehlt`"
                 @click.stop="toggle(m.id)"
               ></v-btn>
@@ -283,7 +285,15 @@ onMounted(load)
   max-width: 640px;
 }
 .time-field {
-  max-width: 120px;
+  max-width: 140px;
   min-width: 100px;
+}
+.trainer-name {
+  flex: 1 1 100%;
+}
+@media (min-width: 600px) {
+  .trainer-name {
+    flex: 1 1 0;
+  }
 }
 </style>

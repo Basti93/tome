@@ -127,9 +127,3 @@ function refreshPage() {
   window.location.reload()
 }
 </script>
-
-<style>
-#app {
-  margin-top: 55px;
-}
-</style>

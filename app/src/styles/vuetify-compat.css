@@ -6,7 +6,138 @@
   }
 }
 
-/* Vuetify 4 no longer uppercases buttons by default. */
+/* Buttons: normal case (uppercase takes more width and truncates on phones). */
 .v-btn {
-  text-transform: uppercase;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Card and toolbar titles may wrap instead of being cut off with "...". */
+.v-card-title,
+.v-card-subtitle,
+.v-toolbar-title,
+.v-list-item-title,
+.v-list-item-subtitle {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+.v-toolbar-title {
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+.v-card-title {
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+.v-footer {
+  padding: 4px 12px;
+}
+.v-footer a {
+  color: inherit;
+}
+
+/* Small screens (Vuetify xs: < 600px): tighter spacing, less nesting. */
+@media (max-width: 599.98px) {
+  .v-container {
+    padding: 8px;
+  }
+  /* nested containers (App.vue + page) would double the padding */
+  .v-container .v-container {
+    padding: 0;
+  }
+  .v-row {
+    margin: -4px;
+  }
+  .v-row > .v-col,
+  .v-row > [class*='v-col-'] {
+    padding: 4px;
+  }
+  .v-row--no-gutters {
+    margin: 0;
+  }
+  .v-row--no-gutters > .v-col,
+  .v-row--no-gutters > [class*='v-col-'] {
+    padding: 0;
+  }
+  .v-card-title,
+  .v-card-subtitle {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .v-card-title {
+    padding-top: 10px;
+    padding-bottom: 4px;
+  }
+  .v-card-text {
+    padding: 12px;
+  }
+  .v-card-actions {
+    padding: 4px 8px;
+    flex-wrap: wrap;
+  }
+  .v-toolbar__content > .v-toolbar-title {
+    margin-inline-start: 12px;
+  }
+  .v-dialog > .v-overlay__content > .v-card {
+    border-radius: 12px;
+  }
+  .v-dialog--fullscreen > .v-overlay__content > .v-card {
+    border-radius: 0;
+  }
+  /* decorative field icons cost ~40px of width */
+  .v-text-field > .v-input__prepend,
+  .v-select > .v-input__prepend,
+  .v-autocomplete > .v-input__prepend,
+  .v-textarea > .v-input__prepend {
+    display: none;
+  }
+  .v-list {
+    --v-list-prepend-gap: 12px;
+    --list-indent-size: 0px;
+  }
+  .v-list-item {
+    padding-inline: 8px;
+  }
+  .v-tab.v-btn {
+    min-width: 0;
+    padding-inline: 12px;
+  }
+  .v-data-table .v-data-table__td,
+  .v-data-table .v-data-table__th {
+    padding-inline: 8px;
+  }
+}
+
+/* Titles in toolbars wrap instead of ending in "..." */
+.v-toolbar-title__placeholder {
+  white-space: normal;
+  text-overflow: clip;
+}
+.v-card > .v-toolbar > .v-toolbar__content,
+.v-dialog .v-toolbar > .v-toolbar__content {
+  height: auto !important;
+  min-height: 48px;
+}
+
+@media (max-width: 599.98px) {
+  /* gray page card around the training cards: do not add a second padding level */
+  .v-card.bg-secondary > .v-card-text {
+    padding: 4px;
+  }
+}
+
+/* The footer must not stretch over the free space of short pages. */
+.v-footer {
+  flex: 0 0 auto;
+}
+
+/* Page toolbars with an extension row (title row + filter chips / add button) grow with their content. */
+.v-card > .v-toolbar:has(.v-toolbar__extension) {
+  height: auto !important;
+}
+.v-card > .v-toolbar > .v-toolbar__extension {
+  height: auto !important;
+  min-height: 48px;
+  flex-wrap: wrap;
+  padding: 0 4px;
 }

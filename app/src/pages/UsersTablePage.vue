@@ -3,7 +3,7 @@
     <v-row>
       <v-col>
         <v-card color="secondary">
-          <v-toolbar flat extension-height="100">
+          <v-toolbar flat>
             <v-toolbar-title>Benutzer</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn
@@ -42,9 +42,7 @@
               <v-btn
                   title="Vorläufigen Benutzer anlegen"
                   icon
-                  position="absolute"
-                  location="bottom left"
-                  class="ml-4"
+                  class="ma-2"
                   elevation="1"
                   color="primary"
                   @click="editItem()">
@@ -53,7 +51,7 @@
             </template>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-card-text class="mt-8 pa-0 pa-md-4">
+          <v-card-text class="pa-0 pa-md-4">
             <v-card>
               <v-card-text class="pa-0 pa-md-4">
                 <v-container>
