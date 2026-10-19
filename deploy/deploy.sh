@@ -84,12 +84,12 @@ else
   log "Composer (no-dev, Plattform PHP 8.4)"
   (
     cd "$STAGE/server"
-    # Installiert exakt die Versionen aus composer.lock. PHP-Erweiterungen des Macs werden ignoriert
-    # (der Server hat eigene); die PHP-Version (^8.4 aus composer.json) wird geprueft und landet im
-    # generierten platform_check.php. "config.platform" wuerde den Content-Hash der composer.json aendern.
+    # Installiert exakt die Versionen aus composer.lock. composer.json legt config.platform.php = 8.4.1
+    # fest (unabhaengig von PHP auf dem Mac); PHP-Erweiterungen des Macs werden ignoriert (der Server
+    # hat eigene). Die Mindestversion landet im generierten platform_check.php.
     composer install --no-dev --optimize-autoloader --no-interaction --no-progress \
       --ignore-platform-req='ext-*'
-    grep -q "PHP_VERSION_ID >= 80400" vendor/composer/platform_check.php || die "platform_check.php verlangt nicht PHP >= 8.4"
+    grep -q "PHP_VERSION_ID >= 804" vendor/composer/platform_check.php || die "platform_check.php verlangt nicht PHP >= 8.4"
   )
 fi
 
