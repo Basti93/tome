@@ -145,7 +145,7 @@ Hinweis CSP: Erlaubt sind `firebaseinstallations.googleapis.com`, `fcmregistrati
 ## 7. Aufraeumen (nach zwei stabilen Wochen)
 
 - Alte App entfernen: `/var/www/tome` (vorher Tarball behalten), alten Vhost-Backup und das Final-Backup archivieren.
-- Alten FPM-/Datenbank-Zugang der alten App (`ssc_u271ss834`) pruefen und, falls nur sie ihn nutzte, entziehen.
+- Alten FPM-/Datenbank-Zugang der alten App (`<alter-db-user>`) pruefen und, falls nur sie ihn nutzte, entziehen.
 - `/root/tome-vhost-backup/` und die Eintraege `*.new` in `sites-available` aufraeumen.
 - In roots Crontab (`sudo crontab -e`) die alten rsync-/tar-Backupzeilen fuer `/var/www/tome` (`/var/backup/tome` taeglich/woechentlich/monatlich) und die auskommentierte `schedule:run`-Zeile entfernen; `/var/backup/tome` danach archivieren.
 - Pruefen, ob die 410-Regel fuer `/api/api` noch gebraucht wird (Zugriffslog `tome-access.log`).
