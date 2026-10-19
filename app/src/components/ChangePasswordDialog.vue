@@ -51,68 +51,62 @@
     </v-dialog>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 
-export default {
-    name: "ChangePasswordDialog",
-    emits: ['close'],
-    props: {
-        'visible': Boolean,
-    },
-    data: function () {
-        return {
-            valid: true,
-            password: null,
-            passwordConfirm: null,
-            passwordRules: [
-                v => !!v || 'Wird benötigt',
-            ],
-        }
-    },
-    computed: {
-        show: {
-            get() {
-                return this.visible;
-            },
-            set(value) {
-                if (!value) {
-                    this.reset();
-                    this.$emit('close')
-                }
-            }
-        },
-    },
-    methods: {
-        reset() {
-            this.password = null;
-            this.passwordConfirm = null;
-        },
-        confirmPassword(password) {
-            if (!password) {
-                return "Bitte passwort bestätigen"
-            }
-            if (this.password === password) {
-                return true;
-            } else {
-                return "Passwörter müssen identisch sein!"
-            }
-        },
-        async save() {
-            try {
-                const response = await httpClient.post('/user/me/changepassword', {'password': this.password})
-                if (response.data.status === 'ok') {
-                    useSnackbarStore().show("Passwort geändert", "success")
-                    this.show = false;
-                } else {
-                    useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
-                }
-            } catch (error) {
-                useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
-            }
-        }
+const props = defineProps<{
+  visible?: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const valid = ref(true)
+const password = ref<string | null>(null)
+const passwordConfirm = ref<string | null>(null)
+const passwordRules = [(v: string) => !!v || 'Wird benötigt']
+
+function reset() {
+  password.value = null
+  passwordConfirm.value = null
+}
+
+const show = computed({
+  get: () => props.visible,
+  set: (value) => {
+    if (!value) {
+      reset()
+      emit('close')
     }
+  }
+})
+
+function confirmPassword(confirmation: string) {
+  if (!confirmation) {
+    return 'Bitte passwort bestätigen'
+  }
+  if (password.value === confirmation) {
+    return true
+  } else {
+    return 'Passwörter müssen identisch sein!'
+  }
+}
+
+async function save() {
+  try {
+    const response = await httpClient.post('/user/me/changepassword', { password: password.value })
+    if (response.data.status === 'ok') {
+      useSnackbarStore().show('Passwort geändert', 'success')
+      show.value = false
+    } else {
+      useSnackbarStore().show('Fehler beim Ändern des Passworts', 'error')
+    }
+  } catch {
+    useSnackbarStore().show('Fehler beim Ändern des Passworts', 'error')
+  }
 }
 </script>
 

@@ -32,9 +32,9 @@ import { ref, watch } from 'vue'
 import { useMasterDataStore } from '@/store/masterData'
 
 const props = defineProps<{
-  contentIds?: Array<number | Number>
+  contentIds?: any[]
   selectable?: boolean
-  initContentIds: Array<number | Number>
+  initContentIds: any[]
   readonly?: boolean
 }>()
 

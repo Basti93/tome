@@ -56,102 +56,103 @@
   </v-dialog>
 </template>
 
-<script>
-  import { useMasterDataStore } from '@/store/masterData'
-  import { useCookieAuthStore } from '@/store/cookieAuth'
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useMasterDataStore } from '@/store/masterData'
+import { useCookieAuthStore } from '@/store/cookieAuth'
 
-  export default {
-    name: "CookieUserDialog",
-    props: ['visible', 'propUserId', 'propGroupId', 'propBranchId'],
-    emits: ['close'],
-    data() {
-      return {
-        userId: null,
-        branchId: null,
-        groupId: null,
-      }
-    },
-    created() {
-      this.applyProps()
-    },
-    computed: {
-      users() {
-        return useMasterDataStore().simpleUsers
-      },
-      branches() {
-        return useMasterDataStore().branches
-      },
-      // groups of the selected branch (none until a branch is selected)
-      branchGroups() {
-        if (!this.branchId) return []
-        return useMasterDataStore().groups.filter(g => g.branchId === this.branchId)
-      },
-      // users narrowed down by the selected group, else by the selected branch
-      filteredUsers() {
-        if (this.groupId) {
-          return this.users.filter(u => (u.groupIds || []).includes(this.groupId))
-        }
-        if (this.branchId) {
-          const ids = this.branchGroups.map(g => g.id)
-          return this.users.filter(u => (u.groupIds || []).some(id => ids.includes(id)))
-        }
-        return this.users
-      },
-      show: {
-        get() {
-          return this.visible;
-        },
-        set(value) {
-          if (!value) {
-            this.$emit('close')
-          }
-        }
-      }
-    },
-    watch: {
-      // Vuetify 3/4 selects emit `update:modelValue` (never `change`), so react to the bound values
-      branchId() {
-        if (this.groupId && !this.branchGroups.some(g => g.id === this.groupId)) {
-          this.groupId = null
-        }
-        this.dropUnavailableUser()
-      },
-      groupId() {
-        this.dropUnavailableUser()
-      },
-      visible(value) {
-        if (value) this.applyProps()
-      },
-    },
-    methods: {
-      dropUnavailableUser() {
-        if (this.userId && !this.filteredUsers.some(u => u.id === this.userId)) {
-          this.userId = null
-        }
-      },
-      // preselect branch/group/user from the props (e.g. the previously chosen user) when (re)opening
-      applyProps() {
-        const masterData = useMasterDataStore()
-        const user = this.propUserId ? this.users.find(u => u.id === this.propUserId) : null
-        const groupId = this.propGroupId || null
-        let branchId = this.propBranchId || null
-        if (groupId && !branchId) {
-          const group = masterData.groups.find(g => g.id === groupId)
-          branchId = group ? group.branchId : null
-        }
-        this.branchId = branchId
-        this.groupId = groupId
-        this.userId = user ? user.id : null
-      },
-      fullName: item => item.firstName + ' ' + item.familyName,
-      done: function () {
-        if (this.userId) {
-          useCookieAuthStore().selectCookieUser(JSON.stringify(this.users.find(u => u.id === this.userId)))
-          this.$emit('close')
-        }
-      },
+const props = defineProps<{
+  visible?: boolean
+  propUserId?: number | null
+  propGroupId?: number | null
+  propBranchId?: number | null
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const masterData = useMasterDataStore()
+
+const userId = ref<number | null>(null)
+const branchId = ref<number | null>(null)
+const groupId = ref<number | null>(null)
+
+const users = computed(() => masterData.simpleUsers)
+const branches = computed(() => masterData.branches)
+
+// groups of the selected branch (none until a branch is selected)
+const branchGroups = computed(() => {
+  if (!branchId.value) return []
+  return masterData.groups.filter((g) => g.branchId === branchId.value)
+})
+
+// users narrowed down by the selected group, else by the selected branch
+const filteredUsers = computed(() => {
+  if (groupId.value) {
+    return users.value.filter((u) => (u.groupIds || []).includes(groupId.value as number))
+  }
+  if (branchId.value) {
+    const ids = branchGroups.value.map((g) => g.id)
+    return users.value.filter((u) => (u.groupIds || []).some((id) => ids.includes(id)))
+  }
+  return users.value
+})
+
+const show = computed({
+  get: () => props.visible,
+  set: (value) => {
+    if (!value) {
+      emit('close')
     }
   }
+})
+
+function dropUnavailableUser() {
+  if (userId.value && !filteredUsers.value.some((u) => u.id === userId.value)) {
+    userId.value = null
+  }
+}
+
+// preselect branch/group/user from the props (e.g. the previously chosen user) when (re)opening
+function applyProps() {
+  const user = props.propUserId ? users.value.find((u) => u.id === props.propUserId) : null
+  const newGroupId = props.propGroupId || null
+  let newBranchId = props.propBranchId || null
+  if (newGroupId && !newBranchId) {
+    const group = masterData.groups.find((g) => g.id === newGroupId)
+    newBranchId = group ? group.branchId : null
+  }
+  branchId.value = newBranchId
+  groupId.value = newGroupId
+  userId.value = user ? user.id : null
+}
+
+const fullName = (item: { firstName: string; familyName: string }) => item.firstName + ' ' + item.familyName
+
+function done() {
+  if (userId.value) {
+    useCookieAuthStore().selectCookieUser(JSON.stringify(users.value.find((u) => u.id === userId.value)))
+    emit('close')
+  }
+}
+
+// Vuetify 3/4 selects emit `update:modelValue` (never `change`), so react to the bound values
+watch(branchId, () => {
+  if (groupId.value && !branchGroups.value.some((g) => g.id === groupId.value)) {
+    groupId.value = null
+  }
+  dropUnavailableUser()
+})
+watch(groupId, () => dropUnavailableUser())
+watch(
+  () => props.visible,
+  (value) => {
+    if (value) applyProps()
+  }
+)
+
+applyProps()
 </script>
 
 <style scoped>

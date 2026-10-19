@@ -43,88 +43,73 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  name: "GroupsSelectDialog",
-  emits: ['close', 'done'],
-  setup() {
-    const { xs } = useDisplay()
-    return { xs }
-  },
-  props: {
-    'visible': Boolean,
-    'groupIds': Array,
-  },
-  created() {
-    this.initSelect()
-  },
-  data() {
-    return {
-      valid: true,
-      selectedBranchId: null,
-      selectedGroupIds: [],
-      groupItems: [],
+const props = defineProps<{
+  visible?: boolean
+  groupIds: any[]
+}>()
+
+const emit = defineEmits<{
+  close: []
+  done: [payload: { branchId: number | null; groupdIds: any[] | null }]
+}>()
+
+const { xs } = useDisplay()
+const masterData = useMasterDataStore()
+
+const valid = ref(true)
+const selectedBranchId = ref<number | null>(null)
+const selectedGroupIds = ref<any[] | null>([])
+const groupItems = ref<any[]>([])
+
+const groups = computed(() => masterData.groups)
+const branches = computed(() => masterData.branches)
+
+const show = computed({
+  get: () => props.visible,
+  set: (value) => {
+    if (!value) {
+      emit('close')
     }
-  },
-  computed: {
-    groups() {
-      return useMasterDataStore().groups
-    },
-    branches() {
-      return useMasterDataStore().branches
-    },
-    show: {
-      get() {
-        return this.visible;
-      },
-      set(value) {
-        if (!value) {
-          this.$emit('close')
-        }
-      }
+  }
+})
+
+function fillGroupSelect() {
+  groupItems.value = []
+  selectedGroupIds.value = []
+  groups.value.forEach((item) => {
+    if (selectedBranchId.value === item.branchId) {
+      groupItems.value.push(item)
     }
-  },
-  methods: {
-    getBranchByGroupId(groupId) {
-      return useMasterDataStore().getBranchByGroupId(groupId)
-    },
-    fillGroupSelect: function () {
-      this.groupItems = [];
-      this.selectedGroupIds = [];
-      this.groups.forEach(function (item) {
-        if (this.selectedBranchId === item.branchId) {
-          this.groupItems.push(item);
-        }
-      }.bind(this));
-    },
-    initSelect: function () {
-      this.selectedGroupIds = this.groupIds;
-      if (this.groupIds.length > 0) {
-        this.selectedBranchId = this.getBranchByGroupId(this.groupIds[0]).id;
-      }
-    },
-    done: function() {
-      this.$emit('done', {branchId: this.selectedBranchId, groupdIds: this.selectedGroupIds})
-      this.show = false;
-    },
-  },
-  watch: {
-    selectedBranchId: function () {
-      if (this.selectedBranchId) {
-        this.fillGroupSelect();
-      } else {
-        this.selectedGroupIds = null;
-        this.groupItems = []
-      }
-    },
-    branchId: function () {
-      this.initSelect();
-    },
+  })
+}
+
+function initSelect() {
+  selectedGroupIds.value = props.groupIds
+  if (props.groupIds.length > 0) {
+    selectedBranchId.value = masterData.getBranchByGroupId(props.groupIds[0]).id
   }
 }
+
+function done() {
+  emit('done', { branchId: selectedBranchId.value, groupdIds: selectedGroupIds.value })
+  show.value = false
+}
+
+watch(selectedBranchId, () => {
+  if (selectedBranchId.value) {
+    fillGroupSelect()
+  } else {
+    selectedGroupIds.value = null
+    groupItems.value = []
+  }
+})
+
+initSelect()
 </script>
 
 <style scoped>

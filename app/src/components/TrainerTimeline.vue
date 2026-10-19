@@ -15,108 +15,89 @@
   </v-card>
 </template>
 
-<script>
-import StatisticsFilter1 from "./StatisticsFilter1";
-import { useAuthStore } from '@/store/auth';
-import { useMasterDataStore } from '@/store/masterData';
-import httpClient from '@/http/api';
+<script setup lang="ts">
+import { ref } from 'vue'
+import StatisticsFilter1 from './StatisticsFilter1.vue'
+import { useAuthStore } from '@/store/auth'
+import httpClient from '@/http/api'
 import dayjs from '@/helpers/dayjs'
 
-export default {
-  name: "TrainerTimeline",
-  components: {StatisticsFilter1},
-  props: ['trainerId'],
-  data: function () {
-    const authStore = useAuthStore();
-    return {
-      filterBranchIds: authStore.user?.isTrainer ? authStore.user.trainerBranchIds : [],
-      filterYear: dayjs().year(),
-      filterGroupIds: [],
-      options: {
-        chart: {
-          id: 'trainerTimeLineChart',
-          stacked: true,
-        },
-        plotOptions: {
-          bar: {
-            horizontal: true
-          }
-        },
-        dataLabels: {
-          enabled: true
-        },
-        grid: {
-          yaxis: {
-            lines: {
-              show: true
-            }
-          },
-        },
-        legend: {
-          showForNullSeries: false,
-          showForZeroSeries: false,
-        },
-        tooltip: {
-          y: {
-            formatter: function (val) {
-              return val + " Trainingsstunden";
-            }
-          }
-        },
-        fill: {
-          opacity: 1
-        },
-        xaxis: {
-          categories: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-        },
-      },
-      series: [],
-    };
+const authStore = useAuthStore()
+
+const filterBranchIds = ref<any[]>(authStore.user?.isTrainer ? authStore.user.trainerBranchIds : [])
+const filterYear = ref(dayjs().year())
+const filterGroupIds = ref<any[]>([])
+const options = ref({
+  chart: {
+    id: 'trainerTimeLineChart',
+    stacked: true
   },
-  created() {
-    this.fetchData();
+  plotOptions: {
+    bar: {
+      horizontal: true
+    }
   },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user;
-    },
+  dataLabels: {
+    enabled: true
   },
-  methods: {
-    getGroupColorById(groupId) {
-      return useMasterDataStore().getGroupColorById(groupId);
-    },
-    getGroupIdsByBranchId(branchId) {
-      return useMasterDataStore().getGroupIdsByBranchId(branchId);
-    },
-    async fetchData() {
-      this.series = [];
-      const url = '/trainingevaluation/accountingtimestatistics?year=' + this.filterYear + "&groupIds=" + this.filterGroupIds;
-      const {data} = await httpClient.get(url);
-      for (let z = 0; z < data.length; z++) {
-        const count = [];
-        for (let i = 0; i < 12; i++) {
-          count.push(0);
-        }
-        for (let i = 0; i < data[z].data.length; i++) {
-          const monthNumber = parseInt(data[z].data[i].month);
-          count.splice((monthNumber - 1), 1, data[z].data[i].accountingHours);
-        }
-        this.series.push({
-          name: data[z].trainer.firstName + ' ' + data[z].trainer.familyName,
-          data: count
-        });
+  grid: {
+    yaxis: {
+      lines: {
+        show: true
       }
-    },
-    filterGroupIdsChanged: function (groupIds) {
-      this.filterGroupIds = groupIds;
-      this.fetchData();
-    },
-    filterYearChanged: function (year) {
-      this.filterYear = year;
-      this.fetchData();
-    },
+    }
   },
+  legend: {
+    showForNullSeries: false,
+    showForZeroSeries: false
+  },
+  tooltip: {
+    y: {
+      formatter: function (val: number) {
+        return val + ' Trainingsstunden'
+      }
+    }
+  },
+  fill: {
+    opacity: 1
+  },
+  xaxis: {
+    categories: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+  }
+})
+const series = ref<{ name: string; data: number[] }[]>([])
+
+async function fetchData() {
+  series.value = []
+  const url = '/trainingevaluation/accountingtimestatistics?year=' + filterYear.value + '&groupIds=' + filterGroupIds.value
+  const { data } = await httpClient.get(url)
+  for (let z = 0; z < data.length; z++) {
+    const count: number[] = []
+    for (let i = 0; i < 12; i++) {
+      count.push(0)
+    }
+    for (let i = 0; i < data[z].data.length; i++) {
+      const monthNumber = parseInt(data[z].data[i].month)
+      count.splice(monthNumber - 1, 1, data[z].data[i].accountingHours)
+    }
+    series.value.push({
+      name: data[z].trainer.firstName + ' ' + data[z].trainer.familyName,
+      data: count
+    })
+  }
 }
+
+function filterGroupIdsChanged(groupIds: any[]) {
+  filterGroupIds.value = groupIds
+  fetchData()
+}
+
+function filterYearChanged(year: number) {
+  filterYear.value = year
+  fetchData()
+}
+
+fetchData()
 </script>
 
 <style scoped>
