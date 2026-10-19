@@ -22,6 +22,13 @@
                   persistent-hint
                   class="mt-2"
                 ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.trainer_evaluation_reminder"
+                  label="Erinnerung an nicht abgeschlossene Trainings"
+                  hint="Täglich um 20 Uhr, falls ein Training noch nicht abgeschlossen ist"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -102,6 +109,7 @@ interface NotificationPreferences {
   participant_upcoming: boolean
   absence_alert: boolean
   admin_messages: boolean
+  trainer_evaluation_reminder: boolean
 }
 
 export default defineComponent({
@@ -115,6 +123,7 @@ export default defineComponent({
         participant_upcoming: true,
         absence_alert: true,
         admin_messages: true,
+        trainer_evaluation_reminder: true,
       } as NotificationPreferences,
       originalPreferences: {
         trainer_upcoming: true,
@@ -122,6 +131,7 @@ export default defineComponent({
         participant_upcoming: true,
         absence_alert: true,
         admin_messages: true,
+        trainer_evaluation_reminder: true,
       } as NotificationPreferences,
       loading: false,
     }
@@ -142,7 +152,8 @@ export default defineComponent({
       try {
         const { data } = await httpClient.get('/user/me/notification-preferences')
         if (data && data.notification_preferences) {
-          this.preferences = data.notification_preferences
+          // keys missing in older stored preferences count as enabled
+          this.preferences = { ...this.preferences, ...data.notification_preferences }
           this.originalPreferences = { ...this.preferences }
         }
       } catch (error) {
