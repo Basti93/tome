@@ -48,29 +48,25 @@
   </v-menu>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { profileImageUrl } from '@/helpers/profile-image'
-import Group from "../models/Group";
+import Group from '../models/Group'
 import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  name: "GroupChip",
-  props: {
-    group: Group,
-  },
-  data: function () {
-    return {
-      menu: false,
-    }
-  },
-  methods: {
-    getSimpleTrainersByBranchId(branchId: number) {
-      return useMasterDataStore().getSimpleTrainersByBranchId(branchId)
-    },
-    imageUrl(imagePath) {
-      return profileImageUrl(imagePath);
-    },
-  }
+defineProps<{
+  group: Group
+}>()
+
+const masterData = useMasterDataStore()
+const menu = ref(false)
+
+function getSimpleTrainersByBranchId(branchId: number) {
+  return masterData.getSimpleTrainersByBranchId(branchId)
+}
+
+function imageUrl(imagePath?: string | null) {
+  return profileImageUrl(imagePath)
 }
 </script>
 

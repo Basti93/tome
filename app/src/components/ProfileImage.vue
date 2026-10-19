@@ -57,38 +57,23 @@
   </v-avatar>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { profileImageUrl } from '@/helpers/profile-image'
-export default {
-  name: "ProfileImage",
-  props: {
-    imagePath: String,
-    firstName: String,
-    familyName: String,
-    clickable: Boolean,
-    size: String,
-    right: Boolean,
-    left: Boolean,
-  },
-  data: function () {
-    return {
-      dSize: 24,
-      menu: false,
-    }
-  },
-  created() {
-    if (this.size) {
-      this.dSize = this.size;
-    }
-  },
-  computed: {
-    imageUrl() {
-      return profileImageUrl(this.imagePath);
-    },
-    fullName() {
-      return this.firstName + " " + this.familyName;
-    }
-  },
-}
+
+const props = defineProps<{
+  imagePath?: string | null
+  firstName?: string
+  familyName?: string
+  clickable?: boolean
+  size?: string
+  right?: boolean
+  left?: boolean
+}>()
+
+const menu = ref(false)
+const dSize = computed(() => props.size || 24)
+const imageUrl = computed(() => profileImageUrl(props.imagePath))
+const fullName = computed(() => props.firstName + ' ' + props.familyName)
 </script>
 
