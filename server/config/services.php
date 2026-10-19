@@ -29,6 +29,11 @@ return [
         'secret' => env('SPARKPOST_SECRET'),
     ],
 
+    'firebase' => [
+        // service account JSON for FCM HTTP v1 (absolute, or relative to the server/ directory)
+        'credentials' => env('FIREBASE_CREDENTIALS_PATH'),
+    ],
+
     'stripe' => [
         'model' => App\User::class,
         'key' => env('STRIPE_KEY'),

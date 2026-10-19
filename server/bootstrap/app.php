@@ -1,8 +1,12 @@
 <?php
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -24,5 +28,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // With APP_DEBUG=false no exception text may reach the client (class names, SQL, model names, paths).
+        $exceptions->render(function (ModelNotFoundException|NotFoundHttpException $e, Request $request) {
+            if (! config('app.debug')) {
+                return response()->json(['message' => 'Not Found'], 404);
+            }
+        });
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if (! config('app.debug') && $e->getStatusCode() >= 500) {
+                return response()->json(['message' => 'Server Error'], $e->getStatusCode());
+            }
+        });
     })->create();

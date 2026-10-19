@@ -44,7 +44,7 @@ class SendTrainingNotificationsToUsers extends Command
     {
         $userIds = explode(',', $this->argument('userIds'));
         $trainingId = $this->argument('trainingId');
-        $notificationType = $this->argument('notificationType');
+        $notificationType = (int) $this->argument('notificationType');
         $title = $this->argument('title');
         $data = $this->argument('data');
         $url = $this->option('url');
@@ -57,26 +57,30 @@ class SendTrainingNotificationsToUsers extends Command
 
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
+        $processedUserIds = [];
         foreach ($users as $user) {
             // Check if notification type is enabled for this user
             if ($preferenceKey && ! $notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
-                $this->info('User '.$user->firstName.' '.$user->familyName.' has disabled this notification type');
+                $this->info('User '.'#'.$user->id.' has disabled this notification type');
 
                 continue;
             }
+            $processedUserIds[] = $user->id;
             // check if notifications is already sent
-            $this->info('User '.$user->firstName.' '.$user->familyName.' has '.count($user->notificationTokens).' tokens');
+            $this->info('User '.'#'.$user->id.' has '.count($user->notificationTokens).' tokens');
             if (! $storeStatus || ! UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
                 foreach ($user->notificationTokens as $token) {
                     array_push($recipientTokens, $token->token);
                 }
             } else {
-                $this->info('Notification already sent to '.$user->firstName.' '.$user->familyName.'');
+                $this->info('Notification already sent to '.'#'.$user->id.'');
 
             }
         }
         $this->info(count($recipientTokens).' Recipients found');
         if (empty($recipientTokens)) {
+            $this->markAsSent($storeStatus, $processedUserIds, $trainingId, $notificationType);
+
             return;
         }
 
@@ -96,12 +100,28 @@ class SendTrainingNotificationsToUsers extends Command
             NotificationToken::whereToken($tokenToDelete)->delete();
         }
 
-        if ($storeStatus) {
-            // update notification table
-            UserTrainingNotification::whereType($notificationType)->delete();
-            foreach ($users as $user) {
+        $this->markAsSent($storeStatus, $processedUserIds, $trainingId, $notificationType);
+    }
+
+    /**
+     * Remember who was already notified about this training so that the reminder (which runs every
+     * 30 minutes) is sent once. Only markers of this training are touched: wiping all markers of the
+     * type made the reminders for other trainings fire again on every run.
+     *
+     * @param  array<int, int>  $userIds
+     */
+    private function markAsSent($storeStatus, array $userIds, $trainingId, int $notificationType): void
+    {
+        if (! $storeStatus) {
+            return;
+        }
+
+        foreach ($userIds as $userId) {
+            $exists = UserTrainingNotification::whereType($notificationType)
+                ->where('user_id', $userId)->where('training_id', $trainingId)->exists();
+            if (! $exists) {
                 $utn = new UserTrainingNotification;
-                $utn->user_id = $user->id;
+                $utn->user_id = $userId;
                 $utn->training_id = $trainingId;
                 $utn->type = $notificationType;
                 $utn->save();
@@ -112,10 +132,9 @@ class SendTrainingNotificationsToUsers extends Command
     /**
      * Map notification type to preference key.
      *
-     * @param  int  $type
      * @return string|null
      */
-    private function getPreferenceKeyForType($type)
+    private function getPreferenceKeyForType(int $type)
     {
         $typeMap = [
             1 => 'trainer_upcoming',

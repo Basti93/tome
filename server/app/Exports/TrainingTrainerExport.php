@@ -6,6 +6,7 @@ use App\Location;
 use App\Training;
 use App\TrainingTrainer;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Enumerable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -49,7 +50,7 @@ class TrainingTrainerExport implements FromCollection, ShouldAutoSize, WithHeadi
     /**
      * @return Collection
      */
-    public function collection()
+    public function collection(): Enumerable
     {
         return TrainingTrainer::where('user_id', $this->user->id)
             ->whereBetween('accounting_time_start', [$this->from, $this->to])

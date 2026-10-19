@@ -93,16 +93,50 @@ class TrainingSeriesCommandTest extends TestCase
         $this->assertSame(0, Training::count());
     }
 
-    public function test_known_quirk_multi_weekday_series_only_create_the_first_matching_day(): void
+    public function test_multi_weekday_series_create_a_training_for_every_matching_day(): void
     {
-        // BUG (pinned): the "already created" check uses DAYOFWEEK() (Sunday = 1) against the ISO
-        // weekday (Monday = 1) with "<>", so once one training of a series exists in the window, the
-        // following matching days are treated as "already created". A series for tomorrow and day +3
-        // therefore only produces the first training per run.
+        // Fixed: the "already created" check used DAYOFWEEK() (Sunday = 1) against the ISO weekday
+        // and "<>", so only the first matching day of a multi-day series was created per run.
         TrainingSeriesFactory::new()->onWeekdays([$this->weekday(1), $this->weekday(3)])->create();
 
         $this->artisan('training:series')->assertSuccessful();
 
-        $this->assertSame(1, Training::count());
+        $this->assertSame(2, Training::count());
+    }
+
+    public function test_monday_wednesday_friday_series_creates_all_three_days_once(): void
+    {
+        $series = TrainingSeriesFactory::new()->onWeekdays([1, 3, 5])->create();
+
+        $this->artisan('training:series')->assertSuccessful();
+        $this->artisan('training:series')->assertSuccessful();
+
+        // any 7 consecutive days contain each weekday exactly once
+        $trainings = Training::where('training_series_id', $series->id)->get();
+        $this->assertCount(3, $trainings);
+        $weekdays = $trainings->map(fn ($t) => (int) (new \DateTime($t->start))->format('N'))->sort()->values()->all();
+        $this->assertSame([1, 3, 5], $weekdays);
+    }
+
+    public function test_a_training_that_was_deleted_in_the_window_is_not_created_again(): void
+    {
+        $series = TrainingSeriesFactory::new()->onWeekdays([$this->weekday(2)])->create();
+        $this->artisan('training:series')->assertSuccessful();
+        Training::where('training_series_id', $series->id)->update(['deleted' => 1]);
+
+        $this->artisan('training:series')->assertSuccessful();
+
+        $this->assertSame(1, Training::where('training_series_id', $series->id)->count());
+    }
+
+    public function test_two_series_with_the_same_weekday_do_not_block_each_other(): void
+    {
+        $day = $this->weekday(2);
+        TrainingSeriesFactory::new()->onWeekdays([$day])->create();
+        TrainingSeriesFactory::new()->onWeekdays([$day])->create();
+
+        $this->artisan('training:series')->assertSuccessful();
+
+        $this->assertSame(2, Training::count());
     }
 }

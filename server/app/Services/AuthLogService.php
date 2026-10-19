@@ -38,11 +38,6 @@ class AuthLogService
         self::log('token_refresh', $userId, null, $request);
     }
 
-    public static function signUp(?string $email = null, ?Request $request = null)
-    {
-        self::log('signup', null, ['email' => $email], $request);
-    }
-
     public static function emailVerified(?int $userId = null, ?Request $request = null)
     {
         self::log('email_verified', $userId, null, $request);

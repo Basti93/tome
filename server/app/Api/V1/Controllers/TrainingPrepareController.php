@@ -18,7 +18,7 @@ class TrainingPrepareController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getUpcomingTrainingsForTrainer', 'trainingPrepared', 'updateTrainingTime']]);
+        $this->middleware('permission:update-training', ['only' => ['getUpcomingTrainingsForTrainer', 'trainingPrepared', 'updateTrainingTime', 'updateLocation', 'updateComment', 'updateContent']]);
     }
 
     public function getUpcomingTrainingsForTrainer($userId)

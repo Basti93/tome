@@ -12,7 +12,7 @@ class AbsenceNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'notification:absence {userId} {from} {until} {absenceReason}';
+    protected $signature = 'notification:absence {userId} {from} {until} {absenceReason?}';
 
     /**
      * The console command description.
@@ -62,7 +62,7 @@ class AbsenceNotification extends Command
         $this->call('notification:sendToUsers', [
             'userIds' => $trainerArrayString,
             'title' => 'Abwesenheit '.$user->firstName.' '.$user->familyName,
-            'data' => 'Von '.$from.' bis '.$until."\r\nGrund: ".$absenceReason,
+            'data' => 'Von '.$from.' bis '.$until.(empty($absenceReason) ? '' : "\r\nGrund: ".$absenceReason),
             '--url' => config('app.vue_url').'/#/absenceForm',
             '--type' => 'absence_alert',
         ]);

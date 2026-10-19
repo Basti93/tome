@@ -2,8 +2,12 @@
 
 namespace Tests\Unit\Services;
 
+use App\NotificationToken;
 use App\Services\FirebaseMessagingService;
+use Database\Factories\UserFactory;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Mockery;
@@ -95,6 +99,41 @@ class FirebaseMessagingServiceTest extends TestCase
         $this->assertSame(4, $result['failure']);
         $this->assertSame(['bad-arg', 'gone', 'denied'], $result['tokensToDelete']);
         $this->assertSame(['flaky'], $result['tokensToRetry']);
+    }
+
+    public function test_tokens_reported_as_invalid_or_unregistered_are_deleted_from_the_database(): void
+    {
+        $user = UserFactory::new()->create();
+        foreach (['ok', 'unregistered', 'bad-arg', 'flaky'] as $token) {
+            $row = new NotificationToken;
+            $row->user_id = $user->id;
+            $row->token = $token;
+            $row->save();
+        }
+        $this->messaging->shouldReceive('send')->times(4)->andReturnUsing(function (CloudMessage $m) {
+            return match ($m->jsonSerialize()['token']) {
+                'ok' => [],
+                'unregistered' => throw NotFound::becauseTokenNotFound('unregistered'),
+                'bad-arg' => throw $this->messagingException('invalid-argument'),
+                default => throw $this->messagingException('internal error'),
+            };
+        });
+
+        $result = $this->service->sendToDevices(['ok', 'unregistered', 'bad-arg', 'flaky'], 't', 'b');
+
+        $this->assertSame(['unregistered', 'bad-arg'], $result['tokensToDelete']);
+        $this->assertEqualsCanonicalizing(['ok', 'flaky'], NotificationToken::pluck('token')->all());
+    }
+
+    public function test_the_device_token_is_never_written_to_the_log(): void
+    {
+        Log::spy();
+        $this->messaging->shouldReceive('send')->once()->andThrow(NotFound::becauseTokenNotFound('SECRET-DEVICE-TOKEN'));
+
+        $this->service->sendToDevices(['SECRET-DEVICE-TOKEN'], 't', 'b');
+
+        Log::shouldNotHaveReceived('info');
+        Log::shouldHaveReceived('warning')->once()->withArgs(fn ($message) => ! str_contains($message, 'SECRET-DEVICE-TOKEN'));
     }
 
     public function test_unexpected_exceptions_count_as_failures_to_retry(): void

@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+
+    Route::get('/health', 'App\\Api\\V1\\Controllers\\HealthController@show');
 
     // Free for all
     Route::prefix('training')->group(function () {
@@ -47,13 +48,11 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('simpleuser')->group(function () {
         Route::get('/', 'App\\Api\\V1\\Controllers\\SimpleUserController@index');
-        Route::post('{id}/storeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@storeAbsence');
-        Route::post('{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@removeAbsence');
+        Route::post('{id}/storeAbsence', 'App\\Api\\V1\\Controllers\\SimpleUserController@storeAbsence')->middleware('throttle:10,1');
         Route::get('/trainers', 'App\\Api\\V1\\Controllers\\SimpleUserController@getTrainers');
     });
 
     Route::prefix('auth')->group(function () {
-        Route::post('signup', 'App\\Api\\V1\\Controllers\\SignUpController@signUp')->middleware('throttle:3,1');
         Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:10,1'); // Increased to allow account lockout to trigger
 
         Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
@@ -75,6 +74,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/birthdays', 'App\\Api\\V1\\Controllers\\UserController@getBirthdayUsers');
             Route::get('/allAbsence', 'App\\Api\\V1\\Controllers\\UserController@getAllAbsenceUsers');
             Route::put('/{id}/removeAbsence', 'App\\Api\\V1\\Controllers\\UserController@removeAbsence');
+            Route::post('/{id}/invite', 'App\\Api\\V1\\Controllers\\UserController@invite')->middleware('throttle:20,1');
             Route::delete('{id}', 'App\\Api\\V1\\Controllers\\UserController@destroy');
             Route::put('/me', 'App\\Api\\V1\\Controllers\\UserController@updateMe');
             Route::put('{id}', 'App\\Api\\V1\\Controllers\\UserController@update');
@@ -119,7 +119,6 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('trainingprepare')->group(function () {
             Route::get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@getUpcomingTrainingsForTrainer');
-            Route::post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@trainingEvaluated');
             Route::post('{id}/updatetrainingtime', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateTrainingTime');
             Route::post('{id}/updatelocation', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateLocation');
             Route::post('{id}/updatecomment', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateComment');
@@ -138,24 +137,7 @@ Route::prefix('v1')->group(function () {
             Route::post('{id}/prepared', 'App\\Api\\V1\\Controllers\\TrainingController@trainingPrepared');
             Route::patch('{id}/deleteinfuture', 'App\\Api\\V1\\Controllers\\TrainingController@deleteinfuture');
             Route::put('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@update');
-            Route::get('{id}/trainingscount/{year}', 'App\\Api\\V1\\Controllers\\TrainingController@getTrainingTimeline');
-            Route::get('/upcoming/trainer/{id}', 'App\\Api\\V1\\Controllers\\TrainingController@getUpcomingTrainingsForUser');
             Route::delete('{id}', 'App\\Api\\V1\\Controllers\\TrainingController@destroy');
-        });
-
-        Route::get('refresh', function () {
-            return response()->json([
-                'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!',
-            ]);
-        })->middleware('jwt.refresh');
-    });
-
-    Route::get('/hello', function () {
-        return 'Hello World!';
-    });
-    Route::get('/mailtest', function () {
-        Mail::raw('Test Mail', function ($message) {
-            $message->to('bindersebastian@online.de');
         });
     });
 });

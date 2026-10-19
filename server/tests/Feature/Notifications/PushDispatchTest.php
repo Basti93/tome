@@ -165,6 +165,22 @@ class PushDispatchTest extends TestCase
         $this->assertSame(['on', 'other'], $this->allTokens(), 'only the preference matching the type is evaluated');
     }
 
+    public function test_training_context_type_given_as_a_string_still_maps_to_the_preference_and_is_stored_as_int(): void
+    {
+        $off = $this->userWithToken('off', ['participant_upcoming' => false]);
+        $on = $this->userWithToken('on');
+        $training = TrainingFactory::new()->create();
+
+        // console arguments always arrive as strings
+        $this->artisan('notification:sendToUsersTrainingContext', [
+            'userIds' => "{$off->id},{$on->id}", 'trainingId' => (string) $training->id, 'title' => 't', 'data' => 'd',
+            'notificationType' => '3', '--storeStatus' => true,
+        ])->assertSuccessful();
+
+        $this->assertSame(['on'], $this->allTokens());
+        $this->assertSame(3, UserTrainingNotification::where('user_id', $on->id)->value('type'));
+    }
+
     public function test_training_context_with_an_unknown_type_ignores_preferences(): void
     {
         $user = $this->userWithToken('tok', ['trainer_upcoming' => false, 'trainer_cancel_alert' => false, 'participant_upcoming' => false]);
@@ -226,6 +242,49 @@ class PushDispatchTest extends TestCase
         $this->assertSame(['attends'], $this->allTokens());
         $this->assertSame('Erinnerung: Dein Training startet in Kürze', $this->sent[0]['title']);
         $this->assertStringContainsString('Ort: Halle 1', $this->sent[0]['body']);
+    }
+
+    public function test_reminders_are_sent_once_per_training_even_with_several_trainings_in_the_window(): void
+    {
+        $a = $this->soonTraining();
+        $b = $this->soonTraining();
+        $user = $this->userWithToken('tok');
+        $a->participants()->attach($user->id, ['attend' => 1]);
+        $b->participants()->attach($user->id, ['attend' => 1]);
+
+        // the scheduler runs this every 30 minutes
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+
+        $this->assertCount(2, $this->sent, 'one push per training, not one per run');
+        $this->assertSame(2, UserTrainingNotification::where('user_id', $user->id)->count());
+    }
+
+    public function test_reminders_skip_deleted_trainings(): void
+    {
+        $training = $this->soonTraining();
+        $training->deleted = 1;
+        $training->save();
+        $user = $this->userWithToken('tok');
+        $training->participants()->attach($user->id, ['attend' => 1]);
+        $training->trainers()->attach($user->id);
+
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTrainingForTrainer')->assertSuccessful();
+
+        $this->assertCount(0, $this->sent);
+    }
+
+    public function test_participant_reminder_works_for_trainings_without_a_location(): void
+    {
+        $training = TrainingFactory::new()->between(now()->addHours(2)->format('Y-m-d H:i:s'), now()->addHours(3)->format('Y-m-d H:i:s'))->create(['location_id' => null]);
+        $user = $this->userWithToken('tok');
+        $training->participants()->attach($user->id, ['attend' => 1]);
+
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+
+        $this->assertCount(1, $this->sent);
     }
 
     public function test_trainer_reminder_goes_to_trainers_with_trainer_upcoming_enabled(): void

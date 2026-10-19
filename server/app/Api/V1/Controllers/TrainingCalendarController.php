@@ -10,7 +10,6 @@ use App\TrainingSeries;
 use DateInterval;
 use DatePeriod;
 use DateTime;
-use Illuminate\Support\Facades\Log;
 
 class TrainingCalendarController extends Controller
 {
@@ -72,7 +71,6 @@ class TrainingCalendarController extends Controller
                 });
             })->where('defer_until', '<', $start)
                 ->get();
-            Log::info('found '.count($allSeries));
             $interval = DateInterval::createFromDateString('1 day');
             $today = new DateTime;
             $today->setTime(00, 00);
@@ -134,7 +132,6 @@ class TrainingCalendarController extends Controller
                 $training->training_series_id = $series->id;
                 $training->location_id = $series->location_id;
                 $training->group_ids = $series->group_ids;
-                Log::info('after t : '.$training->group_ids);
                 $training->trainer_ids = $series->trainer_ids;
                 $training->content_ids = $series->content_ids;
 

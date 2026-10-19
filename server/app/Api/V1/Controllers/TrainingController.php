@@ -23,9 +23,9 @@ class TrainingController extends Controller
     {
         $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
         $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'getUpcomingTrainingsForUser', 'trainingPrepared']]);
+        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'trainingPrepared']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
-        $this->middleware('permission:delete-training', ['only' => ['destroy']]);
+        $this->middleware('permission:delete-training', ['only' => ['destroy', 'deleteinfuture']]);
     }
 
     /**

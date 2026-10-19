@@ -54,11 +54,11 @@ class SendNotificationsToUsers extends Command
         foreach ($users as $user) {
             // Check if notification type is enabled for this user
             if (! $notificationPreferenceService->isNotificationEnabled($user, $type)) {
-                $this->info('User '.$user->firstName.' '.$user->familyName.' has disabled '.$type.' notifications');
+                $this->info('User '.'#'.$user->id.' has disabled '.$type.' notifications');
 
                 continue;
             }
-            $this->info('User '.$user->firstName.' '.$user->familyName.' has '.count($user->notificationTokens).' tokens');
+            $this->info('User '.'#'.$user->id.' has '.count($user->notificationTokens).' tokens');
             foreach ($user->notificationTokens as $token) {
                 array_push($recipientTokens, $token->token);
             }

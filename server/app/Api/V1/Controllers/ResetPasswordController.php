@@ -76,6 +76,10 @@ class ResetPasswordController extends Controller
     protected function reset($user, $password)
     {
         $user->password = $password;
+        // setting a password via the reset/invite link proves control over the mailbox
+        if ($user->email_verified_at === null) {
+            $user->email_verified_at = now();
+        }
         $user->save();
     }
 }

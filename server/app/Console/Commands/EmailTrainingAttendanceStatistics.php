@@ -8,7 +8,6 @@ use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class EmailTrainingAttendanceStatistics extends Command
@@ -49,7 +48,6 @@ class EmailTrainingAttendanceStatistics extends Command
         $until = DateTime::createFromFormat('Y-m-d', $this->argument('endDate'));
 
         $groups = Group::whereBranchId($branchId)->get();
-        Log::info('Groups found for branchId '.$branchId.': '.count($groups));
 
         $groupsArray = [];
         foreach ($groups as $group) {
@@ -57,8 +55,6 @@ class EmailTrainingAttendanceStatistics extends Command
             $groupUsers = User::whereActive('1')->whereHas('groups', function ($query) use ($groupId) {
                 $query->whereGroupId($groupId);
             })->get();
-
-            Log::info('Users found for group id '.$groupId.': '.count($groupUsers));
 
             $userArray = [];
             foreach ($groupUsers as $groupUser) {
@@ -73,7 +69,6 @@ class EmailTrainingAttendanceStatistics extends Command
                         $query->where('user_id', $userId)->whereAttend(1);
                     })
                     ->count();
-                Log::info('Trainings found for userid '.$userId.' between '.$from->format('Y-m-d').' - '.$until->format('Y-m-d').': '.$trainingsCount);
                 $userArray[$groupUser->firstName.' '.$groupUser->familyName] = $trainingsCount;
             }
             uasort($userArray, function ($a, $b) {
@@ -91,7 +86,6 @@ class EmailTrainingAttendanceStatistics extends Command
 
         foreach ($branchTrainers as $branchTrainer) {
             if ($branchTrainer->email) {
-                Log::info('Send monthly training statistics to '.$branchTrainer->email);
                 Mail::to($branchTrainer)->send(new UserTrainingStatistics($branchTrainer, $groupsArray, $from, $until));
             }
         }

@@ -58,15 +58,17 @@ class AuthorizationMatrixTest extends TestCase
             'PUT trainingSeries' => ['PUT', '/api/v1/trainingSeries/{series}', $series, [401, 403, 201, 201]],
             'DELETE trainingSeries' => ['DELETE', '/api/v1/trainingSeries/{series}', [], [401, 403, 201, 201]],
 
-            // Characterization of MISSING permission checks: these endpoints only require a valid JWT,
-            // so even a plain member may call them (see the report; do not "fix" silently in the upgrade).
-            'POST trainingevaluation updateaccountingtime (no permission check)' => ['POST', '/api/v1/trainingevaluation/{training}/updateaccountingtime', ['trainerId' => '{user}', 'start' => '2099-01-01T18:00:00+0100', 'end' => '2099-01-01T19:00:00+0100'], [401, 200, 200, 200]],
-            'GET trainingevaluation accountingtimestatistics (no permission check)' => ['GET', '/api/v1/trainingevaluation/accountingtimestatistics', [], [401, 200, 200, 200]],
-            'POST trainingprepare updatecomment (no permission check)' => ['POST', '/api/v1/trainingprepare/{training}/updatecomment', ['comment' => 'x'], [401, 200, 200, 200]],
-            'POST trainingprepare updatelocation (no permission check)' => ['POST', '/api/v1/trainingprepare/{training}/updatelocation', ['locationId' => null], [401, 200, 200, 200]],
-            'PATCH training deleteinfuture (no permission check)' => ['PATCH', '/api/v1/training/{training}/deleteinfuture', [], [401, 200, 200, 200]],
-            'PUT user removeAbsence (no permission check)' => ['PUT', '/api/v1/user/{user}/removeAbsence', [], [401, 200, 200, 200]],
-            'GET user allAbsence (no permission check)' => ['GET', '/api/v1/user/allAbsence', [], [401, 200, 200, 200]],
+            // Formerly open to every logged in member (security audit): now behind update-training / update-user / read-user / delete-training
+            'POST trainingevaluation updateaccountingtime' => ['POST', '/api/v1/trainingevaluation/{training}/updateaccountingtime', ['trainerId' => '{user}', 'start' => '2099-01-01T18:00:00+0100', 'end' => '2099-01-01T19:00:00+0100'], [401, 403, 200, 200]],
+            'GET trainingevaluation accountingtimestatistics' => ['GET', '/api/v1/trainingevaluation/accountingtimestatistics', [], [401, 403, 200, 200]],
+            'POST trainingprepare updatecomment' => ['POST', '/api/v1/trainingprepare/{training}/updatecomment', ['comment' => 'x'], [401, 403, 200, 200]],
+            'POST trainingprepare updatelocation' => ['POST', '/api/v1/trainingprepare/{training}/updatelocation', ['locationId' => null], [401, 403, 200, 200]],
+            'POST trainingprepare updatecontent' => ['POST', '/api/v1/trainingprepare/{training}/updatecontent', ['contentIds' => []], [401, 403, 200, 200]],
+            'POST trainingprepare updatetrainingtime' => ['POST', '/api/v1/trainingprepare/{training}/updatetrainingtime', ['start' => '2099-01-01T18:00:00+0100', 'end' => '2099-01-01T19:00:00+0100'], [401, 403, 200, 200]],
+            'PATCH training deleteinfuture' => ['PATCH', '/api/v1/training/{training}/deleteinfuture', [], [401, 403, 200, 200]],
+            'PUT user removeAbsence' => ['PUT', '/api/v1/user/{user}/removeAbsence', [], [401, 403, 200, 200]],
+            'GET user allAbsence' => ['GET', '/api/v1/user/allAbsence', [], [401, 403, 200, 200]],
+            'POST user invite' => ['POST', '/api/v1/user/{user}/invite', [], [401, 403, 200, 200]],
         ];
     }
 
@@ -119,19 +121,30 @@ class AuthorizationMatrixTest extends TestCase
         $this->assertSame($admin, $send('admin')->status(), 'admin');
     }
 
-    public function test_missing_controller_methods_answer_500(): void
+    public function test_routes_pointing_to_missing_controller_methods_were_removed(): void
     {
-        // BUG: both routes point at TrainingController methods that do not exist
-        // (getUpcomingTrainingsForUser / getTrainingTimeline).
         $trainer = $this->makeUser('trainer');
         $training = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/training/upcoming/trainer/1')->assertStatus(500);
-        $this->actingAsJwt($trainer)->getJson("/api/v1/training/{$training->id}/trainingscount/2099")->assertStatus(500);
+        $this->actingAsJwt($trainer)->getJson('/api/v1/training/upcoming/trainer/1')->assertNotFound();
+        $this->actingAsJwt($trainer)->getJson("/api/v1/training/{$training->id}/trainingscount/2099")->assertNotFound();
+        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$training->id}/prepared")->assertStatus(404);
     }
 
-    public function test_jwt_refresh_demo_route_requires_a_token(): void
+    public function test_debug_and_demo_routes_were_removed(): void
     {
-        $this->getJson('/api/v1/refresh')->assertStatus(401);
+        $this->getJson('/api/v1/hello')->assertNotFound();
+        $this->getJson('/api/v1/mailtest')->assertNotFound();
+        $this->actingAsJwt($this->makeUser('admin'))->getJson('/api/v1/refresh')->assertNotFound();
+    }
+
+    public function test_admin_passes_every_permission_check_without_holding_any_permission(): void
+    {
+        // Gate::before in AuthServiceProvider: the admin role carries no permissions in the database
+        $admin = $this->makeUser('admin');
+        $this->assertCount(0, $admin->getAllPermissions());
+        $this->assertTrue($admin->can('update-training'));
+        $this->assertTrue($admin->can('delete-user'));
+        $this->assertFalse($this->makeUser('member')->can('update-training'));
     }
 }

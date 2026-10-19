@@ -12,21 +12,6 @@ return [
         'special_chars' => '@$!%*?&.',
     ],
 
-    // these options are related to the sign-up procedure
-    'sign_up' => [
-
-        // this option must be set to true if you want to release a token
-        // when your user successfully terminates the sign-in procedure
-        'release_token' => env('SIGN_UP_RELEASE_TOKEN', false),
-
-        // here you can specify some validation rules for your sign-in request
-        'validation_rules' => [
-            'firstName' => 'required',
-            'familyName' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/'
-        ]
-    ],
     'change_password' => [
         'validation_rules' => [
             'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/',
@@ -40,14 +25,18 @@ return [
             'firstName' => 'required',
             'familyName' => 'required',
             'email' => 'email',
+            // a path inside storage/app/public as written by ImageController (see App\Support\ProfileImage)
+            'profileImageName' => ['nullable', 'string', 'regex:/^profile_images\/[A-Za-z0-9]{20,64}\.(jpg|jpeg|png)$/'],
         ]
     ],
     'store_user_absence' => [
 
         'validation_rules' => [
+            // absenceStart/absenceEnd are ISO 8601 strings (the controller parses them); further
+            // date-range rules live in StoreUserAbsenceRequest.
             'absenceStart' => 'required',
             'absenceEnd' => 'required',
-            'absenceReason' => 'required',
+            'absenceReason' => 'nullable|string|max:255',
         ]
     ],
     'notification_subscribe' => [
@@ -87,7 +76,7 @@ return [
 
         // here you can specify some validation rules for your sign-in request
         'validation_rules' => [
-            'userId' => 'required',
+            'userId' => 'required|integer',
             'from' => 'required',
             'to' => 'required',
         ]
@@ -107,6 +96,7 @@ return [
         'validation_rules' => [
             'firstName' => 'required',
             'familyName' => 'required',
+            'profileImageName' => ['nullable', 'string', 'regex:/^profile_images\/[A-Za-z0-9]{20,64}\.(jpg|jpeg|png)$/'],
         ]
     ],
 

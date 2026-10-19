@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\ProfileImage;
 use App\User;
 use Database\Factories\BranchFactory;
 use Database\Factories\GroupFactory;
@@ -97,10 +98,10 @@ class UserManagementTest extends TestCase
             ->assertJsonPath('0.familyName', 'Birth')
             ->assertJsonPath('0.birthdate', '1990-06-15');
 
-        // characterization: the select() is narrow, but the User model's $appends add more fields
+        // only the fields the calendar needs (formerly the appended roleNames/groupIds/... leaked as well)
         $keys = array_keys($this->actingAsJwt($trainer)->getJson('/api/v1/user/birthdays?start=2099-06-01&end=2099-06-30')->json('0'));
         sort($keys);
-        $this->assertSame(['birthdate', 'familyName', 'firstName', 'groupIds', 'groups', 'name', 'roleNames', 'trainerBranchIds', 'trainerBranches'], $keys);
+        $this->assertSame(['birthdate', 'familyName', 'firstName'], $keys);
     }
 
     public function test_all_absence_lists_active_users_with_an_absence_ordered_by_end(): void
@@ -139,30 +140,91 @@ class UserManagementTest extends TestCase
         $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", [
             'firstName' => 'Neu', 'familyName' => 'Name', 'email' => 'neu@example.com',
             'active' => 'false', 'groupIds' => [$group->id], 'trainerBranchIds' => [$branch->id],
-            'profileImageName' => 'profile_images/neu.jpg',
+            'profileImageName' => 'profile_images/'.str_repeat('n', 40).'.jpg',
         ])->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $user->refresh();
         $this->assertSame('Neu', $user->firstName);
         $this->assertSame('neu@example.com', $user->email);
         $this->assertSame(0, (int) $user->active);
-        $this->assertSame('profile_images/neu.jpg', $user->profile_image_name);
+        $this->assertSame('profile_images/'.str_repeat('n', 40).'.jpg', $user->profile_image_name);
         $this->assertSame([$group->id], $user->groups()->pluck('groups.id')->all());
         $this->assertSame([$branch->id], $user->trainerBranches()->pluck('branches.id')->all());
     }
 
+    private function imageName(string $char = 'a', string $ext = 'jpg'): string
+    {
+        return 'profile_images/'.str_repeat($char, 40).'.'.$ext;
+    }
+
     public function test_update_deletes_the_replaced_profile_image(): void
     {
-        Storage::fake('public_app');
-        Storage::disk('public_app')->put('profile_images/old.jpg', 'x');
+        Storage::fake('public');
+        $old = $this->imageName('o');
+        Storage::disk('public')->put($old, 'x');
         $trainer = $this->makeUser('trainer');
-        $user = UserFactory::new()->create(['profile_image_name' => 'profile_images/old.jpg']);
+        $user = UserFactory::new()->create(['profile_image_name' => $old]);
 
         $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", [
             'firstName' => 'A', 'familyName' => 'B', 'profileImageName' => null,
         ])->assertStatus(201);
 
-        Storage::disk('public_app')->assertMissing('profile_images/old.jpg');
+        Storage::disk('public')->assertMissing($old);
+    }
+
+    public function test_update_me_deletes_the_replaced_profile_image(): void
+    {
+        Storage::fake('public');
+        $old = $this->imageName('o', 'png');
+        $new = $this->imageName('n');
+        Storage::disk('public')->put($old, 'x');
+        Storage::disk('public')->put($new, 'y');
+        $member = $this->makeUser('member', ['profile_image_name' => $old]);
+
+        $this->actingAsJwt($member)->putJson('/api/v1/user/me', [
+            'firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $new,
+        ])->assertStatus(201);
+
+        Storage::disk('public')->assertMissing($old);
+        Storage::disk('public')->assertExists($new);
+        $this->assertSame($new, $member->fresh()->profile_image_name);
+    }
+
+    public function test_profile_image_names_must_match_the_upload_naming_scheme(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $user = UserFactory::new()->create();
+
+        foreach (['../../.env', 'profile_images/../../.env', 'profile_images/short.jpg', 'profile_images/'.str_repeat('a', 40).'.php',
+            'other/'.str_repeat('a', 40).'.jpg', '/etc/passwd', 'profile_images/'.str_repeat('a', 40).'.jpg/../x', 'profile_images/'.str_repeat('a', 65).'.jpg'] as $bad) {
+            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
+                ->assertStatus(422)->assertJsonValidationErrors(['profileImageName']);
+            $this->actingAsJwt($trainer)->putJson('/api/v1/user/me', ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
+                ->assertStatus(422)->assertJsonValidationErrors(['profileImageName']);
+        }
+
+        foreach (['jpg', 'jpeg', 'png'] as $ext) {
+            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $this->imageName('a', $ext)])
+                ->assertStatus(201);
+        }
+    }
+
+    public function test_only_files_matching_the_naming_scheme_are_ever_deleted(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('keep.txt', 'x');
+        Storage::disk('public')->put('profile_images/legacy.jpg', 'x');
+        $trainer = $this->makeUser('trainer');
+
+        // legacy rows with an unexpected name (path traversal, short name) are not removed from disk
+        foreach (['../keep.txt', 'profile_images/legacy.jpg'] as $odd) {
+            $user = UserFactory::new()->create(['profile_image_name' => $odd]);
+            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => null])
+                ->assertStatus(201);
+        }
+
+        Storage::disk('public')->assertExists('keep.txt');
+        Storage::disk('public')->assertExists('profile_images/legacy.jpg');
     }
 
     public function test_update_validates_names(): void
@@ -242,23 +304,55 @@ class UserManagementTest extends TestCase
         $this->actingAsJwt($this->makeUser('admin'))->deleteJson('/api/v1/user/999999')->assertNotFound();
     }
 
-    public function test_profile_image_upload_stores_a_resized_image(): void
+    public function test_profile_image_upload_stores_a_reencoded_jpeg_on_the_public_disk(): void
     {
+        Storage::fake('public');
         Storage::fake('public_app');
         $member = $this->makeUser('member');
 
         $response = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
-            'profile_image' => UploadedFile::fake()->image('me.jpg', 800, 800),
+            'profile_image' => UploadedFile::fake()->image('me.png', 800, 800),
         ], ['Accept' => 'application/json'])->assertStatus(201)->assertJsonPath('status', 'ok');
 
         $path = $response->json('imageUrl');
-        $this->assertStringStartsWith('profile_images/', $path);
-        Storage::disk('public_app')->assertExists($path);
-        [$width, $height] = getimagesize(Storage::disk('public_app')->path($path));
+        $this->assertMatchesRegularExpression('#^profile_images/[A-Za-z0-9]{40}\.jpg$#', $path);
+        Storage::disk('public')->assertExists($path);
+        Storage::disk('public_app')->assertDirectoryEmpty('/');
+        [$width, $height, $type] = getimagesize(Storage::disk('public')->path($path));
         $this->assertSame(400, $height, 'images are resized to a height of 400px');
-        // BUG (pinned): resize(height: 400, width: null) keeps the original width, so non-square
-        // uploads get distorted instead of scaled proportionally (scale() would be needed).
-        $this->assertSame(800, $width);
+        $this->assertSame(400, $width);
+        $this->assertSame(IMAGETYPE_JPEG, $type, 'always re-encoded, even if a png was uploaded');
+        // the stored path satisfies the profileImageName rule used when saving the profile
+        $this->assertSame(1, preg_match(ProfileImage::PATTERN, $path));
+    }
+
+    public function test_profile_image_upload_keeps_the_aspect_ratio(): void
+    {
+        Storage::fake('public');
+        $member = $this->makeUser('member');
+
+        $response = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+            'profile_image' => UploadedFile::fake()->image('wide.jpg', 1200, 600),
+        ], ['Accept' => 'application/json'])->assertStatus(201);
+
+        [$width, $height] = getimagesize(Storage::disk('public')->path($response->json('imageUrl')));
+        $this->assertSame(400, $height);
+        $this->assertSame(800, $width, '1200x600 is scaled to 800x400, not squeezed');
+    }
+
+    public function test_profile_image_upload_uses_a_random_name_every_time(): void
+    {
+        Storage::fake('public');
+        $member = $this->makeUser('member');
+        $names = [];
+        for ($i = 0; $i < 2; $i++) {
+            $names[] = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+                'profile_image' => UploadedFile::fake()->image('same.jpg', 200, 200),
+            ], ['Accept' => 'application/json'])->assertStatus(201)->json('imageUrl');
+        }
+
+        $this->assertNotSame($names[0], $names[1]);
+        $this->assertStringNotContainsString('same', $names[0]);
     }
 
     public function test_profile_image_upload_without_file_is_400(): void
@@ -269,14 +363,62 @@ class UserManagementTest extends TestCase
             ->assertStatus(400)->assertExactJson(['status' => 'error', 'message' => 'No file provided']);
     }
 
-    public function test_profile_image_upload_with_a_non_image_is_500(): void
+    public function test_profile_image_upload_rejects_non_images_and_active_content(): void
     {
-        Storage::fake('public_app');
+        Storage::fake('public');
         $member = $this->makeUser('member');
 
+        $rejected = [
+            UploadedFile::fake()->createWithContent('x.txt', 'not an image'),
+            UploadedFile::fake()->createWithContent('shell.php', '<?php echo 1;'),
+            // a PHP file with a harmless-looking image name and content type
+            UploadedFile::fake()->createWithContent('shell.jpg', '<?php system($_GET["c"]); ?>'),
+            UploadedFile::fake()->createWithContent('vector.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'),
+            UploadedFile::fake()->createWithContent('anim.gif', base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')),
+        ];
+        foreach ($rejected as $file) {
+            $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
+                ->assertStatus(422)->assertJsonValidationErrors(['profileImage']);
+        }
+
+        Storage::disk('public')->assertDirectoryEmpty('/');
+    }
+
+    public function test_profile_image_upload_enforces_size_and_dimension_limits(): void
+    {
+        Storage::fake('public');
+        $member = $this->makeUser('member');
+
+        $tooBig = UploadedFile::fake()->image('big.jpg', 100, 100)->size(5121);
+        $tooSmall = UploadedFile::fake()->image('tiny.jpg', 10, 10);
+        $tooLarge = UploadedFile::fake()->image('huge.jpg', 8001, 100);
+        foreach ([$tooBig, $tooSmall, $tooLarge] as $file) {
+            $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
+                ->assertStatus(422)->assertJsonValidationErrors(['profileImage']);
+        }
+
         $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
-            'profile_image' => UploadedFile::fake()->createWithContent('x.txt', 'not an image'),
-        ], ['Accept' => 'application/json'])
-            ->assertStatus(500)->assertExactJson(['status' => 'error', 'message' => 'Failed to upload image']);
+            'profile_image' => UploadedFile::fake()->image('ok.webp', 300, 300),
+        ], ['Accept' => 'application/json'])->assertStatus(201);
+    }
+
+    public function test_profile_image_upload_requires_login(): void
+    {
+        $this->postJson('/api/v1/user/me/uploadprofileimage')->assertStatus(401);
+    }
+
+    public function test_profile_image_is_removed_again_when_processing_fails(): void
+    {
+        Storage::fake('public');
+        $member = $this->makeUser('member');
+
+        // passes the mime check (valid PNG signature + IHDR) but cannot be decoded
+        $broken = "\x89PNG\r\n\x1a\n".pack('N', 13).'IHDR'.pack('NNCCCCC', 100, 100, 8, 2, 0, 0, 0).'garbage';
+        $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+            'profile_image' => UploadedFile::fake()->createWithContent('broken.png', $broken),
+        ], ['Accept' => 'application/json'])->assertStatus(500)
+            ->assertExactJson(['status' => 'error', 'message' => 'Failed to upload image']);
+
+        Storage::disk('public')->assertDirectoryEmpty('profile_images');
     }
 }

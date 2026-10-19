@@ -79,11 +79,10 @@ class TrainingSeriesCommand extends Command
 
                 // check if training is already created
                 if (DB::table('trainings')
-                    ->whereBetween('start', [$start, $end])
-                    ->whereRaw('DAYOFWEEK(trainings.start) <> '.$dayNumber)
+                    ->whereDate('start', $dt->format('Y-m-d'))
                     ->where('training_series_id', $series->id)
                     ->exists()) {
-                    $this->info('Training with series id '.$series->id.' already exists');
+                    $this->info('Training with series id '.$series->id.' already exists on '.$dt->format('Y-m-d'));
 
                     continue;
                 }

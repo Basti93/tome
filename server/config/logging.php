@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', 'daily'),
 
     /*
     |--------------------------------------------------------------------------
@@ -44,8 +44,9 @@ return [
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'debug',
-            'days' => 7,
+            'level' => env('LOG_LEVEL', 'info'),
+            // personal data must not live in the logs forever
+            'days' => (int) env('LOG_DAILY_DAYS', 14),
         ],
 
         'slack' => [
