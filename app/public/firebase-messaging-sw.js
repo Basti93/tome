@@ -97,8 +97,8 @@ self.addEventListener('push', (event) => {
 
     const options = {
       body,
-      icon: '/img/icons/icon-192x192.png',
-      badge: '/img/icons/icon-72x72.png',
+      icon: '/img/icons/android-chrome-192x192.png',
+      badge: '/img/icons/favicon-32x32.png',
       tag: 'tome-notification',
       data: {
         click_action: data.click_action || '/',

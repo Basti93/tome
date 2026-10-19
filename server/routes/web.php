@@ -13,6 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('reset_password/{token}', ['as' => 'password.reset', function ($token) {
-    // implement your reset password route here!
-}]);
+// Intentionally empty: the SPA (public_app) is served by nginx and handles the password reset link
+// (/#/reset-password?token=...&email=..., see App\User::getResetUrl). Do not add closure routes here:
+// they break `php artisan route:cache`.

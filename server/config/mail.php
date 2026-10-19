@@ -16,7 +16,11 @@ return [
     |
     */
 
-    'driver' => env('MAIL_DRIVER', 'smtp'),
+    // MAIL_MAILER is the Laravel 11+ name; production .env files may still use the legacy MAIL_DRIVER.
+    'default' => env('MAIL_MAILER', env('MAIL_DRIVER', 'smtp')),
+
+    // legacy key, kept for old code that reads it
+    'driver' => env('MAIL_DRIVER', env('MAIL_MAILER', 'smtp')),
 
     /*
     |--------------------------------------------------------------------------
