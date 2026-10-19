@@ -40,6 +40,7 @@ class NotificationPreferenceService
             'participant_upcoming' => true,
             'absence_alert' => true,
             'admin_messages' => true,
+            'trainer_evaluation_reminder' => true,
         ];
     }
 
