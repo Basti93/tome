@@ -182,7 +182,7 @@
                         </template>
                         <template v-slot:[`item.deferUntil`]="{ item }">
                             <span v-if="checkDeferUntilIsActive(item)">
-                                {{ dayjs(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY') }}
+                                {{ parseApiDate(item.deferUntil).format('DD.MM.YYYY') }}
                             </span>
                           <span v-else>Aktiv</span>
                         </template>
@@ -219,7 +219,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
@@ -228,7 +228,7 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
   setup() {
-    return { dayjs };
+    return { dayjs, parseApiDate };
   },
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
@@ -246,14 +246,14 @@ export default {
       loading: false,
       editDialogTitle: "",
       headers: [
-        {text: 'Id', value: 'id', sortable: false},
-        {text: 'Wochentage', value: 'weekdays', sortable: false},
-        {text: 'Start', value: 'startTime', sortable: false},
-        {text: 'Ende', value: 'endTime', sortable: false},
-        {text: 'Trainer', value: 'trainerIds', sortable: false},
-        {text: 'Gruppen', value: 'groupIds', sortable: false},
-        {text: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Id', value: 'id', sortable: false},
+        { title: 'Wochentage', value: 'weekdays', sortable: false},
+        { title: 'Start', value: 'startTime', sortable: false},
+        { title: 'Ende', value: 'endTime', sortable: false},
+        { title: 'Trainer', value: 'trainerIds', sortable: false},
+        { title: 'Gruppen', value: 'groupIds', sortable: false},
+        { title: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true),
       editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true) as TrainingSeries,
@@ -323,7 +323,7 @@ export default {
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      const momDeferUntil = dayjs(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = parseApiDate(item.deferUntil);
       if (momDeferUntil.isValid()) {
         this.editedTrainingSeries.deferUntil = momDeferUntil.format('YYYY-MM-DD')
       }
@@ -344,7 +344,7 @@ export default {
       }
     },
     async save() {
-      const momDeferUntil = dayjs(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = parseApiDate(this.editedTrainingSeries.deferUntil);
       const postData: Record<string, any> = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,

@@ -103,7 +103,7 @@ import { useDisplay } from 'vuetify'
 import GroupsSelect from "./GroupsSelect";
 import UploadProfileImage from "./UploadProfileImage";
 import {formatDate, parseDate} from "../helpers/date-helpers"
-import dayjs from '@/helpers/dayjs'
+import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
 
     export default {
@@ -180,7 +180,7 @@ import httpClient from '@/http/api'
 
                     let response = null;
                     if (this.birthdate) {
-                        postData.birthdate = dayjs(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
+                        postData.birthdate = parseApiDate(this.birthdate).format("YYYY-MM-DD");
                     }
                     if (this.editUserId) {
                         response = await httpClient.put('/user/' + this.editUserId, postData);
@@ -212,7 +212,7 @@ import httpClient from '@/http/api'
             assignValues() {
               this.firstName = this.editFirstName;
               this.familyName = this.editFamilyName;
-              this.birthdate = this.editBirthdate ? dayjs(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('YYYY-MM-DD') : null;
+              this.birthdate = this.editBirthdate ? parseApiDate(this.editBirthdate).format('YYYY-MM-DD') : null;
               this.groupIds = this.editGroupIds;
               this.active = this.editActive;
               this.profileImageName = this.editProfileImageName;

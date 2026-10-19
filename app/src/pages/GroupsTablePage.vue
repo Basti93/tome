@@ -142,15 +142,13 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="groups"
                           item-key="id"
                           :loading="loading"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:itemsPerPage="itemsPerPage"
                           v-model:page="page"
                       >
@@ -184,7 +182,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -214,7 +212,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import { parseApiDate } from '@/helpers/dayjs'
 
 export default {
   setup() {
@@ -235,10 +233,10 @@ export default {
       page: 1,
       itemsPerPage: 10,
       headers: [
-        {text: 'Name', value: 'name', sortable: false},
-        {text: 'Sparte', value: 'branchId', sortable: false},
-        {text: 'Mitglieder', value: 'userCount', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Name', value: 'name', sortable: false},
+        { title: 'Sparte', value: 'branchId', sortable: false},
+        { title: 'Mitglieder', value: 'userCount', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       editedItem: {
         id: null,
@@ -306,15 +304,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
             userObj.absenceReason
         ));
       }

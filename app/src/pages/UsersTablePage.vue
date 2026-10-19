@@ -60,15 +60,13 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="users"
                           item-key="id"
                           :loading="loading"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:items-per-page="itemsPerPage"
                           v-model:page="page"
                           v-model:sort-by="sortBy"
@@ -135,7 +133,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -172,7 +170,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog.vue";
@@ -183,7 +181,7 @@ import { inviteUser } from '@/services/userInvite'
 
 export default {
   setup() {
-    return { dayjs };
+    return { dayjs, parseApiDate };
   },
   name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
@@ -205,13 +203,13 @@ export default {
       sortBy: [],
       searchText: '',
       headers: [
-        {text: 'Vorname', value: 'firstName', sortable: true},
-        {text: 'Nachname', value: 'familyName', sortable: true},
-        {text: 'Alter', value: 'birthdate', sortable: true},
-        {text: 'Gruppen', value: 'groups', sortable: false},
-        {text: 'Aktiv', value: 'active', sortable: true},
-        {text: 'Registriert', value: 'registered', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Vorname', value: 'firstName', sortable: true},
+        { title: 'Nachname', value: 'familyName', sortable: true},
+        { title: 'Alter', value: 'birthdate', sortable: true},
+        { title: 'Gruppen', value: 'groups', sortable: false},
+        { title: 'Aktiv', value: 'active', sortable: true},
+        { title: 'Registriert', value: 'registered', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       users: [],
       editedItem: {
@@ -278,8 +276,9 @@ export default {
       let url = null;
       // get by sort option
       if (this.sortBy[0]) {
-        const direction = this.sortDesc[0] ? 'desc' : 'asc';
-        url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0] + '&page=' + this.page + '&per_page=' + this.itemsPerPage
+        // Vuetify 3: sortBy is an array of { key, order }
+        const direction = this.sortBy[0].order === 'desc' ? 'desc' : 'asc';
+        url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0].key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
       } else {
         url = '/user?page=' + this.page + '&per_page=' + this.itemsPerPage
       }
@@ -311,15 +310,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
             userObj.absenceReason
         ))
       }

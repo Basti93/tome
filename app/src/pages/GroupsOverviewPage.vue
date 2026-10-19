@@ -92,9 +92,9 @@ export default {
     return {
       loading: false,
       headers: [
-        {text: 'Name', value: 'name', sortable: false},
-        {text: 'Sparte', value: 'branchId', sortable: false},
-        {text: 'Mitglieder', value: 'userCount', sortable: false},
+        { title: 'Name', value: 'name', sortable: false},
+        { title: 'Sparte', value: 'branchId', sortable: false},
+        { title: 'Mitglieder', value: 'userCount', sortable: false},
       ],
     };
   },

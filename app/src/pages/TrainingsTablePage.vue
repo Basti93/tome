@@ -50,24 +50,24 @@
                       <TrainingCalendar
                           v-if="activeView == 1">
                       </TrainingCalendar>
-                      <v-data-table
+                      <v-data-table-server
                           v-if="activeView == 0"
                           :headers="headers"
                           :items="trainings"
                           :loading="loading"
-                          :server-items-length="totalItems"
+                          :items-length="totalItems"
                           v-model:items-per-page="itemsPerPage"
                           v-model:page="page"
                           v-model:sort-by="sortBy"
                       >
                         <template v-slot:[`item.date`]="{ item }">
-                          {{ dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.YYYY') }}
+                          {{ parseApiDate(item.start).format('dd, DD.MM.YYYY') }}
                         </template>
                         <template v-slot:[`item.start`]="{ item }">
-                          {{ dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ parseApiDate(item.start).format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.end`]="{ item }">
-                          {{ dayjs(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ parseApiDate(item.end).format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.locationId`]="{ item }">
                           {{ getLocationNameById(item.locationId) }}
@@ -108,7 +108,7 @@
                             Keine Daten gefunden
                           </v-btn>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -188,7 +188,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import {formatDate, parseDate} from "../helpers/date-helpers"
@@ -197,7 +197,7 @@ import Training from "../models/Training";
 
 export default {
   setup() {
-    return { dayjs };
+    return { dayjs, parseApiDate };
   },
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
@@ -223,13 +223,13 @@ export default {
       editDialogEndMenu: false,
       editDialogFilteredUsers: [],
       headers: [
-        {text: 'Datum', value: 'date', sortable: true},
-        {text: 'Von', value: 'start', sortable: false},
-        {text: 'Bis', value: 'end', sortable: false},
-        {text: 'Ort', value: 'locationId', sortable: true},
-        {text: 'Trainer', value: 'trainerIds', sortable: false},
-        {text: 'Gruppen', value: 'groupIds', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Datum', value: 'date', sortable: true},
+        { title: 'Von', value: 'start', sortable: false},
+        { title: 'Bis', value: 'end', sortable: false},
+        { title: 'Ort', value: 'locationId', sortable: true},
+        { title: 'Trainer', value: 'trainerIds', sortable: false},
+        { title: 'Gruppen', value: 'groupIds', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       trainings: [],
       trainers: [],
@@ -380,9 +380,9 @@ export default {
       this.editDialogTitle = 'Training bearbeiten'
       this.editedId = item.id;
       Object.assign(this.editedItem, item)
-      this.editedItemDate = dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('YYYY-MM-DD')
-      this.editedItem.start = dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
-      this.editedItem.end = dayjs(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItemDate = parseApiDate(item.start).format('YYYY-MM-DD')
+      this.editedItem.start = parseApiDate(item.start).format('HH:mm')
+      this.editedItem.end = parseApiDate(item.end).format('HH:mm')
       this.editDialog = true
     },
     create() {
@@ -402,8 +402,8 @@ export default {
       const self = this;
       const postData = {
         id: null,
-        start: dayjs(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
-        end: dayjs(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
+        start: parseApiDate(self.editedItem.date + 'T' + self.editedItem.start).format(),
+        end: parseApiDate(self.editedItem.date + 'T' + self.editedItem.end).format(),
         locationId: self.editedItem.locationId,
         groupIds: self.editedItem.groupIds,
         trainerIds: self.editedItem.trainerIds,

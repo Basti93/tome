@@ -110,7 +110,7 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import { parseApiDate } from '@/helpers/dayjs'
 import TrainingCheckIn from "../components/TrainingCheckIn.vue";
 import GroupSelect from "../components/GroupSelect.vue";
 import CookieUserDialog from "../components/CookieUserDialog.vue";
@@ -286,7 +286,7 @@ export default {
         participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
       }
       if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
-        this.upcomingTrainings.push(new Training(trainingJson.id, dayjs(trainingJson.start, 'YYYY-MM-DDTHH:mm'), dayjs(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
+        this.upcomingTrainings.push(new Training(trainingJson.id, parseApiDate(trainingJson.start), parseApiDate(trainingJson.end), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
       }
       this.upcomingTrainings.sort(function (a: Training, b: Training) {
         return a.start.valueOf() - b.start.valueOf();

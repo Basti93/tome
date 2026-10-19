@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import dayjs from '@/helpers/dayjs'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 
 describe('dayjs helper', () => {
   it('parses API timestamps with the legacy moment format string as local time', () => {
@@ -40,5 +40,23 @@ describe('dayjs helper', () => {
 
   it('computes age in years', () => {
     expect(dayjs().diff(dayjs().subtract(30, 'year'), 'years')).toBe(30)
+  })
+
+  describe('parseApiDate', () => {
+    it.each([
+      ['2024-03-05T18:30:00+01:00', '2024-03-05 18:30'],
+      ['2024-03-05 07:05:00', '2024-03-05 07:05'],
+      ['2010-05-01T00:00:00.000000Z', '2010-05-01 00:00'],
+      ['2010-05-01', '2010-05-01 00:00'],
+    ])('parses %s as local time ignoring offset and seconds', (input, expected) => {
+      expect(parseApiDate(input).format('YYYY-MM-DD HH:mm')).toBe(expected)
+    })
+
+    it('clones dayjs values and yields invalid dates for empty or garbage input', () => {
+      expect(parseApiDate(dayjs('2024-03-05', 'YYYY-MM-DD')).format('YYYY-MM-DD')).toBe('2024-03-05')
+      expect(parseApiDate(null).isValid()).toBe(false)
+      expect(parseApiDate(undefined).isValid()).toBe(false)
+      expect(parseApiDate('not a date').isValid()).toBe(false)
+    })
   })
 })

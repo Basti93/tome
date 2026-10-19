@@ -225,12 +225,12 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs from '@/helpers/dayjs'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import User from '@/models/User'
 
 export default {
   setup() {
-    return { dayjs };
+    return { dayjs, parseApiDate };
   },
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage, NotificationPreferencesForm},
@@ -322,7 +322,7 @@ export default {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,
           email: this.editUser.email,
-          birthdate: this.editUser.birthdate ? dayjs(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format() : null,
+          birthdate: this.editUser.birthdate ? parseApiDate(this.editUser.birthdate).format() : null,
           groupIds: this.editUser.groupIds,
           trainerBranchIds: this.editUser.trainerBranchIds,
         };
