@@ -60,18 +60,18 @@ class SendTrainingNotificationsToUsers extends Command
         foreach ($users as $user) {
             // Check if notification type is enabled for this user
             if ($preferenceKey && ! $notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
-                $this->info('User '.$user->firstName.' '.$user->familyName.' has disabled this notification type');
+                $this->info('User '.'#'.$user->id.' has disabled this notification type');
 
                 continue;
             }
             // check if notifications is already sent
-            $this->info('User '.$user->firstName.' '.$user->familyName.' has '.count($user->notificationTokens).' tokens');
+            $this->info('User '.'#'.$user->id.' has '.count($user->notificationTokens).' tokens');
             if (! $storeStatus || ! UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
                 foreach ($user->notificationTokens as $token) {
                     array_push($recipientTokens, $token->token);
                 }
             } else {
-                $this->info('Notification already sent to '.$user->firstName.' '.$user->familyName.'');
+                $this->info('Notification already sent to '.'#'.$user->id.'');
 
             }
         }

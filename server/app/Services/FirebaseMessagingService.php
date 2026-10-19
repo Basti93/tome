@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\NotificationToken;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -15,7 +17,10 @@ class FirebaseMessagingService
     public function __construct()
     {
         try {
-            $credentialsPath = env('FIREBASE_CREDENTIALS_PATH');
+            $credentialsPath = config('services.firebase.credentials');
+            if ($credentialsPath && ! str_starts_with($credentialsPath, '/')) {
+                $credentialsPath = base_path($credentialsPath);
+            }
             if (! $credentialsPath || ! file_exists($credentialsPath)) {
                 throw new \Exception('Firebase credentials file not found at: '.$credentialsPath);
             }
@@ -23,7 +28,7 @@ class FirebaseMessagingService
             $factory = (new Factory)->withServiceAccount($credentialsPath);
             $this->messaging = $factory->createMessaging();
         } catch (\Exception $e) {
-            Log::error('Firebase initialization failed: '.$e->getMessage());
+            Log::error('Firebase initialization failed: '.$e::class);
             throw $e;
         }
     }
@@ -59,24 +64,21 @@ class FirebaseMessagingService
 
         foreach ($tokens as $token) {
             try {
-                Log::info("Attempting to send message to token: {$token}");
-                Log::info('Message data: '.json_encode($dataPayload));
-
-                $targetedMessage = $message->withToken($token);
-                $result = $this->messaging->send($targetedMessage);
+                $this->messaging->send($message->withToken($token));
 
                 $successCount++;
-                Log::info("✅ FCM message sent successfully to token: {$token}", ['result' => $result]);
             } catch (MessagingException $e) {
                 $failureCount++;
                 $errorMessage = $e->getMessage();
-                $errorCode = $e->getCode();
 
-                Log::error("❌ MessagingException for token {$token}: Code={$errorCode}, Message={$errorMessage}");
+                // Never log the message itself: kreait puts the device token into it.
+                Log::warning('FCM send failed: '.$e::class.' (code '.$e->getCode().')');
 
-                // Token is invalid or registration expired
-                if (strpos($errorMessage, 'invalid-argument') !== false ||
+                // Token is invalid, unknown or unregistered (app uninstalled / token rotated)
+                if ($e instanceof NotFound ||
+                    strpos($errorMessage, 'invalid-argument') !== false ||
                     strpos($errorMessage, 'not-found') !== false ||
+                    stripos($errorMessage, 'unregistered') !== false ||
                     strpos($errorMessage, 'permission-denied') !== false) {
                     $tokensToDelete[] = $token;
                 } else {
@@ -85,13 +87,13 @@ class FirebaseMessagingService
             } catch (\Exception $e) {
                 $failureCount++;
                 $tokensToRetry[] = $token;
-                Log::error("❌ Unexpected exception for token {$token}: ".$e->getMessage(), [
-                    'exception' => get_class($e),
-                    'code' => $e->getCode(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                ]);
+                Log::error('FCM send raised an unexpected exception: '.$e::class.' (code '.$e->getCode().')');
             }
+        }
+
+        // Drop tokens FCM reported as invalid/unregistered, they will never work again
+        if ($tokensToDelete !== []) {
+            NotificationToken::whereIn('token', $tokensToDelete)->delete();
         }
 
         return [
@@ -125,11 +127,10 @@ class FirebaseMessagingService
             }
 
             $this->messaging->send($message);
-            Log::info("FCM message sent successfully to topic: {$topic}");
 
             return true;
         } catch (\Exception $e) {
-            Log::error("FCM topic send failed for topic {$topic}: ".$e->getMessage());
+            Log::error('FCM topic send failed: '.$e::class);
 
             return false;
         }
