@@ -136,18 +136,18 @@ self.addEventListener('notificationclick', (event) => {
   console.log('[SW] Notification clicked:', event.notification.tag)
   event.notification.close()
 
-  const urlToOpen = event.notification.data?.click_action || '/'
+  const urlToOpen = new URL(event.notification.data?.click_action || '/', self.location.origin).href
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Try to find existing window
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i]
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus()
-        }
+      // Reuse an open window of this app (focus + navigate) instead of opening a second one
+      const existing = clientList.find((client) => client.url.startsWith(self.location.origin))
+      if (existing) {
+        return existing.focus().then((focused) => {
+          const target = focused || existing
+          return 'navigate' in target && target.url !== urlToOpen ? target.navigate(urlToOpen) : target
+        }).catch(() => clients.openWindow(urlToOpen))
       }
-      // Open new window if not found
       return clients.openWindow(urlToOpen)
     })
   )

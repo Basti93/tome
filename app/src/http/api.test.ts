@@ -115,7 +115,7 @@ describe('httpClient', () => {
   it('on 401 with a failed refresh logs the user out and redirects to /login', async () => {
     const auth = useAuthStore()
     auth.logout = vi.fn()
-    const location = { href: '' }
+    const location = { href: '', hash: '#/quickEvaluation/7' }
     vi.stubGlobal('window', Object.assign(Object.create(window), { location }))
     fetchMock
       .mockResolvedValueOnce(jsonResponse({}, 401))
@@ -124,7 +124,7 @@ describe('httpClient', () => {
     await expect(httpClient.get('/training')).rejects.toBeTruthy()
 
     expect(auth.logout).toHaveBeenCalled()
-    expect(location.href).toBe('/login')
+    expect(location.href).toBe('/#/login?redirect=%2FquickEvaluation%2F7')
   })
 
   it('treats an HTML page answered to a JSON request (the SPA index.html) as an error', async () => {

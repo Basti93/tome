@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { analytics } from '@/services/analytics'
+import httpClient from '@/http/api'
+import User from '@/models/User'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -65,15 +67,34 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to) => {
+/**
+ * Restores the session when the persisted user is missing but the HttpOnly session cookie may still be valid
+ * (e.g. the PWA is opened from a push notification after the browser storage was cleared).
+ */
+async function restoreSession(): Promise<void> {
+  const authStore = useAuthStore()
+  if (authStore.user) return
+  try {
+    const { data } = await httpClient.get('/auth/me', { silent401: true })
+    if (data && typeof data === 'object' && data.id) {
+      authStore.login(User.from(JSON.stringify(data)))
+    }
+  } catch {
+    // no valid session: the guard redirects to the login page
+  }
+}
+
+router.beforeEach(async (to) => {
   // Track page view
   const pageTitle = (to.name as string) || 'Page'
   analytics.trackPageView(pageTitle)
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
+    await restoreSession()
     const authStore = useAuthStore()
     if (!authStore.user) {
-      return { path: '/login', query: { nextUrl: to.fullPath } }
+      // the login page reads `redirect` and returns there after the login (e.g. a push deep link)
+      return { path: '/login', query: { redirect: to.fullPath } }
     }
     if (to.matched.some(record => record.meta.forTrainers)
       && !(authStore.user.isTrainer || authStore.user.isAdmin)) {

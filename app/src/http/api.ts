@@ -26,6 +26,8 @@ interface RequestConfig {
   signal?: AbortSignal
   /** 'blob' returns the body of a successful response as a Blob (file downloads) */
   responseType?: 'json' | 'blob'
+  /** on 401: just reject (no token refresh, no logout, no redirect to the login page); used for session probes */
+  silent401?: boolean
 }
 
 interface FetchResponse<T = any> {
@@ -42,6 +44,16 @@ interface ApiError extends Error {
     data: any
   }
   config: any
+}
+
+/**
+ * Sends the user to the login page and remembers where they were (`redirect`, read by the login page).
+ * The router uses hash history, so the login page lives at `/#/login`.
+ */
+export function redirectToLogin() {
+  const current = (window.location.hash || '#/').slice(1)
+  const target = current.startsWith('/login') ? '/' : current
+  window.location.href = `/#/login?redirect=${encodeURIComponent(target)}`
 }
 
 async function request<T = any>(
@@ -130,6 +142,9 @@ async function request<T = any>(
   }
 
   // Handle 401 - token refresh
+  if (response.status === 401 && config.silent401) {
+    throw createApiError(response, responseData, config)
+  }
   if (response.status === 401) {
     if (!isAlreadyFetchingAccessToken) {
       isAlreadyFetchingAccessToken = true
@@ -152,21 +167,21 @@ async function request<T = any>(
           } else {
             const authStore = useAuthStore()
             authStore.logout()
-            window.location.href = '/login'
+            redirectToLogin()
             throw createApiError(response, responseData, config)
           }
         } else {
           isAlreadyFetchingAccessToken = false
           const authStore = useAuthStore()
           authStore.logout()
-          window.location.href = '/login'
+          redirectToLogin()
           throw createApiError(response, responseData, config)
         }
       } catch (error) {
         isAlreadyFetchingAccessToken = false
         const authStore = useAuthStore()
         authStore.logout()
-        window.location.href = '/login'
+        redirectToLogin()
         throw error
       }
     }

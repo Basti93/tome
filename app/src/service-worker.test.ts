@@ -103,3 +103,37 @@ describe('service worker', () => {
     expect(cacheApi.delete).not.toHaveBeenCalledWith('tome-v2')
   })
 })
+
+describe('service worker notification click', () => {
+  function click(listeners: Record<string, (e: any) => void>, clientsApi: any, clickAction: string) {
+    ;(globalThis as any).clients = clientsApi
+    const waits: Promise<unknown>[] = []
+    listeners.notificationclick({
+      notification: { tag: 't', close: vi.fn(), data: { click_action: clickAction } },
+      waitUntil: (p: Promise<unknown>) => waits.push(p),
+    })
+    return Promise.all(waits)
+  }
+
+  it('focuses and navigates an open window of the app instead of opening a second one', async () => {
+    const { listeners } = loadWorker()
+    const win = { url: 'https://tome.test/#/', focus: vi.fn(), navigate: vi.fn(async () => win) } as any
+    win.focus.mockResolvedValue(win)
+    const clientsApi = { matchAll: vi.fn(async () => [{ url: 'https://other.test/' }, win]), openWindow: vi.fn() }
+
+    await click(listeners, clientsApi, 'https://tome.test/#/quickEvaluation/9')
+
+    expect(win.focus).toHaveBeenCalled()
+    expect(win.navigate).toHaveBeenCalledWith('https://tome.test/#/quickEvaluation/9')
+    expect(clientsApi.openWindow).not.toHaveBeenCalled()
+  })
+
+  it('opens a window when the app is not open', async () => {
+    const { listeners } = loadWorker()
+    const clientsApi = { matchAll: vi.fn(async () => []), openWindow: vi.fn(async () => ({})) }
+
+    await click(listeners, clientsApi, 'https://tome.test/#/quickEvaluation/9')
+
+    expect(clientsApi.openWindow).toHaveBeenCalledWith('https://tome.test/#/quickEvaluation/9')
+  })
+})
