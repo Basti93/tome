@@ -83,7 +83,6 @@ import httpClient from '@/http/api'
 const openedPanel = ref(0)
 const faqs = ref([])
 const filePaths = ref([])
-const serverUrl = import.meta.env.VITE_IMAGE_FOLDER_URL
 
 async function fetchFaqs() {
   const res = await httpClient.get('/faq/')

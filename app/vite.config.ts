@@ -29,6 +29,13 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Uploaded files: /api/storage/* in nginx, /storage/* (public/storage symlink) on `php artisan serve`
+      '/api/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/storage/, '/storage')
+      },
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,

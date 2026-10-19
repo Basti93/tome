@@ -8,6 +8,8 @@ export default mergeConfig(
     test: {
       environment: 'jsdom',
       globals: false,
+      // ignore developer .env files: tests assume the defaults
+      env: { VITE_API_URL: '', VITE_APP_API_URL: '', VITE_IMAGE_FOLDER_URL: '' },
       include: ['src/**/*.{test,spec}.{js,ts}'],
       root: fileURLToPath(new URL('./', import.meta.url)),
       setupFiles: ['./src/test/setup.ts'],

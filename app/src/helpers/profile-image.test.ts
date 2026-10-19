@@ -15,8 +15,8 @@ describe('profileImageUrl', () => {
     expect(profileImageUrl('a.jpg')).toBe('https://cdn.example.test/img/a.jpg')
   })
 
-  it('works with an empty base (same origin)', () => {
+  it('defaults to /api/storage when unset or empty', () => {
     vi.stubEnv('VITE_IMAGE_FOLDER_URL', '')
-    expect(profileImageUrl('a.jpg')).toBe('/a.jpg')
+    expect(profileImageUrl('a.jpg')).toBe('/api/storage/a.jpg')
   })
 })
