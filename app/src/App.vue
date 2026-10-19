@@ -29,7 +29,7 @@
         </v-banner>
         <v-snackbar
             v-if="pushPermissionSnackbarVisible"
-            v-model="pushPermissionSnackbar"
+            model-value
             location="bottom right"
             :timeout="-1"
         >
@@ -45,7 +45,7 @@
             <v-btn
                 color="primary"
                 variant="text"
-                @click="pushPermissionSnackbar = false"
+                @click="pushPermissionDismissed = true"
             >
               Nicht jetzt
             </v-btn>
@@ -66,91 +66,66 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import dayjs from '@/helpers/dayjs'
 import Navigation from '@/components/TomeNavigation.vue'
 import SnackbarStore from '@/components/SnackbarStore.vue'
 import { useSnackbarStore } from '@/store/snackbar'
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
+import { listenForForegroundMessages, registerPushToken, type PushStatus } from '@/services/push'
 
 const snackbarStore = useSnackbarStore()
 const authStore = useAuthStore()
 const cookieAuthStore = useCookieAuthStore()
 
-const pushPermissionSnackbar = ref(true)
 const currentYear = dayjs().year()
 
 const currentUser = computed(() => {
   return authStore.user || cookieAuthStore.cookieUser || null
 });
 
-const pushPermissionSnackbarVisible = computed(() => {
-  return isFirebaseSupported() && pushPermissionSnackbar.value &&
-    Notification.permission !== 'granted' && Notification.permission !== 'denied'
-});
+// Push notifications -------------------------------------------------------------------------
+const pushStatus = ref<PushStatus | null>(null)
+const pushPermissionDismissed = ref(false)
+// the permission prompt is only offered while the browser has not decided yet
+const pushPermissionSnackbarVisible = computed(() => pushStatus.value === 'needs-permission' && !pushPermissionDismissed.value)
+let foregroundListening = false
+
+async function startForegroundListener() {
+  if (foregroundListening) return
+  foregroundListening = await listenForForegroundMessages(({ title, body }) => {
+    snackbarStore.show(body ? `${title}: ${body}` : title, 'info', 10000)
+  })
+}
+
+/** Registers the FCM token for the user (no permission prompt) */
+async function syncPushToken(requestPermission = false) {
+  const user = currentUser.value
+  if (!user) return
+  pushStatus.value = await registerPushToken(user.id, requestPermission)
+  if (pushStatus.value === 'subscribed') {
+    pushPermissionDismissed.value = true
+    startForegroundListener()
+  } else if (pushStatus.value === 'denied' && requestPermission) {
+    snackbarStore.show('Benachrichtigungen wurden blockiert. Du kannst sie in den Browser-Einstellungen erlauben.', 'warning')
+  } else if (pushStatus.value === 'error' && requestPermission) {
+    snackbarStore.show('Benachrichtigungen konnten nicht aktiviert werden.', 'error')
+  }
+}
+
+// on app start and after login (user changes from null to a user)
+watch(() => currentUser.value?.id, (id) => {
+  if (id) syncPushToken()
+}, { immediate: true })
+
+function requestPushPermission() {
+  return syncPushToken(true)
+}
 
 function refreshPage() {
   window.location.reload()
 }
-
-function isFirebaseSupported() {
-  return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
-}
-
-function requestPushPermission() {
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted.')
-      getFirebaseToken()
-    } else {
-      console.log('Unable to get permission to notify.')
-    }
-  })
-}
-
-function sendTokenToServer(userId: number, token: string) {
-  import('@/http/api').then(({ default: httpClient }) => {
-    httpClient.post('/notifications/subscribe', { firebaseToken: token, userId })
-  })
-}
-
-function getFirebaseToken() {
-  import('@/firebase-config').then(({ initializeMessaging }) => {
-    initializeMessaging().then((messaging: any) => {
-      if (messaging) {
-        import('firebase/messaging').then(({ getToken }) => {
-          getToken(messaging).then((token: string) => {
-            if (token && currentUser.value) {
-              console.log('Firebase token obtained:', token)
-              console.log('Token will be sent to server for user:', currentUser.value.id)
-              sendTokenToServer(currentUser.value.id, token)
-              pushPermissionSnackbar.value = false
-            } else {
-              console.warn('Failed to get token. Token:', !!token, 'User:', !!currentUser.value)
-              pushPermissionSnackbar.value = true
-            }
-          }).catch((error: any) => {
-            console.error('Error getting Firebase token:', error)
-            pushPermissionSnackbar.value = true
-          })
-        })
-      } else {
-        console.error('Firebase messaging not available')
-      }
-    }).catch((error: any) => {
-      console.error('Error initializing Firebase messaging:', error)
-    })
-  })
-}
-
-onMounted(() => {
-  // Get Firebase token for push notifications (both dev and prod)
-  // Firebase automatically handles service worker registration
-  if (currentUser.value) {
-    getFirebaseToken()
-  }
-});
 </script>
 
 <style>
