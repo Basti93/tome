@@ -61,7 +61,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   // Track page view
   const pageTitle = (to.name as string) || 'Page'
   analytics.trackPageView(pageTitle)
@@ -69,19 +69,14 @@ router.beforeEach((to, _from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     const authStore = useAuthStore()
     if (!authStore.user) {
-      next({ path: '/login', query: { nextUrl: to.fullPath } })
-    } else if (to.matched.some(record => record.meta.forTrainers)) {
-      if (authStore.user.isTrainer || authStore.user.isAdmin) {
-        next()
-      } else {
-        next({ path: '/' })
-      }
-    } else {
-      next()
+      return { path: '/login', query: { nextUrl: to.fullPath } }
     }
-  } else {
-    next()
+    if (to.matched.some(record => record.meta.forTrainers)
+      && !(authStore.user.isTrainer || authStore.user.isAdmin)) {
+      return { path: '/' }
+    }
   }
+  return true
 })
 
 export default router
