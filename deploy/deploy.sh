@@ -168,7 +168,7 @@ if php8.4 artisan route:cache && php8.4 artisan route:list >/dev/null 2>&1; then
   echo "Routen gecacht"
 else
   echo "WARNUNG: route:cache nicht moeglich (Closure-Routen in routes/*.php?) - Route-Cache wird uebersprungen" >&2
-  php8.4 artisan route:clear
+  rm -f bootstrap/cache/routes-*.php
 fi
 php8.4 artisan view:cache
 EOF
