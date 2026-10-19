@@ -19,7 +19,7 @@
                     <h2>Verifizierung fehlgeschlagen</h2>
                     <p>{{ errorMessage }}</p>
                   </v-alert>
-                  <v-btn color="primary" to="/signup" class="mt-4">
+                  <v-btn color="primary" to="/login" class="mt-4">
                     Zurück zur Anmeldung
                   </v-btn>
                   <v-btn color="secondary" @click="resendDialog = true" class="mt-4 ml-2">

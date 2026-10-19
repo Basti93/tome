@@ -151,15 +151,6 @@
           <v-list-item-title>Anmelden</v-list-item-title>
         </v-list-item>
         <v-list-item
-            v-show="!loggedInUser"
-            to="/signup"
-            @click="drawer = false">
-          <template v-slot:prepend>
-            <v-icon>mdi-account-plus</v-icon>
-          </template>
-          <v-list-item-title>Registrieren</v-list-item-title>
-        </v-list-item>
-        <v-list-item
             v-show="loggedInUser"
             to="/profile"
             @click="drawer = false">

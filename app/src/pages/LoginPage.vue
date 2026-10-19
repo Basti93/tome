@@ -71,9 +71,6 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <router-link to="/signup" class="text-decoration-none mr-2">
-                <small>Registrieren</small>
-              </router-link>
               <v-btn
                   elevation="1"
                   :disabled="!valid || loading"

@@ -22,7 +22,7 @@
                         ma-0
                         outlined
                         dismissible>
-                    Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
+                    Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Mit einer E-Mail-Adresse kann der Benutzer anschließend per Einladung (Benutzerverwaltung, "Einladung senden") zum Login eingeladen werden.
                 </v-alert>
               <v-form
                   ref="form"
