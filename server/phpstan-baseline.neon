@@ -1,0 +1,1057 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\BranchController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/BranchController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\BranchController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/BranchController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/ChangePasswordController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\FaqController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/FaqController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\FaqController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/FaqController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:getByBranchId\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/GroupController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:getByBranchId\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/GroupController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/GroupController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/GroupController.php
+
+		-
+			message: '#^Method Illuminate\\Filesystem\\FilesystemAdapter\:\:makeDirectory\(\) invoked with 3 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Api/V1/Controllers/ImageController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\LocationController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/LocationController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\LocationController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/LocationController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Guard\:\:token\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Api/V1/Controllers/RefreshController.php
+
+		-
+			message: '#^Call to an undefined method PHPOpenSourceSaver\\JWTAuth\\Manager\:\:blacklist\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Api/V1/Controllers/RefreshController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/ResetPasswordController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\SimpleUserController\:\:getTrainers\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/SimpleUserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\SimpleUserController\:\:getTrainers\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/SimpleUserController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/SimpleUserController.php
+
+		-
+			message: '#^Parameter \#1 \$hour of method DateTime\:\:setTime\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Api/V1/Controllers/TrainingCalendarController.php
+
+		-
+			message: '#^Parameter \#2 \$minute of method DateTime\:\:setTime\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Api/V1/Controllers/TrainingCalendarController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingCalendarController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\TrainingSeries model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingCalendarController.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\:\:\$participants\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Call to static method make\(\) on an unknown class App\\Api\\V1\\Controllers\\View\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Constant error not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:create\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Property App\\Training\:\:\$automatic_attend \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Property App\\Training\:\:\$end \(string\) does not accept DateTime\|false\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Property App\\Training\:\:\$start \(string\) does not accept DateTime\|false\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Api/V1/Controllers/TrainingController.php
+
+		-
+			message: '#^Access to an undefined property App\\TrainingTrainer\:\:\$month\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Training\>\:\:\$participants\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$request$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Property App\\TrainingTrainer\:\:\$accounting_time_end \(Carbon\\Carbon\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Property App\\TrainingTrainer\:\:\$accounting_time_start \(Carbon\\Carbon\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Relation ''training'' is not found in App\\TrainingTrainer model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\TrainingTrainer model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Variable \$monthArray might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Api/V1/Controllers/TrainingEvaluationController.php
+
+		-
+			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingPrepareController.php
+
+		-
+			message: '#^Call to static method make\(\) on an unknown class App\\Api\\V1\\Controllers\\View\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Constant error not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:create\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Property App\\TrainingSeries\:\:\$automatic_attend \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Property App\\TrainingSeries\:\:\$defer_until \(string\|null\) does not accept DateTime\|false\|null\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\TrainingSeries model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/TrainingSeriesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Constant error not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\UserController\:\:getBySort\(\) should return Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection but returns Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\UserController\:\:getTrainers\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\UserController\:\:getTrainers\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\UserController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Method App\\Api\\V1\\Controllers\\UserController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Property App\\User\:\:\$active \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Property App\\User\:\:\$registered \(bool\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 7
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/AbsenceNotification.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
+
+		-
+			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
+
+		-
+			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
+
+		-
+			message: '#^Access to an undefined property App\\User\:\:\$notificationTokens\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/SendNotificationsToUsers.php
+
+		-
+			message: '#^Access to an undefined property App\\User\:\:\$notificationTokens\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
+
+		-
+			message: '#^Property App\\UserTrainingNotification\:\:\$training_id \(int\<0, max\>\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
+
+		-
+			message: '#^Property App\\UserTrainingNotification\:\:\$type \(int\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
+
+		-
+			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
+
+		-
+			message: '#^Relation ''trainers'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
+
+		-
+			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Console/Commands/TrainingAutomaticAttend.php
+
+		-
+			message: '#^Parameter \#1 \$hour of method DateTime\:\:setTime\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/TrainingSeriesCommand.php
+
+		-
+			message: '#^Parameter \#2 \$minute of method DateTime\:\:setTime\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/TrainingSeriesCommand.php
+
+		-
+			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Console/Commands/UpcomingTrainingNotifications.php
+
+		-
+			message: '#^Method App\\Exceptions\\Handler\:\:render\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Method App\\Exceptions\\Handler\:\:unauthenticated\(\) should return Illuminate\\Http\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Method App\\Exceptions\\Handler\:\:unauthenticated\(\) should return Illuminate\\Http\\Response but returns Illuminate\\Http\\RedirectResponse\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$exception$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$throwable$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Exceptions\\Handler\:\:\$dontReport is not covariant with PHPDoc type array\<int, class\-string\<Throwable\>\> of overridden property Illuminate\\Foundation\\Exceptions\\Handler\:\:\$dontReport\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Exceptions/Handler.php
+
+		-
+			message: '#^Access to an undefined property App\\Exports\\TrainingTrainerExport\:\:\$from\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Exports/TrainingTrainerExport.php
+
+		-
+			message: '#^Access to an undefined property App\\Exports\\TrainingTrainerExport\:\:\$to\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Exports/TrainingTrainerExport.php
+
+		-
+			message: '#^Access to an undefined property App\\Exports\\TrainingTrainerExport\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Exports/TrainingTrainerExport.php
+
+		-
+			message: '#^PHPDoc tag @var above a method has no effect\.$#'
+			identifier: varTag.misplaced
+			count: 1
+			path: app/Exports/TrainingTrainerExport.php
+
+		-
+			message: '#^Access to an undefined property App\\Group\:\:\$users\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Group.php
+
+		-
+			message: '#^Constant familyName not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Http/Controllers/TrainingAccountingExportController.php
+
+		-
+			message: '#^Constant firstName not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Http/Controllers/TrainingAccountingExportController.php
+
+		-
+			message: '#^Static call to instance method Maatwebsite\\Excel\\Excel\:\:download\(\)\.$#'
+			identifier: method.staticCall
+			count: 1
+			path: app/Http/Controllers/TrainingAccountingExportController.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Http/Middleware/EncryptCookies.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken\:\:\$except\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Http/Middleware/VerifyCsrfToken.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Branch\:\:\$colorHex\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Branch.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Branch\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Branch.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Branch\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Branch.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Branch\:\:\$short_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Branch.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Group\:\:\$branch_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Group.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Group\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Group.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Group\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Group.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Group\:\:\$user_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Group.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Location\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Location.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Location\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Location.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$familyName\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$firstName\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$profile_image_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\SimpleUser\:\:\$trainerBranchIds\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/SimpleUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$automatic_attend\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$content_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$evaluated\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$location_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$prepared\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$trainer_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Training\:\:\$trainingParticipation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$content_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$evaluated\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$location_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$prepared\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$trainer_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendar\:\:\$trainingParticipation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendar.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$content_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$location_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingCalendarSimple\:\:\$trainer_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingCalendarSimple.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$content_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$evaluated\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$location_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$prepared\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$trainerEvaluations\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$trainingParticipation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$automatic_attend\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$content_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$defer_until\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$endTime\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$group_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$location_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$startTime\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$trainer_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingSeries\:\:\$weekdays\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingSeries.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Notifications/PasswordResetNotification.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Providers\\AuthServiceProvider\:\:\$policies is not covariant with PHPDoc type array\<class\-string, class\-string\> of overridden property Illuminate\\Foundation\\Support\\Providers\\AuthServiceProvider\:\:\$policies\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Providers/AuthServiceProvider.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Providers\\EventServiceProvider\:\:\$listen is not covariant with PHPDoc type array\<string, array\<int, string\>\> of overridden property Illuminate\\Foundation\\Support\\Providers\\EventServiceProvider\:\:\$listen\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\:\:\$contents\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\:\:\$trainers\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Training.php
+
+		-
+			message: '#^Access to an undefined property App\\TrainingSeries\:\:\$contents\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\TrainingSeries\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\TrainingSeries\:\:\$trainers\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/TrainingSeries.php
+
+		-
+			message: '#^Access to an undefined property App\\User\:\:\$groups\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/User.php
+
+		-
+			message: '#^Access to an undefined property App\\User\:\:\$trainerBranches\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/User.php
+
+		-
+			message: '#^PHPDoc type array of property App\\User\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/User.php
+
+		-
+			message: '#^PHPDoc type array of property App\\User\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/User.php

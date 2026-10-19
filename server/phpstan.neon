@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - routes
+    level: 5
+    # Existing findings live in phpstan-baseline.neon. Regenerate (only after fixing, never to hide new code) with:
+    #   vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon
+    tmpDir: storage/framework/phpstan
+    treatPhpDocTypesAsCertain: false
