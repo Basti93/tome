@@ -1,0 +1,26 @@
+# Lokale Simulation des Produktionsservers (keine echten Daten). Siehe RESULTS.md.
+name: tomesim
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: tome-sim-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tome
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 3s
+      retries: 30
+  vm:
+    build: .
+    container_name: tome-sim-vm
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "18443:443"
+      - "18080:80"
+    volumes:
+      # server-setup.sh liest die Vhost-Vorlage neben sich (apache/training.conf)
+      - ..:/opt/tome-deploy:ro

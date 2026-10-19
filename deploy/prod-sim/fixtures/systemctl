@@ -1,0 +1,7 @@
+#!/bin/sh
+# Mini-Ersatz fuer systemctl im Container (kein systemd): nur die benoetigten reload-Aufrufe.
+case "$1 $2" in
+  "reload php8.4-fpm") kill -USR2 "$(pgrep -o -f 'php-fpm: master')" ;;
+  "reload apache2") apachectl graceful ;;
+  *) echo "systemctl-shim: nicht unterstuetzt: $*" >&2; exit 1 ;;
+esac
