@@ -36,20 +36,22 @@
                     <v-card-text>
                       <v-tabs
                           v-model="activeTab"
-                          icons-and-text
+                          class="profile-tabs"
+                          grow
+                          stacked
                       >
 
                         <v-tab>
-                          Benutzereinstellungen
                           <v-icon>mdi-account-circle</v-icon>
+                          Profil
                         </v-tab>
                         <v-tab v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
-                          Trainereinstellungen
                           <v-icon>mdi-shield-check</v-icon>
+                          Trainer
                         </v-tab>
                         <v-tab>
-                          Benachrichtigungseinstellungen
                           <v-icon>mdi-bell</v-icon>
+                          Benachrichtigungen
                         </v-tab>
                       </v-tabs>
                       <v-window v-model="activeTab">
@@ -363,6 +365,16 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 599.98px) {
+  /* three tabs must fit side by side without scrolling */
+  .profile-tabs :deep(.v-tab.v-btn) {
+    min-width: 0;
+    padding-inline: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+}
+
 .pulse {
   animation: pulse 2s infinite;
 }

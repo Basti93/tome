@@ -19,7 +19,8 @@
 .v-list-item-title,
 .v-list-item-subtitle {
   white-space: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  hyphens: auto;
 }
 .v-toolbar-title {
   font-size: 1.125rem;
@@ -117,6 +118,14 @@
 .v-dialog .v-toolbar > .v-toolbar__content {
   height: auto !important;
   min-height: 48px;
+  /* when title and actions do not fit side by side, the actions move to the next row */
+  flex-wrap: wrap;
+}
+.v-card > .v-toolbar .v-toolbar-title,
+.v-dialog .v-toolbar .v-toolbar-title {
+  flex: 1 1 auto;
+  min-width: min(max-content, 100%);
+  hyphens: none;
 }
 
 @media (max-width: 599.98px) {
@@ -124,6 +133,21 @@
   .v-card.bg-secondary > .v-card-text {
     padding: 4px;
   }
+}
+
+/* The main app bar title stays on one line (ellipsis only if it really does not fit). */
+.v-app-bar .v-toolbar-title,
+.v-app-bar .v-toolbar-title__placeholder {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.v-app-bar .v-toolbar-title {
+  /* Vuetify's flex: 1 1 0 would split the free space 50:50 with the spacer */
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.v-app-bar .v-toolbar-title__placeholder {
+  text-overflow: ellipsis;
 }
 
 /* The footer must not stretch over the free space of short pages. */
