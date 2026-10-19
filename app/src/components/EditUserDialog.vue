@@ -22,7 +22,7 @@
                         ma-0
                         outlined
                         dismissible>
-                    Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Erst nachdem sie sich selbst registriert haben, können sie sich einloggen. Außerdem hat der Trainer die Möglichkeit den neu registrierten Benutzer einen vorläufigen Benutzer zuzuweißen und so die Daten des vorläufigen Benutzer auf den neu registrierten Benutzer zu übertragen.
+                    Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Mit einer E-Mail-Adresse kann der Benutzer anschließend per Einladung (Benutzerverwaltung, "Einladung senden") zum Login eingeladen werden.
                 </v-alert>
               <v-form
                   ref="form"
@@ -103,7 +103,7 @@ import { useDisplay } from 'vuetify'
 import GroupsSelect from "./GroupsSelect";
 import UploadProfileImage from "./UploadProfileImage";
 import {formatDate, parseDate} from "../helpers/date-helpers"
-import moment from 'moment'
+import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
 
     export default {
@@ -160,7 +160,7 @@ import httpClient from '@/http/api'
             async save() {
                 this.$refs.form.validate();
                 try {
-                    let postData = {
+                    const postData = {
                         firstName: this.firstName,
                         familyName: this.familyName,
                         groupIds: this.groupIds,
@@ -180,7 +180,7 @@ import httpClient from '@/http/api'
 
                     let response = null;
                     if (this.birthdate) {
-                        postData.birthdate = moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DD");
+                        postData.birthdate = parseApiDate(this.birthdate).format("YYYY-MM-DD");
                     }
                     if (this.editUserId) {
                         response = await httpClient.put('/user/' + this.editUserId, postData);
@@ -212,14 +212,14 @@ import httpClient from '@/http/api'
             assignValues() {
               this.firstName = this.editFirstName;
               this.familyName = this.editFamilyName;
-              this.birthdate = this.editBirthdate ? moment(this.editBirthdate, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD') : null;
+              this.birthdate = this.editBirthdate ? parseApiDate(this.editBirthdate).format('YYYY-MM-DD') : null;
               this.groupIds = this.editGroupIds;
               this.active = this.editActive;
               this.profileImageName = this.editProfileImageName;
               this.imageToUpload = null;
             },
             async uploadProfileImage() {
-                let formData = new FormData();
+                const formData = new FormData();
                 formData.append('profile_image', this.imageToUpload);
                 const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
                 if (data.status === 'ok') {

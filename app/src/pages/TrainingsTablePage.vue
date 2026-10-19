@@ -5,7 +5,7 @@
         <v-card color="secondary">
           <v-toolbar>
             <v-container fluid>
-              <v-row align="center">
+              <v-row class="align-center">
                 <v-col cols="6">
                   <v-toolbar-title>Trainings</v-toolbar-title>
                 </v-col>
@@ -33,7 +33,7 @@
                   absolute
                   bottom
                   left
-                  elevation="2"
+                  elevation="1"
                   color="primary"
                   @click="create()">
                 <v-icon>mdi-plus</v-icon>
@@ -50,24 +50,24 @@
                       <TrainingCalendar
                           v-if="activeView == 1">
                       </TrainingCalendar>
-                      <v-data-table
+                      <v-data-table-server
                           v-if="activeView == 0"
                           :headers="headers"
                           :items="trainings"
                           :loading="loading"
-                          :server-items-length="totalItems"
+                          :items-length="totalItems"
                           v-model:items-per-page="itemsPerPage"
                           v-model:page="page"
                           v-model:sort-by="sortBy"
                       >
                         <template v-slot:[`item.date`]="{ item }">
-                          {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
+                          {{ parseApiDate(item.start).format('dd, DD.MM.YYYY') }}
                         </template>
                         <template v-slot:[`item.start`]="{ item }">
-                          {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ parseApiDate(item.start).format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.end`]="{ item }">
-                          {{ moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ parseApiDate(item.end).format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.locationId`]="{ item }">
                           {{ getLocationNameById(item.locationId) }}
@@ -103,12 +103,12 @@
                                 @click="confirmAndDelete(item)">mdi-trash-can</v-icon>
                         </template>
                         <template v-slot:no-data>
-                          <v-btn color="primary" :disabled="loading" @click="reset()">
+                          <v-btn color="primary" :disabled="loading" @click="loadData()">
                             <v-icon left>mdi-refresh</v-icon>
                             Keine Daten gefunden
                           </v-btn>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -184,12 +184,11 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 3 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import {formatDate, parseDate} from "../helpers/date-helpers"
@@ -198,7 +197,7 @@ import Training from "../models/Training";
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs, parseApiDate };
   },
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
@@ -224,13 +223,13 @@ export default {
       editDialogEndMenu: false,
       editDialogFilteredUsers: [],
       headers: [
-        {text: 'Datum', value: 'date', sortable: true},
-        {text: 'Von', value: 'start', sortable: false},
-        {text: 'Bis', value: 'end', sortable: false},
-        {text: 'Ort', value: 'locationId', sortable: true},
-        {text: 'Trainer', value: 'trainerIds', sortable: false},
-        {text: 'Gruppen', value: 'groupIds', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Datum', value: 'date', sortable: true},
+        { title: 'Von', value: 'start', sortable: false},
+        { title: 'Bis', value: 'end', sortable: false},
+        { title: 'Ort', value: 'locationId', sortable: true},
+        { title: 'Trainer', value: 'trainerIds', sortable: false},
+        { title: 'Gruppen', value: 'groupIds', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       trainings: [],
       trainers: [],
@@ -341,7 +340,7 @@ export default {
       if (this.filterBranchId > 0) {
         url += '&groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
       }
-      let p1 = httpClient.get(url).then(function (res) {
+      const p1 = httpClient.get(url).then(function (res) {
         for (const jsonObj of res.data.data) {
           this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
         }
@@ -350,7 +349,7 @@ export default {
         this.total = res.data.meta.total;
       }.bind(this));
 
-      let p2 = httpClient.get('/user/trainer').then(function (res) {
+      const p2 = httpClient.get('/user/trainer').then(function (res) {
         this.trainers = res.data;
       }.bind(this));
 
@@ -381,9 +380,9 @@ export default {
       this.editDialogTitle = 'Training bearbeiten'
       this.editedId = item.id;
       Object.assign(this.editedItem, item)
-      this.editedItemDate = moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
-      this.editedItem.start = moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
-      this.editedItem.end = moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItemDate = parseApiDate(item.start).format('YYYY-MM-DD')
+      this.editedItem.start = parseApiDate(item.start).format('HH:mm')
+      this.editedItem.end = parseApiDate(item.end).format('HH:mm')
       this.editDialog = true
     },
     create() {
@@ -403,8 +402,8 @@ export default {
       const self = this;
       const postData = {
         id: null,
-        start: moment(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
-        end: moment(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
+        start: parseApiDate(self.editedItem.date + 'T' + self.editedItem.start).format(),
+        end: parseApiDate(self.editedItem.date + 'T' + self.editedItem.end).format(),
         locationId: self.editedItem.locationId,
         groupIds: self.editedItem.groupIds,
         trainerIds: self.editedItem.trainerIds,

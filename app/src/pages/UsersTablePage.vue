@@ -46,7 +46,7 @@
                   absolute
                   bottom
                   left
-                  elevation="2"
+                  elevation="1"
                   color="primary"
                   @click="editItem()">
                 <v-icon>mdi-plus</v-icon>
@@ -60,15 +60,13 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="users"
                           item-key="id"
                           :loading="loading"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:items-per-page="itemsPerPage"
                           v-model:page="page"
                           v-model:sort-by="sortBy"
@@ -90,7 +88,7 @@
                         </template>
                         <template v-slot:[`item.birthdate`]="{ item }">
                           {{
-                            item.birthdate ? moment().diff(item.birthdate, 'years') + ' (Jg. ' + item.birthdate.format('YY') + ')' : 'NA'
+                            item.birthdate ? dayjs().diff(item.birthdate, 'years') + ' (Jg. ' + item.birthdate.format('YY') + ')' : 'NA'
                           }}
                         </template>
                         <template v-slot:[`item.groups`]="{ item }">
@@ -110,6 +108,14 @@
                               color="success">mdi-pencil
                           </v-icon>
                           <v-icon
+                              class="mr-2"
+                              v-if="canInviteUser(item)"
+                              :disabled="invitingUserId === item.id"
+                              title="Einladung senden"
+                              @click="sendInvitation(item)"
+                              color="primary">mdi-email-fast-outline
+                          </v-icon>
+                          <v-icon
                               v-if="canDeleteUser(item)"
                               @click="confirmAndDelete(item)"
                               color="error">mdi-trash-can
@@ -117,7 +123,7 @@
                         </template>
                         <template v-slot:no-data>
                           <v-container fluid>
-                            <v-row justify="center">
+                            <v-row class="justify-center">
                               <v-col cols="auto">
                                 <v-btn color="error" :disabled="loading" @click="reset()">
                                   <v-icon left>mdi-refresh</v-icon>
@@ -127,7 +133,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -160,22 +166,22 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
 import User from "../models/User";
 import EditUserDialog from "../components/EditUserDialog.vue";
 import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { inviteUser } from '@/services/userInvite'
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs, parseApiDate };
   },
   name: "UsersTablePage",
   components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
@@ -185,6 +191,7 @@ export default {
       showFilterDialog: false,
       showConfirmDialog: false,
       itemToDelete: null,
+      invitingUserId: null,
       filterBranchId: null,
       filterGroupIds: [],
       editGroups: [],
@@ -196,13 +203,13 @@ export default {
       sortBy: [],
       searchText: '',
       headers: [
-        {text: 'Vorname', value: 'firstName', sortable: true},
-        {text: 'Nachname', value: 'familyName', sortable: true},
-        {text: 'Alter', value: 'birthdate', sortable: true},
-        {text: 'Gruppen', value: 'groups', sortable: false},
-        {text: 'Aktiv', value: 'active', sortable: true},
-        {text: 'Registriert', value: 'registered', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Vorname', value: 'firstName', sortable: true},
+        { title: 'Nachname', value: 'familyName', sortable: true},
+        { title: 'Alter', value: 'birthdate', sortable: true},
+        { title: 'Gruppen', value: 'groups', sortable: false},
+        { title: 'Aktiv', value: 'active', sortable: true},
+        { title: 'Registriert', value: 'registered', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       users: [],
       editedItem: {
@@ -269,8 +276,9 @@ export default {
       let url = null;
       // get by sort option
       if (this.sortBy[0]) {
-        const direction = this.sortDesc[0] ? 'desc' : 'asc';
-        url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0] + '&page=' + this.page + '&per_page=' + this.itemsPerPage
+        // Vuetify 3: sortBy is an array of { key, order }
+        const direction = this.sortBy[0].order === 'desc' ? 'desc' : 'asc';
+        url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0].key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
       } else {
         url = '/user?page=' + this.page + '&per_page=' + this.itemsPerPage
       }
@@ -296,28 +304,28 @@ export default {
       this.users = [];
       const self = this;
       for (let i = 0; i < res.data.data.length; i++) {
-        let userObj = res.data.data[i];
+        const userObj = res.data.data[i];
         self.users.push(new User(
             userObj.id,
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
             userObj.absenceReason
         ))
       }
       self.page = res.data.currentPage;
       self.total = res.data.total;
     },
-    editItem(item) {
+    editItem(item?) {
       if (item) {
         this.editedItem = {...item}
       } else {
@@ -331,13 +339,25 @@ export default {
     canEditUser(item) {
       return (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) && !item.isTrainer && !item.isAdmin
     },
+    // admins and trainers hold the `update-user` permission
+    canInviteUser(item) {
+      return !!item.email && !!this.loggedInUser && (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer)
+    },
+    async sendInvitation(item) {
+      this.invitingUserId = item.id;
+      try {
+        await inviteUser(item.id, item.firstName + ' ' + item.familyName);
+      } finally {
+        this.invitingUserId = null;
+      }
+    },
     confirmAndDelete(item) {
       this.itemToDelete = item;
       this.showConfirmDialog = true;
     },
     async deleteItem() {
       this.showConfirmDialog = false;
-      let response = await httpClient.delete('/user/' + this.itemToDelete.id);
+      const response = await httpClient.delete('/user/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
         this.users.splice(this.users.indexOf(this.itemToDelete), 1)

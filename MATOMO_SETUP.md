@@ -33,7 +33,7 @@ T.O.M.E. includes integrated privacy-friendly analytics using Matomo (self-hoste
 ### Key Features
 
 - ✅ Self-hosted (no 3rd party data sharing)
-- ✅ Privacy-friendly (IP anonymization enabled)
+- ✅ Privacy-friendly (cookieless, IP anonymization, no user IDs)
 - ✅ Automatic initialization on first run
 - ✅ Configurable via environment variables
 - ✅ Data persisted in Docker volumes
@@ -104,7 +104,7 @@ In your browser at http://localhost:8000 (or http://localhost:5173 for dev):
 
 ```
 1. Login with a test account
-   → Tracks: Authentication > Login
+   → Tracks: Authentication > Login (no user data)
 
 2. Navigate to check-in page
    → Tracks: Page view
@@ -112,7 +112,7 @@ In your browser at http://localhost:8000 (or http://localhost:5173 for dev):
 3. Check in to a training
    → Tracks: Training > CheckIn
 
-4. Check out with a reason
+4. Check out
    → Tracks: Training > CheckOut
 ```
 
@@ -155,55 +155,84 @@ environment:
 
 ## Frontend Configuration
 
-The Vue.js frontend tracks events through:
+The Vue.js frontend tracks **cookieless and without personal data** through
+`app/src/services/analytics.ts` (standard Matomo `_paq` queue, `matomo.js` loaded from the Matomo URL).
 
-### Service: `app/src/services/analytics.ts`
+### Environment variables (`app/.env.production` / `app/.env.local`)
+
+```
+VITE_MATOMO_ENABLED=true     # must be exactly "true", otherwise nothing is loaded
+VITE_MATOMO_URL=/matomo/     # Matomo base URL (matomo.js and matomo.php are served from here)
+VITE_MATOMO_SITE_ID=1        # Site ID (matches the Matomo site)
+```
+
+Tracking is only active when **all three** are set. There are no fallback defaults.
+
+### Behaviour guaranteed by the service
+
+- `disableCookies` is the very first command pushed to `_paq`, before any tracking call. No Matomo cookie is set.
+- Do-Not-Track is respected: if the browser sends DNT, `matomo.js` is not loaded and nothing is sent.
+- No `setUserId`, no custom variables, no names, e-mail addresses or user ids in events. The service has no
+  user-ID API at all; e-mail-like values are dropped from event names and page names.
+- Page views are reported with the neutral route name (e.g. `TrainingsCheckIn`) as custom URL/title, never the real
+  URL (hash routes can contain ids, reset tokens or `nextUrl` query strings).
 
 ```typescript
 import { analytics } from '@/services/analytics'
 
-// Initialize early in app startup
-analytics.init()
-
-// Track custom events
-analytics.trackEvent('Authentication', 'Login', user.role)
-analytics.trackEvent('Training', 'CheckIn', training_id)
-
-// Track authenticated user (optional)
-analytics.setUserId(user.id)
-
-// Clear on logout
-analytics.resetUserId()
-```
-
-### Environment Variables: `app/.env.production` and `app/.env.local`
-
-```
-VITE_MATOMO_ENABLED=true                    # Enable/disable tracking
-VITE_MATOMO_URL=http://localhost:8002/      # Matomo server URL
-VITE_MATOMO_SITE_ID=1                       # Site ID (matches Matomo config)
+analytics.init()                              // once, in main.ts
+analytics.trackEvent('Training', 'CheckIn')   // neutral events only
+analytics.trackPageView('Calendar')           // route name, set by the router guard
 ```
 
 ## Tracked Events
 
-### Authentication
-- `user_login_success` → triggered on login (LoginPage.vue)
-- `user_signup_completed` → triggered on signup (SignupPage.vue)
-- `user_logout` → triggered on logout (LogoutComponent.vue)
+| Category | Action | Where |
+|----------|--------|-------|
+| Authentication | Login | LoginPage.vue |
+| Authentication | Logout | LogoutComponent.vue |
+| Training | CheckIn | TrainingCheckIn.vue |
+| Training | CheckOut | TrainingCheckIn.vue |
 
-### Training
-- `participant_checkin_completed` → triggered when checking in (TrainingCheckIn.vue)
-- `participant_checkout_completed` → triggered when checking out (TrainingCheckIn.vue)
-- `training_selected` → triggered when selecting a training (TrainingsCheckInPage.vue)
+Plus one page view per route change (router `beforeEach`). Events carry no name or value.
 
-### Admin/Trainer
-- `training_created` → triggered when creating training (EditTrainingDialog.vue)
-- `training_edited` → triggered when editing training (EditTrainingDialog.vue)
-- `training_evaluated` → triggered when evaluating training (TrainingsEvaluationPage.vue)
+## Matomo Server Settings (privacy)
 
-### Profile
-- `profile_updated` → triggered when updating profile (ProfilePage.vue)
-- `notification_preference_changed` → triggered when changing notification settings (NotificationPreferencesForm.vue)
+Apply these in the Matomo admin UI (or via `config/config.ini.php`) for the TOME site/instance:
+
+1. **Anonymize tracking data** (Administration > Privacy > Anonymize data):
+   - *Anonymize Visitors' IP addresses*: enabled, **mask 2 bytes** (`ip_anonymisation` = 2, e.g. `192.168.0.0`).
+   - *Replace User ID with a pseudonym*: enabled (irrelevant as no user ID is sent, but keeps accidental IDs pseudonymous).
+   - *Anonymize Referrer*: at least "Don't record the full referrer URL" is recommended.
+2. **Regularly delete old raw data** (Administration > Privacy > Delete old raw data):
+   - Delete old visitor logs and raw data: enabled, older than **90 days**. Aggregated reports are kept.
+   - Also delete unused log data (actions/referrers) as offered on that page.
+3. **No user-ID feature**: do not enable or use the User ID feature, do not set `setUserId` in any
+   custom script and do not activate plugins that import user data into visits.
+4. **Respect Do Not Track**: Administration > Privacy > Users opt-out: *Support Do Not Track preference* enabled.
+5. **Cookieless**: the tracker already calls `disableCookies`; in Matomo 5 you can additionally enforce it server
+   side with the *Tracking > Always use cookieless tracking* setting if available in your version.
+6. Keep Matomo self-hosted (as in this repo) so no data goes to a third party, and restrict the admin login.
+
+### Is a consent banner needed?
+
+With the configuration above, **no consent banner is required** for the tracking itself:
+
+- No cookies or other information is stored on / read from the visitor's device (`disableCookies`; no
+  localStorage, no fingerprinting IDs). The consent requirement of the ePrivacy Directive (Art. 5(3), in Germany
+  Section 25 TDDDG) applies to access to the terminal device, which does not take place.
+- Without a stable identifier (no cookie, no user ID) and with truncated IPs, visits cannot be linked across days or
+  to a person; only aggregate statistics for the operator's own reach measurement are produced, on self-hosted
+  infrastructure without any third-party sharing. Under the GDPR this is covered by legitimate interest
+  (Art. 6(1)(f)); several data-protection authorities (e.g. the French CNIL's audience-measurement exemption) accept
+  consent-free cookieless measurement under these conditions.
+- It stops being consent-free if you add the user-ID feature, cross-site tracking, session replay, or share the
+  data with third parties. Do not do that without a consent flow.
+
+Even so, **mention the analytics in the privacy notice**: that a self-hosted Matomo is used, cookieless with
+anonymized IPs, no personal data, the legal basis (legitimate interest), the 90-day retention of raw logs and the
+opt-out (Do-Not-Track and the Matomo opt-out iframe/link). This is a transparency duty (Art. 13 GDPR), not a
+consent requirement. This is technical guidance, not legal advice.
 
 ## Troubleshooting
 
@@ -283,18 +312,8 @@ http://localhost:8002/
 
 ## Privacy Compliance
 
-Matomo is configured with privacy-first settings:
-
-✅ **Enabled**:
-- IP anonymization (last 2 octets masked)
-- Data stored locally (no 3rd party sharing)
-- No cookie tracking for anonymous users
-- GDPR compliant out of the box
-
-⚠️ **If tracking authenticated users**:
-- User IDs are linked to events (optional)
-- Should be disclosed in privacy policy
-- Users can opt-out via notification preferences
+See **Matomo Server Settings (privacy)** above. In short: cookieless, no user ID, IP anonymization (2 bytes),
+raw logs deleted after 90 days, Do-Not-Track respected, self-hosted, mentioned in the privacy notice.
 
 ## Matomo Administration
 
@@ -337,7 +356,6 @@ Matomo is configured with privacy-first settings:
 - `app/.env.local` - Development configuration
 - `app/.env.production` - Production configuration
 - `app/src/pages/LoginPage.vue` - Login event tracking
-- `app/src/pages/SignupPage.vue` - Signup event tracking
 - `app/src/components/LogoutComponent.vue` - Logout event tracking
 - `app/src/components/TrainingCheckIn.vue` - Check-in/out event tracking
 

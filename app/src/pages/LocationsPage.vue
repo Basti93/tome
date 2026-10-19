@@ -19,7 +19,7 @@
                       absolute
                       bottom
                       left
-                      elevation="2"
+                      elevation="1"
                       color="primary"
                       v-bind="props"
                       @click="createItem()">
@@ -73,15 +73,13 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="locations"
                           item-key="id"
                           :loading="loading"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:items-per-page="itemsPerPage"
                           v-model:page="page"
                       >
@@ -106,7 +104,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -152,8 +150,8 @@ export default {
       page: 1,
       itemsPerPage: 10,
       headers: [
-        {text: 'Name', value: 'name', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Name', value: 'name', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       editedItem: {
         id: null,
@@ -191,7 +189,7 @@ export default {
     async save() {
       this.$refs.form.validate();
       try {
-        let postData = {
+        const postData = {
           name: this.editedItem.name,
         }
 

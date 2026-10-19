@@ -122,6 +122,18 @@ describe('masterData store getters', () => {
     expect(store.getAllSimpleUsersWithGroup().map(u => u.id)).toEqual([100, 102])
     expect(store.getTrainingSeriesByGroupId(20).map(ts => Number(ts.id))).toEqual([2])
   })
+
+  it('getSimpleUsersByGroupId filters by SimpleUser.groupIds and sorts without crashing on missing names', () => {
+    const store = seededStore()
+    store.setSimpleUsers([
+      new SimpleUser(1, 'Zoe', 'M.', [10]),
+      new SimpleUser(2, 'Max', 'B.', [10, 11]),
+      new SimpleUser(3, 'Ann', null as any, [10]),
+      new SimpleUser(4, 'Bob', 'C.', [11]),
+    ])
+    expect(store.getSimpleUsersByGroupId(10).map(u => u.id)).toEqual([3, 2, 1])
+    expect(store.getSimpleUsersByGroupId(99)).toEqual([])
+  })
 })
 
 describe('masterData store loadAll', () => {

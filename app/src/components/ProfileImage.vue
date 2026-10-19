@@ -59,6 +59,7 @@
 </template>
 
 <script lang="ts">
+import { profileImageUrl } from '@/helpers/profile-image'
 export default {
   name: "ProfileImage",
   props: {
@@ -74,7 +75,6 @@ export default {
     return {
       dSize: 24,
       menu: false,
-      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   created() {
@@ -84,10 +84,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      if (this.imagePath) {
-        return this.serverUrl + "/" + this.imagePath;
-      }
-      return null;
+      return profileImageUrl(this.imagePath);
     },
     fullName() {
       return this.firstName + " " + this.familyName;

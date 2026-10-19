@@ -4,7 +4,7 @@
         <v-row>
           <v-col cols="12">
             <v-card flat class="mb-4">
-              <v-card-title class="text-subtitle-1 font-weight-bold">
+              <v-card-title class="text-body-large font-weight-bold">
                 <v-icon left>mdi-bell</v-icon>
                 Trainer-Benachrichtigungen
               </v-card-title>
@@ -27,7 +27,7 @@
           </v-col>
           <v-col cols="12">
             <v-card flat class="mb-4">
-              <v-card-title class="text-subtitle-1 font-weight-bold">
+              <v-card-title class="text-body-large font-weight-bold">
                 <v-icon left>mdi-bell</v-icon>
                 Sportler-Benachrichtigungen
               </v-card-title>
@@ -43,7 +43,7 @@
           </v-col>
           <v-col cols="12">
             <v-card flat>
-              <v-card-title class="text-subtitle-1 font-weight-bold">
+              <v-card-title class="text-body-large font-weight-bold">
                 <v-icon left>mdi-bell</v-icon>
                 Sonstige Benachrichtigungen
               </v-card-title>

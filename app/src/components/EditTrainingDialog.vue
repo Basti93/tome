@@ -184,8 +184,8 @@
                                             multiple
                                             clearable>
                                         <template
-                                                slot="selection"
-                                                slot-scope="{ item }"
+                                                v-slot:selection="{ item }"
+                                                
                                         >
                                             <v-chip>
                                                 <span>{{ item.firstName }}</span>

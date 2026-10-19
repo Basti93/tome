@@ -1,10 +1,10 @@
 export function formatDate(date) {
     if (!date) return null
 
-    // Handle non-string inputs (Date objects, moment objects, etc.)
+    // Handle non-string inputs (Date objects, dayjs objects, etc.)
     let dateString = date
     if (typeof date !== 'string') {
-        // If it's a moment object
+        // If it's a dayjs object
         if (date.format && typeof date.format === 'function') {
             dateString = date.format('YYYY-MM-DD')
         }

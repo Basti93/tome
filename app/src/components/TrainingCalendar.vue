@@ -109,12 +109,12 @@
           <span class="label text-small">Von</span>
           <v-chip small outlined class="ma-1">
             <v-icon left color="primary">mdi-clock-outline</v-icon>
-            {{ moment(selectedEvent.start).format('HH:mm') }}
+            {{ dayjs(selectedEvent.start).format('HH:mm') }}
           </v-chip>
           <span class="label text-small">bis</span>
           <v-chip small outlined class="ml-1">
             <v-icon left color="primary">mdi-clock-outline</v-icon>
-            {{ moment(selectedEvent.end).format('HH:mm') }}
+            {{ dayjs(selectedEvent.end).format('HH:mm') }}
           </v-chip>
           <br />
           <v-chip v-if="selectedEvent.location" outlined small class="ma-1">
@@ -184,7 +184,7 @@
 import Training from "@/models/Training";
 import { useMasterDataStore } from '@/store/masterData';
 import httpClient from '@/http/api';
-import moment from 'moment';
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "TrainingCalendar",
@@ -211,7 +211,7 @@ export default {
     },
   }),
   mounted() {
-    this.focus = moment().format('YYYY-MM-DD');
+    this.focus = dayjs().format('YYYY-MM-DD');
   },
   computed: {
     branches() {
@@ -223,7 +223,7 @@ export default {
         return '';
       }
 
-      const startMonth = moment(start.date).format('MMMM');
+      const startMonth = dayjs(start.date).format('MMMM');
       const startYear = start.year;
       const startDay = start.day;
 
@@ -267,15 +267,15 @@ export default {
         url += 'simplecalendar';
       }
       const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (let trainingData of data.data) {
+      for (const trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
           branch = this.getBranchByGroupId(trainingData.groupIds[0]);
         }
         if (branch) {
-          let training = new Training(trainingData.id,
-              moment(trainingData.start),
-              moment(trainingData.end),
+          const training = new Training(trainingData.id,
+              dayjs(trainingData.start),
+              dayjs(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -306,17 +306,17 @@ export default {
       }
     },
     async loadPlannedTrainingEvents() {
-      let url = '/training/simplecalendar/planned';
+      const url = '/training/simplecalendar/planned';
       const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (let trainingData of data.data) {
+      for (const trainingData of data.data) {
         let branch = null;
         if (trainingData.groupIds && trainingData.groupIds.length > 0) {
           branch = this.getBranchByGroupId(trainingData.groupIds[0]);
         }
         if (branch) {
-          let training = new Training(trainingData.id,
-              moment(trainingData.start),
-              moment(trainingData.end),
+          const training = new Training(trainingData.id,
+              dayjs(trainingData.start),
+              dayjs(trainingData.end),
               trainingData.locationId,
               trainingData.groupIds,
               trainingData.contentIds,
@@ -344,10 +344,10 @@ export default {
     },
     async loadBirthdayEvents() {
       const {data} = await httpClient.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
-      for (let birthdayData of data) {
+      for (const birthdayData of data) {
         this.events.push({
           name: birthdayData.firstName + " " + birthdayData.familyName,
-          start: this.start.date.slice(0, 4) + "-" + moment(birthdayData.birthdate).format('MM-DD'),
+          start: this.start.date.slice(0, 4) + "-" + dayjs(birthdayData.birthdate).format('MM-DD'),
           color: '#F57F17',
           type: 'birthday',
         });
@@ -396,7 +396,7 @@ export default {
       return timeObj.time;
     },
     getFullName(trainerId) {
-      let trainer = this.getSimpleTrainerById(trainerId);
+      const trainer = this.getSimpleTrainerById(trainerId);
       return trainer.firstName + " " + trainer.familyName;
     }
   },

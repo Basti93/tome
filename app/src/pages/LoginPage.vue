@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <v-row align="center"
-           justify="center">
+    <v-row class="align-center justify-center">
       <v-col cols="12" md="6" sm="8">
         <v-card>
           <v-toolbar flat>
@@ -72,9 +71,6 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <router-link to="/signup" class="text-decoration-none mr-2">
-                <small>Registrieren</small>
-              </router-link>
               <v-btn
                   elevation="1"
                   :disabled="!valid || loading"
@@ -93,7 +89,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
@@ -175,7 +170,7 @@ export default {
           useCookieAuthStore().eraseCookieUser()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
           // Track successful login
-          analytics.trackEvent('Authentication', 'Login', user.role || 'unknown')
+          analytics.trackEvent('Authentication', 'Login')
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {

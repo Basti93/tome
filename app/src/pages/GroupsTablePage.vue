@@ -19,7 +19,7 @@
                       absolute
                       bottom
                       left
-                      elevation="2"
+                      elevation="1"
                       color="primary"
                       v-bind="props"
                       @click="createItem()">
@@ -142,15 +142,13 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="groups"
                           item-key="id"
                           :loading="loading"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:itemsPerPage="itemsPerPage"
                           v-model:page="page"
                       >
@@ -184,7 +182,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -204,7 +202,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useDisplay } from 'vuetify'
 import Group from "../models/Group";
 import Branch from "../models/Branch";
@@ -215,7 +212,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import { parseApiDate } from '@/helpers/dayjs'
 
 export default {
   setup() {
@@ -236,10 +233,10 @@ export default {
       page: 1,
       itemsPerPage: 10,
       headers: [
-        {text: 'Name', value: 'name', sortable: false},
-        {text: 'Sparte', value: 'branchId', sortable: false},
-        {text: 'Mitglieder', value: 'userCount', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Name', value: 'name', sortable: false},
+        { title: 'Sparte', value: 'branchId', sortable: false},
+        { title: 'Mitglieder', value: 'userCount', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       editedItem: {
         id: null,
@@ -292,7 +289,7 @@ export default {
       const {data} = await httpClient.get('/group')
       this.groups = [];
       for (let i = 0; i < data.data.length; i++) {
-        let groupObj = data.data[i];
+        const groupObj = data.data[i];
         this.groups.push(new Group(groupObj.id, groupObj.name, groupObj.branchId, this.getBranchById(groupObj.branchId), groupObj.userIds));
       }
       this.page = data.currentPage;
@@ -307,15 +304,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
             userObj.absenceReason
         ));
       }
@@ -323,7 +320,7 @@ export default {
     async save() {
       this.$refs.form.validate();
       try {
-        let postData = {
+        const postData = {
           name: this.editedItem.name,
           branchId: this.editedItem.branchId,
           userIds: this.editedItem.userIds,
@@ -367,7 +364,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
+      const {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
       await this.loadData();
       this.updateMasterData();
 

@@ -50,7 +50,6 @@ const router = createRouter({
       component: () => import('@/pages/BranchesTablePage.vue'),
       meta: { requiresAuth: true, forTrainers: true }
     },
-    { path: '/signup', name: 'Signup', component: () => import('@/pages/SignupPage.vue') },
     { path: '/verify-email', name: 'VerifyEmail', component: () => import('@/pages/VerifyEmailPage.vue') },
     { path: '/reset-password', name: 'ResetPassword', component: () => import('@/pages/ResetPasswordPage.vue') },
     { path: '/info', name: 'Informationen', component: () => import('@/pages/InfoPage.vue') },
@@ -61,7 +60,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   // Track page view
   const pageTitle = (to.name as string) || 'Page'
   analytics.trackPageView(pageTitle)
@@ -69,19 +68,14 @@ router.beforeEach((to, _from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     const authStore = useAuthStore()
     if (!authStore.user) {
-      next({ path: '/login', query: { nextUrl: to.fullPath } })
-    } else if (to.matched.some(record => record.meta.forTrainers)) {
-      if (authStore.user.isTrainer || authStore.user.isAdmin) {
-        next()
-      } else {
-        next({ path: '/' })
-      }
-    } else {
-      next()
+      return { path: '/login', query: { nextUrl: to.fullPath } }
     }
-  } else {
-    next()
+    if (to.matched.some(record => record.meta.forTrainers)
+      && !(authStore.user.isTrainer || authStore.user.isAdmin)) {
+      return { path: '/' }
+    }
   }
+  return true
 })
 
 export default router

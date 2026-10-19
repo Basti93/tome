@@ -42,7 +42,7 @@
 
 <script>
 import { useMasterDataStore } from '@/store/masterData'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "StatisticsFilter1",
@@ -90,14 +90,9 @@ export default {
       this.$emit('groupsSelected', this.selectedGroupIds)
     },
     lastFiveYears() {
-      const years = []
-      const dateEnd = moment().subtract(4, 'y')
-      const dateStart = moment()
-      while (dateEnd.diff(dateStart, 'years') <= 0) {
-        years.push(dateStart.year())
-        dateStart.subtract(1, 'year')
-      }
-      return years
+      // current year and the four years before it (dayjs is immutable, no mutation loop)
+      const currentYear = dayjs().year()
+      return Array.from({ length: 5 }, (_, i) => currentYear - i)
     }
   },
   watch: {
@@ -109,7 +104,7 @@ export default {
           this.selectedGroupIds = [];
           this.groupItems = [];
           //add all groups of branch to groupItems
-          for (let group of this.groups) {
+          for (const group of this.groups) {
             if (this.selectedBranchId === group.branchId) {
               this.groupItems.push(group);
               this.selectedGroupIds.push(group.id);

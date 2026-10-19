@@ -204,7 +204,7 @@
                               group="participants"
                               no-action
                           >
-                            <template slot="activator">
+                            <template v-slot:activator>
                               <v-list-item>
                                 <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt</v-list-item-title>
                               </v-list-item>
@@ -231,7 +231,7 @@
                               group="canceledusers"
                               no-action
                           >
-                            <template slot="activator">
+                            <template v-slot:activator>
                               <v-list-item>
                                 <v-list-item-title>{{ canceledUsers.length }} <span
                                     v-if="canceledUsers.length == 1">Absage</span><span
@@ -341,14 +341,13 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 2 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useDisplay } from 'vuetify'
 
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import { parseApiDate } from '@/helpers/dayjs'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingContent from "@/components/TrainingContent.vue"
@@ -400,7 +399,7 @@ export default {
     branchContentIds(): Array<Number> {
       const masterData = useMasterDataStore();
       //check if multiple branches are in the play
-      let groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
+      const groupBranchIds = masterData.getGroupsByIds(this.selectedTraining.groupIds).map(g => g.branchId);
       if (groupBranchIds.every(v => v === groupBranchIds[0])) {
         return masterData.getContentIdsByGroupIds(this.selectedTraining.groupIds);
       }
@@ -438,7 +437,7 @@ export default {
     },
     sharelink() {
       const masterData = useMasterDataStore();
-      let trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
+      const trainers = masterData.getSimpleTrainersByIds(this.selectedTraining.trainerIds);
       let trainerText = "";
       for (let i = 0; i < trainers.length; i++) {
         trainerText += trainers[i].firstName + " " + trainers[i].familyName
@@ -487,12 +486,12 @@ export default {
         const res = await httpClient.get('/trainingprepare/' + this.loggedInUser.id);
         if (res.data.data && res.data.data.length > 0) {
           //json result to objects
-          for (let trObj of res.data.data) {
-            let participants = [] as TrainingParticipant[];
-            for (let partObj of trObj.participants) {
+          for (const trObj of res.data.data) {
+            const participants = [] as TrainingParticipant[];
+            for (const partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
-            this.upcomingTrainings.push(new Training(trObj.id, moment(trObj.start, 'YYYY-MM-DDTHH:mm'), moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
+            this.upcomingTrainings.push(new Training(trObj.id, parseApiDate(trObj.start), parseApiDate(trObj.end), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
           }
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
@@ -505,15 +504,15 @@ export default {
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+              userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
               userObj.absenceReason
           ))
         }

@@ -16,10 +16,9 @@
             <template v-slot:extension v-if="cookieUser">
               <v-chip
                   class="ml-2"
-                  close
+                  closable
                   color="primary"
-                  @click:close="removeCookieUser()"
-                  v-model="cookieUser">{{ cookieUser.getFullName() }}
+                  @click:close="removeCookieUser()">{{ cookieUser.getFullName() }}
               </v-chip>
             </template>
             <v-dialog
@@ -105,14 +104,13 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 3 pre-existing vue-tsc errors in this file; fix them and remove this line
 
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import { parseApiDate } from '@/helpers/dayjs'
 import TrainingCheckIn from "../components/TrainingCheckIn.vue";
 import GroupSelect from "../components/GroupSelect.vue";
 import CookieUserDialog from "../components/CookieUserDialog.vue";
@@ -180,12 +178,12 @@ export default {
     filterDisplayValue() {
       const masterData = useMasterDataStore();
       if (this.filterGroupId) {
-        let group = masterData.getGroupById(this.filterGroupId)
+        const group = masterData.getGroupById(this.filterGroupId)
         if (group) {
           return group.name;
         }
       } else if (this.filterBranchId) {
-        let branch = masterData.getBranchById(this.filterBranchId)
+        const branch = masterData.getBranchById(this.filterBranchId)
         if (branch) {
           return branch.name;
         }
@@ -272,7 +270,7 @@ export default {
         //load data
         const {data} = await httpClient.get(url);
         if (data.data && data.data.length > 0) {
-          for (let trObj of data.data) {
+          for (const trObj of data.data) {
             this.addToUpcomingTrainings(trObj);
           }
         }
@@ -283,19 +281,19 @@ export default {
       }
     },
     addToUpcomingTrainings(trainingJson) {
-      let participants = [] as TrainingParticipant[];
-      for (let partObj of trainingJson.participants) {
+      const participants = [] as TrainingParticipant[];
+      for (const partObj of trainingJson.participants) {
         participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
       }
       if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
-        this.upcomingTrainings.push(new Training(trainingJson.id, moment(trainingJson.start, 'YYYY-MM-DDTHH:mm'), moment(trainingJson.end, 'YYYY-MM-DDTHH:mm'), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
+        this.upcomingTrainings.push(new Training(trainingJson.id, parseApiDate(trainingJson.start), parseApiDate(trainingJson.end), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
       }
       this.upcomingTrainings.sort(function (a: Training, b: Training) {
-        return a.start - b.start;
+        return a.start.valueOf() - b.start.valueOf();
       });
     },
     updateCheckedIn() {
-      let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
         participant[0].attend = true;
@@ -306,7 +304,7 @@ export default {
       useSnackbarStore().show("Für das Training angemeldet", "success");
     },
     updateCheckedOut() {
-      let participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
+      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
       if (participant && participant.length > 0) {
         const index = this.selectedTraining.participants.indexOf(participant[0]);
         this.selectedTraining.participants[index].attend = false;

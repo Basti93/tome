@@ -88,7 +88,6 @@
       <v-card-text>
         <v-alert
             class="tp-upcoming-training__text ma-1"
-            text
             style="white-space: pre-line;word-break: break-all;"
             type="info"
             dense
@@ -199,7 +198,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 2 pre-existing vue-tsc errors in this file; fix them and remove this line
 import TrainingContent from "./TrainingContent.vue";
 import ProfileImage from "./ProfileImage.vue";
 import User from "../models/User";
@@ -305,14 +303,14 @@ export default {
         const {data} = await httpClient.post(url);
         if (data.status === 'ok') {
           // Track check-in event
-          analytics.trackEvent('Training', 'CheckIn', `training_${this.id}`)
+          analytics.trackEvent('Training', 'CheckIn')
           this.$emit('checkedIn')
         }
       } catch (error) {
         console.error(error);
       }
     },
-    async cancelParticipation(reason) {
+    async cancelParticipation(reason?: string) {
       try {
         let url = 'training/' + this.id;
         if (this.isCookieUser) {
@@ -331,7 +329,7 @@ export default {
         const {data} = await httpClient.post(url, postData);
         if (data.status === 'ok') {
           // Track check-out event
-          analytics.trackEvent('Training', 'CheckOut', `training_${this.id}`, reason ? 1 : 0)
+          analytics.trackEvent('Training', 'CheckOut')
           this.cancelReason = null;
           this.showCancelDialog = false;
           this.$emit('checkedOut')
@@ -345,7 +343,7 @@ export default {
     fullName: item => item.firstName + ' ' + item.familyName,
     urlify(text) {
       if (text) {
-        var urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.replace(urlRegex, function (url) {
           return '<a target="_blank" href="' + url + '">' + url + '</a>';
         })

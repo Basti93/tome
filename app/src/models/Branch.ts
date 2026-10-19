@@ -1,10 +1,10 @@
 export default class Branch {
     id: number;
-    name: String;
-    shortName: String;
-    colorHex: String;
+    name: string;
+    shortName: string;
+    colorHex: string;
 
-    constructor(id: number, name: String, shortName: String, colorHex: String) {
+    constructor(id: number, name: string, shortName: string, colorHex: string) {
         this.id = id;
         this.name = name;
         this.shortName = shortName;

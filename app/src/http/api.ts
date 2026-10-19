@@ -23,12 +23,15 @@ interface RequestConfig {
   headers?: Record<string, string>
   body?: BodyInit
   signal?: AbortSignal
+  /** 'blob' returns the body of a successful response as a Blob (file downloads) */
+  responseType?: 'json' | 'blob'
 }
 
 interface FetchResponse<T = any> {
   data: T
   status: number
   statusText: string
+  headers?: Headers
 }
 
 interface ApiError extends Error {
@@ -86,7 +89,9 @@ async function request<T = any>(
   // Parse response body
   let responseData: any
   const contentType = response.headers.get('content-type')
-  if (contentType && contentType.includes('application/json')) {
+  if (config.responseType === 'blob' && response.ok) {
+    responseData = await response.blob()
+  } else if (contentType && contentType.includes('application/json')) {
     responseData = await response.json()
   } else {
     responseData = await response.text()
@@ -97,12 +102,13 @@ async function request<T = any>(
     console.log('[HTTP Response]', {
       url: fullUrl,
       status: response.status,
-      data: responseData
+      data: config.responseType === 'blob' ? '[Blob]' : responseData
     })
     return {
       data: responseData,
       status: response.status,
       statusText: response.statusText,
+      headers: response.headers,
     }
   }
 

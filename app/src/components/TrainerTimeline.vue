@@ -20,7 +20,7 @@ import StatisticsFilter1 from "./StatisticsFilter1";
 import { useAuthStore } from '@/store/auth';
 import { useMasterDataStore } from '@/store/masterData';
 import httpClient from '@/http/api';
-import moment from 'moment';
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "TrainerTimeline",
@@ -30,7 +30,7 @@ export default {
     const authStore = useAuthStore();
     return {
       filterBranchIds: authStore.user?.isTrainer ? authStore.user.trainerBranchIds : [],
-      filterYear: moment().year(),
+      filterYear: dayjs().year(),
       filterGroupIds: [],
       options: {
         chart: {
@@ -90,15 +90,15 @@ export default {
     },
     async fetchData() {
       this.series = [];
-      let url = '/trainingevaluation/accountingtimestatistics?year=' + this.filterYear + "&groupIds=" + this.filterGroupIds;
-      let {data} = await httpClient.get(url);
+      const url = '/trainingevaluation/accountingtimestatistics?year=' + this.filterYear + "&groupIds=" + this.filterGroupIds;
+      const {data} = await httpClient.get(url);
       for (let z = 0; z < data.length; z++) {
-        let count = [];
+        const count = [];
         for (let i = 0; i < 12; i++) {
           count.push(0);
         }
         for (let i = 0; i < data[z].data.length; i++) {
-          let monthNumber = parseInt(data[z].data[i].month);
+          const monthNumber = parseInt(data[z].data[i].month);
           count.splice((monthNumber - 1), 1, data[z].data[i].accountingHours);
         }
         this.series.push({

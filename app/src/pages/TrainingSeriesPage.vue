@@ -5,7 +5,7 @@
         <v-card color="secondary">
           <v-toolbar >
             <v-container fluid>
-              <v-row align="center">
+              <v-row class="align-center">
                 <v-col cols="6">
                   <v-toolbar-title>Trainingsserien</v-toolbar-title>
                 </v-col>
@@ -34,7 +34,7 @@
                   absolute
                   bottom
                   left
-                  elevation="2"
+                  elevation="1"
                   color="primary"
                   @click="openCreateDialog()">
                 <v-icon>mdi-plus</v-icon>
@@ -97,25 +97,13 @@
                             ></WeekdaysComponent>
                           </v-col>
                           <v-col cols="12" md="3" offset-md="1">
-                            <v-menu
-                                ref="deferUntilMenuOpened"
-                                :close-on-content-click="false"
-                                v-model="deferUntilMenuOpened"
-                            >
-                              <template v-slot:activator="{ on }">
-                                <v-text-field
-                                    slot="activator"
-                                    v-model="deferUntilFormatted"
-                                    clearable
-                                    @click:clear="editedTrainingSeries.deferUntil = null"
-                                    label="Aussetzen bis"
-                                    prepend-icon="event"
-                                    v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-date-picker v-model="editedTrainingSeries.deferUntil"
-                                             @input="deferUntilMenuOpened = false"></v-date-picker>
-                            </v-menu>
+                            <v-text-field
+                                v-model="editedTrainingSeries.deferUntil"
+                                type="date"
+                                clearable
+                                label="Aussetzen bis"
+                                prepend-icon="mdi-calendar"
+                            ></v-text-field>
                           </v-col>
                         </v-row>
                       </v-container>
@@ -138,7 +126,6 @@
                                 :locationId="editedTrainingSeries.locationId"
                                 :comment="editedTrainingSeries.comment"
                                 :branchId="filterBranchId"
-                                :active="editedTrainingSeries.active"
                                 :automatic-attend="editedTrainingSeries.automaticAttend"
                             ></EditTrainingBase>
                           </v-col>
@@ -195,7 +182,7 @@
                         </template>
                         <template v-slot:[`item.deferUntil`]="{ item }">
                             <span v-if="checkDeferUntilIsActive(item)">
-                                {{ moment(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}
+                                {{ parseApiDate(item.deferUntil).format('DD.MM.YYYY') }}
                             </span>
                           <span v-else>Aktiv</span>
                         </template>
@@ -228,12 +215,11 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 9 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
@@ -242,7 +228,7 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs, parseApiDate };
   },
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
@@ -259,16 +245,15 @@ export default {
       showCreateDialog: false,
       loading: false,
       editDialogTitle: "",
-      deferUntilMenuOpened: false,
       headers: [
-        {text: 'Id', value: 'id', sortable: false},
-        {text: 'Wochentage', value: 'weekdays', sortable: false},
-        {text: 'Start', value: 'startTime', sortable: false},
-        {text: 'Ende', value: 'endTime', sortable: false},
-        {text: 'Trainer', value: 'trainerIds', sortable: false},
-        {text: 'Gruppen', value: 'groupIds', sortable: false},
-        {text: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
-        {text: '', value: 'action', sortable: false},
+        { title: 'Id', value: 'id', sortable: false},
+        { title: 'Wochentage', value: 'weekdays', sortable: false},
+        { title: 'Start', value: 'startTime', sortable: false},
+        { title: 'Ende', value: 'endTime', sortable: false},
+        { title: 'Trainer', value: 'trainerIds', sortable: false},
+        { title: 'Gruppen', value: 'groupIds', sortable: false},
+        { title: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
+        { title: '', value: 'action', sortable: false},
       ],
       defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true),
       editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true) as TrainingSeries,
@@ -289,9 +274,6 @@ export default {
     branches() { return useMasterDataStore().branches },
     trainerGroupIds() {
       return this.loggedInUser ? this.loggedInUser.trainerGroupIds : []
-    },
-    deferUntilFormatted(): String {
-      return this.formatDate(this.editedTrainingSeries.deferUntil)
     },
     trainerBranchIds() {
       return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
@@ -341,9 +323,9 @@ export default {
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      let momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = parseApiDate(item.deferUntil);
       if (momDeferUntil.isValid()) {
-        this.editedTrainingSeries.deferUntil = momDeferUntil.format('Y-MM-DD')
+        this.editedTrainingSeries.deferUntil = momDeferUntil.format('YYYY-MM-DD')
       }
       this.showCreateDialog = true;
     },
@@ -353,7 +335,7 @@ export default {
     },
     async deleteItem() {
       this.showConfirmDialog = false
-      let response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
+      const response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
       if (response.data.status === 'ok') {
         useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
         this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
@@ -362,8 +344,8 @@ export default {
       }
     },
     async save() {
-      const momDeferUntil = moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
-      let postData = {
+      const momDeferUntil = parseApiDate(this.editedTrainingSeries.deferUntil);
+      const postData: Record<string, any> = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,
         weekdays: this.editedTrainingSeries.weekdays,
@@ -399,8 +381,8 @@ export default {
       return time ? time.substring(0, time.length - 3) : '';
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
-      const momDeferUntil = moment(item.deferUntil);
-      return momDeferUntil.isValid() && momDeferUntil >= moment().startOf('day');
+      const momDeferUntil = dayjs(item.deferUntil);
+      return momDeferUntil.isValid() && momDeferUntil >= dayjs().startOf('day');
     },
     weekdaysChanged(weekdays) {
       this.editedTrainingSeries.weekdays = weekdays;

@@ -225,12 +225,12 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import User from '@/models/User'
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs, parseApiDate };
   },
   name: "ProfilePage",
   components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage, NotificationPreferencesForm},
@@ -306,7 +306,7 @@ export default {
       this.editUser.profileImageName = null;
     },
     async uploadProfileImage() {
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append('profile_image', this.imageToUpload);
       const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
       if (data.status === 'ok') {
@@ -322,7 +322,7 @@ export default {
           firstName: this.editUser.firstName,
           familyName: this.editUser.familyName,
           email: this.editUser.email,
-          birthdate: this.editUser.birthdate ? moment(this.editUser.birthdate, 'YYYY-MM-DDTHH:mm').format() : null,
+          birthdate: this.editUser.birthdate ? parseApiDate(this.editUser.birthdate).format() : null,
           groupIds: this.editUser.groupIds,
           trainerBranchIds: this.editUser.trainerBranchIds,
         };
@@ -337,10 +337,10 @@ export default {
           postData.profileImageName = imageName;
         }
 
-        let {data} = await httpClient.put('user/me', postData);
+        const {data} = await httpClient.put('user/me', postData);
         if (data.status == 'ok') {
           useSnackbarStore().show("Erfolgreich gespeichert", "success")
-          let {data: userData} = await httpClient.get('auth/me');
+          const {data: userData} = await httpClient.get('auth/me');
           const user = User.from(JSON.stringify(userData))
           useAuthStore().updateUser(user)
           this.assignCurrentUser();

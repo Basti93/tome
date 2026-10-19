@@ -7,9 +7,11 @@ export default class SimpleUser {
 
   constructor (id: number, firstName: string, familyName: string, groupIds: number[]) {
     this.id = id
-    this.groupIds = groupIds
-    this.firstName = firstName
-    this.familyName = familyName
+    // anonymous API responses abbreviate the family name ("M.") and may omit fields
+    this.groupIds = groupIds ?? []
+    this.firstName = firstName ?? ''
+    this.familyName = familyName ?? ''
+
   }
 
   getFullName() {

@@ -151,15 +151,6 @@
           <v-list-item-title>Anmelden</v-list-item-title>
         </v-list-item>
         <v-list-item
-            v-show="!loggedInUser"
-            to="/signup"
-            @click="drawer = false">
-          <template v-slot:prepend>
-            <v-icon>mdi-account-plus</v-icon>
-          </template>
-          <v-list-item-title>Registrieren</v-list-item-title>
-        </v-list-item>
-        <v-list-item
             v-show="loggedInUser"
             to="/profile"
             @click="drawer = false">
@@ -261,7 +252,7 @@ export default {
       return this.loggedInUser && (this.loggedInUser.isTrainer || this.loggedInUser.isAdmin);
     },
     currentUserGroupName: function () {
-      let group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
+      const group = useMasterDataStore().getGroupById(this.loggedInUser.groupId);
       if (group) {
         return group.name
       }

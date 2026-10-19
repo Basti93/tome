@@ -124,15 +124,13 @@
                       <v-divider class="mt-3 mb-3"></v-divider>
                       <h3>Benutzer mit eingetragener Abwesenheit (nur für Trainer sichtbar)</h3>
                       <h4>Abwesenheiten werden automatisch nach Ablauf gelöscht</h4>
-                      <v-data-table
+                      <v-data-table-server
                           :headers="headers"
                           :items="absenceUsers"
                           item-key="id"
                           :loading="loadingUsers"
-                          :server-items-length="total"
-                          :footer-props="{
-                                itemsPerPageOptions: rowsPerPageItems,
-                            }"
+                          :items-length="total"
+                          :items-per-page-options="rowsPerPageItems"
                           v-model:itemsPerPage="itemsPerPage"
                           v-model:page="page"
                       >
@@ -166,7 +164,7 @@
                             </v-row>
                           </v-container>
                         </template>
-                      </v-data-table>
+                      </v-data-table-server>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -195,7 +193,7 @@ import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs, { parseApiDate } from '@/helpers/dayjs'
 
 const authStore = useAuthStore()
 const cookieAuthStore = useCookieAuthStore()
@@ -208,12 +206,12 @@ const rowsPerPageItems = [5, 10, 20, 50]
 const page = ref(1)
 const itemsPerPage = ref(10)
 const headers = [
-  { text: 'Vorname', value: 'firstName', sortable: false },
-  { text: 'Nachname', value: 'familyName', sortable: false },
-  { text: 'Von', value: 'absenceStart', sortable: false },
-  { text: 'Bis', value: 'absenceEnd', sortable: false },
-  { text: 'Grund', value: 'absenceReason', sortable: false },
-  { text: 'Löschen', value: 'action', sortable: false },
+  { title: 'Vorname', value: 'firstName', sortable: false },
+  { title: 'Nachname', value: 'familyName', sortable: false },
+  { title: 'Von', value: 'absenceStart', sortable: false },
+  { title: 'Bis', value: 'absenceEnd', sortable: false },
+  { title: 'Grund', value: 'absenceReason', sortable: false },
+  { title: 'Löschen', value: 'action', sortable: false },
 ]
 const loadingUsers = ref(false)
 const absenceStart = ref(new Date().toISOString().substr(0, 10))
@@ -279,15 +277,15 @@ async function loadAllAbsenceUsers() {
         userObj.email,
         userObj.firstName,
         userObj.familyName,
-        userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
         userObj.active === 1 ? true : false,
         userObj.groupIds,
         userObj.roleNames,
         userObj.trainerBranchIds,
         userObj.registered,
         userObj.profileImageName,
-        userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-        userObj.absenceEnd ? moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+        userObj.absenceEnd ? parseApiDate(userObj.absenceEnd) : null,
         userObj.absenceReason
       ))
     }
@@ -299,8 +297,8 @@ async function loadAllAbsenceUsers() {
 
 async function sendAbsence() {
   const postData = {
-    absenceStart: moment(absenceStart.value, 'YYYY-MM-DD').format(),
-    absenceEnd: moment(absenceEnd.value, 'YYYY-MM-DD').format(),
+    absenceStart: dayjs(absenceStart.value, 'YYYY-MM-DD').format(),
+    absenceEnd: dayjs(absenceEnd.value, 'YYYY-MM-DD').format(),
     absenceReason: absenceReason.value
   }
   const { data } = await httpClient.post('simpleuser/' + userId.value + '/storeAbsence', postData)
