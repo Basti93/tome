@@ -108,6 +108,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/exportaccountingtimes', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@exportAccountingTimes');
             Route::post('{id}/removeparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@removeParticipant');
             Route::post('{id}/addparticipant/{userId}', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@addParticipant');
+            Route::get('{id}/detail', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getTrainingDetail');
+            Route::post('{id}/complete', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@completeTraining');
             Route::post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@trainingEvaluated');
             Route::post('{id}/updateaccountingtime', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateAccountingTime');
         });
