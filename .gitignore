@@ -52,3 +52,8 @@
 
 # Claude Code worktrees
 /.claude/worktrees/
+
+# Firebase secrets - never commit (repo is public)
+*firebase-adminsdk*.json
+firebase-service-account.json
+*service-account*.json
