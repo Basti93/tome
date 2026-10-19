@@ -92,6 +92,7 @@ import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
+import { refreshMasterData } from '@/helpers/refreshMasterData'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
 import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
@@ -167,6 +168,8 @@ export default {
           const user = User.from(JSON.stringify(data.user))
           useAuthStore().login(user)
           useCookieAuthStore().eraseCookieUser()
+          // the cached master data still holds the abbreviated names of the anonymous visitor
+          await refreshMasterData()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
           // Track successful login
           analytics.trackEvent('Authentication', 'Login')

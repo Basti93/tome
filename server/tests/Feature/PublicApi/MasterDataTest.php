@@ -52,6 +52,18 @@ class MasterDataTest extends TestCase
         $this->assertSame('profile_images/a.jpg', $row['profileImageName']);
     }
 
+    public function test_simple_trainers_expose_full_names_with_only_the_jwt_cookie_like_the_browser(): void
+    {
+        $trainer = $this->makeUser('trainer', ['firstName' => 'Tina', 'familyName' => 'Trainer']);
+
+        $anonymous = $this->getJson('/api/v1/simpleuser/trainers')->assertOk();
+        $this->assertSame('T.', collect($anonymous->json('data'))->firstWhere('id', $trainer->id)['familyName']);
+
+        // the HttpOnly cookie is the ONLY credential (no Authorization header)
+        $loggedIn = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/simpleuser/trainers')->assertOk();
+        $this->assertSame('Trainer', collect($loggedIn->json('data'))->firstWhere('id', $trainer->id)['familyName']);
+    }
+
     public function test_simple_user_initial_handles_empty_and_multibyte_names(): void
     {
         $empty = UserFactory::new()->create(['familyName' => '']);

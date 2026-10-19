@@ -5,6 +5,7 @@
   import { useAuthStore } from '@/store/auth'
   import { useSnackbarStore } from '@/store/snackbar'
   import httpClient from '@/http/api'
+  import { refreshMasterData } from '@/helpers/refreshMasterData'
   import { analytics } from '@/services/analytics'
 
   export default {
@@ -18,6 +19,8 @@
       // Track logout event
       analytics.trackEvent('Authentication', 'Logout')
       useAuthStore().logout()
+      // drop the full names that were loaded for the logged-in user
+      await refreshMasterData()
       useSnackbarStore().show("Erfolgreich abgemeldet", "info");
       this.$router.push('/')
     }
