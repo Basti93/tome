@@ -305,7 +305,7 @@ export default {
         const {data} = await httpClient.post(url);
         if (data.status === 'ok') {
           // Track check-in event
-          analytics.trackEvent('Training', 'CheckIn', `training_${this.id}`)
+          analytics.trackEvent('Training', 'CheckIn')
           this.$emit('checkedIn')
         }
       } catch (error) {
@@ -331,7 +331,7 @@ export default {
         const {data} = await httpClient.post(url, postData);
         if (data.status === 'ok') {
           // Track check-out event
-          analytics.trackEvent('Training', 'CheckOut', `training_${this.id}`, reason ? 1 : 0)
+          analytics.trackEvent('Training', 'CheckOut')
           this.cancelReason = null;
           this.showCancelDialog = false;
           this.$emit('checkedOut')

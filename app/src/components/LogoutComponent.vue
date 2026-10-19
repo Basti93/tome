@@ -17,7 +17,6 @@
       }
       // Track logout event
       analytics.trackEvent('Authentication', 'Logout')
-      analytics.resetUserId()
       useAuthStore().logout()
       useSnackbarStore().show("Erfolgreich abgemeldet", "info");
       this.$router.push('/')

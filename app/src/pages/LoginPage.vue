@@ -171,7 +171,7 @@ export default {
           useCookieAuthStore().eraseCookieUser()
           useSnackbarStore().show("Erfolgreich angemeldet", "success")
           // Track successful login
-          analytics.trackEvent('Authentication', 'Login', user.role || 'unknown')
+          analytics.trackEvent('Authentication', 'Login')
           this.router.replace(this.route.query.redirect as string || '/')
         }
       } catch (error) {
