@@ -110,6 +110,14 @@
                               color="success">mdi-pencil
                           </v-icon>
                           <v-icon
+                              class="mr-2"
+                              v-if="canInviteUser(item)"
+                              :disabled="invitingUserId === item.id"
+                              title="Einladung senden"
+                              @click="sendInvitation(item)"
+                              color="primary">mdi-email-fast-outline
+                          </v-icon>
+                          <v-icon
                               v-if="canDeleteUser(item)"
                               @click="confirmAndDelete(item)"
                               color="error">mdi-trash-can
@@ -172,6 +180,7 @@ import EditUserDialog from "../components/EditUserDialog.vue";
 import {formatDate} from "../helpers/date-helpers"
 import Group from "../models/Group";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import { inviteUser } from '@/services/userInvite'
 
 export default {
   setup() {
@@ -185,6 +194,7 @@ export default {
       showFilterDialog: false,
       showConfirmDialog: false,
       itemToDelete: null,
+      invitingUserId: null,
       filterBranchId: null,
       filterGroupIds: [],
       editGroups: [],
@@ -330,6 +340,18 @@ export default {
     },
     canEditUser(item) {
       return (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) && !item.isTrainer && !item.isAdmin
+    },
+    // admins and trainers hold the `update-user` permission
+    canInviteUser(item) {
+      return !!item.email && !!this.loggedInUser && (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer)
+    },
+    async sendInvitation(item) {
+      this.invitingUserId = item.id;
+      try {
+        await inviteUser(item.id, item.firstName + ' ' + item.familyName);
+      } finally {
+        this.invitingUserId = null;
+      }
     },
     confirmAndDelete(item) {
       this.itemToDelete = item;
