@@ -84,13 +84,13 @@ phpunit                       # Run tests
 
 ## Architecture
 
-### Backend (Laravel 8, PHP)
-- **API**: Dingo API v3 at `/api/v1/`, public and JWT-protected routes
-- **Controllers**: `/server/app/Api/V1/Controllers/` — `TrainingController` is the largest (~13K lines, core logic)
+### Backend (Laravel 11, PHP 8.2+)
+- **API**: plain Laravel routing in `server/routes/api.php` at `/api/v1/` (Dingo was removed in the 2026 migration), public and JWT-protected routes
+- **Controllers**: `/server/app/Api/V1/Controllers/` — `TrainingController` is the largest (core logic)
 - **Resources**: `/server/app/Http/Resources/` — transform Eloquent models to JSON (responses are camelCase via `laravel-camelcase-json`)
-- **Auth**: JWT via `tymon/jwt-auth`; roles/permissions via `spatie/laravel-permission`
+- **Auth**: JWT via `php-open-source-saver/jwt-auth`; roles/permissions via `spatie/laravel-permission` (checked with `permission:` middleware in controller constructors)
 - **Key models**: `Training` (core entity) → has many `TrainingParticipation`, `TrainingTrainer`; belongs to many `Group`, `Content`. Trainings use soft deletes (marked, not hard-deleted).
-- **Integrations**: Firebase Cloud Messaging (push notifications), Zoom (`laravel-zoom`), Excel export (`maatwebsite/excel`), image processing (`intervention/image`)
+- **Integrations**: Firebase Cloud Messaging HTTP v1 via `kreait/firebase-php` (push notifications), Excel export (`maatwebsite/excel`), image processing (`intervention/image`)
 - **Push Notifications**: Firebase FCM (100% free, unlimited). Users can manage preferences via `notification_preferences` JSON column (defaults all enabled).
   - Service: `/server/app/Services/NotificationPreferenceService.php` — checks if notification type enabled before sending
   - All 6 notification commands check preferences: `SendNotificationsToUsers`, `SendTrainingNotificationsToUsers`, `UpcomingTrainingNotifications`, `TrainerUpcomingTrainingNotifications`, `CancelTrainingNotification`, `AbsenceNotification`
@@ -162,3 +162,11 @@ MAIL_*              # Email config for password reset + monthly stats
 - User preferences use JSON columns with defaults in application code (DB constraints prevent JSON defaults)
 - Profile settings: Each user tab in `ProfilePage.vue` is a new `v-window-item` with its own form component
 - Notification preferences: 5 types managed via `NotificationPreferencesForm.vue` component in ProfilePage tab 3
+
+## Production
+
+- Live at https://training.ssc-landau.de on an IONOS Ubuntu 24.04 server (Apache + PHP-FPM 8.4 + MySQL 8.0); SSH access details are in `docs/internal/`.
+- **Production still runs the 2021 code** (Vue 2 SPA in `/var/www/tome`, Laravel 8 + Dingo in `/var/www/tome/api`, API under `/api/api/*`, not a git checkout). Everything on the current branches is not yet deployed.
+- **The same server hosts the club's WordPress site ssc-landau.de (`/var/www/wp-website`). Never touch it**, and don't change shared Apache/PHP/MySQL config without explicit approval.
+- Migration plan and security audit: `docs/internal/` (gitignored — the GitHub repo is public, never commit server details or personal data).
+- The DB contains personal data of minors: query only aggregates, never print names/emails.
