@@ -202,7 +202,15 @@ if ask 3 "Matomo herunterladen, Signatur pruefen, nach ${MATOMO_ROOT} installier
       # Code-Verzeichnisse ohne Nutzerdaten komplett ersetzen, damit keine alten Dateien bleiben
       for d in core vendor libs node_modules lang; do rm -rf "${MATOMO_ROOT:?}/${d}"; done
     fi
-    rsync -a --exclude='/config/config.ini.php' --exclude='/tmp/' --exclude='/misc/user/' "${src}/" "${MATOMO_ROOT}/"
+    if ((update)); then
+      # Update: Nutzerdaten (config, tmp, misc/user) unangetastet lassen
+      rsync -a --exclude='/config/config.ini.php' --exclude='/tmp/' --exclude='/misc/user/' "${src}/" "${MATOMO_ROOT}/"
+    else
+      rsync -a "${src}/" "${MATOMO_ROOT}/"
+    fi
+    # misc/user/index.html steht im Manifest der Integritaetspruefung; Nutzerdateien nie ueberschreiben.
+    # (tmp/ liefert das Archiv nur als leeres Verzeichnis, die Pruefung erwartet dort nichts.)
+    rsync -a --ignore-existing "${src}/misc/user/" "${MATOMO_ROOT}/misc/user/"
     install -d "${MATOMO_ROOT}/tmp" "${MATOMO_ROOT}/misc/user"
 
     # Rechte: alles gehoert matomo (damit das Ein-Klick-Update funktioniert), lesbar fuer Apache (www-data
