@@ -27,6 +27,7 @@ services:
     volumes:
       - ./server/public:/var/www/html/public
       - ./server/public_app:/var/www/html/public_app
+      - ./server/storage/app/public:/var/www/html/storage-public:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - laravel
