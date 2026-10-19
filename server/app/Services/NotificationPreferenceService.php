@@ -24,7 +24,7 @@ class NotificationPreferenceService
      */
     public function getPreferences(User $user)
     {
-        return $user->notification_preferences ?? $this->getDefaultPreferences();
+        return array_merge($this->getDefaultPreferences(), $user->notification_preferences ?? []);
     }
 
     /**
@@ -41,6 +41,7 @@ class NotificationPreferenceService
             'absence_alert' => true,
             'admin_messages' => true,
             'trainer_evaluation_reminder' => true,
+            'trainer_evaluation_reminder_email' => false,
         ];
     }
 

@@ -143,32 +143,90 @@ class EvaluationReminderTest extends TestCase
         $this->assertCount(2, $this->sent, 'no third reminder');
     }
 
-    public function test_push_is_preferred_and_email_is_the_fallback_but_never_both(): void
+    public function test_default_preferences_mean_push_only(): void
     {
-        $withToken = $this->trainer(['email' => 'push@example.org']);
-        $noToken = $this->trainer(['email' => 'mail@example.org'], null);
-        $nothing = $this->trainer(['email' => ''], null);
-        $this->trainingEnded(5, $withToken);
-        $this->trainingEnded(5, $noToken);
-        $this->trainingEnded(5, $nothing);
+        $trainer = $this->trainer(['email' => 'mail@example.org']);
+        $t = $this->trainingEnded(5, $trainer);
 
         $this->run20();
 
         $this->assertCount(1, $this->sent);
-        $this->assertSame(['tok'], $this->sent[0]['tokens']);
-        Mail::assertSent(EvaluationReminder::class, 1);
-        Mail::assertSent(EvaluationReminder::class, fn ($m) => $m->hasTo('mail@example.org'));
+        Mail::assertNothingSent();
+        $this->assertSame(1, $t->fresh()->evaluation_reminder_count);
     }
 
-    public function test_failed_push_falls_back_to_email(): void
+    public function test_push_only(): void
     {
-        $this->pushSuccess = 0;
-        $trainer = $this->trainer(['email' => 'mail@example.org']);
+        $trainer = $this->trainer(['email' => 'mail@example.org', 'notification_preferences' => ['trainer_evaluation_reminder' => true, 'trainer_evaluation_reminder_email' => false]]);
         $this->trainingEnded(5, $trainer);
 
         $this->run20();
 
+        $this->assertCount(1, $this->sent);
+        Mail::assertNothingSent();
+    }
+
+    public function test_email_only(): void
+    {
+        $trainer = $this->trainer(['email' => 'mail@example.org', 'notification_preferences' => ['trainer_evaluation_reminder' => false, 'trainer_evaluation_reminder_email' => true]]);
+        $t = $this->trainingEnded(5, $trainer);
+
+        $this->run20();
+
+        $this->assertSame([], $this->sent, 'no push although the trainer has a token');
+        Mail::assertSent(EvaluationReminder::class, 1);
         Mail::assertSent(EvaluationReminder::class, fn ($m) => $m->hasTo('mail@example.org'));
+        $this->assertSame(1, $t->fresh()->evaluation_reminder_count);
+    }
+
+    public function test_both_channels_independently_and_one_mail_lists_all_open_trainings(): void
+    {
+        $trainer = $this->trainer(['email' => 'mail@example.org', 'notification_preferences' => ['trainer_evaluation_reminder' => true, 'trainer_evaluation_reminder_email' => true]]);
+        $this->trainingEnded(5, $trainer);
+        $this->trainingEnded(30, $trainer);
+
+        $this->run20();
+
+        $this->assertCount(1, $this->sent);
+        Mail::assertSent(EvaluationReminder::class, 1);
+        Mail::assertSent(EvaluationReminder::class, fn ($m) => count($m->items) === 2);
+    }
+
+    public function test_neither_channel_sends_nothing_and_does_not_count_the_reminder(): void
+    {
+        $trainer = $this->trainer(['email' => 'mail@example.org', 'notification_preferences' => ['trainer_evaluation_reminder' => false, 'trainer_evaluation_reminder_email' => false]]);
+        $t = $this->trainingEnded(5, $trainer);
+
+        $this->run20();
+
+        $this->assertSame([], $this->sent);
+        Mail::assertNothingSent();
+        $this->assertNull($t->fresh()->evaluation_reminder_count);
+        $this->assertNull($t->fresh()->evaluation_reminder_sent_at);
+    }
+
+    public function test_push_enabled_without_tokens_and_without_email_pref_is_not_counted(): void
+    {
+        $trainer = $this->trainer(['email' => 'mail@example.org'], null);
+        $t = $this->trainingEnded(5, $trainer);
+
+        $this->run20();
+
+        $this->assertSame([], $this->sent);
+        Mail::assertNothingSent();
+        $this->assertNull($t->fresh()->evaluation_reminder_count);
+    }
+
+    public function test_failed_push_does_not_count_when_email_is_off(): void
+    {
+        $this->pushSuccess = 0;
+        $trainer = $this->trainer(['email' => 'mail@example.org']);
+        $t = $this->trainingEnded(5, $trainer);
+
+        $this->run20();
+
+        Mail::assertNothingSent();
+        $this->assertNull($t->fresh()->evaluation_reminder_count);
     }
 
     public function test_trainer_with_the_preference_off_is_skipped_and_the_training_not_counted(): void

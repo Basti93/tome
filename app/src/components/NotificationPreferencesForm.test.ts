@@ -41,4 +41,31 @@ describe('NotificationPreferencesForm', () => {
     expect((w.vm as any).preferences.trainer_evaluation_reminder).toBe(false)
     expect((w.vm as any).preferences.trainer_upcoming).toBe(true)
   })
+
+  it('has separate push and e-mail switches; the e-mail switch is off for older stored preferences', async () => {
+    http.get.mockResolvedValue({
+      data: {
+        notificationPreferences: {
+          trainerUpcoming: true,
+          trainerCancelAlert: true,
+          participantUpcoming: true,
+          absenceAlert: true,
+          adminMessages: true,
+          trainerEvaluationReminder: true,
+        },
+      },
+    })
+    const w = mount(NotificationPreferencesForm, { global: { plugins: [vuetify] }, attachTo: document.body })
+    await flushPromises()
+
+    expect(w.text()).toContain('per Push-Benachrichtigung')
+    expect(w.text()).toContain('per E-Mail')
+    expect((w.vm as any).preferences.trainer_evaluation_reminder).toBe(true)
+    expect((w.vm as any).preferences.trainer_evaluation_reminder_email).toBe(false)
+
+    const emailBox = w.findAll('input[type=checkbox]').find((i) => i.element.closest('.v-input')?.textContent?.includes('per E-Mail'))!
+    await emailBox.setValue(true)
+    expect((w.vm as any).preferences.trainer_evaluation_reminder_email).toBe(true)
+    expect((w.vm as any).hasChanges).toBe(true)
+  })
 })

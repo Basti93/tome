@@ -24,8 +24,15 @@
                 ></v-checkbox>
                 <v-checkbox
                   v-model="preferences.trainer_evaluation_reminder"
-                  label="Erinnerung an nicht abgeschlossene Trainings"
+                  label="Erinnerung an nicht abgeschlossene Trainings per Push-Benachrichtigung"
                   hint="Täglich um 20 Uhr, falls ein Training noch nicht abgeschlossen ist"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.trainer_evaluation_reminder_email"
+                  label="Erinnerung an nicht abgeschlossene Trainings per E-Mail"
+                  hint="Eine E-Mail pro Erinnerung mit allen offenen Trainings (standardmäßig aus)"
                   persistent-hint
                   class="mt-2"
                 ></v-checkbox>
@@ -110,6 +117,7 @@ interface NotificationPreferences {
   absence_alert: boolean
   admin_messages: boolean
   trainer_evaluation_reminder: boolean
+  trainer_evaluation_reminder_email: boolean
 }
 
 // the API answers in camelCase (trainerUpcoming), the form and the request body use snake_case
@@ -130,6 +138,7 @@ export default defineComponent({
         absence_alert: true,
         admin_messages: true,
         trainer_evaluation_reminder: true,
+        trainer_evaluation_reminder_email: false,
       } as NotificationPreferences,
       originalPreferences: {
         trainer_upcoming: true,
@@ -138,6 +147,7 @@ export default defineComponent({
         absence_alert: true,
         admin_messages: true,
         trainer_evaluation_reminder: true,
+        trainer_evaluation_reminder_email: false,
       } as NotificationPreferences,
       loading: false,
     }
@@ -159,7 +169,7 @@ export default defineComponent({
         const { data } = await httpClient.get('/user/me/notification-preferences')
         const loaded = snakeCaseKeys(data?.notificationPreferences ?? data?.notification_preferences)
         if (loaded) {
-          // keys missing in older stored preferences count as enabled
+          // keys missing in older stored preferences count as enabled (the e-mail reminder as disabled)
           this.preferences = { ...this.preferences, ...loaded }
           this.originalPreferences = { ...this.preferences }
         }

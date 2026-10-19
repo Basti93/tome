@@ -14,6 +14,9 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements JWTSubject
 {
+    /** Notification types that are OFF unless the user switched them on. */
+    public const OPT_IN_NOTIFICATION_TYPES = ['trainer_evaluation_reminder_email'];
+
     use HasRoles;
     use Notifiable;
 
@@ -89,7 +92,8 @@ class User extends Authenticatable implements JWTSubject
     {
         $preferences = $this->notification_preferences ?? [];
 
-        return $preferences[$type] ?? true;
+        // keys missing in older stored preferences count as enabled, except the opt-in types
+        return $preferences[$type] ?? ! in_array($type, self::OPT_IN_NOTIFICATION_TYPES, true);
     }
 
     public function group()

@@ -19,6 +19,7 @@ class NotificationPreferencesTest extends TestCase
         'absenceAlert' => true,
         'adminMessages' => true,
         'trainerEvaluationReminder' => true,
+        'trainerEvaluationReminderEmail' => false,
     ];
 
     public function test_requires_authentication(): void

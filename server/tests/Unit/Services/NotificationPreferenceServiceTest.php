@@ -25,6 +25,7 @@ class NotificationPreferenceServiceTest extends TestCase
             'absence_alert' => true,
             'admin_messages' => true,
             'trainer_evaluation_reminder' => true,
+            'trainer_evaluation_reminder_email' => false,
         ], $this->service->getDefaultPreferences());
     }
 
@@ -36,13 +37,17 @@ class NotificationPreferenceServiceTest extends TestCase
         $this->assertSame($this->service->getDefaultPreferences(), $this->service->getPreferences($user));
     }
 
-    public function test_every_type_is_enabled_for_users_without_preferences(): void
+    public function test_every_type_but_the_opt_in_email_reminder_is_enabled_for_users_without_preferences(): void
     {
         $user = UserFactory::new()->create();
 
         foreach (array_keys($this->service->getDefaultPreferences()) as $type) {
-            $this->assertTrue($this->service->isNotificationEnabled($user, $type));
+            $this->assertSame($type !== 'trainer_evaluation_reminder_email', $this->service->isNotificationEnabled($user, $type), $type);
         }
+        // older stored preferences without the key: e-mail stays off, the others on
+        $old = UserFactory::new()->create(['notification_preferences' => ['trainer_upcoming' => false]]);
+        $this->assertFalse($this->service->isNotificationEnabled($old, 'trainer_evaluation_reminder_email'));
+        $this->assertTrue($this->service->isNotificationEnabled($old, 'trainer_evaluation_reminder'));
         $this->assertTrue($this->service->isNotificationEnabled($user, 'some_unknown_type'), 'unknown types default to enabled');
     }
 
@@ -70,11 +75,11 @@ class NotificationPreferenceServiceTest extends TestCase
         $this->assertFalse($user->fresh()->isNotificationEnabled('trainer_upcoming'));
     }
 
-    public function test_get_preferences_returns_the_stored_array_verbatim(): void
+    public function test_get_preferences_fills_missing_keys_with_the_defaults(): void
     {
         $user = UserFactory::new()->create(['notification_preferences' => ['absence_alert' => false]]);
 
-        $this->assertSame(['absence_alert' => false], $this->service->getPreferences($user->fresh()));
+        $this->assertSame(array_merge($this->service->getDefaultPreferences(), ['absence_alert' => false]), $this->service->getPreferences($user->fresh()));
         $this->assertTrue($user->fresh()->isNotificationEnabled('trainer_upcoming'), 'missing keys count as enabled');
     }
 }

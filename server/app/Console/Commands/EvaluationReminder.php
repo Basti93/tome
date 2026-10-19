@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Mail;
 /**
  * Reminds the trainers of trainings that ended 2 hours to 7 days ago and are still not evaluated.
  * Every training is reminded at most twice: on the first run that finds it, and once more 3 days later.
- * Never contains athlete names. Push first, e-mail only if the trainer cannot be reached by push.
+ * Never contains athlete names. Push (preference trainer_evaluation_reminder, default on) and e-mail
+ * (trainer_evaluation_reminder_email, default off) are chosen independently; one mail per trainer and run lists all
+ * open trainings. A training only counts as reminded if at least one channel actually sent.
  */
 class EvaluationReminder extends Command
 {
@@ -44,7 +46,7 @@ class EvaluationReminder extends Command
         $perTrainer = [];
         foreach ($trainings as $training) {
             foreach ($training->trainers as $trainer) {
-                if (! $trainer->active || ! $preferences->isNotificationEnabled($trainer, 'trainer_evaluation_reminder')) {
+                if (! $trainer->active || ! $this->wantsAnyChannel($trainer, $preferences)) {
                     continue;
                 }
                 $perTrainer[$trainer->id]['user'] = $trainer;
@@ -70,7 +72,7 @@ class EvaluationReminder extends Command
         $this->info(count($reminded).' Trainings erinnert, '.count($perTrainer).' Trainer');
     }
 
-    /** @return bool whether the trainer was reached */
+    /** @return bool whether at least one channel sent the reminder */
     private function remind($trainer, array $trainings): bool
     {
         $base = rtrim(config('app.vue_url'), '/');
@@ -79,8 +81,11 @@ class EvaluationReminder extends Command
             'url' => $base.'/#/quickEvaluation/'.$t->id,
         ], $trainings);
 
+        $sent = false;
+        $preferences = app(NotificationPreferenceService::class);
+
         $tokens = $trainer->notificationTokens->pluck('token')->all();
-        if ($tokens !== []) {
+        if ($tokens !== [] && $preferences->isNotificationEnabled($trainer, 'trainer_evaluation_reminder')) {
             $count = count($items);
             $title = $count === 1 ? 'Training noch nicht abgeschlossen' : $count.' Trainings noch nicht abgeschlossen';
             $body = implode("\n", array_column($items, 'label'));
@@ -91,17 +96,22 @@ class EvaluationReminder extends Command
                 NotificationToken::whereToken($token)->delete();
             }
             if ($result['success'] > 0) {
-                return true;
+                $sent = true;
             }
         }
 
-        if (! empty($trainer->email)) {
+        if (! empty($trainer->email) && $preferences->isNotificationEnabled($trainer, 'trainer_evaluation_reminder_email')) {
             Mail::to($trainer->email)->send(new EvaluationReminderMail($trainer, $items));
-
-            return true;
+            $sent = true;
         }
 
-        return false;
+        return $sent;
+    }
+
+    private function wantsAnyChannel($trainer, NotificationPreferenceService $preferences): bool
+    {
+        return $preferences->isNotificationEnabled($trainer, 'trainer_evaluation_reminder')
+            || $preferences->isNotificationEnabled($trainer, 'trainer_evaluation_reminder_email');
     }
 
     private function label(Training $t): string
