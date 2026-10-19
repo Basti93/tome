@@ -22,12 +22,19 @@ URLs: `/` = App, `/api/v1/*` = API, `/api/storage/*` = Uploads, `/api/api/*` = 4
 1. Lokal `deploy/.env.production` anlegen (Vorlage `deploy/.env.production.example`; Firebase-Webwerte, VAPID-Key).
 2. Deploy-Verzeichnis auf den Server kopieren:
    `rsync -a deploy/ sbinder@SERVER:/tmp/tome-deploy/`
-3. Auf dem Server: `sudo /tmp/tome-deploy/server-setup.sh` und die Abschnitte der Reihe nach bestaetigen:
-   1 Voraussetzungen, 2 Benutzer `tome`, 3 Verzeichnisse, 4 PHP-Pool, 5 sudoers, 6 MySQL-Benutzer,
-   7 `.env`, 8 Uploads kopieren, 9 Scheduler-Cron, 10 Backups, 11 neuen Vhost ablegen (inaktiv).
-   **Abschnitt 12 (Vhost umschalten) noch nicht.** Mit `--only 8` laesst sich ein Abschnitt wiederholen.
-4. SSH-Schluessel fuer den Deploy eintragen (am Mac `ssh-keygen -t ed25519` falls noetig), auf dem Server als root:
-   `echo 'ssh-ed25519 AAAA... mac' >> /home/tome/.ssh/authorized_keys`. Test: `ssh tome@SERVER true`.
+3. Reihenfolge (verbindlich):
+   1. **Server-Setup, Abschnitte 1-11**: auf dem Server `sudo /tmp/tome-deploy/server-setup.sh` und die Abschnitte der
+      Reihe nach bestaetigen: 1 Voraussetzungen, 2 Benutzer `tome`, 3 Verzeichnisse, 4 PHP-Pool, 5 sudoers,
+      6 MySQL-Benutzer, 7 `.env`, 8 Uploads kopieren, 9 Scheduler-Cron, 10 Backups, 11 neuen Vhost ablegen (inaktiv).
+      **Abschnitt 12 (Vhost umschalten) noch nicht.** Mit `--only 8` laesst sich ein Abschnitt wiederholen.
+      Abschnitt 2 kopiert die Schluessel des aufrufenden Admins (`$SUDO_USER`) nach `/home/tome/.ssh/authorized_keys`,
+      falls die Datei noch leer ist (Ausgabe: Anzahl kopierter Schluessel). Weitere Schluessel als root:
+      `echo 'ssh-ed25519 AAAA... mac' >> /home/tome/.ssh/authorized_keys`.
+   2. **SSH-Test** vom Mac: `ssh tome@training.ssc-landau.de true`.
+   3. **Dry-Run**: `deploy/deploy.sh --host training.ssc-landau.de --dry-run`.
+   4. **Echtes Deploy**: `deploy/deploy.sh --host training.ssc-landau.de` (siehe CUTOVER, Schritt 3).
+   5. **Abschnitt 12 (Vhost umschalten)**: `sudo /tmp/tome-deploy/server-setup.sh --only 12`.
+4. Falls noetig am Mac `ssh-keygen -t ed25519` (der Schluessel muss in `authorized_keys` des Admins auf dem Server stehen).
 5. `.env` pruefen: `sudo nano /var/www/tome-app/shared/.env`. Die Platzhalter `AENDERN_*` (Mail) ersetzen,
    falls die Werte nicht aus der alten App uebernommen werden konnten.
 6. Firebase (siehe Abschnitt 5 unten).

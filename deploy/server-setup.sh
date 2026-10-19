@@ -203,7 +203,28 @@ if ask 2 "Systembenutzer ${TOME_USER}"; then
   touch "/home/${TOME_USER}/.ssh/authorized_keys"
   chown "$TOME_USER:$TOME_USER" "/home/${TOME_USER}/.ssh/authorized_keys"
   chmod 600 "/home/${TOME_USER}/.ssh/authorized_keys"
-  info "Deploy-Schluessel eintragen: ${TOME_USER}@Server:~/.ssh/authorized_keys (siehe RUNBOOK)"
+  # Ist die Datei leer, die Schluessel des aufrufenden Admins uebernehmen (idempotent: nur fehlende Zeilen anhaengen).
+  AUTH_KEYS="/home/${TOME_USER}/.ssh/authorized_keys"
+  ADMIN_USER="${SUDO_USER:-sbinder}"
+  ADMIN_KEYS="$(getent passwd "$ADMIN_USER" | cut -d: -f6)/.ssh/authorized_keys"
+  if [ ! -s "$AUTH_KEYS" ] && [ -r "$ADMIN_KEYS" ]; then
+    copied=0
+    while IFS= read -r line; do
+      case "$line" in ''|'#'*) continue ;; esac
+      if ! grep -qxF -- "$line" "$AUTH_KEYS"; then
+        printf '%s\n' "$line" >> "$AUTH_KEYS"
+        copied=$((copied + 1))
+      fi
+    done < "$ADMIN_KEYS"
+    chown "$TOME_USER:$TOME_USER" "$AUTH_KEYS"
+    chmod 600 "$AUTH_KEYS"
+    ok "${copied} SSH-Schluessel von ${ADMIN_USER} nach ${AUTH_KEYS} kopiert"
+  elif [ -s "$AUTH_KEYS" ]; then
+    ok "authorized_keys von ${TOME_USER} enthaelt bereits Schluessel (${AUTH_KEYS}), nichts kopiert"
+  else
+    info "Keine Schluessel von ${ADMIN_USER} gefunden (${ADMIN_KEYS})"
+  fi
+  info "Weitere Deploy-Schluessel eintragen: ${AUTH_KEYS} (siehe RUNBOOK)"
   info "Tipp: ssh-copy-id funktioniert nicht ohne Passwort; Schluessel als root anhaengen:"
   info "  echo 'ssh-ed25519 AAAA... deploy' >> /home/${TOME_USER}/.ssh/authorized_keys"
 fi
