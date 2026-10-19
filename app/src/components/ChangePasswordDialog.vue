@@ -57,6 +57,7 @@ import { useSnackbarStore } from '@/store/snackbar'
 
 export default {
     name: "ChangePasswordDialog",
+    emits: ['close'],
     props: {
         'visible': Boolean,
     },

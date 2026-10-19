@@ -46,6 +46,7 @@ import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "StatisticsFilter1",
+  emits: ['groupsSelected', 'yearSelected'],
   props: {
     'branchIds': Array,
     'year': Number,

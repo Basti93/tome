@@ -22,6 +22,7 @@
 
     export default {
         name: "GroupsSelect",
+        emits: ['groupsChanged'],
         props: {
             groupIds: Array,
         },

@@ -155,6 +155,7 @@ import { useMasterDataStore } from "@/store/masterData"
 
 export default {
   name: "EditTrainingBase",
+  emits: ['change'],
   components: {TrainingContent},
   props: {
     hideDate: Boolean,

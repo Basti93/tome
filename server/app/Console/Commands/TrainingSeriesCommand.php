@@ -64,6 +64,12 @@ class TrainingSeriesCommand extends Command
     private function processSeries($series, $start, $end, $period)
     {
         $weekdaysArray = json_decode($series->weekdays);
+        if (! is_array($weekdaysArray)) {
+            // a corrupt series must not stop the creation of all the other series
+            $this->warn('Series with id '.$series->id.' has invalid weekdays, skipping');
+
+            return;
+        }
 
         // iterate through the days of the next week
         foreach ($period as $dt) {

@@ -104,6 +104,7 @@ import UploadProfileImage from "./UploadProfileImage";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
+import { useSnackbarStore } from '@/store/snackbar'
 
     export default {
         setup() {
@@ -111,6 +112,7 @@ import httpClient from '@/http/api'
             return { xs };
         },
         name: "EditUserDialog",
+        emits: ['close', 'saved'],
         components: {GroupsSelect, UploadProfileImage},
         props: [
             'visible',
@@ -157,7 +159,8 @@ import httpClient from '@/http/api'
         },
         methods: {
             async save() {
-                this.$refs.form.validate();
+                const { valid } = await this.$refs.form.validate();
+                if (!valid) return;
                 try {
                     const postData = {
                         firstName: this.firstName,
@@ -187,14 +190,15 @@ import httpClient from '@/http/api'
                         response = await httpClient.post('/user/unregistered', postData);
                     }
                     if (response.data.status === 'ok') {
-                      this.$emit("showSnackbar", "Benutzer gespeichert", "success")
+                      useSnackbarStore().show("Benutzer gespeichert", "success")
                       this.$emit("saved")
                       this.show = false;
                     } else {
-                      this.$emit("showSnackbar", "Fehler beim Speichern", "error")
+                      useSnackbarStore().show("Fehler beim Speichern", "error")
                     }
                 } catch (error) {
                     console.error(error);
+                    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
                 }
             },
             imageChanged(file) {
@@ -225,7 +229,7 @@ import httpClient from '@/http/api'
                     console.log("Image uploaded")
                     return data.imageUrl;
                 }
-                this.$emit("showSnackbar", "Fehler beim Hochladen des Bildes.", "error");
+                useSnackbarStore().show("Fehler beim Hochladen des Bildes.", "error");
                 throw "Image upload error";
             },
             groupsChanged({groupIds}) {

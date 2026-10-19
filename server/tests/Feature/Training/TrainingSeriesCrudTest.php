@@ -118,4 +118,27 @@ class TrainingSeriesCrudTest extends TestCase
         $this->assertDatabaseMissing('training_series', ['id' => $series->id]);
         $this->assertDatabaseHas('trainings', ['id' => $training->id, 'training_series_id' => null]);
     }
+
+    public function test_store_rejects_weekdays_that_are_not_a_list_of_weekday_numbers(): void
+    {
+        $trainer = $this->makeUser('trainer');
+
+        // a DOM Event object that used to leak into the payload came out as {"isTrusted":true}
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => ['isTrusted' => true]]))
+            ->assertStatus(422)->assertJsonValidationErrors(['weekdays']);
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => []]))
+            ->assertStatus(422)->assertJsonValidationErrors(['weekdays']);
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => [8]]))
+            ->assertStatus(422);
+        $this->assertSame(0, TrainingSeries::count());
+    }
+
+    public function test_series_command_skips_a_series_with_corrupt_weekdays(): void
+    {
+        $bad = TrainingSeriesFactory::new()->create(['weekdays' => '{"isTrusted":true}']);
+
+        $this->artisan('training:series')->assertSuccessful();
+
+        $this->assertSame(0, Training::where('training_series_id', $bad->id)->count());
+    }
 }

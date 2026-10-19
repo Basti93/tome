@@ -31,6 +31,7 @@
 
 export default {
   name: "ConfirmDialog",
+  emits: ['canceled', 'confirmed'],
   props: {
     show: Boolean,
     actionText: String,

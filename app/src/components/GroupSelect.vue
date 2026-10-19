@@ -27,6 +27,7 @@
 
   export default {
     name: "GroupSelect",
+    emits: ['branchSelected', 'groupSelected'],
     props: {
       'branchId': Number,
       'groupId': Number,

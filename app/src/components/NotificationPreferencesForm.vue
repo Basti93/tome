@@ -106,6 +106,7 @@ interface NotificationPreferences {
 
 export default defineComponent({
   name: 'NotificationPreferencesForm',
+  emits: ['saved'],
   data() {
     return {
       preferences: {

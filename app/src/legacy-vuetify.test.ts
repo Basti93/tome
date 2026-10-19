@@ -29,6 +29,11 @@ function findings(): string[] {
       if (tag === 'v-btn' && /\s(text|outlined|depressed|fab|small|x-small|large)(\s|$)/.test(attrs.replace(/"[^"]*"|'[^']*'/g, ''))) out.push(`${where}: Vuetify 2 boolean prop (use variant/size/icon)`)
       if (tag === 'v-icon' && /\s(left|right|small|x-small|large)(\s|$)/.test(attrs.replace(/"[^"]*"|'[^']*'/g, ''))) out.push(`${where}: Vuetify 2 boolean prop (use start/end/size)`)
     }
+    // custom events named like native ones (change, input, ...) must be declared, otherwise Vue also
+    // forwards the native DOM event to the parent's handler (EditTrainingBase -> seriesChanged(Event))
+    if (/\$?emit\(/.test(src) && !/emits:|defineEmits/.test(src)) {
+      out.push(`${file.replace(__dirname, 'src')}: emits events without declaring emits`)
+    }
     if (/v-slot:activator="\{ on \}"|slot-scope=|\sslot="|<v-tab-item|<v-tabs-items|<v-list-item-content>|<v-expansion-panel-header|\$vuetify\.breakpoint|\$listeners|\$scopedSlots/.test(template.replace(/<!--[\s\S]*?-->/g, ''))) {
       out.push(`${file.replace(__dirname, 'src')}: removed Vue 2 / Vuetify 2 API`)
     }

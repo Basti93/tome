@@ -131,6 +131,7 @@
 <script lang="ts">
 import { useDisplay } from 'vuetify';
 import httpClient from '@/http/api';
+import { useSnackbarStore } from '@/store/snackbar';
 import { useMasterDataStore } from '@/store/masterData';
 
 export default {
@@ -185,7 +186,8 @@ export default {
       this.total = data.total;
     },
     async save() {
-      this.$refs.form.validate();
+      const { valid } = await this.$refs.form.validate();
+      if (!valid) return;
       try {
         const postData = {
           name: this.editedItem.name,
@@ -198,15 +200,16 @@ export default {
           response = await httpClient.post('/location', postData);
         }
         if (response && response.data.error) {
-          this.$emit("showSnackbar", "Ort konnte nicht gespeichert werden", "error")
+          useSnackbarStore().show("Ort konnte nicht gespeichert werden", "error")
         } else {
-          this.$emit("showSnackbar", "Ort gespeichert", "success")
+          useSnackbarStore().show("Ort gespeichert", "success")
           this.showDialog = false;
           await this.loadData();
           this.updateMasterData();
         }
       } catch (error) {
         console.error(error);
+        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
       }
     },
     createItem() {

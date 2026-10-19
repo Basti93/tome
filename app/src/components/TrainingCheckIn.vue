@@ -204,6 +204,7 @@ import { analytics } from '@/services/analytics'
 
 export default {
   name: "TrainingCheckIn",
+  emits: ['checkedIn', 'checkedOut', 'showCookieUserLogin'],
   components: {GroupChip, TrainingContent, ProfileImage},
   props: {
     training: Training,

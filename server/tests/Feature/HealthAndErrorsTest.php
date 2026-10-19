@@ -71,4 +71,25 @@ class HealthAndErrorsTest extends TestCase
         $this->postJson('/api/v1/auth/login', [])->assertStatus(422)->assertJsonStructure(['message', 'errors']);
         $this->getJson('/api/v1/user')->assertStatus(401);
     }
+
+    public function test_validation_failure_without_accept_header_answers_422_json_not_a_redirect(): void
+    {
+        $trainer = $this->makeUser('trainer');
+
+        // exactly what a fetch() without `Accept: application/json` sends
+        $response = $this->call('POST', '/api/v1/trainingSeries', [], [], [], [
+            'HTTP_ACCEPT' => '*/*',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->jwtFor($trainer),
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['startTime' => '18:00:00']));
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['endTime', 'weekdays']);
+    }
+
+    public function test_unauthenticated_api_request_without_accept_header_answers_401_json(): void
+    {
+        $response = $this->call('POST', '/api/v1/trainingSeries', [], [], [], ['HTTP_ACCEPT' => 'text/html']);
+
+        $response->assertStatus(401)->assertJsonStructure(['message']);
+    }
 }

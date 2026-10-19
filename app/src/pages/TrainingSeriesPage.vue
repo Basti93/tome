@@ -350,24 +350,33 @@ export default {
         locationId: this.editedTrainingSeries.locationId,
         trainerIds: this.editedTrainingSeries.trainerIds,
         groupIds: this.editedTrainingSeries.groupIds,
+        // the series dialog hides the content picker; send the stored ones, otherwise sync() would drop them
+        contentIds: this.editedTrainingSeries.contentIds ?? [],
         deferUntil: momDeferUntil.isValid() ? momDeferUntil.format() : null,
         automaticAttend: this.editedTrainingSeries.automaticAttend,
 
       };
       let url = '/trainingSeries';
-      let res;
-      if (this.editedTrainingSeries.id) {
-        url += '/' + this.editedTrainingSeries.id;
-        postData.id = this.editedTrainingSeries.id;
-        res = await httpClient.put(url, postData);
-      } else {
-        res = await httpClient.post(url, postData);
-      }
+      const isUpdate = !!this.editedTrainingSeries.id;
+      try {
+        let res;
+        if (isUpdate) {
+          url += '/' + this.editedTrainingSeries.id;
+          postData.id = this.editedTrainingSeries.id;
+          res = await httpClient.put(url, postData);
+        } else {
+          res = await httpClient.post(url, postData);
+        }
 
-      if (res.data.status == 'ok') {
-        this.showCreateDialog = false;
-        this.fetchData();
-        useSnackbarStore().show('Serie erfolgreich erstellt');
+        if (res.data.status == 'ok') {
+          this.showCreateDialog = false;
+          this.fetchData();
+          useSnackbarStore().show(isUpdate ? 'Serie erfolgreich gespeichert' : 'Serie erfolgreich erstellt', 'success');
+        }
+      } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        const detail = errors ? ' (' + Object.keys(errors).join(', ') + ')' : '';
+        useSnackbarStore().show('Serie konnte nicht gespeichert werden' + detail, 'error');
       }
 
     },

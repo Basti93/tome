@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:serve": "npm run build && npm run deploy",
-    "deploy": "rm -rf ../server/public_app && mkdir -p ../server/public_app && cp -r dist/* ../server/public_app/",
+    "deploy": "mkdir -p ../server/public_app && find ../server/public_app -mindepth 1 -delete && cp -r dist/* ../server/public_app/",
     "watch": "npm run build -- --watch && npm run deploy",
     "preview": "vite preview",
     "lint": "eslint --fix .",

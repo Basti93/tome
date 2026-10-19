@@ -317,7 +317,8 @@ export default {
       }
     },
     async save() {
-      this.$refs.form.validate();
+      const { valid } = await this.$refs.form.validate();
+      if (!valid) return;
       try {
         const postData = {
           name: this.editedItem.name,
@@ -341,6 +342,7 @@ export default {
         }
       } catch (error) {
         console.error(error);
+        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
       }
     },
     createItem() {

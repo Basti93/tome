@@ -16,6 +16,7 @@
 <script lang="ts">
     export default {
         name: "WeekdaysComponent",
+        emits: ['change'],
         props: {
           weekdays: Array,
         },

@@ -49,6 +49,7 @@ import { useMasterDataStore } from '@/store/masterData'
 
 export default {
   name: "GroupsSelectDialog",
+  emits: ['close', 'done'],
   setup() {
     const { xs } = useDisplay()
     return { xs }

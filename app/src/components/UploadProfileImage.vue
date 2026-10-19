@@ -66,6 +66,7 @@ import { useAuthStore } from '@/store/auth'
 
 export default {
   name: "UploadProfileImage",
+  emits: ['imageChanged', 'imageRemoved'],
   props: {
     imagePath: String,
   },

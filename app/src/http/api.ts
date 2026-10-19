@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/auth'
+import { useSnackbarStore } from '@/store/snackbar'
 
 // In Docker: use relative URL (nginx proxies /api/* to Laravel)
 // In local dev: use relative URL (Vite dev server proxies /api/*)
@@ -59,7 +60,10 @@ async function request<T = any>(
   })
 
   // Setup headers - don't set Content-Type for FormData
+  // The API always answers JSON. Without this header Laravel redirects failed validations, fetch follows the
+  // redirect and the SPA's index.html comes back as a "successful" response. Downloads accept anything.
   const headers: Record<string, string> = {
+    Accept: config.responseType === 'blob' ? '*/*' : 'application/json',
     ...config.headers,
   }
 
@@ -72,6 +76,8 @@ async function request<T = any>(
     method: config.method || 'GET',
     headers,
     credentials: 'include',
+    // never follow redirects silently: the API does not redirect, so a redirect is an error
+    redirect: 'manual',
   }
 
   // Add body if present
@@ -86,6 +92,11 @@ async function request<T = any>(
 
   const response = await fetch(fullUrl, fetchConfig)
 
+  if (response.type === 'opaqueredirect') {
+    useSnackbarStore().show('Unerwartete Antwort vom Server (Weiterleitung)', 'error')
+    throw createApiError({ status: 0, statusText: 'redirect' } as Response, null, config)
+  }
+
   // Parse response body
   let responseData: any
   const contentType = response.headers.get('content-type')
@@ -95,6 +106,12 @@ async function request<T = any>(
     responseData = await response.json()
   } else {
     responseData = await response.text()
+  }
+
+  // A JSON request answered with an HTML page (e.g. the SPA index.html) is not a success
+  if (response.ok && config.responseType !== 'blob' && contentType && contentType.includes('text/html')) {
+    useSnackbarStore().show('Unerwartete Antwort vom Server', 'error')
+    throw createApiError(response, responseData, config)
   }
 
   // Handle successful response
@@ -120,7 +137,7 @@ async function request<T = any>(
       try {
         const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           credentials: 'include',
         })
 

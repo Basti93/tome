@@ -87,7 +87,8 @@ return [
         'validation_rules' => [
             'startTime' => 'required',
             'endTime' => 'required',
-            'weekdays' => 'required',
+            'weekdays' => 'required|array|list|min:1',
+            'weekdays.*' => 'integer:strict|between:1,7',
         ]
     ],
     'create_unregistered_user' => [

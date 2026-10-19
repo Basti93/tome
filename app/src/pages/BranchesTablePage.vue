@@ -147,6 +147,7 @@
 <script lang="ts">
 import { useDisplay } from 'vuetify';
 import httpClient from '@/http/api';
+import { useSnackbarStore } from '@/store/snackbar';
 import { useMasterDataStore } from '@/store/masterData';
 
 export default {
@@ -201,7 +202,8 @@ export default {
       this.total = data.total;
     },
     async save() {
-      this.$refs.form.validate();
+      const { valid } = await this.$refs.form.validate();
+      if (!valid) return;
       try {
         const postData = {
           name: this.editedItem.name,
@@ -216,15 +218,16 @@ export default {
           response = await httpClient.post('/branch', postData);
         }
         if (response && response.data.error) {
-          this.$emit("showSnackbar", "Sparte konnte nicht gespeichert werden", "error")
+          useSnackbarStore().show("Sparte konnte nicht gespeichert werden", "error")
         } else {
-          this.$emit("showSnackbar", "Sparte gespeichert", "success")
+          useSnackbarStore().show("Sparte gespeichert", "success")
           this.showDialog = false;
           await this.loadData();
           this.updateMasterData();
         }
       } catch (error) {
         console.error(error);
+        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
       }
     },
     createItem() {

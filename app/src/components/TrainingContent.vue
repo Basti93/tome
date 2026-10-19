@@ -32,6 +32,7 @@ import { useMasterDataStore } from '@/store/masterData'
 
 export default {
   name: "TrainingContent",
+  emits: ['change'],
   props: {
     contentIds: Array,
     selectable: Boolean,

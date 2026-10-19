@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import httpClient from '@/http/api'
 import { useAuthStore } from '@/store/auth'
+import { useSnackbarStore } from '@/store/snackbar'
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -28,7 +29,7 @@ describe('httpClient', () => {
     expect(res).toMatchObject({ data: { data: [1, 2] }, status: 200 })
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/v1/branch')
-    expect(init).toMatchObject({ method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' } })
+    expect(init).toMatchObject({ method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' } })
   })
 
   it('normalizes paths without a leading slash and keeps absolute URLs', async () => {
@@ -124,5 +125,28 @@ describe('httpClient', () => {
 
     expect(auth.logout).toHaveBeenCalled()
     expect(location.href).toBe('/login')
+  })
+
+  it('treats an HTML page answered to a JSON request (the SPA index.html) as an error', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('<!DOCTYPE html><html></html>', { status: 200, headers: { 'content-type': 'text/html' } }))
+
+    await expect(httpClient.post('/trainingSeries', { a: 1 })).rejects.toMatchObject({ response: { status: 200 } })
+    expect(useSnackbarStore().visible).toBe(true)
+  })
+
+  it('does not follow redirects and reports them as errors', async () => {
+    const redirect = new Response(null, { status: 200 })
+    Object.defineProperty(redirect, 'type', { value: 'opaqueredirect' })
+    fetchMock.mockResolvedValueOnce(redirect)
+
+    await expect(httpClient.post('/trainingSeries', {})).rejects.toBeTruthy()
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ redirect: 'manual' })
+  })
+
+  it('accepts anything for blob downloads', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('x', { status: 200, headers: { 'content-type': 'text/html' } }))
+
+    await httpClient.post('/export', {}, { responseType: 'blob' })
+    expect(fetchMock.mock.calls[0][1].headers.Accept).toBe('*/*')
   })
 })
