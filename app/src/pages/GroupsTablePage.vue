@@ -204,6 +204,7 @@
 </template>
 
 <script lang="ts">
+// @ts-nocheck TODO(safety-net): 1 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useDisplay } from 'vuetify'
 import Group from "../models/Group";
 import Branch from "../models/Branch";

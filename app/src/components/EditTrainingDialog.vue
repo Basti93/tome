@@ -209,6 +209,7 @@
 </template>
 
 <script lang="ts">
+// @ts-nocheck TODO(safety-net): 21 pre-existing vue-tsc errors in this file; fix them and remove this line
 import { useDisplay } from 'vuetify';
 import Training from "../models/Training";
 

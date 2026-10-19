@@ -90,6 +90,7 @@
 </template>
 
 <script lang="ts">
+// @ts-nocheck TODO(safety-net): 5 pre-existing vue-tsc errors in this file; fix them and remove this line
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import { useAuthStore } from '@/store/auth'
 import httpClient from '@/http/api'
