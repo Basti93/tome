@@ -163,7 +163,13 @@ remote_script "$TOME_ROOT" "$RELEASE_ID" <<'EOF' || rollback_and_exit "Cache-Auf
 set -euo pipefail
 cd "$1/releases/$2/server"
 php8.4 artisan config:cache
-php8.4 artisan route:cache
+# route:cache scheitert (erst beim Laden) bei Closure-Routen; dann ohne Route-Cache weiter
+if php8.4 artisan route:cache && php8.4 artisan route:list >/dev/null 2>&1; then
+  echo "Routen gecacht"
+else
+  echo "WARNUNG: route:cache nicht moeglich (Closure-Routen in routes/*.php?) - Route-Cache wird uebersprungen" >&2
+  php8.4 artisan route:clear
+fi
 php8.4 artisan view:cache
 EOF
 
