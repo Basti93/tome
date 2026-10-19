@@ -133,7 +133,7 @@ export const useMasterDataStore = defineStore('masterData', {
         .sort((a, b) => (a.familyName || '').localeCompare(b.familyName || '') || (a.firstName || '').localeCompare(b.firstName || ''))
     },
     getTrainingSeriesByGroupId: (state) => (groupId: number): TrainingSeries[] => {
-      return state.trainingSeries.filter(ts => ts.groupIds.includes(groupId as Number))
+      return state.trainingSeries.filter(ts => ts.groupIds.includes(groupId))
     },
     getAllSimpleUsersWithGroup: (state) => (): SimpleUser[] => {
       return state.simpleUsers.filter(su => su.groupIds.length > 0)

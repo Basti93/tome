@@ -16,13 +16,14 @@
                       <v-data-iterator
                           :headers="headers"
                           :items="groups"
+                          :items-per-page="-1"
                           item-key="id"
                       >
 
                         <template v-slot:default="props">
                           <v-row>
                             <v-col
-                                v-for="group in props.items"
+                                v-for="{ raw: group } in props.items"
                                 :key="group.id"
                                 cols="12"
                                 sm="6"
@@ -77,7 +78,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 14 pre-existing vue-tsc errors in this file; fix them and remove this line
 import Group from "../models/Group";
 import User from "../models/User";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers";
