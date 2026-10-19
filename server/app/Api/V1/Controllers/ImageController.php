@@ -39,7 +39,7 @@ class ImageController extends Controller
 
             // Process image using Intervention Image v3 with explicit GD driver
             $manager = new ImageManager(new Driver);
-            $manager->read($fullPath)
+            $manager->decodePath($fullPath)
                 ->resize(height: 400, width: null)
                 ->save($fullPath, quality: 65);
 

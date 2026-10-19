@@ -415,24 +415,6 @@ parameters:
 			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
 
 		-
-			message: '#^Parameter \#1 \$type of method App\\Console\\Commands\\SendTrainingNotificationsToUsers\:\:getPreferenceKeyForType\(\) expects int, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
-
-		-
-			message: '#^Property App\\UserTrainingNotification\:\:\$training_id \(int\<0, max\>\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
-
-		-
-			message: '#^Property App\\UserTrainingNotification\:\:\$type \(int\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
-
-		-
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -535,31 +517,13 @@ parameters:
 			path: app/Group.php
 
 		-
-			message: '#^Constant familyName not found\.$#'
-			identifier: constant.notFound
-			count: 1
-			path: app/Http/Controllers/TrainingAccountingExportController.php
-
-		-
-			message: '#^Constant firstName not found\.$#'
-			identifier: constant.notFound
-			count: 1
-			path: app/Http/Controllers/TrainingAccountingExportController.php
-
-		-
-			message: '#^Static call to instance method Maatwebsite\\Excel\\Excel\:\:download\(\)\.$#'
-			identifier: method.staticCall
-			count: 1
-			path: app/Http/Controllers/TrainingAccountingExportController.php
-
-		-
 			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/EncryptCookies.php
 
 		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken\:\:\$except\.$#'
+			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\PreventRequestForgery\:\:\$except\.$#'
 			identifier: property.phpDocType
 			count: 1
 			path: app/Http/Middleware/VerifyCsrfToken.php

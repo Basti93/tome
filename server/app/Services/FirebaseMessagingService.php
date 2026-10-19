@@ -62,7 +62,7 @@ class FirebaseMessagingService
                 Log::info("Attempting to send message to token: {$token}");
                 Log::info('Message data: '.json_encode($dataPayload));
 
-                $targetedMessage = $message->withChangedTarget('token', $token);
+                $targetedMessage = $message->withToken($token);
                 $result = $this->messaging->send($targetedMessage);
 
                 $successCount++;
@@ -118,7 +118,7 @@ class FirebaseMessagingService
 
             $message = CloudMessage::new()
                 ->withNotification($notification)
-                ->withChangedTarget('topic', $topic);
+                ->withTopic($topic);
 
             if (! empty($data)) {
                 $message = $message->withData($data);
