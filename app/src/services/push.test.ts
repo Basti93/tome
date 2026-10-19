@@ -20,6 +20,7 @@ import { listenForForegroundMessages, registerPushToken, resetPushStateForTests 
 
 const registration = { scope: '/' } as unknown as ServiceWorkerRegistration
 const registerSw = vi.fn()
+let readyPromise: () => Promise<ServiceWorkerRegistration> = () => Promise.resolve(registration)
 
 function stubBrowser(permission: NotificationPermission, requestResult: NotificationPermission = 'granted') {
   const NotificationMock = Object.assign(function () {}, {
@@ -28,7 +29,7 @@ function stubBrowser(permission: NotificationPermission, requestResult: Notifica
   })
   vi.stubGlobal('Notification', NotificationMock)
   vi.stubGlobal('PushManager', function () {})
-  Object.defineProperty(navigator, 'serviceWorker', { value: { register: registerSw }, configurable: true })
+  Object.defineProperty(navigator, 'serviceWorker', { value: { register: registerSw, get ready() { return readyPromise() } }, configurable: true })
   return NotificationMock
 }
 
@@ -43,7 +44,8 @@ function stubFirebaseEnv() {
 describe('registerPushToken', () => {
   beforeEach(() => {
     resetPushStateForTests()
-    registerSw.mockResolvedValue(registration)
+    readyPromise = () => Promise.resolve(registration)
+    registerSw.mockResolvedValue({ scope: '/', active: null } as unknown as ServiceWorkerRegistration)
     vi.mocked(isSupported).mockResolvedValue(true)
     vi.spyOn(console, 'error').mockImplementation(() => {})
     stubFirebaseEnv()
@@ -54,6 +56,42 @@ describe('registerPushToken', () => {
     vi.unstubAllEnvs()
     // @ts-expect-error cleanup of the stub
     delete navigator.serviceWorker
+  })
+
+  it('waits for the service worker to be active before asking for the token', async () => {
+    stubBrowser('granted')
+    let activate!: () => void
+    readyPromise = () => new Promise((resolve) => { activate = () => resolve(registration) })
+    vi.mocked(getToken).mockResolvedValue('fcm-token')
+    vi.mocked(httpClient.post).mockResolvedValue({ data: {}, status: 201, statusText: 'Created' })
+
+    const pending = registerPushToken(1)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(registerSw).toHaveBeenCalled()
+    expect(getToken).not.toHaveBeenCalled()
+
+    activate()
+    expect(await pending).toBe('subscribed')
+    expect(getToken).toHaveBeenCalledWith({ messaging: true }, expect.objectContaining({ serviceWorkerRegistration: registration }))
+  })
+
+  it('retries once when subscribing is aborted right after the first activation', async () => {
+    stubBrowser('granted')
+    const abort = Object.assign(new Error('Subscription failed - no active Service Worker'), { name: 'AbortError' })
+    vi.mocked(getToken).mockRejectedValueOnce(abort).mockResolvedValueOnce('fcm-token')
+    vi.mocked(httpClient.post).mockResolvedValue({ data: {}, status: 201, statusText: 'Created' })
+
+    expect(await registerPushToken(1)).toBe('subscribed')
+    expect(getToken).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports an error when the retry fails too', async () => {
+    stubBrowser('granted')
+    const abort = Object.assign(new Error('x'), { name: 'AbortError' })
+    vi.mocked(getToken).mockRejectedValue(abort)
+
+    expect(await registerPushToken(1)).toBe('error')
+    expect(getToken).toHaveBeenCalledTimes(2)
   })
 
   it('gets a token with the VAPID key + SW registration and posts it to notifications/subscribe', async () => {

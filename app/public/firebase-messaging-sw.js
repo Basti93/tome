@@ -1,81 +1,98 @@
 // T.O.M.E. Service Worker
 // Handles both PWA functionality and Firebase Cloud Messaging
 
-const CACHE_NAME = 'tome-v1'
-const RUNTIME_CACHE = 'tome-runtime'
+// Bump the version to drop all older caches on activate.
+const CACHE_NAME = 'tome-v2'
 
-// Files to cache on install (essential PWA files)
+// App shell, precached on install
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
 ]
 
-// Install event - cache essential files
+/**
+ * Decides how a request is handled. Pure function (unit tested).
+ *  - 'network-only': not intercepted at all (non-GET, other origins, /api/, anything that is not static)
+ *  - 'cache-first':  hashed build files under /assets/ (never change for a given URL)
+ *  - 'network-first': app shell (navigations, index.html, manifest, icons), cached copy only as offline fallback
+ * API responses contain personal data and auth dependent content and must never be cached.
+ */
+function routeRequest(method, urlString, origin, mode) {
+  if (method !== 'GET') return 'network-only'
+  let url
+  try {
+    url = new URL(urlString)
+  } catch (e) {
+    return 'network-only'
+  }
+  if (url.origin !== origin) return 'network-only'
+  const path = url.pathname
+  if (path === '/api' || path.startsWith('/api/')) return 'network-only'
+  if (path.startsWith('/assets/')) return 'cache-first'
+  if (mode === 'navigate' || path === '/' || path === '/index.html' || path === '/manifest.json' || path.startsWith('/img/')) {
+    return 'network-first'
+  }
+  return 'network-only'
+}
+
+// Install event - cache the app shell
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...')
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching static assets')
-      return cache.addAll(STATIC_ASSETS)
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => {})
   )
   self.skipWaiting() // Activate immediately
 })
 
-// Activate event - clean up old caches
+// Activate event - delete every cache but the current one
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...')
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
-            console.log('[SW] Deleting old cache:', cacheName)
-            return caches.delete(cacheName)
-          }
-        })
-      )
-    })
+    caches.keys().then((cacheNames) =>
+      Promise.all(cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)))
+    ).then(() => self.clients.claim())
   )
-  self.clients.claim() // Take control immediately
 })
 
-// Fetch event - network first, then cache
+function storeCopy(request, response) {
+  // the clone has to be taken BEFORE the response is handed to the page (its body is single-use)
+  const copy = response.clone()
+  return caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {})
+}
+
 self.addEventListener('fetch', (event) => {
-  const { request } = event
+  const request = event.request
+  const strategy = routeRequest(request.method, request.url, self.location.origin, request.mode)
+  if (strategy === 'network-only') return // let the browser handle it, nothing is cached
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') return
-
-  // Skip API requests (let network handle them)
-  if (request.url.includes('/api/')) {
-    return event.respondWith(fetch(request))
+  if (strategy === 'cache-first') {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((response) => {
+          if (response.ok) event.waitUntil(storeCopy(request, response))
+          return response
+        })
+      })
+    )
+    return
   }
 
-  // Network first strategy with fallback to cache
+  // network-first
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Cache successful responses
-        if (response.ok) {
-          const cache = caches.open(RUNTIME_CACHE)
-          cache.then((c) => c.put(request, response.clone()))
-        }
+        if (response.ok) event.waitUntil(storeCopy(request, response))
         return response
       })
-      .catch(() => {
-        // Fall back to cache on network error
-        return caches.match(request).then((cached) => {
-          return cached || new Response('Offline - resource not available', {
+      .catch(() =>
+        caches.match(request).then((cached) => cached || (request.mode === 'navigate' ? caches.match('/index.html') : null)).then((cached) =>
+          cached || new Response('Offline - resource not available', {
             status: 503,
             statusText: 'Service Unavailable',
-            headers: new Headers({
-              'Content-Type': 'text/plain',
-            }),
+            headers: new Headers({ 'Content-Type': 'text/plain' }),
           })
-        })
-      })
+        )
+      )
   )
 })
 

@@ -64,10 +64,13 @@ function getMessagingInstance(): Messaging {
   return messaging
 }
 
-/** Registers the push service worker (idempotent; the browser reuses an existing registration). */
+/**
+ * Registers the push service worker (idempotent; the browser reuses an existing registration) and
+ * waits until it is ACTIVE. Subscribing before that fails with "no active Service Worker" on the first load.
+ */
 async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
-  const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}${SW_PATH}`)
-  return registration
+  await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}${SW_PATH}`)
+  return navigator.serviceWorker.ready
 }
 
 /**
@@ -93,10 +96,20 @@ export async function registerPushToken(userId: number, requestPermission = fals
     }
 
     const serviceWorkerRegistration = await registerServiceWorker()
-    const token = await getToken(getMessagingInstance(), {
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-      serviceWorkerRegistration,
-    })
+    const requestToken = () =>
+      getToken(getMessagingInstance(), {
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration,
+      })
+    let token: string
+    try {
+      token = await requestToken()
+    } catch (error) {
+      // the worker can still be settling right after its first activation: retry once
+      if ((error as Error)?.name !== 'AbortError') throw error
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      token = await requestToken()
+    }
     if (!token) return 'error'
 
     await httpClient.post('/notifications/subscribe', { firebaseToken: token, userId })
