@@ -114,7 +114,7 @@ class EvaluationReminderTest extends TestCase
         $this->run20();
 
         $this->assertSame('Training noch nicht abgeschlossen', $this->sent[0]['title']);
-        $this->assertSame('https://training.example/#/abschluss/'.$t->id, $this->sent[0]['data']['click_action']);
+        $this->assertSame('https://training.example/#/quickEvaluation/'.$t->id, $this->sent[0]['data']['click_action']);
     }
 
     public function test_each_training_is_reminded_at_most_twice_three_days_apart(): void

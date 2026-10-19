@@ -63,7 +63,7 @@
                                   v-show="!selectedTraining.evaluated"
                                   color="primary"
                                   data-test="quick-evaluation"
-                                  :to="'/abschluss/' + selectedTraining.id">
+                                  :to="'/quickEvaluation/' + selectedTraining.id">
                                 Schnell abschließen
                               </v-btn>
                               <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">

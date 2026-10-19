@@ -76,7 +76,7 @@ class EvaluationReminder extends Command
         $base = rtrim(config('app.vue_url'), '/');
         $items = array_map(fn (Training $t) => [
             'label' => $this->label($t),
-            'url' => $base.'/#/abschluss/'.$t->id,
+            'url' => $base.'/#/quickEvaluation/'.$t->id,
         ], $trainings);
 
         $tokens = $trainer->notificationTokens->pluck('token')->all();

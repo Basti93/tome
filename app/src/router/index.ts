@@ -21,7 +21,7 @@ const router = createRouter({
       meta: { requiresAuth: true, forTrainers: true }
     },
     {
-      path: '/abschluss/:id', name: 'TrainingQuickEvaluation',
+      path: '/quickEvaluation/:id', name: 'TrainingQuickEvaluation',
       component: () => import('@/pages/TrainingQuickEvaluationPage.vue'),
       meta: { requiresAuth: true, forTrainers: true }
     },
