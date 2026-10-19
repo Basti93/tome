@@ -224,7 +224,7 @@ if ask 2 "Systembenutzer ${TOME_USER}"; then
   else
     info "Keine Schluessel von ${ADMIN_USER} gefunden (${ADMIN_KEYS})"
   fi
-  info "Weitere Deploy-Schluessel eintragen: ${AUTH_KEYS} (siehe RUNBOOK)"
+  info "Weitere Deploy-Schluessel eintragen: ${AUTH_KEYS}"
   info "Tipp: ssh-copy-id funktioniert nicht ohne Passwort; Schluessel als root anhaengen:"
   info "  echo 'ssh-ed25519 AAAA... deploy' >> /home/${TOME_USER}/.ssh/authorized_keys"
 fi
@@ -434,7 +434,7 @@ if ask 7 ".env aus Vorlage (${ENV_FILE})"; then
     warn "Platzhalter AENDERN_* in der .env muessen noch ersetzt werden (Mail):"
     grep -n "AENDERN_" "$ENV_FILE" | sed 's/PASSWORD=.*/PASSWORD=<...>/'
   fi
-  [[ -f "${SHARED}/firebase-service-account.json" ]] || warn "Firebase-Service-Account fehlt noch: ${SHARED}/firebase-service-account.json (siehe RUNBOOK)"
+  [[ -f "${SHARED}/firebase-service-account.json" ]] || warn "Firebase-Service-Account fehlt noch: ${SHARED}/firebase-service-account.json"
 fi
 
 # ============================================================================

@@ -1,4 +1,4 @@
-# Lokale Simulation des Produktionsservers (keine echten Daten). Siehe RESULTS.md.
+# Lokale Simulation des Produktionsservers (keine echten Daten).
 name: tomesim
 services:
   mysql:
