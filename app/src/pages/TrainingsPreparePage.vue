@@ -9,14 +9,14 @@
           <v-card-text v-show="dataLoaded">
             <v-container class="pa-0">
               <v-row no-gutters>
-                <v-col md="3" cols="0">
+                <v-col cols="12" md="3" class="pa-0">
                   <TrainingSelector
                       :trainings="upcomingTrainings"
                       :selectedTrainingId="selectedTrainingId"
                       v-on:change="selectTraining"
                   ></TrainingSelector>
                 </v-col>
-                <v-col md="9">
+                <v-col cols="12" md="9">
                   <v-slide-x-transition v-if="selectedTraining">
                     <div v-if="animationTrigger">
                       <v-card class="ma-1">

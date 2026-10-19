@@ -55,7 +55,7 @@
           <v-card-text class="pa-0 pa-md-4">
             <v-container>
               <v-row no-gutters>
-                <v-col cols="0" md="3">
+                <v-col cols="12" md="3" class="pa-0">
                   <TrainingSelector
                       application="checkin"
                       :trainings="upcomingTrainings"
@@ -63,7 +63,7 @@
                       v-on:change="selectTraining"
                   ></TrainingSelector>
                 </v-col>
-                <v-col md="9">
+                <v-col cols="12" md="9">
                   <div v-show="dataLoaded" class="tp-training-check-in" :style="{ '--selected-color': selectedTrainingColor } as any">
                     <v-slide-x-transition>
                       <TrainingCheckIn

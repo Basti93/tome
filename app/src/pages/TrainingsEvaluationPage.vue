@@ -30,7 +30,7 @@
             <div v-show="dataLoaded" class="tp-training-prepare">
               <v-container class="pa-0">
                 <v-row no-gutters>
-                  <v-col md="3" cols="0">
+                  <v-col cols="12" md="3" class="pa-0">
                     <TrainingSelector
                         application="evaluation"
                         :trainings="pastTrainings"
@@ -38,7 +38,7 @@
                         v-on:change="selectTraining"
                     ></TrainingSelector>
                   </v-col>
-                  <v-col md="9">
+                  <v-col cols="12" md="9">
                     <v-slide-x-transition v-if="selectedTraining">
                       <div v-if="animationTrigger">
                           <v-card class="ma-1">
@@ -164,7 +164,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>
@@ -177,7 +177,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
@@ -225,7 +225,7 @@
                                             icon
                                             variant="text"
                                             @click="openCancelReasonDialog(item.id)"
-                                            size="x-small">
+                                            size="default">
                                           <v-icon size="small">mdi-magnify</v-icon>
                                         </v-btn>
                                       </template>
@@ -237,7 +237,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
@@ -250,7 +250,7 @@
                                             icon
                                             variant="text"
                                             @click="removeParticipantToUndecided(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-help-circle-outline</v-icon>
                                         </v-btn>
@@ -293,7 +293,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipant(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-up</v-icon>
                                         </v-btn>
@@ -306,7 +306,7 @@
                                             icon
                                             variant="text"
                                             @click="addParticipantAsCanceled(item.id)"
-                                            size="x-small"
+                                            size="default"
                                         >
                                           <v-icon size="small">mdi-thumb-down</v-icon>
                                         </v-btn>

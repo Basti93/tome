@@ -36,6 +36,25 @@ export default createVuetify({
     VIcon: CustomVIcon
   },
   directives,
+  // Compact defaults: Vuetify 4 (Material Design 3) is roomy, which wastes space on phones.
+  defaults: {
+    VToolbar: { density: 'compact' },
+    VAppBar: { density: 'compact' },
+    VList: { density: 'compact' },
+    VListItem: { density: 'compact' },
+    VTextField: { density: 'comfortable' },
+    VTextarea: { density: 'comfortable' },
+    VSelect: { density: 'comfortable' },
+    VAutocomplete: { density: 'comfortable' },
+    VCombobox: { density: 'comfortable' },
+    VCheckbox: { density: 'comfortable' },
+    VSwitch: { density: 'comfortable' },
+    VDataTable: { density: 'compact' },
+    VDataTableServer: { density: 'compact' },
+    VChip: { density: 'comfortable' },
+    VAlert: { density: 'compact' },
+    VTabs: { density: 'comfortable' }
+  },
   locale: {
     locale: 'de',
     messages: { de }
