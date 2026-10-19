@@ -73,13 +73,12 @@ die()   { printf '\033[1;31m[fehler]\033[0m %s\n' "$*" >&2; exit 1; }
 # Abschnittsabfrage: "Abschnitt X ausfuehren? [j/N]"
 ask() {
   local nr="$1" title="$2"
+  if [[ -n "$ONLY" && ",${ONLY}," != *",${nr},"* ]]; then return 1; fi
   echo
   echo "================================================================"
   echo " Abschnitt ${nr}: ${title}"
   echo "================================================================"
-  if [[ -n "$ONLY" ]]; then
-    [[ ",${ONLY}," == *",${nr},"* ]] && return 0 || { info "uebersprungen (nicht in --only)"; return 1; }
-  fi
+  if [[ -n "$ONLY" ]]; then return 0; fi
   if [[ "$ASSUME_YES" == 1 ]]; then
     # Der Vhost-Wechsel ist bewusst nie automatisch
     if [[ "$nr" == "12" ]]; then info "Abschnitt 12 wird bei -y nicht automatisch ausgefuehrt"; return 1; fi
