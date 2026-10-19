@@ -100,12 +100,16 @@ vendor/bin/phpunit            # Run tests (needs the MySQL test DB, see "Checks 
   - Types: `trainer_upcoming`, `trainer_cancel_alert`, `participant_upcoming`, `absence_alert`, `admin_messages`
   - API: `GET|PUT /v1/user/me/notification-preferences` — manage user preferences
 
-### Frontend (Vue 3.4, TypeScript)
-- **UI**: Vuetify 3.5 (Material Design)
-- **State**: Pinia 2.1 stores for auth (JWT token), data management, and UI state
-- **Router**: `/src/router/index.ts` — 18 routes with login/auth guards
-- **HTTP**: Fetch API with JWT interceptors for API calls
-- **Build**: Vite 5.2 for fast dev server and production builds
+### Frontend (Vue 3.5, TypeScript 5.9)
+- **UI**: Vuetify 4 (Material Design 3). `src/styles/vuetify-compat.css` restores the Vuetify 3 look (reset margins, uppercase buttons); the theme is pinned to `light`. Data tables: server-paginated tables use `v-data-table-server` (`items-length`, headers use `title`, sort is `[{ key, order }]`); `v-data-iterator` slot items are wrapped (`{ raw }`).
+- **State**: Pinia 4 stores for auth (JWT token), data management, and UI state
+- **Router**: vue-router 5, `/src/router/index.ts` — login/auth guards (return-style guard). Self-registration was removed: there is no signup page/route; admins/trainers invite users (`Einladung senden` in the user table → `POST /v1/user/{id}/invite`, see `services/userInvite.ts`).
+- **HTTP**: Fetch API with JWT interceptors for API calls; `httpClient.post(url, body, { responseType: 'blob' })` returns a Blob plus response headers (used by the accounting export, which downloads the XLSX directly via `helpers/download.ts`, filename from Content-Disposition, fallback `abrechnung.xlsx`)
+- **Dates**: dayjs (`@/helpers/dayjs`: German locale + plugins). Use `parseApiDate()` for API values (lenient, local time, like the old moment parsing); dayjs objects are immutable.
+- **Build/Tooling**: Vite 8, Vitest 5 (jsdom 30), ESLint 10 flat config (`app/eslint.config.js`, typescript-eslint + eslint-plugin-vue), vue-tsc 3 on TypeScript 5.9 (typescript-eslint does not support TS 7 yet). `npm audit` reports 0 findings (`overrides` pins `@grpc/grpc-js`).
+- **Anonymous API data**: unauthenticated `/simpleuser*` returns abbreviated family names ("M.") and `profileImageName: null`; unauthenticated `/group` returns `userIds: []`. Always render images through `profileImageUrl()` (`helpers/profile-image.ts`, null-safe, base `VITE_IMAGE_FOLDER_URL`) and list group members via `masterData.getSimpleUsersByGroupId()` (uses `SimpleUser.groupIds`), never `group.userIds`, in public views.
+- **Analytics (Matomo, cookieless)**: `services/analytics.ts`. Only active with `VITE_MATOMO_ENABLED=true` + `VITE_MATOMO_URL` + `VITE_MATOMO_SITE_ID`; `disableCookies` is pushed first, Do-Not-Track is respected, no user ID or personal data in events (page views use the route name). Server settings and the consent reasoning are in `MATOMO_SETUP.md`.
+- **Push notifications**: `services/push.ts` (Firebase 13 modular API): registers `public/firebase-messaging-sw.js` (no Firebase SDK inside, handles the plain Push payload), `getToken` with `VITE_FIREBASE_VAPID_KEY` + the SW registration, then `POST notifications/subscribe` `{ firebaseToken, userId }` after login or when the user grants permission (`App.vue`). Foreground messages show a snackbar; unsupported/unconfigured/denied states degrade silently.
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
 
 ### Authentication Flow
@@ -132,8 +136,16 @@ VITE_FIREBASE_STORAGE_BUCKET=ssc-tome-dev.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_dev_sender_id
 VITE_FIREBASE_APP_ID=your_dev_app_id
 
+# Web Push certificate key (Firebase Console > Project Settings > Cloud Messaging > Web Push certificates)
+VITE_FIREBASE_VAPID_KEY=your_vapid_public_key
+
 # Optional: Override API URL (defaults to /api/v1)
 VITE_APP_API_URL=http://localhost:8000/api/v1
+
+# Optional: Matomo (cookieless); all three must be set, see MATOMO_SETUP.md
+VITE_MATOMO_ENABLED=true
+VITE_MATOMO_URL=/matomo/
+VITE_MATOMO_SITE_ID=1
 ```
 
 **Never commit `.env.local`** - it contains sensitive credentials.
@@ -159,7 +171,8 @@ MAIL_*              # Email config for password reset + monthly stats
 - API responses are camelCase (handled automatically by `laravel-camelcase-json`)
 - Trainings can be flagged `deleted` (not removed) — list endpoints filter on `deleted = false`; `DELETE` is a hard delete
 - Unregistered users (cookie auth) are allowed to check in/out — do not gate this on a registered account
-- Vue 3 with Composition API and TypeScript for type safety
+- Vue 3 with Composition API and TypeScript for type safety (`<script setup lang="ts">` for new code)
+- No self-registration: users are created by admins/trainers and invited by e-mail
 - Pinia stores for state management (replacing Vuex)
 - **Always use `httpClient` (from `@/http/api`) for API calls, not raw `fetch()`** — ensures JWT auth headers and proper base path
 - User preferences use JSON columns with defaults in application code (DB constraints prevent JSON defaults)
@@ -192,4 +205,5 @@ MAIL_*              # Email config for password reset + monthly stats
 
 ### Frontend tests (`/app`)
 - `npm run test` (vitest, jsdom; `npm run test:watch` for watch mode). Tests live next to the code as `*.test.ts`; `@/http/api` is mocked for store tests.
-- Files with pre-existing type errors carry a `// @ts-nocheck TODO(safety-net)` marker at the top of their `<script>`; remove the marker once the file's errors are fixed.
+- Files with pre-existing type errors carry a `// @ts-nocheck TODO(safety-net)` marker at the top of their `<script>` (2 left: `EditTrainingDialog.vue`, `TrainingCalendar.vue`); remove the marker once the file's errors are fixed.
+- Services with tests: `analytics` (cookieless/DNT/no PII), `push` (mocked firebase), `userInvite`; helpers: `dayjs`, `download`, `profile-image`.
