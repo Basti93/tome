@@ -6,10 +6,6 @@ use App\User;
 use Database\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use LaravelFCM\Facades\FCM;
-use LaravelFCM\Response\DownstreamResponse;
-use Mockery;
-use Mockery\MockInterface;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\Support\SeedRolesAndPermissions;
 
@@ -18,17 +14,11 @@ use Tests\Support\SeedRolesAndPermissions;
  *
  * - runs against the real MySQL test database (see phpunit.xml / `make test-db`)
  * - seeds the production roles/permissions
- * - mocks Firebase Cloud Messaging and fakes mail so nothing leaves the process
+ * - fakes mail (Firebase is mocked per test, see Tests\Feature\Notifications) so nothing leaves the process
  */
 abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
     use RefreshDatabase;
-
-    /** The FCM facade mock (push notifications). */
-    protected MockInterface $fcm;
-
-    /** The fake FCM downstream response. */
-    protected MockInterface $fcmResponse;
 
     protected function setUp(): void
     {
@@ -38,12 +28,6 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
         Mail::fake();
 
-        $this->fcmResponse = Mockery::mock(DownstreamResponse::class);
-        $this->fcmResponse->shouldReceive('numberSuccess')->andReturn(1)->byDefault();
-        $this->fcmResponse->shouldReceive('numberFailure')->andReturn(0)->byDefault();
-        $this->fcmResponse->shouldReceive('tokensToDelete')->andReturn([])->byDefault();
-
-        $this->fcm = FCM::shouldReceive('sendTo')->andReturn($this->fcmResponse)->byDefault()->getMock();
     }
 
     /**

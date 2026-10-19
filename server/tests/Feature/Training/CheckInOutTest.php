@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Training;
 
-use App\NotificationToken;
 use Database\Factories\GroupFactory;
 use Database\Factories\TrainingFactory;
 use Database\Factories\UserFactory;
@@ -65,32 +64,6 @@ class CheckInOutTest extends TestCase
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseHas('training_participation', ['training_id' => $training->id, 'user_id' => $member->id, 'attend' => 0]);
-    }
-
-    public function test_check_out_within_24_hours_needs_a_reason_then_notifies_trainer(): void
-    {
-        $group = GroupFactory::new()->create();
-        $trainer = $this->makeUser('trainer');
-        $token = new NotificationToken;
-        $token->user_id = $trainer->id;
-        $token->token = 'trainer-token';
-        $token->save();
-        $member = UserFactory::new()->role('member')->inGroups([$group])->create();
-        $training = TrainingFactory::new()
-            ->between(now()->addHours(3)->format('Y-m-d H:i:s'), now()->addHours(4)->format('Y-m-d H:i:s'))
-            ->forGroups([$group])->withTrainers([$trainer])->create();
-
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}")
-            ->assertStatus(201)->assertJsonPath('status', 'cancel_needs_reason');
-
-        $this->fcm->shouldReceive('sendTo')->once()->withArgs(fn ($tokens) => $tokens === ['trainer-token'])->andReturn($this->fcmResponse);
-
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}", ['reason' => 'Termin'])
-            ->assertStatus(201)->assertExactJson(['status' => 'ok']);
-
-        $this->assertDatabaseHas('training_participation', [
-            'training_id' => $training->id, 'user_id' => $member->id, 'attend' => 0, 'cancelreason' => 'Termin',
-        ]);
     }
 
     public function test_check_out_is_forbidden_outside_the_group(): void

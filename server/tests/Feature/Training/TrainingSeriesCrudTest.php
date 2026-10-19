@@ -7,6 +7,7 @@ use App\TrainingSeries;
 use Database\Factories\ContentFactory;
 use Database\Factories\GroupFactory;
 use Database\Factories\LocationFactory;
+use Database\Factories\TrainingFactory;
 use Database\Factories\TrainingSeriesFactory;
 use Tests\TestCase;
 
@@ -109,7 +110,7 @@ class TrainingSeriesCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
         $series = TrainingSeriesFactory::new()->create();
-        $training = \Database\Factories\TrainingFactory::new()->create(['training_series_id' => $series->id]);
+        $training = TrainingFactory::new()->create(['training_series_id' => $series->id]);
 
         $this->actingAsJwt($trainer)->deleteJson("/api/v1/trainingSeries/{$series->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);

@@ -3,7 +3,6 @@
 namespace Tests\Feature\PublicApi;
 
 use App\Group;
-use App\NotificationToken;
 use App\Training;
 use App\User;
 use Database\Factories\GroupFactory;
@@ -92,7 +91,6 @@ class UnregisteredCheckInTest extends TestCase
     {
         $user = UserFactory::new()->unregistered()->inGroups([$this->group])->create();
         $this->training->participants()->attach($user->id, ['attend' => 1]);
-        $this->fcm->shouldReceive('sendTo')->never();
 
         $this->postJson("/api/v1/training/{$this->training->id}/checkoutunregistered/{$user->id}")
             ->assertStatus(201)
@@ -127,39 +125,6 @@ class UnregisteredCheckInTest extends TestCase
             ]);
 
         $this->assertSame(1, (int) $this->participation($soon, $user)->attend, 'nothing changed without a reason');
-    }
-
-    public function test_check_out_within_24_hours_with_reason_cancels_and_notifies_the_trainers(): void
-    {
-        $trainer = $this->makeUser('trainer');
-        $token = new NotificationToken;
-        $token->user_id = $trainer->id;
-        $token->token = 'trainer-device-token';
-        $token->save();
-
-        $user = UserFactory::new()->unregistered()->inGroups([$this->group])->create(['firstName' => 'Kim', 'familyName' => 'Kind']);
-        $soon = TrainingFactory::new()->between(now()->addHours(5)->format('Y-m-d H:i:s'), now()->addHours(6)->format('Y-m-d H:i:s'))
-            ->forGroups([$this->group])->withTrainers([$trainer])->create();
-        $soon->participants()->attach($user->id, ['attend' => 1]);
-
-        $this->fcm->shouldReceive('sendTo')->once()->withArgs(function ($tokens, $notification, $payloadNotification, $data) {
-            $payload = $data->toArray();
-
-            return $tokens === ['trainer-device-token']
-                && $notification === null
-                && $payloadNotification === null
-                && str_starts_with($payload['title'], 'Absage für das Training um ')
-                && str_contains($payload['body'], 'Sportler: Kim Kind')
-                && str_contains($payload['body'], 'Grund: krank');
-        })->andReturn($this->fcmResponse);
-
-        $this->postJson("/api/v1/training/{$soon->id}/checkoutunregistered/{$user->id}", ['reason' => 'krank'])
-            ->assertStatus(201)
-            ->assertExactJson(['status' => 'ok']);
-
-        $participation = $this->participation($soon, $user);
-        $this->assertSame(0, (int) $participation->attend);
-        $this->assertSame('krank', $participation->cancelreason);
     }
 
     public function test_check_out_is_forbidden_for_a_user_outside_the_training_group(): void

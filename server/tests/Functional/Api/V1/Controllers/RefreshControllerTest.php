@@ -2,16 +2,15 @@
 
 namespace App\Functional\Api\V1\Controllers;
 
-use Hash;
-use App\User;
 use App\TestCase;
+use App\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class RefreshControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -19,17 +18,17 @@ class RefreshControllerTest extends TestCase
             'firstName' => 'Test',
             'familyName' => 'User',
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
 
         $user->save();
     }
 
-    public function testRefresh()
+    public function test_refresh()
     {
         $response = $this->post('api/v1/auth/login', [
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
 
         $response->assertStatus(200);
@@ -38,18 +37,18 @@ class RefreshControllerTest extends TestCase
         $token = $responseJSON['token'];
 
         $this->post('api/v1/auth/refresh', [], [
-            'Authorization' => 'Bearer ' . $token
+            'Authorization' => 'Bearer '.$token,
         ])->assertJsonStructure([
             'status',
             'token',
-            'expiresIn'
+            'expiresIn',
         ])->isOk();
     }
 
-    public function testRefreshWithError()
+    public function test_refresh_with_error()
     {
         $response = $this->post('api/v1/auth/refresh', [], [
-            'Authorization' => 'Bearer Wrong'
+            'Authorization' => 'Bearer Wrong',
         ]);
 
         $response->assertStatus(500);

@@ -2,18 +2,18 @@
 
 namespace App\Functional\Api\V1\Controllers;
 
-use DB;
-use Config;
-use App\User;
 use App\TestCase;
+use App\User;
 use Carbon\Carbon;
+use Config;
+use DB;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ResetPasswordControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -21,30 +21,30 @@ class ResetPasswordControllerTest extends TestCase
             'firstName' => 'Test',
             'familyName' => 'User',
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
         $user->save();
 
         DB::table('password_resets')->insert([
             'email' => 'test@email.com',
             'token' => bcrypt('my_super_secret_code'),
-            'created_at' => Carbon::now()
+            'created_at' => Carbon::now(),
         ]);
     }
 
-    public function testResetSuccessfully()
+    public function test_reset_successfully()
     {
         $this->post('api/v1/auth/reset', [
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
             'password' => 'mynewpass',
-            'password_confirmation' => 'mynewpass'
+            'password_confirmation' => 'mynewpass',
         ])->assertJson([
-            'status' => 'ok'
+            'status' => 'ok',
         ])->isOk();
     }
 
-    public function testResetSuccessfullyWithTokenRelease()
+    public function test_reset_successfully_with_token_release()
     {
         Config::set('boilerplate.reset_password.release_token', true);
 
@@ -52,35 +52,35 @@ class ResetPasswordControllerTest extends TestCase
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
             'password' => 'mynewpass',
-            'password_confirmation' => 'mynewpass'
+            'password_confirmation' => 'mynewpass',
         ])->assertJsonStructure([
             'status',
-            'token'
+            'token',
         ])->assertJson([
-            'status' => 'ok'
+            'status' => 'ok',
         ])->isOk();
     }
 
-    public function testResetReturnsProcessError()
+    public function test_reset_returns_process_error()
     {
         $this->post('api/v1/auth/reset', [
             'email' => 'unknown@email.com',
             'token' => 'this_code_is_invalid',
             'password' => 'mynewpass',
-            'password_confirmation' => 'mynewpass'
+            'password_confirmation' => 'mynewpass',
         ])->assertJsonStructure([
-            'error'
+            'error',
         ])->assertStatus(500);
     }
 
-    public function testResetReturnsValidationError()
+    public function test_reset_returns_validation_error()
     {
         $this->post('api/v1/auth/reset', [
             'email' => 'test@email.com',
             'token' => 'my_super_secret_code',
-            'password' => 'mynewpass'
+            'password' => 'mynewpass',
         ])->assertJsonStructure([
-            'error'
+            'error',
         ])->assertStatus(422);
     }
 }

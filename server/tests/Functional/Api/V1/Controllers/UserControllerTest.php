@@ -2,16 +2,15 @@
 
 namespace App\Functional\Api\V1\Controllers;
 
-use Hash;
-use App\User;
 use App\TestCase;
+use App\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class UserControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -19,17 +18,17 @@ class UserControllerTest extends TestCase
             'firstName' => 'Test',
             'familyName' => 'User',
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
 
         $user->save();
     }
 
-    public function testMe()
+    public function test_me()
     {
         $response = $this->post('api/v1/auth/login', [
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
 
         $response->assertStatus(200);
@@ -37,9 +36,9 @@ class UserControllerTest extends TestCase
         $responseJSON = json_decode($response->getContent(), true);
         $token = $responseJSON['token'];
 
-        $this->get('api/v1/auth/me?token=' . $token, [], [])->assertJson([
+        $this->get('api/v1/auth/me?token='.$token, [], [])->assertJson([
             'name' => 'Test',
-            'email' => 'test@email.com'
+            'email' => 'test@email.com',
         ])->isOk();
     }
 }

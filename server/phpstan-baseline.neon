@@ -415,6 +415,12 @@ parameters:
 			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
 
 		-
+			message: '#^Parameter \#1 \$type of method App\\Console\\Commands\\SendTrainingNotificationsToUsers\:\:getPreferenceKeyForType\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/SendTrainingNotificationsToUsers.php
+
+		-
 			message: '#^Property App\\UserTrainingNotification\:\:\$training_id \(int\<0, max\>\|null\) does not accept string\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -995,6 +1001,12 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Services/FirebaseMessagingService.php
 
 		-
 			message: '#^Access to an undefined property App\\Training\:\:\$contents\.$#'

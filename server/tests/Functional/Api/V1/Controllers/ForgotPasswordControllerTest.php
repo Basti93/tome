@@ -2,15 +2,15 @@
 
 namespace App\Functional\Api\V1\Controllers;
 
-use App\User;
 use App\TestCase;
+use App\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ForgotPasswordControllerTest extends TestCase
 {
     use DatabaseMigrations;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -18,36 +18,36 @@ class ForgotPasswordControllerTest extends TestCase
             'firstName' => 'Test',
             'familyName' => 'User',
             'email' => 'test@email.com',
-            'password' => '123456'
+            'password' => '123456',
         ]);
 
         $user->save();
     }
 
-    public function testForgotPasswordRecoverySuccessfully()
+    public function test_forgot_password_recovery_successfully()
     {
         $this->post('api/v1/auth/recovery', [
-            'email' => 'test@email.com'
+            'email' => 'test@email.com',
         ])->assertJson([
-            'status' => 'ok'
+            'status' => 'ok',
         ])->isOk();
     }
 
-    public function testForgotPasswordRecoveryReturnsUserNotFoundError()
+    public function test_forgot_password_recovery_returns_user_not_found_error()
     {
         $this->post('api/v1/auth/recovery', [
-            'email' => 'unknown@email.com'
+            'email' => 'unknown@email.com',
         ])->assertJsonStructure([
-            'error'
+            'error',
         ])->assertStatus(404);
     }
 
-    public function testForgotPasswordRecoveryReturnsValidationErrors()
+    public function test_forgot_password_recovery_returns_validation_errors()
     {
         $this->post('api/v1/auth/recovery', [
-            'email' => 'i am not an email'
+            'email' => 'i am not an email',
         ])->assertJsonStructure([
-            'error'
+            'error',
         ])->assertStatus(422);
     }
 }
