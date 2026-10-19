@@ -3,10 +3,8 @@
 namespace App\Console\Commands;
 
 use App\NotificationToken;
-use App\User;
-use Illuminate\Console\Command;
-use App\UserTrainingNotification;
 use App\Services\FirebaseMessagingService;
+use Illuminate\Console\Command;
 
 class TestNotification extends Command
 {
@@ -45,7 +43,7 @@ class TestNotification extends Command
         $title = $this->argument('title');
         $text = $this->argument('text');
 
-        $firebaseService = new FirebaseMessagingService();
+        $firebaseService = new FirebaseMessagingService;
 
         // Include data payload so onMessage handler is triggered
         $dataPayload = [
@@ -56,8 +54,8 @@ class TestNotification extends Command
 
         $result = $firebaseService->sendToDevices($token, $title, $text, $dataPayload);
 
-        $this->info('Message successfully sent to ' . $result['success'] . ' recipients');
-        $this->info('Failed to send message to ' . $result['failure'] . ' recipients');
+        $this->info('Message successfully sent to '.$result['success'].' recipients');
+        $this->info('Failed to send message to '.$result['failure'].' recipients');
 
         // Clean up invalid tokens
         foreach ($result['tokensToDelete'] as $tokenToDelete) {

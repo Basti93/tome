@@ -6,8 +6,6 @@ use App\Api\V1\Requests\ChangePasswordRequest;
 use App\Http\Controllers\Controller;
 use App\User;
 use Auth;
-use Config;
-use Mail;
 
 class ChangePasswordController extends Controller
 {
@@ -30,5 +28,4 @@ class ChangePasswordController extends Controller
             'status' => 'ok',
         ], 201);
     }
-
 }

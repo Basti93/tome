@@ -28,19 +28,20 @@ class LocationController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
+
         return LocationResource::collection(Location::orderBy('name')->paginate($per_page));
     }
 
     public function store(StoreLocationRequest $request)
     {
-        $location = new Location();
+        $location = new Location;
 
         $location->name = $request->input('name');
         $location->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -53,11 +54,10 @@ class LocationController extends Controller
         $location->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
-
 
     public function destroy($id)
     {
@@ -68,6 +68,4 @@ class LocationController extends Controller
             'status' => 'ok',
         ], 201);
     }
-
-
 }

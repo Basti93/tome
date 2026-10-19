@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Training;
-use App\TrainingSeries;
-use App\Group;
 use App\Content;
-use App\User;
+use App\Group;
 use App\Location;
+use App\Training;
+use App\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class TrainingsTableSeeder extends Seeder
 {
@@ -22,8 +21,8 @@ class TrainingsTableSeeder extends Seeder
     {
         $locations = Location::all();
         $groups = Group::all();
-        $trainers = User::whereHas('roles', fn($q) => $q->where('name', 'trainer'))->get();
-        $members = User::whereHas('roles', fn($q) => $q->where('name', 'member'))->get();
+        $trainers = User::whereHas('roles', fn ($q) => $q->where('name', 'trainer'))->get();
+        $members = User::whereHas('roles', fn ($q) => $q->where('name', 'member'))->get();
         $contents = Content::all();
 
         if ($locations->isEmpty() || $groups->isEmpty() || $trainers->isEmpty() || $contents->isEmpty()) {
@@ -49,7 +48,7 @@ class TrainingsTableSeeder extends Seeder
             $training = new Training([
                 'start' => $start->toDateTimeString(),
                 'end' => $end->toDateTimeString(),
-                'comment' => 'Past training ' . ($i + 1),
+                'comment' => 'Past training '.($i + 1),
                 'prepared' => 1,
                 'evaluated' => rand(0, 1), // Some already evaluated, some pending
                 'location_id' => $locations->random()->id,
@@ -75,7 +74,7 @@ class TrainingsTableSeeder extends Seeder
             foreach ($members->random(rand(3, min(8, $members->count()))) as $member) {
                 $participantIds[$member->id] = ['attend' => rand(0, 1)];
             }
-            if (!empty($participantIds)) {
+            if (! empty($participantIds)) {
                 $training->participants()->syncWithoutDetaching($participantIds);
             }
         }
@@ -100,7 +99,7 @@ class TrainingsTableSeeder extends Seeder
             $training = new Training([
                 'start' => $start->toDateTimeString(),
                 'end' => $end->toDateTimeString(),
-                'comment' => 'Seeded training ' . ($i + 1),
+                'comment' => 'Seeded training '.($i + 1),
                 'prepared' => rand(0, 1),
                 'evaluated' => 0, // Future trainings not yet evaluated
                 'location_id' => $locations->random()->id,
@@ -126,7 +125,7 @@ class TrainingsTableSeeder extends Seeder
             foreach ($members->random(rand(3, min(8, $members->count()))) as $member) {
                 $participantIds[$member->id] = ['attend' => rand(0, 1)];
             }
-            if (!empty($participantIds)) {
+            if (! empty($participantIds)) {
                 $training->participants()->syncWithoutDetaching($participantIds);
             }
         }

@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\TrainingSeries;
-use App\Group;
 use App\Content;
-use App\User;
+use App\Group;
 use App\Location;
+use App\TrainingSeries;
+use App\User;
+use Illuminate\Database\Seeder;
 
 class TrainingSeriesTableSeeder extends Seeder
 {
@@ -23,7 +23,7 @@ class TrainingSeriesTableSeeder extends Seeder
         $trainer = User::where('email', 'trainer@tome.local')->first();
         $contents = Content::whereIn('name', ['Boden', 'Sprung', 'Schwebebalken'])->get();
 
-        if (!$group || !$trainer || $contents->isEmpty()) {
+        if (! $group || ! $trainer || $contents->isEmpty()) {
             return;
         }
 

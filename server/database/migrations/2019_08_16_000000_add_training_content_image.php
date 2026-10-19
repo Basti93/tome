@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddTrainingContentImage extends Migration
 {
@@ -13,7 +12,7 @@ class AddTrainingContentImage extends Migration
      */
     public function up()
     {
-        Schema::table('contents', function($table) {
+        Schema::table('contents', function ($table) {
             $table->string('image_name')->nullable();
             $table->dropColumn('svg_icon');
         });
@@ -25,7 +24,5 @@ class AddTrainingContentImage extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-    }
+    public function down() {}
 }

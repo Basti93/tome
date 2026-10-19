@@ -4,16 +4,13 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\SignUpRequest;
 use App\Http\Controllers\Controller;
-use App\Mail\Welcome;
 use App\Mail\VerifyEmail;
-use App\User;
-use Config;
-use Mail;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use PHPOpenSourceSaver\JWTAuth\JWTAuth;
-use Illuminate\Support\Str;
-use DateTime;
 use App\Services\AuthLogService;
+use App\User;
+use Illuminate\Support\Str;
+use Mail;
+use PHPOpenSourceSaver\JWTAuth\JWTAuth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SignUpController extends Controller
 {
@@ -24,7 +21,7 @@ class SignUpController extends Controller
         // Generate email verification token
         $user->email_verification_token = Str::random(60);
 
-        if (!$user->save()) {
+        if (! $user->save()) {
             throw new HttpException(500);
         }
 
@@ -33,14 +30,14 @@ class SignUpController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'message' => 'Registration successful. Please check your email to verify your account.'
+            'message' => 'Registration successful. Please check your email to verify your account.',
         ], 201);
     }
 
     public function sendVerificationEmail($user)
     {
         $frontendUrl = config('app.vue_url', 'http://localhost:8080');
-        $verificationLink = $frontendUrl . '/verify-email?token=' . $user->email_verification_token;
+        $verificationLink = $frontendUrl.'/verify-email?token='.$user->email_verification_token;
         Mail::to($user)->send(new VerifyEmail($user, $verificationLink));
     }
 }

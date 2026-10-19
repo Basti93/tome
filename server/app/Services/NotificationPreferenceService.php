@@ -9,8 +9,7 @@ class NotificationPreferenceService
     /**
      * Check if a notification type is enabled for a user.
      *
-     * @param User $user
-     * @param string $type
+     * @param  string  $type
      * @return bool
      */
     public function isNotificationEnabled(User $user, $type)
@@ -21,7 +20,6 @@ class NotificationPreferenceService
     /**
      * Get all notification preferences for a user.
      *
-     * @param User $user
      * @return array
      */
     public function getPreferences(User $user)
@@ -48,8 +46,6 @@ class NotificationPreferenceService
     /**
      * Update notification preferences for a user.
      *
-     * @param User $user
-     * @param array $preferences
      * @return User
      */
     public function updatePreferences(User $user, array $preferences)
@@ -59,6 +55,7 @@ class NotificationPreferenceService
             $preferences
         );
         $user->save();
+
         return $user;
     }
 }

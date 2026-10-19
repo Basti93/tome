@@ -4,7 +4,6 @@ namespace App\Api\V1\Requests;
 
 use Config;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Training;
 
 class CreateUnregisteredUserRequest extends FormRequest
 {
@@ -17,5 +16,4 @@ class CreateUnregisteredUserRequest extends FormRequest
     {
         return true;
     }
-
 }

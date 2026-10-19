@@ -5,14 +5,12 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
-use App\Location;
 use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class TrainingController extends Controller
 {
@@ -37,7 +35,7 @@ class TrainingController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
         $groupIds = request()->query('groupIds');
 
         $trainings = Training::orderBy('start', 'desc')
@@ -59,15 +57,15 @@ class TrainingController extends Controller
 
     public function getBySort()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
         $direction = request()->query('direction');
         $sortBy = request()->query('sortBy');
         $groupIds = request()->query('groupIds');
 
-        //mapping
+        // mapping
         if ($sortBy === 'date') {
             $sortBy = 'start';
-        } else if ($sortBy === 'locationId') {
+        } elseif ($sortBy === 'locationId') {
             $sortBy = 'location_id';
         }
 
@@ -79,8 +77,8 @@ class TrainingController extends Controller
                 });
             });
 
-
         $trainings = $trainings->paginate($per_page);
+
         return TrainingResource::collection($trainings);
     }
 
@@ -111,12 +109,13 @@ class TrainingController extends Controller
     public function getUpcomingTraining($id)
     {
         $training = Training::findOrFail($id);
-        if (new DateTime($training->start) >= new DateTime()) {
+        if (new DateTime($training->start) >= new DateTime) {
             return TrainingResource::make($training);
         }
+
         return response()->json([
             'status' => 'ok',
-            'message' => 'Training with id '.$id.' could not be found or is in the past'
+            'message' => 'Training with id '.$id.' could not be found or is in the past',
         ], 200);
     }
 
@@ -133,9 +132,9 @@ class TrainingController extends Controller
                     ->whereIn('user_group.group_id', preg_split('/,/', $groupIds));
             })
             ->when($year, function ($query, $year) {
-                $from = date($year . '-01-01');
-                $to = date($year . '-12-31');
-                $query->whereBetween('trainings.start', array($from, $to));
+                $from = date($year.'-01-01');
+                $to = date($year.'-12-31');
+                $query->whereBetween('trainings.start', [$from, $to]);
             })
             ->where('training_participation.attend', 1)
             ->where('users.active', 1)
@@ -144,6 +143,7 @@ class TrainingController extends Controller
             ->select('users.id', 'users.firstName', 'users.familyName', DB::raw('count(*) as total'))
             ->orderBy('total', 'desc')
             ->get();
+
         return response()->json($result);
     }
 
@@ -152,8 +152,9 @@ class TrainingController extends Controller
         $training = Training::findOrFail($trainingId);
         $training->prepared = 1;
         $training->save();
+
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
 
@@ -162,11 +163,11 @@ class TrainingController extends Controller
         $training = Training::findOrFail($trainingId);
         $training->deleted = 1;
         $training->save();
+
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -180,7 +181,7 @@ class TrainingController extends Controller
 
     public function store(StoreTrainingRequest $request)
     {
-        $training = new Training();
+        $training = new Training;
 
         $training->location_id = $request->input('locationId');
 
@@ -192,20 +193,19 @@ class TrainingController extends Controller
         $training->trainers()->sync($request->input('trainerIds'));
         $training->groups()->sync($request->input('groupIds'));
 
-
         $contents = $request->input('contentIds');
-        if (!empty($contents)) {
+        if (! empty($contents)) {
             $training->contents()->sync($contents);
         }
 
         $participantIds = $request->input('participantIds');
-        if (!empty($participantIds)) {
+        if (! empty($participantIds)) {
             $this->updateParticipants($participantIds, $training);
         }
 
         return response()->json([
             'status' => 'ok',
-            'start' => $training->start->format('Y-m-d\TH:i:s.000\Z')
+            'start' => $training->start->format('Y-m-d\TH:i:s.000\Z'),
         ], 201);
 
     }
@@ -214,6 +214,7 @@ class TrainingController extends Controller
     {
         $training = Training::findOrFail($id);
         $user = User::findOrFail($userId);
+
         return $this->checkInBasic($user, $training);
     }
 
@@ -222,41 +223,42 @@ class TrainingController extends Controller
         $user = User::whereActive('1')->findOrFail($userId);
         if ($user === null) {
             return response()->json([
-                'status' => ' user not found'
+                'status' => ' user not found',
             ], 404);
 
         }
         $training = Training::findOrFail($id);
+
         return $this->checkInBasic($user, $training);
     }
 
     private function checkInBasic($user, $training)
     {
 
-        if (!$training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
+        if (! $training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
             return response()->json([
-                'status' => 'User is not assigned to the training group'
+                'status' => 'User is not assigned to the training group',
             ], 403);
         }
 
         $this->updateParticipant($training, $user->id);
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
     }
-
 
     public function checkOutUnregistered(Request $request, $id, $userId)
     {
         $user = User::whereActive('1')->findOrFail($userId);
         if ($user === null) {
             return response()->json([
-                'status' => 'user not found'
+                'status' => 'user not found',
             ], 404);
         }
 
         $training = Training::findOrFail($id);
+
         return $this->checkOutBasic($user, $training, $request->input('reason'));
     }
 
@@ -264,20 +266,21 @@ class TrainingController extends Controller
     {
         $training = Training::findOrFail($id);
         $user = User::findOrFail($userId);
+
         return $this->checkOutBasic($user, $training, $request->input('reason'));
     }
 
     private function checkOutBasic($user, $training, $reason)
     {
 
-        if (!$training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
+        if (! $training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
             return response()->json([
                 'status' => 'not_assigned',
                 'message' => 'User is not assigned to the training group',
             ], 403);
         }
 
-        //if training is in the next 24 hours
+        // if training is in the next 24 hours
         if (strtotime($training->start) > time() && strtotime($training->start) < (time() + 86400)) {
             if (empty($reason)) {
                 return response()->json([
@@ -286,7 +289,7 @@ class TrainingController extends Controller
                 ], 201);
             } else {
                 if ($training->participants->contains($user->id)) {
-                    $training->participants()->updateExistingPivot($user->id, array('attend' => 0, 'cancelreason' => $reason), false);
+                    $training->participants()->updateExistingPivot($user->id, ['attend' => 0, 'cancelreason' => $reason], false);
                 } else {
                     $training->participants()->attach($user, ['attend' => 0, 'cancelreason' => $reason]);
                 }
@@ -298,7 +301,7 @@ class TrainingController extends Controller
             }
         } else {
             if ($training->participants->contains($user->id)) {
-                $training->participants()->updateExistingPivot($user->id, array('attend' => 0), false);
+                $training->participants()->updateExistingPivot($user->id, ['attend' => 0], false);
             } else {
                 $training->participants()->attach($user, ['attend' => 0]);
             }
@@ -325,28 +328,24 @@ class TrainingController extends Controller
         $training->groups()->sync($request->input('groupIds'));
 
         $contents = $request->input('contentIds');
-        if (!empty($contents)) {
+        if (! empty($contents)) {
             $training->contents()->sync($contents);
         }
 
         $participantIds = $request->input('participantIds');
-        if (!empty($participantIds)) {
+        if (! empty($participantIds)) {
             $this->updateParticipants($participantIds, $training);
         }
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
 
-    /**
-     * @param $participantIds
-     * @param Training $training
-     */
     private function updateParticipants($participantIds, Training $training): void
     {
-        if (!empty($participantIds)) {
+        if (! empty($participantIds)) {
             foreach ($participantIds as $participantId) {
                 $this->updateParticipant($training, $participantId);
             }
@@ -358,14 +357,10 @@ class TrainingController extends Controller
             ->update(['attend' => 0]);
     }
 
-    /**
-     * @param Training $training
-     * @param $participantId
-     */
     private function updateParticipant(Training $training, $participantId): void
     {
         if ($training->participants->contains($participantId)) {
-            $training->participants()->updateExistingPivot($participantId, array('attend' => 1), false);
+            $training->participants()->updateExistingPivot($participantId, ['attend' => 1], false);
         } else {
             $training->participants()->attach($participantId, ['attend' => 1]);
         }
@@ -384,6 +379,4 @@ class TrainingController extends Controller
             return response()->json(error);
         }
     }
-
-
 }

@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App\NotificationToken;
-use App\User;
-use Illuminate\Console\Command;
-use App\UserTrainingNotification;
 use App\Services\FirebaseMessagingService;
 use App\Services\NotificationPreferenceService;
+use App\User;
+use App\UserTrainingNotification;
+use Illuminate\Console\Command;
 
 class SendTrainingNotificationsToUsers extends Command
 {
@@ -52,43 +52,44 @@ class SendTrainingNotificationsToUsers extends Command
 
         $this->info('storeStatus '.$this->option('storeStatus'));
 
-        $notificationPreferenceService = new NotificationPreferenceService();
+        $notificationPreferenceService = new NotificationPreferenceService;
         $preferenceKey = $this->getPreferenceKeyForType($notificationType);
 
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
         foreach ($users as $user) {
             // Check if notification type is enabled for this user
-            if ($preferenceKey && !$notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
-                $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has disabled this notification type');
+            if ($preferenceKey && ! $notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
+                $this->info('User '.$user->firstName.' '.$user->familyName.' has disabled this notification type');
+
                 continue;
             }
-            //check if notifications is already sent
-            $this->info('User ' . $user->firstName . ' ' . $user->familyName . ' has ' . count($user->notificationTokens) . ' tokens');
-            if (!$storeStatus || !UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
+            // check if notifications is already sent
+            $this->info('User '.$user->firstName.' '.$user->familyName.' has '.count($user->notificationTokens).' tokens');
+            if (! $storeStatus || ! UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
                 foreach ($user->notificationTokens as $token) {
                     array_push($recipientTokens, $token->token);
                 }
             } else {
-                $this->info('Notification already sent to ' . $user->firstName . ' ' . $user->familyName . '');
+                $this->info('Notification already sent to '.$user->firstName.' '.$user->familyName.'');
 
             }
         }
-        $this->info(sizeof($recipientTokens) . ' Recipients found');
+        $this->info(count($recipientTokens).' Recipients found');
         if (empty($recipientTokens)) {
             return;
         }
 
         // Send via Firebase
-        $firebaseService = new FirebaseMessagingService();
+        $firebaseService = new FirebaseMessagingService;
         $dataPayload = [
             'click_action' => empty($url) ? config('app.vue_url') : $url,
         ];
 
         $result = $firebaseService->sendToDevices($recipientTokens, $title, $data, $dataPayload);
 
-        $this->info('Message successfully sent to ' . $result['success'] . ' recipients');
-        $this->info('Failed to send message to ' . $result['failure'] . ' recipients');
+        $this->info('Message successfully sent to '.$result['success'].' recipients');
+        $this->info('Failed to send message to '.$result['failure'].' recipients');
 
         // Clean up invalid tokens
         foreach ($result['tokensToDelete'] as $tokenToDelete) {
@@ -96,10 +97,10 @@ class SendTrainingNotificationsToUsers extends Command
         }
 
         if ($storeStatus) {
-            //update notification table
+            // update notification table
             UserTrainingNotification::whereType($notificationType)->delete();
             foreach ($users as $user) {
-                $utn = new UserTrainingNotification();
+                $utn = new UserTrainingNotification;
                 $utn->user_id = $user->id;
                 $utn->training_id = $trainingId;
                 $utn->type = $notificationType;
@@ -111,7 +112,7 @@ class SendTrainingNotificationsToUsers extends Command
     /**
      * Map notification type to preference key.
      *
-     * @param int $type
+     * @param  int  $type
      * @return string|null
      */
     private function getPreferenceKeyForType($type)
@@ -121,6 +122,7 @@ class SendTrainingNotificationsToUsers extends Command
             2 => 'trainer_cancel_alert',
             3 => 'participant_upcoming',
         ];
+
         return $typeMap[$type] ?? null;
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateUsersTable extends Migration
 {
@@ -27,29 +27,29 @@ class CreateUsersTable extends Migration
             $table->timestamps();
         });
 
-      Schema::create('user_group', function (Blueprint $table) {
-        $table->increments('id');
-        $table->unsignedInteger('group_id')->nullable();
-        $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-        $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-      });
+        Schema::create('user_group', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('group_id')->nullable();
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
 
-      Schema::create('trainer_group', function (Blueprint $table) {
-        $table->increments('id');
-        $table->unsignedInteger('group_id')->nullable();
-        $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-        $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-      });
+        Schema::create('trainer_group', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('group_id')->nullable();
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
 
-      Schema::create('user_notification_token', function (Blueprint $table) {
-        $table->increments('id');
-        $table->string('token')->unique();
-        $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        $table->timestamps();
-      });
+        Schema::create('user_notification_token', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('token')->unique();
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
+        });
 
     }
 

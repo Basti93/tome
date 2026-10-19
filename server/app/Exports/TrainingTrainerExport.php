@@ -5,15 +5,16 @@ namespace App\Exports;
 use App\Location;
 use App\Training;
 use App\TrainingTrainer;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class TrainingTrainerExport implements FromCollection, WithHeadings, ShouldAutoSize, WithMapping
+class TrainingTrainerExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping
 {
-
     protected $id;
+
     public function __construct($user, $from, $to)
     {
         $this->user = $user;
@@ -27,14 +28,15 @@ class TrainingTrainerExport implements FromCollection, WithHeadings, ShouldAutoS
     }
 
     /**
-     * @var TrainingTrainer $trainingTrainer
+     * @var TrainingTrainer
      */
     public function map($trainingTrainer): array
     {
         $training = Training::whereId($trainingTrainer->training_id)->first();
         $location = Location::whereId($training->location_id)->first();
+
         return [
-            $this->user->firstName." ".$this->user->familyName,
+            $this->user->firstName.' '.$this->user->familyName,
             $location === null ? '' : $location->name,
             $trainingTrainer->accounting_time_start->format('d.m.Y'),
             $trainingTrainer->accounting_time_start->format('H:i'),
@@ -45,12 +47,12 @@ class TrainingTrainerExport implements FromCollection, WithHeadings, ShouldAutoS
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return Collection
+     */
     public function collection()
     {
         return TrainingTrainer::where('user_id', $this->user->id)
-            ->whereBetween('accounting_time_start', array($this->from, $this->to))
+            ->whereBetween('accounting_time_start', [$this->from, $this->to])
             ->get();
     }
 }

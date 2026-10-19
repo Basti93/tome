@@ -16,6 +16,4 @@ class StoreGroupRequest extends FormRequest
     {
         return true;
     }
-
 }
-

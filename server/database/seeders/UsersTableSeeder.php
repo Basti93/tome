@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\User;
 use App\Branch;
 use App\Group;
+use App\User;
+use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
 {
@@ -75,7 +75,7 @@ class UsersTableSeeder extends Seeder
         $maleMembers = [];
         for ($i = 1; $i <= 30; $i++) {
             $user = User::firstOrNew(['email' => "male_member_{$i}@tome.local"]);
-            $user->firstName = "Male Member";
+            $user->firstName = 'Male Member';
             $user->familyName = "User {$i}";
             $user->password = 'password';
             $user->active = 1;
@@ -94,7 +94,7 @@ class UsersTableSeeder extends Seeder
         $femaleMembers = [];
         for ($i = 1; $i <= 30; $i++) {
             $user = User::firstOrNew(['email' => "female_member_{$i}@tome.local"]);
-            $user->firstName = "Female Member";
+            $user->firstName = 'Female Member';
             $user->familyName = "User {$i}";
             $user->password = 'password';
             $user->active = 1;
@@ -112,7 +112,7 @@ class UsersTableSeeder extends Seeder
         // Create 5 additional trainers and assign to branches
         for ($i = 1; $i <= 5; $i++) {
             $user = User::firstOrNew(['email' => "trainer_{$i}@tome.local"]);
-            $user->firstName = "Additional Trainer";
+            $user->firstName = 'Additional Trainer';
             $user->familyName = "{$i}";
             $user->password = 'password';
             $user->active = 1;

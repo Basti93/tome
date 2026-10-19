@@ -22,5 +22,4 @@ class Group extends Model
     {
         return $this->users->where('active', 1)->pluck('pivot.user_id');
     }
-
 }

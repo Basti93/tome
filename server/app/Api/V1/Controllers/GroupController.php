@@ -6,7 +6,6 @@ use App\Api\V1\Requests\StoreGroupRequest;
 use App\Group;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Group as GroupResource;
-use Auth;
 
 class GroupController extends Controller
 {
@@ -29,7 +28,8 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
+
         return GroupResource::collection(Group::orderBy('branch_id')->orderBy('name')->paginate($per_page));
     }
 
@@ -45,7 +45,7 @@ class GroupController extends Controller
 
     public function store(StoreGroupRequest $request)
     {
-        $group = new Group();
+        $group = new Group;
 
         $group->name = $request->input('name');
         $group->branch_id = $request->input('branchId');
@@ -54,7 +54,7 @@ class GroupController extends Controller
         $group->users()->sync($request->input('userIds'));
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -70,7 +70,7 @@ class GroupController extends Controller
         $group->users()->sync($request->input('userIds'));
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
 
     }
@@ -84,5 +84,4 @@ class GroupController extends Controller
             'status' => 'ok',
         ], 200);
     }
-
 }

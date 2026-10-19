@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class RemoveApprovedColumn extends Migration
 {
@@ -12,7 +12,7 @@ class RemoveApprovedColumn extends Migration
      */
     public function up()
     {
-        Schema::table('users', function($table) {
+        Schema::table('users', function ($table) {
             $table->dropColumn('approved');
         });
 
@@ -23,7 +23,5 @@ class RemoveApprovedColumn extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-    }
+    public function down() {}
 }

@@ -4,8 +4,6 @@ namespace App\Console\Commands;
 
 use App\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-
 
 class AbsenceNotification extends Command
 {
@@ -53,22 +51,21 @@ class AbsenceNotification extends Command
                 $query->whereHas('trainerBranches', function ($query) use ($branchIds) {
                     $query->whereIn('branch_id', $branchIds);
                 });
-            })->get();;
+            })->get();
 
-        $trainerArrayString = implode(",", $trainers->pluck('id')->toArray());
+        $trainerArrayString = implode(',', $trainers->pluck('id')->toArray());
 
-        $this->info('Trainers for branch ids '.implode(",", $branchIds).' with ids  ' . $trainerArrayString);
+        $this->info('Trainers for branch ids '.implode(',', $branchIds).' with ids  '.$trainerArrayString);
         $this->info('From '.$from);
         $this->info('Until '.$until);
 
         $this->call('notification:sendToUsers', [
             'userIds' => $trainerArrayString,
-            'title' => 'Abwesenheit ' . $user->firstName . " " . $user->familyName,
-            'data' => "Von " . $from . " bis " . $until . "\r\nGrund: " . $absenceReason,
-            '--url' => config('app.vue_url') . '/#/absenceForm',
+            'title' => 'Abwesenheit '.$user->firstName.' '.$user->familyName,
+            'data' => 'Von '.$from.' bis '.$until."\r\nGrund: ".$absenceReason,
+            '--url' => config('app.vue_url').'/#/absenceForm',
             '--type' => 'absence_alert',
         ]);
-
 
     }
 }

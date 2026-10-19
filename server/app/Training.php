@@ -8,6 +8,7 @@ class Training extends Model
 {
     //
     protected $appends = ['group_ids', 'trainer_ids', 'content_ids'];
+
     protected $hidden = ['updated_at', 'created_at'];
 
     public function participants()
@@ -59,6 +60,4 @@ class Training extends Model
     {
         return $this->contents->pluck('pivot.content_id');
     }
-
 }
-

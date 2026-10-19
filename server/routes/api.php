@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -144,7 +145,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('refresh', function () {
             return response()->json([
-                'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!'
+                'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!',
             ]);
         })->middleware('jwt.refresh');
     });
@@ -153,7 +154,7 @@ Route::prefix('v1')->group(function () {
         return 'Hello World!';
     });
     Route::get('/mailtest', function () {
-        \Illuminate\Support\Facades\Mail::raw('Test Mail', function ($message) {
+        Mail::raw('Test Mail', function ($message) {
             $message->to('bindersebastian@online.de');
         });
     });

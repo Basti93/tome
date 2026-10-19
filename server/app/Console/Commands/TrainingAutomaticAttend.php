@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Training;
 use App\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class TrainingAutomaticAttend extends Command
 {
@@ -41,10 +40,10 @@ class TrainingAutomaticAttend extends Command
     public function handle()
     {
         $now = date('Y-m-d H:i:s');
-        $tomorrow = date("Y-m-d H:i:s", time() + 86400);
+        $tomorrow = date('Y-m-d H:i:s', time() + 86400);
         $this->info('Startet at '.$now);
         $this->info('Check until '.$tomorrow);
-        $closedTrainings = Training::whereBetween('start', array($now, $tomorrow))->where('deleted', false)->where('automatic_attend', 1)->get();
+        $closedTrainings = Training::whereBetween('start', [$now, $tomorrow])->where('deleted', false)->where('automatic_attend', 1)->get();
 
         $this->info('Found  '.count($closedTrainings).' Trainings in the next 24h');
 
@@ -55,13 +54,13 @@ class TrainingAutomaticAttend extends Command
             $groupMembers = User::whereActive(1)
                 ->whereNull('absenceStart')
                 ->whereNull('absenceEnd')
-                    ->whereHas('groups', function ($query) use ($groupIds) {
-                        $query->whereIn('groups.id', $groupIds);
+                ->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('groups.id', $groupIds);
                 })->get();
             $this->info('Found '.count($groupMembers).' possible attendies for training at '.$training->start);
             foreach ($groupMembers as $groupMember) {
-                //add all users who have not clicked on attending or not-attending
-                if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
+                // add all users who have not clicked on attending or not-attending
+                if (! $training->participants()->where('user_id', $groupMember->id)->exists()) {
                     $this->info('User with id '.$groupMember->id.' will automatically attend the training');
                     $training->participants()->attach($groupMember, ['attend' => 1]);
                 } else {
@@ -78,8 +77,8 @@ class TrainingAutomaticAttend extends Command
 
             $this->info('Found '.count($absenceMembers).' absence members for training at '.$training->start);
             foreach ($absenceMembers as $groupMember) {
-                //add all users who have not clicked on attending or not-attending
-                if (!$training->participants()->where('user_id', $groupMember->id)->exists()) {
+                // add all users who have not clicked on attending or not-attending
+                if (! $training->participants()->where('user_id', $groupMember->id)->exists()) {
                     $this->info('User with id '.$groupMember->id.' is absence');
                     $training->participants()->attach($groupMember, ['attend' => 0, 'cancelreason' => '[Abwesenheit bis '.$groupMember->absenceEnd.'] '.$groupMember->absenceReason]);
                 }

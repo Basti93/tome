@@ -6,11 +6,8 @@ use App\Api\V1\Requests\StoreTrainingSeriesRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TrainingSeries as TrainingSeriesResource;
 use App\TrainingSeries;
-use App\User;
 use DateTime;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 
 class TrainingSeriesController extends Controller
 {
@@ -33,7 +30,7 @@ class TrainingSeriesController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 100 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 100 : (int) request('per_page');
         $groupIds = request()->query('groupIds');
 
         $trainings = TrainingSeries::latest()
@@ -64,7 +61,7 @@ class TrainingSeriesController extends Controller
 
     public function store(StoreTrainingSeriesRequest $request)
     {
-        $training = new TrainingSeries();
+        $training = new TrainingSeries;
 
         $training->location_id = $request->input('locationId');
 
@@ -82,7 +79,7 @@ class TrainingSeriesController extends Controller
         Artisan::call('training:series');
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -107,7 +104,7 @@ class TrainingSeriesController extends Controller
         Artisan::call('training:series');
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -117,6 +114,7 @@ class TrainingSeriesController extends Controller
         $series = TrainingSeries::findOrFail($id);
         if ($series) {
             $series->delete();
+
             return response()->json([
                 'status' => 'ok',
             ], 201);
@@ -124,6 +122,4 @@ class TrainingSeriesController extends Controller
             return response()->json(error);
         }
     }
-
-
 }

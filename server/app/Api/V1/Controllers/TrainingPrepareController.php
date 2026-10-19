@@ -3,12 +3,11 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Location;
+use App\Http\Resources\Training as TrainingResource;
 use App\Training;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\Training as TrainingResource;
 
 class TrainingPrepareController extends Controller
 {
@@ -41,8 +40,9 @@ class TrainingPrepareController extends Controller
         $training = Training::findOrFail($trainingId);
         $training->prepared = 1;
         $training->save();
+
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
 
@@ -56,7 +56,7 @@ class TrainingPrepareController extends Controller
         $training->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
 
@@ -69,7 +69,7 @@ class TrainingPrepareController extends Controller
         $training->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
 
@@ -82,7 +82,7 @@ class TrainingPrepareController extends Controller
         $training->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
 
@@ -94,9 +94,7 @@ class TrainingPrepareController extends Controller
         $training->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
     }
-
-
 }

@@ -16,5 +16,4 @@ class StoreUserAbsenceRequest extends FormRequest
     {
         return true;
     }
-
 }

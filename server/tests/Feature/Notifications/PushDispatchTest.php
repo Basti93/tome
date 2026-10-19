@@ -4,6 +4,7 @@ namespace Tests\Feature\Notifications;
 
 use App\NotificationToken;
 use App\Services\FirebaseMessagingService;
+use App\Training;
 use App\User;
 use App\UserTrainingNotification;
 use Database\Factories\BranchFactory;
@@ -12,6 +13,8 @@ use Database\Factories\LocationFactory;
 use Database\Factories\TrainingFactory;
 use Database\Factories\UserFactory;
 use Mockery;
+use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tests\TestCase;
@@ -25,7 +28,7 @@ use Tests\TestCase;
 #[PreserveGlobalState(false)]
 class PushDispatchTest extends TestCase
 {
-    /** @var \Mockery\MockInterface */
+    /** @var MockInterface */
     private $firebase;
 
     /** @var array<int, array{tokens: array, title: string, body: string, data: array}> */
@@ -145,7 +148,7 @@ class PushDispatchTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('trainingTypes')]
+    #[DataProvider('trainingTypes')]
     public function test_training_context_skips_users_who_disabled_the_matching_preference(int $type, string $preference): void
     {
         $on = $this->userWithToken('on');
@@ -202,7 +205,7 @@ class PushDispatchTest extends TestCase
 
     // ---- reminder commands -------------------------------------------------------
 
-    private function soonTraining(): \App\Training
+    private function soonTraining(): Training
     {
         return TrainingFactory::new()->between(now()->addHours(2)->format('Y-m-d H:i:s'), now()->addHours(3)->format('Y-m-d H:i:s'))
             ->create(['location_id' => LocationFactory::new()->create(['name' => 'Halle 1'])->id]);

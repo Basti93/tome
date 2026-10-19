@@ -5,7 +5,6 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\StoreBranchRequest;
 use App\Branch;
 use App\Http\Controllers\Controller;
-
 use App\Http\Resources\Branch as BranchResource;
 
 class BranchController extends Controller
@@ -29,13 +28,14 @@ class BranchController extends Controller
      */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
+
         return BranchResource::collection(Branch::orderBy('name')->paginate($per_page));
     }
 
     public function store(StoreBranchRequest $request)
     {
-        $branch = new Branch();
+        $branch = new Branch;
 
         $branch->name = $request->input('name');
         $branch->short_name = $request->input('shortName');
@@ -44,7 +44,7 @@ class BranchController extends Controller
         $branch->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -59,11 +59,10 @@ class BranchController extends Controller
         $branch->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
-
 
     public function destroy($id)
     {
@@ -74,6 +73,4 @@ class BranchController extends Controller
             'status' => 'ok',
         ], 201);
     }
-
-
 }

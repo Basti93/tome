@@ -6,7 +6,6 @@ use App\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 class Welcome extends Mailable
 {
@@ -16,8 +15,6 @@ class Welcome extends Mailable
 
     /**
      * Create a new message instance.
-     *
-     * @param User $user
      */
     public function __construct(User $user)
     {

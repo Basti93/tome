@@ -2,9 +2,9 @@
 
 namespace App\Api\V1\Requests;
 
+use App\User;
 use Config;
 use Illuminate\Foundation\Http\FormRequest;
-use App\User;
 
 class StoreUserRequest extends FormRequest
 {

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Content;
 use App\Branch;
+use App\Content;
+use Illuminate\Database\Seeder;
 
 class ContentsV2TableSeeder extends Seeder
 {
@@ -42,7 +42,6 @@ class ContentsV2TableSeeder extends Seeder
         Content::where('name', 'Krafttraining')
             ->where('branch_id', Branch::whereName('Gerätturnen männlich')->first()->id)
             ->update(['image_name' => 'strength.png']);
-
 
         Content::where('name', 'Schwebebalken')
             ->where('branch_id', Branch::whereName('Gerätturnen weiblich')->first()->id)

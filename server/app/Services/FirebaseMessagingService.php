@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
-use Kreait\Firebase\Exception\MessagingException;
-use Illuminate\Support\Facades\Log;
 
 class FirebaseMessagingService
 {
@@ -16,14 +16,14 @@ class FirebaseMessagingService
     {
         try {
             $credentialsPath = env('FIREBASE_CREDENTIALS_PATH');
-            if (!$credentialsPath || !file_exists($credentialsPath)) {
-                throw new \Exception('Firebase credentials file not found at: ' . $credentialsPath);
+            if (! $credentialsPath || ! file_exists($credentialsPath)) {
+                throw new \Exception('Firebase credentials file not found at: '.$credentialsPath);
             }
 
-            $factory = (new Factory())->withServiceAccount($credentialsPath);
+            $factory = (new Factory)->withServiceAccount($credentialsPath);
             $this->messaging = $factory->createMessaging();
         } catch (\Exception $e) {
-            Log::error('Firebase initialization failed: ' . $e->getMessage());
+            Log::error('Firebase initialization failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -31,10 +31,10 @@ class FirebaseMessagingService
     /**
      * Send a message to one or multiple devices
      *
-     * @param array|string $tokens Single token or array of tokens
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data to send
+     * @param  array|string  $tokens  Single token or array of tokens
+     * @param  string  $title  Notification title
+     * @param  string  $body  Notification body
+     * @param  array  $data  Additional data to send
      * @return array Result with success/failure counts
      */
     public function sendToDevices($tokens, string $title, string $body, array $data = []): array
@@ -60,7 +60,7 @@ class FirebaseMessagingService
         foreach ($tokens as $token) {
             try {
                 Log::info("Attempting to send message to token: {$token}");
-                Log::info("Message data: " . json_encode($dataPayload));
+                Log::info('Message data: '.json_encode($dataPayload));
 
                 $targetedMessage = $message->withChangedTarget('token', $token);
                 $result = $this->messaging->send($targetedMessage);
@@ -85,7 +85,7 @@ class FirebaseMessagingService
             } catch (\Exception $e) {
                 $failureCount++;
                 $tokensToRetry[] = $token;
-                Log::error("❌ Unexpected exception for token {$token}: " . $e->getMessage(), [
+                Log::error("❌ Unexpected exception for token {$token}: ".$e->getMessage(), [
                     'exception' => get_class($e),
                     'code' => $e->getCode(),
                     'file' => $e->getFile(),
@@ -105,10 +105,10 @@ class FirebaseMessagingService
     /**
      * Send a message to a topic
      *
-     * @param string $topic Topic name
-     * @param string $title Notification title
-     * @param string $body Notification body
-     * @param array $data Additional data to send
+     * @param  string  $topic  Topic name
+     * @param  string  $title  Notification title
+     * @param  string  $body  Notification body
+     * @param  array  $data  Additional data to send
      * @return bool Success status
      */
     public function sendToTopic(string $topic, string $title, string $body, array $data = []): bool
@@ -120,15 +120,17 @@ class FirebaseMessagingService
                 ->withNotification($notification)
                 ->withChangedTarget('topic', $topic);
 
-            if (!empty($data)) {
+            if (! empty($data)) {
                 $message = $message->withData($data);
             }
 
             $this->messaging->send($message);
             Log::info("FCM message sent successfully to topic: {$topic}");
+
             return true;
         } catch (\Exception $e) {
-            Log::error("FCM topic send failed for topic {$topic}: " . $e->getMessage());
+            Log::error("FCM topic send failed for topic {$topic}: ".$e->getMessage());
+
             return false;
         }
     }

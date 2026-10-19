@@ -5,15 +5,16 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\SimpleUser as SimpleUserResource;
+use App\Services\NotificationPreferenceService;
 use App\User;
 use Auth;
 use DateTime;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Services\NotificationPreferenceService;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -34,7 +35,7 @@ class UserController extends Controller
     /**
      * Get the authenticated User
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function me()
     {
@@ -53,11 +54,11 @@ class UserController extends Controller
         $searchText = request()->query('searchText');
 
         $users = null;
-        if (!empty($searchText)) {
+        if (! empty($searchText)) {
             $users = User::latest()->when($searchText, function ($query, $searchText) {
                 $query->where(function ($query) use ($searchText) {
-                    $query->where('firstName', 'like', '%' . $searchText . '%')
-                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
+                    $query->where('firstName', 'like', '%'.$searchText.'%')
+                        ->orWhere('familyName', 'like', '%'.$searchText.'%');
                 });
             });
         } else {
@@ -75,8 +76,8 @@ class UserController extends Controller
                 });
         }
 
-        if (!empty(request('per_page'))) {
-            $users = $users->paginate((int)request('per_page'));
+        if (! empty(request('per_page'))) {
+            $users = $users->paginate((int) request('per_page'));
         } else {
             $users = $users->get();
         }
@@ -86,11 +87,12 @@ class UserController extends Controller
 
     /**
      * Get users by sorting
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     *
+     * @return AnonymousResourceCollection
      */
     public function getBySort()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
 
         $direction = request()->query('direction');
         $sortBy = request()->query('sortBy');
@@ -114,15 +116,14 @@ class UserController extends Controller
             })
             ->when($searchText, function ($query, $searchText) {
                 $query->where(function ($query) use ($searchText) {
-                    $query->where('firstName', 'like', '%' . $searchText . '%')
-                        ->orWhere('familyName', 'like', '%' . $searchText . '%');
+                    $query->where('firstName', 'like', '%'.$searchText.'%')
+                        ->orWhere('familyName', 'like', '%'.$searchText.'%');
                 });
             })
             ->paginate($per_page);
 
         return response()->json($users);
     }
-
 
     /**
      * Get users who are trainers.
@@ -151,8 +152,8 @@ class UserController extends Controller
 
         $birthdayUser = User::select('firstName', 'familyName', 'birthdate')
             ->where('active', 1)
-            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') >= ?", array($start->format('m-d')))
-            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') <= ?", array($end->format('m-d')))
+            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') >= ?", [$start->format('m-d')])
+            ->whereRaw("DATE_FORMAT( birthdate, '%m-%d') <= ?", [$end->format('m-d')])
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
@@ -168,7 +169,7 @@ class UserController extends Controller
 
         $user = User::findOrFail(Auth::user()->id);
 
-        //only allow update of groups for users with special rights
+        // only allow update of groups for users with special rights
         if ($user->can('update-user')) {
             $user->groups()->sync($request->input('groupIds'));
             $user->trainerBranches()->sync($request->input('trainerBranchIds'));
@@ -180,7 +181,7 @@ class UserController extends Controller
 
         // Handle birthdate - only set if provided and not empty
         $birthdateInput = $request->input('birthdate');
-        if (!empty($birthdateInput)) {
+        if (! empty($birthdateInput)) {
             $parsedDate = DateTime::createFromFormat(DateTime::ISO8601, $birthdateInput);
             if ($parsedDate !== false) {
                 $user->birthdate = $parsedDate;
@@ -190,42 +191,40 @@ class UserController extends Controller
             $user->birthdate = null;
         }
 
-        //delete old image because there is a new one
-        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
+        // delete old image because there is a new one
+        if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info('delete profile image '.'/'.$user->profile_image_name);
+            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
         }
-        //set new profile image
+        // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
 
         $user->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
-
 
     public function update(StoreUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
 
-        //active boolean to 0 and 1
+        // active boolean to 0 and 1
         if ($request->has('active')) {
             $user->active = $request->input('active') == 'true' ? 1 : 0;
         }
 
-        //delete old image because there is a new one
-        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
+        // delete old image because there is a new one
+        if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info('delete profile image '.'/'.$user->profile_image_name);
+            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
         }
-        //set new profile image
+        // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
 
-
-        if (!$user->update($request->all())) {
+        if (! $user->update($request->all())) {
             throw new HttpException(500);
         }
 
@@ -233,36 +232,36 @@ class UserController extends Controller
         $user->trainerBranches()->sync($request->input('trainerBranchIds'));
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
 
     public function createUnregistered(CreateUnregisteredUserRequest $request)
     {
-        $user = new User();
+        $user = new User;
 
         $user->registered = 0;
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
         $user->birthdate = $request->input('birthdate');
-        //active boolean to 0 and 1
+        // active boolean to 0 and 1
         if ($request->has('active')) {
             $user->active = $request->input('active') == 'true' ? 1 : 0;
         }
-        //delete old image because there is a new one
-        if (!empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info("delete profile image " . "/" . $user->profile_image_name);
-            Storage::disk('public_app')->delete("/" . $user->profile_image_name);
+        // delete old image because there is a new one
+        if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+            Log::info('delete profile image '.'/'.$user->profile_image_name);
+            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
         }
-        //set new profile image
+        // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
         $user->save();
 
         $user->groups()->sync($request->input('groupIds'));
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 201);
 
     }
@@ -270,7 +269,7 @@ class UserController extends Controller
     public function getAllAbsenceUsers()
     {
         $groupIds = request()->query('groupIds');
-        $per_page = empty(request('per_page')) ? 10 : (int)request('per_page');
+        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
 
         $now = date('Y-m-d H:i:s');
         $users = User::whereNotNull('absenceStart')
@@ -284,7 +283,6 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-
     public function removeAbsence($id)
     {
         $user = User::findOrFail($id);
@@ -296,7 +294,7 @@ class UserController extends Controller
         $user->save();
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
 
     }
@@ -306,6 +304,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         if ($user) {
             $user->delete();
+
             return response()->json([
                 'status' => 'ok',
             ], 201);
@@ -317,28 +316,27 @@ class UserController extends Controller
     /**
      * Get notification preferences for the authenticated user
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getNotificationPreferences()
     {
         $user = Auth::guard('api')->user();
-        $service = new NotificationPreferenceService();
+        $service = new NotificationPreferenceService;
 
         return response()->json([
-            'notification_preferences' => $service->getPreferences($user)
+            'notification_preferences' => $service->getPreferences($user),
         ], 200);
     }
 
     /**
      * Update notification preferences for the authenticated user
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function updateNotificationPreferences(Request $request)
     {
         $user = Auth::guard('api')->user();
-        $service = new NotificationPreferenceService();
+        $service = new NotificationPreferenceService;
 
         $preferences = $request->input('notification_preferences', []);
 
@@ -346,8 +344,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'notification_preferences' => $user->notification_preferences
+            'notification_preferences' => $user->notification_preferences,
         ], 200);
     }
-
 }

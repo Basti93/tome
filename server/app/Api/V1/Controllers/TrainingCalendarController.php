@@ -2,24 +2,18 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Content;
-use App\Group;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TrainingCalendar as TrainingCalendarResource;
 use App\Http\Resources\TrainingCalendarSimple as TrainingCalendarResourceSimple;
 use App\Training;
 use App\TrainingSeries;
-use App\User;
-use Illuminate\Support\Facades\DB;
-use DateTime;
 use DateInterval;
 use DatePeriod;
+use DateTime;
 use Illuminate\Support\Facades\Log;
 
 class TrainingCalendarController extends Controller
 {
-
-
     /**
      * Create a new AuthController instance.
      *
@@ -50,6 +44,7 @@ class TrainingCalendarController extends Controller
 
         return TrainingCalendarResourceSimple::collection($this->getTrainingsByTimeperiod($start, $end, $groupIds));
     }
+
     public function getPlannedTrainings()
     {
         $dateFormat = 'Y-m-d';
@@ -58,29 +53,29 @@ class TrainingCalendarController extends Controller
         $end = DateTime::createFromFormat($dateFormat, request()->query('end'));
 
         return response()->json([
-            'data' => $this->getPlannedTrainingsByTimeperiod($start, $end, $groupIds)
+            'data' => $this->getPlannedTrainingsByTimeperiod($start, $end, $groupIds),
         ]);
     }
 
-
-    private function getPlannedTrainingsByTimeperiod($start, $end, $groupIds) {
+    private function getPlannedTrainingsByTimeperiod($start, $end, $groupIds)
+    {
         $plannedTrainings = [];
 
-        $nextWeek = new DateTime();
-        $nextWeek->setTime(00,00);
+        $nextWeek = new DateTime;
+        $nextWeek->setTime(00, 00);
         $nextWeek->modify('+7 day');
-        //don' add series that are already created (trainings are created one week in advance)
+        // don' add series that are already created (trainings are created one week in advance)
         if ($end > $nextWeek) {
             $allSeries = TrainingSeries::when($groupIds, function ($query, $groupIds) {
-                    $query->whereHas('groups', function ($query) use ($groupIds) {
-                        $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                    });
-                })->where('defer_until', '<', $start)
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })->where('defer_until', '<', $start)
                 ->get();
-            Log::info('found '.sizeof($allSeries));
+            Log::info('found '.count($allSeries));
             $interval = DateInterval::createFromDateString('1 day');
-            $today = new DateTime();
-            $today->setTime(00,00);
+            $today = new DateTime;
+            $today->setTime(00, 00);
             $periodStart = $start;
             if ($start < $today) {
                 $periodStart = $nextWeek;
@@ -91,6 +86,7 @@ class TrainingCalendarController extends Controller
                 $plannedTrainings = array_merge($plannedTrainings, $this->createTrainingsForSeries($series, $period));
             }
         }
+
         return $plannedTrainings;
     }
 
@@ -106,7 +102,7 @@ class TrainingCalendarController extends Controller
             $query->whereDate('start', $day);
         })
             ->when(is_null($day), function ($query) use ($start, $end) {
-                $query->whereBetween('start', array($start, $end));
+                $query->whereBetween('start', [$start, $end]);
             })
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
@@ -116,20 +112,21 @@ class TrainingCalendarController extends Controller
             ->get();
     }
 
-    private function createTrainingsForSeries($series, $period) {
+    private function createTrainingsForSeries($series, $period)
+    {
         $weekdaysArray = json_decode($series->weekdays);
         $result = [];
 
-        //iterate through the days
+        // iterate through the days
         $tempId = (-$series->id) * 1000;
         foreach ($period as $dt) {
 
-            $dayNumber = $dt->format("N");
-            //check if series has this day
+            $dayNumber = $dt->format('N');
+            // check if series has this day
 
             if (in_array($dayNumber, $weekdaysArray)) {
-                //create training from series data
-                $training = new \stdClass();
+                // create training from series data
+                $training = new \stdClass;
                 $training->id = $tempId;
                 $training->start = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->startTime)->format(DateTime::ATOM);
                 $training->end = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->endTime)->format(DateTime::ATOM);
@@ -137,7 +134,7 @@ class TrainingCalendarController extends Controller
                 $training->training_series_id = $series->id;
                 $training->location_id = $series->location_id;
                 $training->group_ids = $series->group_ids;
-                Log::info("after t : ".$training->group_ids);
+                Log::info('after t : '.$training->group_ids);
                 $training->trainer_ids = $series->trainer_ids;
                 $training->content_ids = $series->content_ids;
 
@@ -145,13 +142,15 @@ class TrainingCalendarController extends Controller
                 $tempId = $tempId - 1;
             }
         }
+
         return $result;
     }
 
-    private function toDateAddTime($dateString, $timeString) {
+    private function toDateAddTime($dateString, $timeString)
+    {
         $date = DateTime::createFromFormat(DateTime::ISO8601, $dateString);
         $time = DateTime::createFromFormat('H:i:s', $timeString);
-        return $date->setTime($time->format("H"), $time->format("i"));
-    }
 
+        return $date->setTime($time->format('H'), $time->format('i'));
+    }
 }

@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Location;
-use Illuminate\Console\Command;
 use App\Training;
 use DateTime;
+use Illuminate\Console\Command;
 
 class UpcomingTrainingNotifications extends Command
 {
@@ -41,22 +41,22 @@ class UpcomingTrainingNotifications extends Command
     public function handle()
     {
         $now = date('Y-m-d H:i:s');
-        $in4Hours = date("Y-m-d H:i:s", time() + 14400);
-        $upcomingTrainings = Training::with('participants', 'participants.notificationTokens')->whereBetween('start', array($now, $in4Hours))->get();
-        $this->info('Found  ' . count($upcomingTrainings) . ' Trainings in the next 4h (' . $now . ') - (' . $in4Hours . ')');
+        $in4Hours = date('Y-m-d H:i:s', time() + 14400);
+        $upcomingTrainings = Training::with('participants', 'participants.notificationTokens')->whereBetween('start', [$now, $in4Hours])->get();
+        $this->info('Found  '.count($upcomingTrainings).' Trainings in the next 4h ('.$now.') - ('.$in4Hours.')');
 
         foreach ($upcomingTrainings as $training) {
             $location = Location::whereId($training->location_id)->first();
-            $this->info('Processing Training at  ' . $training->start);
-            $participantIds = implode(",", $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray());
-            $this->info('Sending to users with ids ' . $participantIds);
+            $this->info('Processing Training at  '.$training->start);
+            $participantIds = implode(',', $training->participants()->whereAttend(1)->pluck('training_participation.user_id')->toArray());
+            $this->info('Sending to users with ids '.$participantIds);
             $this->call('notification:sendToUsersTrainingContext', [
                 'userIds' => $participantIds,
                 'trainingId' => $training->id,
                 'title' => 'Erinnerung: Dein Training startet in Kürze',
-                'data' => "Zeit: " . DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format("H:i") . "\r\nOrt: " . $location->name,
+                'data' => 'Zeit: '.DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format('H:i')."\r\nOrt: ".$location->name,
                 'notificationType' => 3,
-                '--storeStatus' => true
+                '--storeStatus' => true,
             ]);
         }
 

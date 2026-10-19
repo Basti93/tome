@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateTrainingsTables extends Migration
 {
@@ -27,39 +27,39 @@ class CreateTrainingsTables extends Migration
             $table->timestamps();
         });
 
-      Schema::create('training_trainer', function (Blueprint $table) {
-        $table->increments('id');
-        $table->unsignedInteger('training_id')->nullable();
-        $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
-        $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-      });
+        Schema::create('training_trainer', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('training_id')->nullable();
+            $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
 
-      Schema::create('training_participation', function (Blueprint $table) {
-        $table->increments('id');
-        $table->boolean('attend')->nullable();
-        $table->text('cancelreason')->nullable();
-        $table->unsignedInteger('training_id')->nullable();
-        $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
-        $table->unsignedInteger('user_id')->nullable();
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-      });
+        Schema::create('training_participation', function (Blueprint $table) {
+            $table->increments('id');
+            $table->boolean('attend')->nullable();
+            $table->text('cancelreason')->nullable();
+            $table->unsignedInteger('training_id')->nullable();
+            $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
 
-      Schema::create('training_group', function (Blueprint $table) {
-        $table->increments('id');
-        $table->unsignedInteger('training_id')->nullable();
-        $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
-        $table->unsignedInteger('group_id')->nullable();
-        $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-      });
+        Schema::create('training_group', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('training_id')->nullable();
+            $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
+            $table->unsignedInteger('group_id')->nullable();
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
+        });
 
-      Schema::create('training_content', function (Blueprint $table) {
-        $table->increments('id');
-        $table->unsignedInteger('training_id')->nullable();
-        $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
-        $table->unsignedInteger('content_id')->nullable();
-        $table->foreign('content_id')->references('id')->on('contents')->onDelete('cascade');
-      });
+        Schema::create('training_content', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('training_id')->nullable();
+            $table->foreign('training_id')->references('id')->on('trainings')->onDelete('cascade');
+            $table->unsignedInteger('content_id')->nullable();
+            $table->foreign('content_id')->references('id')->on('contents')->onDelete('cascade');
+        });
 
         Schema::create('user_training_notification', function (Blueprint $table) {
             $table->increments('id');

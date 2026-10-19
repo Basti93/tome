@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddBranchColor extends Migration
 {
@@ -13,7 +12,7 @@ class AddBranchColor extends Migration
      */
     public function up()
     {
-        Schema::table('branches', function($table) {
+        Schema::table('branches', function ($table) {
             $table->string('colorHex')->nullable();
         });
 
@@ -24,7 +23,5 @@ class AddBranchColor extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-    }
+    public function down() {}
 }

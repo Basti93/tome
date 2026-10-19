@@ -2,21 +2,17 @@
 
 namespace App\Api\V1\Controllers;
 
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
-use App\Api\V1\Requests\LoginRequest;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Auth;
 use App\Services\AuthLogService;
+use Auth;
+use Illuminate\Http\JsonResponse;
 
 class RefreshController extends Controller
 {
     /**
      * Refresh a token.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function refresh()
     {
@@ -38,7 +34,7 @@ class RefreshController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
         ])->withCookie(
             cookie('jwt_token', $token, $refreshTtlMinutes, '/', null, $secureCookie, true, false, 'Strict')
         );

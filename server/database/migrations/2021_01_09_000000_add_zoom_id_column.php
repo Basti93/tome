@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddZoomIdColumn extends Migration
 {
@@ -13,7 +12,7 @@ class AddZoomIdColumn extends Migration
      */
     public function up()
     {
-        Schema::table('trainings', function($table) {
+        Schema::table('trainings', function ($table) {
             $table->string('zoom_id')->nullable();
         });
     }
@@ -23,8 +22,5 @@ class AddZoomIdColumn extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-
-    }
+    public function down() {}
 }

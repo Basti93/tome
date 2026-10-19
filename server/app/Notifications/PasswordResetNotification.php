@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -43,18 +42,18 @@ class PasswordResetNotification extends Notification
      * Get the mail representation of the notification.
      *
      * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @return MailMessage
      */
     public function toMail($notifiable)
     {
-        $resetUrl = env('VUE_APP_API_URL', 'http://localhost:8080') . '/#/reset-password?token=' . $this->token . '&email=' . urlencode($notifiable->email);
+        $resetUrl = env('VUE_APP_API_URL', 'http://localhost:8080').'/#/reset-password?token='.$this->token.'&email='.urlencode($notifiable->email);
 
         return (new MailMessage)
             ->subject('Passwort zurücksetzen')
-            ->greeting('Hallo ' . $notifiable->firstName . ',')
+            ->greeting('Hallo '.$notifiable->firstName.',')
             ->line('Sie erhalten diese E-Mail, weil wir eine Anfrage zum Zurücksetzen des Passworts für Ihr Konto erhalten haben.')
             ->action('Passwort zurücksetzen', $resetUrl)
-            ->line('Dieser Passwort-Zurücksetzen-Link verfällt in ' . config('auth.passwords.' . $this->getPasswordResetChannelName() . '.expire') . ' Minuten.')
+            ->line('Dieser Passwort-Zurücksetzen-Link verfällt in '.config('auth.passwords.'.$this->getPasswordResetChannelName().'.expire').' Minuten.')
             ->line('Wenn Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren.')
             ->salutation('Mit freundlichen Grüßen, das T.O.M.E. Team');
     }

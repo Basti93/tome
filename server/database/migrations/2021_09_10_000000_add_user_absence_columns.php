@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddUserAbsenceColumns extends Migration
 {
@@ -12,7 +12,7 @@ class AddUserAbsenceColumns extends Migration
      */
     public function up()
     {
-        Schema::table('users', function($table) {
+        Schema::table('users', function ($table) {
             $table->date('absenceStart')->nullable();
             $table->date('absenceEnd')->nullable();
             $table->text('absenceReason')->nullable();
@@ -25,7 +25,5 @@ class AddUserAbsenceColumns extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-    }
+    public function down() {}
 }

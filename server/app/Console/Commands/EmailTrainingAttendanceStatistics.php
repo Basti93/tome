@@ -49,7 +49,7 @@ class EmailTrainingAttendanceStatistics extends Command
         $until = DateTime::createFromFormat('Y-m-d', $this->argument('endDate'));
 
         $groups = Group::whereBranchId($branchId)->get();
-        Log::info('Groups found for branchId ' . $branchId . ": " . sizeof($groups));
+        Log::info('Groups found for branchId '.$branchId.': '.count($groups));
 
         $groupsArray = [];
         foreach ($groups as $group) {
@@ -58,12 +58,12 @@ class EmailTrainingAttendanceStatistics extends Command
                 $query->whereGroupId($groupId);
             })->get();
 
-            Log::info('Users found for group id ' . $groupId . ": " . sizeof($groupUsers));
+            Log::info('Users found for group id '.$groupId.': '.count($groupUsers));
 
             $userArray = [];
             foreach ($groupUsers as $groupUser) {
                 $userId = $groupUser->id;
-                $trainingsCount = Training::whereBetween('start', array($from, $until))
+                $trainingsCount = Training::whereBetween('start', [$from, $until])
                     ->where('deleted', false)
                     ->where('evaluated', true)
                     ->whereHas('groups', function ($query) use ($groupId) {
@@ -73,8 +73,8 @@ class EmailTrainingAttendanceStatistics extends Command
                         $query->where('user_id', $userId)->whereAttend(1);
                     })
                     ->count();
-                Log::info('Trainings found for userid ' . $userId . " between " . $from->format('Y-m-d') . " - " . $until->format('Y-m-d') . ": " . $trainingsCount);
-                $userArray[$groupUser->firstName . " " . $groupUser->familyName] = $trainingsCount;
+                Log::info('Trainings found for userid '.$userId.' between '.$from->format('Y-m-d').' - '.$until->format('Y-m-d').': '.$trainingsCount);
+                $userArray[$groupUser->firstName.' '.$groupUser->familyName] = $trainingsCount;
             }
             uasort($userArray, function ($a, $b) {
                 return $b - $a;
@@ -91,7 +91,7 @@ class EmailTrainingAttendanceStatistics extends Command
 
         foreach ($branchTrainers as $branchTrainer) {
             if ($branchTrainer->email) {
-                Log::info("Send monthly training statistics to " . $branchTrainer->email);
+                Log::info('Send monthly training statistics to '.$branchTrainer->email);
                 Mail::to($branchTrainer)->send(new UserTrainingStatistics($branchTrainer, $groupsArray, $from, $until));
             }
         }

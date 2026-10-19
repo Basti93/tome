@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Branch;
+use App\Group;
 use App\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -49,7 +51,7 @@ class UserFactory extends Factory
         return $this->afterCreating(fn (User $user) => $user->assignRole($role));
     }
 
-    /** @param  iterable<\App\Group|int>  $groups */
+    /** @param  iterable<Group|int>  $groups */
     public function inGroups(iterable $groups): static
     {
         return $this->afterCreating(function (User $user) use ($groups) {
@@ -57,7 +59,7 @@ class UserFactory extends Factory
         });
     }
 
-    /** @param  iterable<\App\Branch|int>  $branches */
+    /** @param  iterable<Branch|int>  $branches */
     public function trainerOfBranches(iterable $branches): static
     {
         return $this->afterCreating(function (User $user) use ($branches) {

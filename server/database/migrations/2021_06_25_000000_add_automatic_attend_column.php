@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddAutomaticAttendColumn extends Migration
 {
@@ -13,10 +12,10 @@ class AddAutomaticAttendColumn extends Migration
      */
     public function up()
     {
-        Schema::table('trainings', function($table) {
+        Schema::table('trainings', function ($table) {
             $table->boolean('automatic_attend')->default(1);
         });
-        Schema::table('training_series', function($table) {
+        Schema::table('training_series', function ($table) {
             $table->boolean('automatic_attend')->default(1);
         });
     }
@@ -26,8 +25,5 @@ class AddAutomaticAttendColumn extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-
-    }
+    public function down() {}
 }

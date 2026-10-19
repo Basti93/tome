@@ -2,26 +2,26 @@
 
 namespace App;
 
+use App\Mail\ResetPassword;
 use Hash;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
-use Spatie\Permission\Traits\HasRoles;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-use App\Mail\ResetPassword;
-
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable;
     use HasRoles;
+    use Notifiable;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'firstName', 'familyName', 'email', 'password', 'group_id', 'birthdate', 'notification_preferences'
+        'firstName', 'familyName', 'email', 'password', 'group_id', 'birthdate', 'notification_preferences',
     ];
 
     /**
@@ -30,7 +30,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'updated_at', 'created_at', 'roles', 'email_verification_token'
+        'password', 'remember_token', 'updated_at', 'created_at', 'roles', 'email_verification_token',
     ];
 
     protected $casts = [
@@ -41,14 +41,15 @@ class User extends Authenticatable implements JWTSubject
 
     protected $appends = ['roleNames', 'group_ids', 'trainer_branch_ids', 'name'];
 
-    public function getNameAttribute() {
-        return $this->firstName." ".$this->familyName;
+    public function getNameAttribute()
+    {
+        return $this->firstName.' '.$this->familyName;
     }
 
     /**
      * Automatically creates hash for the user password.
      *
-     * @param  string $value
+     * @param  string  $value
      * @return void
      */
     public function setPasswordAttribute($value)
@@ -79,15 +80,15 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Check if a notification type is enabled for this user.
      *
-     * @param string $type
+     * @param  string  $type
      * @return bool
      */
     public function isNotificationEnabled($type)
     {
         $preferences = $this->notification_preferences ?? [];
+
         return $preferences[$type] ?? true;
     }
-
 
     public function group()
     {
@@ -137,8 +138,7 @@ class User extends Authenticatable implements JWTSubject
      */
     public function sendPasswordResetNotification($token)
     {
-        $resetUrl = config('app.vue_url', 'http://localhost:8080') . '/#/reset-password?token=' . $token . '&email=' . urlencode($this->email);
+        $resetUrl = config('app.vue_url', 'http://localhost:8080').'/#/reset-password?token='.$token.'&email='.urlencode($this->email);
         Mail::to($this->email)->send(new ResetPassword($this, $resetUrl));
     }
-
 }

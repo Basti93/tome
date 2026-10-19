@@ -16,6 +16,4 @@ class StoreBranchRequest extends FormRequest
     {
         return true;
     }
-
 }
-

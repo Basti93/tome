@@ -16,6 +16,4 @@ class StoreTrainingRequest extends FormRequest
     {
         return true;
     }
-
 }
-

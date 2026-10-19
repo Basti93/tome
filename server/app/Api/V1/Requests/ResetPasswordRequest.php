@@ -17,15 +17,23 @@ class ResetPasswordRequest extends FormRequest
         $policy = Config::get('boilerplate.password_policy');
         $minLength = $policy['min_length'];
         $specialChars = $policy['special_chars'];
-        
+
         $passwordRequirements = [];
-        if ($policy['require_lowercase']) $passwordRequirements[] = 'Kleinbuchstaben';
-        if ($policy['require_uppercase']) $passwordRequirements[] = 'Großbuchstaben';
-        if ($policy['require_digits']) $passwordRequirements[] = 'Zahlen';
-        if ($policy['require_special']) $passwordRequirements[] = "Sonderzeichen ({$specialChars})";
-        
+        if ($policy['require_lowercase']) {
+            $passwordRequirements[] = 'Kleinbuchstaben';
+        }
+        if ($policy['require_uppercase']) {
+            $passwordRequirements[] = 'Großbuchstaben';
+        }
+        if ($policy['require_digits']) {
+            $passwordRequirements[] = 'Zahlen';
+        }
+        if ($policy['require_special']) {
+            $passwordRequirements[] = "Sonderzeichen ({$specialChars})";
+        }
+
         $requirementsText = implode(', ', $passwordRequirements);
-        
+
         return [
             'token.required' => 'Ein gültiger Reset-Token ist erforderlich.',
             'email.required' => 'Die E-Mail ist erforderlich.',

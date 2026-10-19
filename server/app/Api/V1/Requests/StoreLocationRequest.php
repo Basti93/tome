@@ -16,6 +16,4 @@ class StoreLocationRequest extends FormRequest
     {
         return true;
     }
-
 }
-

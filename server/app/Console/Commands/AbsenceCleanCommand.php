@@ -39,10 +39,10 @@ class AbsenceCleanCommand extends Command
     public function handle()
     {
         $now = date('Y-m-d H:i:s');
-        $this->info('Startet at ' . $now);
+        $this->info('Startet at '.$now);
         $absenceInThePast = User::where('absenceEnd', '<=', $now)->get();
 
-        $this->info('Found  ' . count($absenceInThePast) . ' users with absence in the past');
+        $this->info('Found  '.count($absenceInThePast).' users with absence in the past');
 
         foreach ($absenceInThePast as $userToClean) {
             $userToClean->absenceStart = null;

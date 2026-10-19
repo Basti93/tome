@@ -6,8 +6,8 @@ use App\Api\V1\Requests\StoreUserAbsenceRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SimpleUser as SimpleUserResource;
 use App\User;
-use Illuminate\Support\Facades\Artisan;
 use DateTime;
+use Illuminate\Support\Facades\Artisan;
 
 class SimpleUserController extends Controller
 {
@@ -16,10 +16,7 @@ class SimpleUserController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-    }
-
+    public function __construct() {}
 
     public function index()
     {
@@ -42,7 +39,7 @@ class SimpleUserController extends Controller
         if ($user->absenceStart || $user->absenceEnd) {
             return response()->json([
                 'status' => 'absence_exists',
-                'message' => 'An absence is already stored for the user'
+                'message' => 'An absence is already stored for the user',
             ], 200);
         }
 
@@ -69,11 +66,10 @@ class SimpleUserController extends Controller
         ]);
 
         return response()->json([
-            'status' => 'ok'
+            'status' => 'ok',
         ], 200);
 
     }
-
 
     /**
      * Get users who are trainers.
@@ -84,5 +80,4 @@ class SimpleUserController extends Controller
     {
         return SimpleUserResource::collection(User::role('trainer')->get());
     }
-
 }

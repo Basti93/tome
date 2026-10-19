@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 class AddTrainingMarkedfordeletionColumn extends Migration
 {
@@ -12,7 +12,7 @@ class AddTrainingMarkedfordeletionColumn extends Migration
      */
     public function up()
     {
-        Schema::table('trainings', function($table) {
+        Schema::table('trainings', function ($table) {
             $table->boolean('deleted')->default(0);
         });
 
@@ -23,7 +23,5 @@ class AddTrainingMarkedfordeletionColumn extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-    }
+    public function down() {}
 }

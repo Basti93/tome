@@ -42,8 +42,8 @@ class EmailLastMonthStatistics extends Command
         foreach ($branches as $branch) {
             $this->call('emails:training-attendance-statistics', [
                 'branchId' => $branch->id,
-                'startDate' => date("Y-m-d", strtotime("first day of previous month")),
-                'endDate' => date("Y-m-d", strtotime("last day of previous month")),
+                'startDate' => date('Y-m-d', strtotime('first day of previous month')),
+                'endDate' => date('Y-m-d', strtotime('last day of previous month')),
             ]);
         }
     }
