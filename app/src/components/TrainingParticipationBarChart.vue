@@ -21,7 +21,7 @@ import StatisticsFilter1 from "./StatisticsFilter1";
 import { useAuthStore } from '@/store/auth';
 import { useMasterDataStore } from '@/store/masterData';
 import httpClient from '@/http/api';
-import moment from 'moment';
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "TrainingParticipationBarChart",
@@ -41,7 +41,7 @@ export default {
     }
     return {
       filterBranchIds: filterBranchIds,
-      filterYear: moment().year(),
+      filterYear: dayjs().year(),
       filterGroupIds: [],
       options: {
         chart: {

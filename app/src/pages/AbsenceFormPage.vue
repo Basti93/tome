@@ -195,7 +195,7 @@ import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 
 const authStore = useAuthStore()
 const cookieAuthStore = useCookieAuthStore()
@@ -279,15 +279,15 @@ async function loadAllAbsenceUsers() {
         userObj.email,
         userObj.firstName,
         userObj.familyName,
-        userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
         userObj.active === 1 ? true : false,
         userObj.groupIds,
         userObj.roleNames,
         userObj.trainerBranchIds,
         userObj.registered,
         userObj.profileImageName,
-        userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-        userObj.absenceEnd ? moment(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+        userObj.absenceEnd ? dayjs(userObj.absenceEnd, 'YYYY-MM-DDTHH:mm') : null,
         userObj.absenceReason
       ))
     }
@@ -299,8 +299,8 @@ async function loadAllAbsenceUsers() {
 
 async function sendAbsence() {
   const postData = {
-    absenceStart: moment(absenceStart.value, 'YYYY-MM-DD').format(),
-    absenceEnd: moment(absenceEnd.value, 'YYYY-MM-DD').format(),
+    absenceStart: dayjs(absenceStart.value, 'YYYY-MM-DD').format(),
+    absenceEnd: dayjs(absenceEnd.value, 'YYYY-MM-DD').format(),
     absenceReason: absenceReason.value
   }
   const { data } = await httpClient.post('simpleuser/' + userId.value + '/storeAbsence', postData)

@@ -348,7 +348,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import Training from "@/models/Training";
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingContent from "@/components/TrainingContent.vue"
@@ -492,7 +492,7 @@ export default {
             for (const partObj of trObj.participants) {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
-            this.upcomingTrainings.push(new Training(trObj.id, moment(trObj.start, 'YYYY-MM-DDTHH:mm'), moment(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
+            this.upcomingTrainings.push(new Training(trObj.id, dayjs(trObj.start, 'YYYY-MM-DDTHH:mm'), dayjs(trObj.end, 'YYYY-MM-DDTHH:mm'), trObj.locationId, trObj.groupIds, trObj.contentIds, trObj.trainerIds, participants, trObj.comment, false, false, trObj.automaticAttend === 1 ? true : false));
           }
           //select first training
           this.selectTraining(this.upcomingTrainings[0].id);
@@ -505,15 +505,15 @@ export default {
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }

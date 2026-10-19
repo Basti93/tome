@@ -20,7 +20,7 @@ import StatisticsFilter1 from "./StatisticsFilter1";
 import { useAuthStore } from '@/store/auth';
 import { useMasterDataStore } from '@/store/masterData';
 import httpClient from '@/http/api';
-import moment from 'moment';
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "TrainerTimeline",
@@ -30,7 +30,7 @@ export default {
     const authStore = useAuthStore();
     return {
       filterBranchIds: authStore.user?.isTrainer ? authStore.user.trainerBranchIds : [],
-      filterYear: moment().year(),
+      filterYear: dayjs().year(),
       filterGroupIds: [],
       options: {
         chart: {

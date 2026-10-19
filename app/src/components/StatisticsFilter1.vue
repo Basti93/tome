@@ -42,7 +42,7 @@
 
 <script>
 import { useMasterDataStore } from '@/store/masterData'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "StatisticsFilter1",
@@ -91,8 +91,8 @@ export default {
     },
     lastFiveYears() {
       const years = []
-      const dateEnd = moment().subtract(4, 'y')
-      const dateStart = moment()
+      const dateEnd = dayjs().subtract(4, 'y')
+      const dateStart = dayjs()
       while (dateEnd.diff(dateStart, 'years') <= 0) {
         years.push(dateStart.year())
         dateStart.subtract(1, 'year')

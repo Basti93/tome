@@ -195,7 +195,7 @@
                         </template>
                         <template v-slot:[`item.deferUntil`]="{ item }">
                             <span v-if="checkDeferUntilIsActive(item)">
-                                {{ moment(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.Y') }}
+                                {{ dayjs(item.deferUntil, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY') }}
                             </span>
                           <span v-else>Aktiv</span>
                         </template>
@@ -233,7 +233,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import TrainingSeries from "@/models/TrainingSeries";
 import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
@@ -242,7 +242,7 @@ import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs };
   },
   name: "TrainingSeriesPage",
   components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
@@ -341,9 +341,9 @@ export default {
     editItem(item) {
       this.editDialogTitle = 'Serie bearbeiten';
       this.editedTrainingSeries = {...item};
-      const momDeferUntil = moment(item.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = dayjs(item.deferUntil, 'YYYY-MM-DDTHH:mm');
       if (momDeferUntil.isValid()) {
-        this.editedTrainingSeries.deferUntil = momDeferUntil.format('Y-MM-DD')
+        this.editedTrainingSeries.deferUntil = momDeferUntil.format('YYYY-MM-DD')
       }
       this.showCreateDialog = true;
     },
@@ -362,7 +362,7 @@ export default {
       }
     },
     async save() {
-      const momDeferUntil = moment(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
+      const momDeferUntil = dayjs(this.editedTrainingSeries.deferUntil, 'YYYY-MM-DDTHH:mm');
       const postData = {
         startTime: this.editedTrainingSeries.startTime,
         endTime: this.editedTrainingSeries.endTime,
@@ -399,8 +399,8 @@ export default {
       return time ? time.substring(0, time.length - 3) : '';
     },
     checkDeferUntilIsActive(item: TrainingSeries) {
-      const momDeferUntil = moment(item.deferUntil);
-      return momDeferUntil.isValid() && momDeferUntil >= moment().startOf('day');
+      const momDeferUntil = dayjs(item.deferUntil);
+      return momDeferUntil.isValid() && momDeferUntil >= dayjs().startOf('day');
     },
     weekdaysChanged(weekdays) {
       this.editedTrainingSeries.weekdays = weekdays;

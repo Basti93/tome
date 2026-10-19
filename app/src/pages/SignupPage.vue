@@ -140,12 +140,12 @@ import {formatDate} from "../helpers/date-helpers"
 import { PASSWORD_POLICY, getPasswordHint, getPasswordValidationRules } from '@/constants/passwordPolicy'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import { analytics } from '@/services/analytics'
 
 export default {
   setup() {
-    return { moment, PASSWORD_POLICY, getPasswordHint };
+    return { dayjs, PASSWORD_POLICY, getPasswordHint };
   },
   name: "SignupPage",
   data: () => ({
@@ -237,7 +237,7 @@ export default {
           firstName: this.firstName,
           familyName: this.familyName,
           email: this.email,
-          birthdate: moment(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
+          birthdate: dayjs(this.birthdate, 'YYYY-MM-DDTHH:mm').format("YYYY-MM-DDTHH:mm:ss"),
           password: this.password,
           password_confirmation: this.passwordConfirm,
         });

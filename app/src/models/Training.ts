@@ -1,10 +1,10 @@
 import TrainingParticipant from "@/models/TrainingParticipant";
-import * as moment from "moment";
+import type { Dayjs } from '@/helpers/dayjs'
 
 export default class Training {
     id: number;
-    start: moment.Moment;
-    end: moment.Moment;
+    start: Dayjs;
+    end: Dayjs;
     locationId: number;
     groupIds: number[];
     contentIds: number[];
@@ -25,7 +25,7 @@ export default class Training {
     }
 
 
-    constructor(id: number, start: moment.Moment, end: moment.Moment, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string, prepared: boolean, evaluated: boolean, automaticAttend: boolean) {
+    constructor(id: number, start: Dayjs, end: Dayjs, locationId: number, groupIds: number[], contentIds: number[], trainerIds: number[], participants: TrainingParticipant[], comment: string, prepared: boolean, evaluated: boolean, automaticAttend: boolean) {
         this.id = id;
         this.start = start;
         this.end = end;

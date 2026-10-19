@@ -61,13 +61,13 @@
                           v-model:sort-by="sortBy"
                       >
                         <template v-slot:[`item.date`]="{ item }">
-                          {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.Y') }}
+                          {{ dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('dd, DD.MM.YYYY') }}
                         </template>
                         <template v-slot:[`item.start`]="{ item }">
-                          {{ moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.end`]="{ item }">
-                          {{ moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
+                          {{ dayjs(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm') }}
                         </template>
                         <template v-slot:[`item.locationId`]="{ item }">
                           {{ getLocationNameById(item.locationId) }}
@@ -189,7 +189,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import TrainingCalendar from "../components/TrainingCalendar.vue";
 import EditTrainingBase from "../components/EditTrainingBase.vue";
 import {formatDate, parseDate} from "../helpers/date-helpers"
@@ -198,7 +198,7 @@ import Training from "../models/Training";
 
 export default {
   setup() {
-    return { moment };
+    return { dayjs };
   },
   name: "TrainingsTablePage",
   components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
@@ -381,9 +381,9 @@ export default {
       this.editDialogTitle = 'Training bearbeiten'
       this.editedId = item.id;
       Object.assign(this.editedItem, item)
-      this.editedItemDate = moment(item.start, 'YYYY-MM-DDTHH:mm').format('Y-MM-DD')
-      this.editedItem.start = moment(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
-      this.editedItem.end = moment(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItemDate = dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('YYYY-MM-DD')
+      this.editedItem.start = dayjs(item.start, 'YYYY-MM-DDTHH:mm').format('HH:mm')
+      this.editedItem.end = dayjs(item.end, 'YYYY-MM-DDTHH:mm').format('HH:mm')
       this.editDialog = true
     },
     create() {
@@ -403,8 +403,8 @@ export default {
       const self = this;
       const postData = {
         id: null,
-        start: moment(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
-        end: moment(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
+        start: dayjs(self.editedItem.date + 'T' + self.editedItem.start, 'YYYY-MM-DDTHH:mm').format(),
+        end: dayjs(self.editedItem.date + 'T' + self.editedItem.end, 'YYYY-MM-DDTHH:mm').format(),
         locationId: self.editedItem.locationId,
         groupIds: self.editedItem.groupIds,
         trainerIds: self.editedItem.trainerIds,

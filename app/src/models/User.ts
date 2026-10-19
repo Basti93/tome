@@ -1,4 +1,4 @@
-import * as moment from "moment";
+import type { Dayjs } from '@/helpers/dayjs'
 
 export default class User {
 
@@ -6,7 +6,7 @@ export default class User {
     email: string;
     firstName: string;
     familyName: string;
-    birthdate: moment.Moment;
+    birthdate: Dayjs;
     active: boolean;
     groupIds: number[];
     roleNames: string [];
@@ -15,8 +15,8 @@ export default class User {
     profileImageName: string;
     isAdmin: boolean;
     isTrainer: boolean;
-    absenceStart: moment.Moment;
-    absenceEnd: moment.Moment;
+    absenceStart: Dayjs;
+    absenceEnd: Dayjs;
     absenceReason: string;
     notificationPreferences: {
         trainer_upcoming: boolean;
@@ -44,7 +44,7 @@ export default class User {
     }
 
 
-    constructor(id: number, email: string, firstName: string, familyName: string, birthdate: moment.Moment, active: boolean, groupIds: number[], roleNames: string[], trainerBranchIds: number[], registered: boolean, profileImageName: string, absenceStart: moment.Moment, absenceEnd: moment.Moment, absenceReason: string) {
+    constructor(id: number, email: string, firstName: string, familyName: string, birthdate: Dayjs, active: boolean, groupIds: number[], roleNames: string[], trainerBranchIds: number[], registered: boolean, profileImageName: string, absenceStart: Dayjs, absenceEnd: Dayjs, absenceReason: string) {
         this.id = id
         this.active = active
         this.groupIds = groupIds

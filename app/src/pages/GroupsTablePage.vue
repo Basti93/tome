@@ -215,7 +215,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 
 export default {
   setup() {
@@ -307,15 +307,15 @@ export default {
             userObj.email,
             userObj.firstName,
             userObj.familyName,
-            userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
             userObj.active === 1 ? true : false,
             userObj.groupIds,
             userObj.roleNames,
             userObj.trainerBranchIds,
             userObj.registered,
             userObj.profileImageName,
-            userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-            userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+            userObj.absenceEnd ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
             userObj.absenceReason
         ));
       }

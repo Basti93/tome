@@ -94,7 +94,7 @@
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import { useAuthStore } from '@/store/auth'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 
 export default {
   name: "TrainingAccountingExportDialog",
@@ -145,8 +145,8 @@ export default {
         const {data} = await httpClient.post('/trainingevaluation/exportaccountingtimes',
             {
               userId: this.loggedInUser.id,
-              from: moment(this.dateFrom, 'YYYY-MM-DD').format(),
-              to: moment(this.dateTo, 'YYYY-MM-DD').format(),
+              from: dayjs(this.dateFrom, 'YYYY-MM-DD').format(),
+              to: dayjs(this.dateTo, 'YYYY-MM-DD').format(),
             }
         )
         if (data.status == 'ok') {

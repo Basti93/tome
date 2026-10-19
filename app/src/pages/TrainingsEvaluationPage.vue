@@ -404,7 +404,7 @@ import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import TrainingParticipant from "@/models/TrainingParticipant";
 import TrainingTrainer from "@/models/TrainingTrainer";
 import TrainingEvaluation from "@/models/TrainingEvaluation";
@@ -514,18 +514,18 @@ export default {
               participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
             }
             const trainers = [] as TrainingTrainer[];
-            const trainingStartTime = moment(trObj.start, 'YYYY-MM-DDTHH:mm');
-            const trainingEndTime = moment(trObj.end, 'YYYY-MM-DDTHH:mm');
+            const trainingStartTime = dayjs(trObj.start, 'YYYY-MM-DDTHH:mm');
+            const trainingEndTime = dayjs(trObj.end, 'YYYY-MM-DDTHH:mm');
             for (const partObj of trObj.trainers) {
               let timeStart;
               if (partObj.accountingTimeStart != null) {
-                timeStart = moment(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
+                timeStart = dayjs(partObj.accountingTimeStart, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeStart = trainingStartTime
               }
               let timeEnd;
               if (partObj.accountingTimeEnd != null) {
-                timeEnd = moment(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
+                timeEnd = dayjs(partObj.accountingTimeEnd, 'YYYY-MM-DDTHH:mm');
               } else {
                 timeEnd = trainingEndTime
               }
@@ -544,15 +544,15 @@ export default {
               userObj.email,
               userObj.firstName,
               userObj.familyName,
-              userObj.birthdate ? moment(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.birthdate ? dayjs(userObj.birthdate, 'YYYY-MM-DDTHH:mm') : null,
               userObj.active === 1 ? true : false,
               userObj.groupIds,
               userObj.roleNames,
               userObj.trainerBranchIds,
               userObj.registered,
               userObj.profileImageName,
-              userObj.absenceStart ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
-              userObj.absenceEnd ? moment(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceStart ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
+              userObj.absenceEnd ? dayjs(userObj.absenceStart, 'YYYY-MM-DDTHH:mm') : null,
               userObj.absenceReason
           ))
         }

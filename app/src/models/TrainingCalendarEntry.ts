@@ -1,4 +1,4 @@
-import * as moment from "moment";
+import type { Dayjs } from '@/helpers/dayjs'
 
 export default class TrainingCalendarEntry {
     id: number;

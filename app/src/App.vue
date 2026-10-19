@@ -67,21 +67,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import moment from 'moment'
+import dayjs from '@/helpers/dayjs'
 import Navigation from '@/components/TomeNavigation.vue'
 import SnackbarStore from '@/components/SnackbarStore.vue'
 import { useSnackbarStore } from '@/store/snackbar'
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 
-moment.locale('de')
-
 const snackbarStore = useSnackbarStore()
 const authStore = useAuthStore()
 const cookieAuthStore = useCookieAuthStore()
 
 const pushPermissionSnackbar = ref(true)
-const currentYear = moment().year()
+const currentYear = dayjs().year()
 
 const currentUser = computed(() => {
   return authStore.user || cookieAuthStore.cookieUser || null

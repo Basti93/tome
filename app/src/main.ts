@@ -8,12 +8,7 @@ import { useMasterDataStore } from './store/masterData'
 import VueApexCharts from 'vue3-apexcharts'
 import { analytics } from './services/analytics'
 
-// @ts-ignore
-import moment from 'moment'
-// @ts-ignore
-import 'moment/locale/de'
-
-moment.locale('de')
+import '@/helpers/dayjs'
 
 async function init() {
   // Initialize Matomo analytics early
