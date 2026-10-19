@@ -62,6 +62,7 @@
 </template>
 
 <script lang="ts">
+import { profileImageUrl } from '@/helpers/profile-image'
 import { useAuthStore } from '@/store/auth'
 
 export default {
@@ -75,7 +76,6 @@ export default {
       uploading: false,
       changeImage: false,
       files: [],
-      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
       imageRule: [
         value => !value || !Array.isArray(value) || value.length === 0 || value[0].size < 10000000 || 'Bildgröße muss kleiner wie 10 MB sein!',
       ],
@@ -102,10 +102,8 @@ export default {
 
       if (file) {
         return URL.createObjectURL(file);
-      } else if (this.editImagePath && this.serverUrl) {
-        return this.serverUrl + "/" + this.editImagePath;
       }
-      return null;
+      return profileImageUrl(this.editImagePath);
     },
     hasChanges() {
       if (!this.files) return false;

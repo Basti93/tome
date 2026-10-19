@@ -42,7 +42,7 @@
                                     <v-list-subheader>Sportler</v-list-subheader>
 
                                     <v-list-item
-                                        v-for="user in getSimpleUsersByIds(group.userIds).sort((a,b) => a.familyName.localeCompare(b.familyName))"
+                                        v-for="user in getSimpleUsersByGroupId(group.id)"
                                         :key="user.id">
                                       {{ user.getFullNameFamilyFirst() }}
                                     </v-list-item>
@@ -112,8 +112,8 @@ export default {
     },
   },
   methods: {
-    getSimpleUsersByIds(userIds) {
-      return useMasterDataStore().getSimpleUsersByIds(userIds);
+    getSimpleUsersByGroupId(groupId) {
+      return useMasterDataStore().getSimpleUsersByGroupId(groupId);
     },
     getSimpleTrainersByGroupId(groupId) {
       return useMasterDataStore().getSimpleTrainersByGroupId(groupId);

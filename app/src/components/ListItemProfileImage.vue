@@ -6,6 +6,7 @@
 </template>
 
 <script lang="ts">
+import { profileImageUrl } from '@/helpers/profile-image'
     export default {
         name: "tome-list-item-profile-image",
         props: {
@@ -15,7 +16,6 @@
         data: function () {
             return {
                 dSize: 24,
-                serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
             }
         },
         created() {
@@ -25,10 +25,7 @@
         },
         computed: {
             imageUrl() {
-                if (this.imagePath) {
-                    return this.serverUrl + "/" + this.imagePath;
-                }
-                return null;
+                return profileImageUrl(this.imagePath);
             },
         },
     }

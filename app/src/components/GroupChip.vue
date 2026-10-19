@@ -36,8 +36,10 @@
           <template v-slot:prepend>
             <v-avatar size="small">
               <v-img
+                  v-if="imageUrl(item.profileImageName)"
                   :src="imageUrl(item.profileImageName)"
               ></v-img>
+              <v-icon v-else>mdi-account-circle</v-icon>
             </v-avatar>
           </template>
           {{ item.firstName + " " + item.familyName }}
@@ -49,6 +51,7 @@
 
 <script lang="ts">
 // @ts-nocheck TODO(safety-net): 5 pre-existing vue-tsc errors in this file; fix them and remove this line
+import { profileImageUrl } from '@/helpers/profile-image'
 import Group from "../models/Group";
 import { useMasterDataStore } from '@/store/masterData'
 
@@ -60,7 +63,6 @@ export default {
   data: function () {
     return {
       menu: false,
-      serverUrl: import.meta.env.VITE_IMAGE_FOLDER_URL,
     }
   },
   methods: {
@@ -68,10 +70,7 @@ export default {
       return useMasterDataStore().getSimpleTrainersByBranchId(branchId)
     },
     imageUrl(imagePath) {
-      if (imagePath) {
-        return this.serverUrl + "/" + imagePath;
-      }
-      return null;
+      return profileImageUrl(imagePath);
     },
   }
 }
