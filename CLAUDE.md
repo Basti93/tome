@@ -211,6 +211,8 @@ MAIL_*              # Email config for password reset + monthly stats
 **Retention**: `tome:retention` runs monthly (1st, 03:00). Prod `.env` has `RETENTION_ENABLED=true` and `RETENTION_INACTIVE_MONTHS=12`; trainers/admins are never deleted. Preview with `php artisan tome:retention --dry-run`.
 **Push**: the Firebase service account is `shared/firebase-service-account.json`; the VAPID key is in `deploy/.env.production`. Test: `php artisan notification:test <token> <title> <text>`.
 
+**Matomo** (anonymous, cookieless web analytics, self-hosted at `/matomo/` on the same origin): own user `matomo`, FPM pool `matomo` (socket `/run/php/php8.4-fpm-matomo.sock`), DB `matomo`, files in `/var/www/matomo`, hourly archive cron `/etc/cron.d/matomo-archive`. Set up with `sudo deploy/matomo-setup.sh` (sections 1-8, idempotent); the vhost block is in `deploy/apache/training.conf`. The frontend only tracks when `VITE_MATOMO_*` is set in `deploy/.env.production`. Details, privacy checklist and updates: `MATOMO_SETUP.md`. The `matomo` DB is part of root's daily all-databases dump.
+
 **Follow-up cleanup, due ~2026-11-02** (two weeks after go-live, if all is stable):
 - Server: remove the old app `/var/www/tome` and the old vhost backup `/root/tome-vhost-backup`; remove root's old crontab lines (commented old `schedule:run`, rsync/tar lines for `/var/backup/tome`); drop the old global-privilege MySQL user of the old app; delete the old backups in `~sbinder/backups/2026-10-19`.
 - Mac: delete `/Users/sbinder/Backups/tome-2026-10-19` and the local docker DB `tome` (a prod copy).
