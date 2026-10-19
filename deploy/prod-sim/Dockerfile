@@ -12,16 +12,16 @@ RUN a2dismod -f mpm_prefork mpm_worker >/dev/null 2>&1 || true; a2enmod mpm_even
 COPY fixtures/systemctl /usr/local/bin/systemctl
 COPY fixtures/options-ssl-apache.conf /etc/letsencrypt/options-ssl-apache.conf
 COPY fixtures/old-training.conf /etc/apache2/sites-available/training.conf
-COPY fixtures/wp.conf /etc/apache2/sites-available/wp-website.conf
-RUN mkdir -p /etc/letsencrypt/live/example.org /var/www/wp-website /var/www/tome/api/storage/app/public/profile_images /var/www/tome/api/storage/app/public/infos /run/php \
+COPY fixtures/other-site.conf /etc/apache2/sites-available/other-site.conf
+RUN mkdir -p /etc/letsencrypt/live/example.org /var/www/other-site /var/www/tome/api/storage/app/public/profile_images /var/www/tome/api/storage/app/public/infos /run/php \
  && openssl req -x509 -nodes -newkey rsa:2048 -days 30 -subj "/CN=training.example.org" -addext "subjectAltName=DNS:training.example.org,DNS:example.org" \
     -keyout /etc/letsencrypt/live/example.org/privkey.pem -out /etc/letsencrypt/live/example.org/fullchain.pem \
- && echo "OLD APP" > /var/www/tome/index.html && echo "WORDPRESS" > /var/www/wp-website/index.html \
+ && echo "OLD APP" > /var/www/tome/index.html && echo "OTHERSITE" > /var/www/other-site/index.html \
  && echo "fake-image" > /var/www/tome/api/storage/app/public/profile_images/old1.png \
  && echo "<?php echo 'EXECUTED';" > /var/www/tome/api/storage/app/public/profile_images/evil.php \
  && echo "faq pdf" > /var/www/tome/api/storage/app/public/infos/regeln.pdf \
  && chmod +x /usr/local/bin/systemctl \
- && a2ensite training wp-website >/dev/null
+ && a2ensite training other-site >/dev/null
 COPY fixtures/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 EXPOSE 80 443

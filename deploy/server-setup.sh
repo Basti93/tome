@@ -9,9 +9,8 @@
 #   sudo ./server-setup.sh --only 2,3  # nur bestimmte Abschnitte (ohne Rueckfrage)
 #   sudo ./server-setup.sh --list      # Abschnitte auflisten
 #
-# Das Skript fasst ausschliesslich TOME-spezifische Dinge an. Die WordPress-Seite
-# (die Website des Vereins, /var/www/wp-website, Vhosts website.conf / wp-website.conf) und der
-# Standard-FPM-Pool "www" bleiben unveraendert.
+# Das Skript fasst ausschliesslich TOME-spezifische Dinge an. Andere Seiten auf diesem Server,
+# deren Vhosts und der Standard-FPM-Pool "www" bleiben unveraendert.
 #
 # Abschnitte:
 #   1  Voraussetzungen pruefen (Pakete, PHP-Module, Apache-Module)
@@ -49,7 +48,7 @@ DB_NAME="${DB_NAME:-tome}"
 DB_APP_USER="${DB_APP_USER:-tome_app}"
 DB_HOST_GRANT="${DB_HOST_GRANT:-localhost}"   # Host-Teil des MySQL-Benutzers
 DB_HOST_APP="${DB_HOST_APP:-localhost}"       # DB_HOST fuer die .env
-MYSQL_ADMIN_CMD="${MYSQL_ADMIN_CMD:-mysql}"   # root-Zugang (auth_socket als root)
+MYSQL_ADMIN_CMD="${MYSQL_ADMIN_CMD:-}"   # root-Zugang; leer = aus MYSQL_ADMIN_CNF (site.env) oder "mysql" (auth_socket als root)
 OLD_UPLOADS="${OLD_UPLOADS:-/var/www/tome/api/storage/app/public}"
 OLD_ENV="${OLD_ENV:-/var/www/tome/api/.env}"
 APACHE_DIR="${APACHE_DIR:-/etc/apache2}"
@@ -59,6 +58,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Standort (Host, Zertifikat, Mail-Absender) aus site.env neben diesem Skript (Vorlage: site.env.example)
 # shellcheck source=site-env.sh
 source "${SCRIPT_DIR}/site-env.sh"
+if [[ -z "$MYSQL_ADMIN_CMD" ]]; then
+  if [[ -n "${MYSQL_ADMIN_CNF:-}" ]]; then MYSQL_ADMIN_CMD="mysql --defaults-extra-file=${MYSQL_ADMIN_CNF}"; else MYSQL_ADMIN_CMD=mysql; fi
+fi
 SHARED="${TOME_ROOT}/shared"
 ENV_FILE="${SHARED}/.env"
 
@@ -136,7 +138,7 @@ APP_PUBLIC_URL="https://${SITE_HOST}"
 # ============================================================================
 # Abschnitt 1: Voraussetzungen
 # Prueft nur und aktiviert fehlende Apache-Module. Fehlende Pakete werden gemeldet
-# (und auf Rueckfrage per apt installiert). Aendert nichts an WordPress.
+# (und auf Rueckfrage per apt installiert). Aendert nichts an anderen Seiten.
 # ============================================================================
 if ask 1 "Voraussetzungen pruefen (Pakete, PHP-Module, Apache-Module)"; then
   missing_cmds=()
@@ -179,7 +181,7 @@ if ask 1 "Voraussetzungen pruefen (Pakete, PHP-Module, Apache-Module)"; then
     ok "PHP-Module vollstaendig"
   fi
 
-  # Apache-Module (additiv; WordPress nutzt bereits einige davon)
+  # Apache-Module (additiv; andere Seiten nutzen evtl. bereits einige davon)
   changed=0
   for mod in ssl proxy proxy_fcgi headers rewrite alias setenvif deflate mime dir; do
     if [[ ! -e "${APACHE_DIR}/mods-enabled/${mod}.load" ]]; then
@@ -248,7 +250,7 @@ if ask 3 "Verzeichnisstruktur ${TOME_ROOT}"; then
            storage/framework/sessions storage/framework/views storage/logs; do
     install -d -o "$TOME_USER" -g "$TOME_USER" -m 755 "$SHARED/$d"
   done
-  # Logs, Sessions und Caches nicht fuer andere Systembenutzer (WordPress laeuft als www-data) lesbar.
+  # Logs, Sessions und Caches nicht fuer andere Systembenutzer (Apache laeuft als www-data) lesbar.
   # Apache braucht nur storage/app/public (755).
   chmod 750 "$SHARED/storage/logs" "$SHARED/storage/framework"
   # Verzeichnis fuer Backups (Abschnitt 10) und pre-deploy-Dumps
@@ -260,12 +262,12 @@ fi
 # ============================================================================
 # Abschnitt 4: PHP-FPM-Pool "tome"
 # Eigener Pool (Benutzer tome), Socket gehoert www-data (Apache verbindet sich).
-# pm=ondemand und max_children=5 wegen 2 GB RAM, die mit WordPress geteilt werden.
+# pm=ondemand und max_children=5 wegen kleinem Server (Speicher wird mit anderen Seiten geteilt).
 # open_basedir begrenzt PHP auf die App und /tmp. opcache.validate_timestamps=0:
 # PHP prueft keine Datei-Aenderungen mehr -> nach jedem Deploy muss der FPM-Dienst
 # neu geladen werden (macht deploy.sh per sudoers-Regel aus Abschnitt 5).
 # Hinweis: Der OPcache-Speicher gehoert dem FPM-Master und wird von allen Pools geteilt;
-# validate_timestamps ist pro Pool einstellbar, WordPress behaelt seine Einstellung.
+# validate_timestamps ist pro Pool einstellbar, andere Pools behalten ihre Einstellung.
 # ============================================================================
 if ask 4 "PHP-FPM-Pool tome"; then
   [[ -d "$FPM_POOL_DIR" ]] || die "Pool-Verzeichnis ${FPM_POOL_DIR} nicht gefunden (php${PHP_VERSION}-fpm installiert?)"
@@ -281,7 +283,7 @@ listen.owner = www-data
 listen.group = www-data
 listen.mode = 0660
 
-; 2 GB RAM, geteilt mit WordPress: wenige, kurzlebige Worker
+; kleiner Server: wenige, kurzlebige Worker
 pm = ondemand
 pm.max_children = 5
 pm.process_idle_timeout = 20s

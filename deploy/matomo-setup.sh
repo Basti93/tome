@@ -9,8 +9,8 @@
 #   sudo ./matomo-setup.sh --list      # Abschnitte auflisten
 #
 # Idempotent. Fasst nur Matomo-eigene Dinge an (Benutzer matomo, /var/www/matomo, FPM-Pool
-# matomo, Datenbank matomo, /etc/cron.d/matomo-archive). Der FPM-Pool www und die
-# WordPress-Seite bleiben unveraendert. Ablauf: siehe MATOMO_SETUP.md.
+# matomo, Datenbank matomo, /etc/cron.d/matomo-archive). Der FPM-Pool www und
+# andere Seiten auf dem Server bleiben unveraendert. Ablauf: siehe MATOMO_SETUP.md.
 #
 # Abschnitte:
 #   1  Voraussetzungen pruefen (PHP-Module, gpg, unzip)
@@ -41,7 +41,7 @@ DB_NAME="${DB_NAME:-matomo}"
 DB_USER="${DB_USER:-matomo}"
 DB_HOST_GRANT="${DB_HOST_GRANT:-localhost}"   # Host-Teil des MySQL-Benutzers
 DB_HOST_APP="${DB_HOST_APP:-localhost}"       # Datenbankserver fuer den Web-Installer
-MYSQL_ADMIN_CMD="${MYSQL_ADMIN_CMD:-mysql}"   # root-Zugang; Produktion: mysql --defaults-extra-file=/root/.my-backup.cnf
+MYSQL_ADMIN_CMD="${MYSQL_ADMIN_CMD:-}"   # root-Zugang; leer = aus MYSQL_ADMIN_CNF (site.env) oder "mysql"
 CRON_DIR="${CRON_DIR:-/etc/cron.d}"
 CRED_FILE="${CRED_FILE:-/root/matomo-db.txt}"
 DOWNLOAD_URL="${DOWNLOAD_URL:-https://builds.matomo.org}"
@@ -53,6 +53,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PHP_BIN="php${PHP_VERSION}"
 # shellcheck source=site-env.sh
 source "${SCRIPT_DIR}/site-env.sh"
+if [[ -z "$MYSQL_ADMIN_CMD" ]]; then
+  if [[ -n "${MYSQL_ADMIN_CNF:-}" ]]; then MYSQL_ADMIN_CMD="mysql --defaults-extra-file=${MYSQL_ADMIN_CNF}"; else MYSQL_ADMIN_CMD=mysql; fi
+fi
 require_site_vars SITE_HOST
 MATOMO_BASE_URL="${MATOMO_BASE_URL:-https://${SITE_HOST}/matomo/}"
 
@@ -234,7 +237,7 @@ fi
 # ============================================================================
 # Abschnitt 4: PHP-FPM-Pool "matomo"
 # Eigener Pool (Benutzer matomo), Socket gehoert www-data (Apache verbindet sich). Der Pool www
-# (WordPress) und der Pool tome bleiben unveraendert. pm=ondemand und max_children=3 wegen 2 GB RAM.
+# und der Pool tome bleiben unveraendert. pm=ondemand und max_children=3 wegen kleinem Server.
 # ============================================================================
 if ask 4 "PHP-FPM-Pool matomo"; then
   [[ -d "$FPM_POOL_DIR" ]] || die "Pool-Verzeichnis ${FPM_POOL_DIR} nicht gefunden (php${PHP_VERSION}-fpm installiert?)"

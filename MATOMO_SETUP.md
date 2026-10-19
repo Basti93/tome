@@ -3,7 +3,7 @@
 Selbst gehostetes Matomo unter https://<SITE_HOST>/matomo/ (gleiche Origin wie die App, kein eigener
 Host/Zertifikat). Die App sendet nur anonyme Ereignisse ohne Cookies, ohne Namen, E-Mail-Adressen oder IDs
 (`app/src/services/analytics.ts`, Do-Not-Track wird beachtet). Matomo laeuft als Benutzer `matomo` mit eigenem
-PHP-FPM-Pool und eigener Datenbank; WordPress und TOME bleiben unberuehrt.
+PHP-FPM-Pool und eigener Datenbank; andere Seiten auf dem Server und TOME bleiben unberuehrt.
 
 ## Einrichtung (einmalig, auf dem Server als root)
 

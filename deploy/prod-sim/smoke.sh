@@ -58,7 +58,7 @@ h="$(hdrs "http://${HOSTN}:${HTTP_PORT}/foo")"
 [[ "$h" == *"301"* && "$h" == *"https://${HOSTN}/foo"* ]]; check "HTTP -> HTTPS Redirect" $?
 
 out="$("${C[@]}" "https://example.org:${PORT}/")"
-[[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert (example.org)" $?
+[[ "$out" == *OTHERSITE* ]]; check "Andere Seite unveraendert (example.org)" $?
 
 # JWT: Login und Authorization-Header muss bei PHP ankommen
 tok="$("${C[@]}" -X POST -H 'Content-Type: application/json' -d '{"email":"admin@tome.local","password":"password"}' "$BASE/api/v1/auth/login" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("token") or d.get("data",{}).get("token") or "")' 2>/dev/null)"

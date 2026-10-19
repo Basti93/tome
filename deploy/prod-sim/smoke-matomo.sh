@@ -25,7 +25,7 @@ h="$("${C[@]}" -D - -o /dev/null "$BASE/")"
 h="$("${C[@]}" -D - -o /dev/null "$BASE/matomo/")"; grep -qi "^content-security-policy:.*unsafe-eval" <<<"$h"; check "/matomo/ hat eigene CSP" $?
 grep -qi "^x-frame-options: SAMEORIGIN" <<<"$h"; check "/matomo/ X-Frame-Options SAMEORIGIN" $?
 c=$(code "$BASE/trainings/deep/link"); [[ "$c" == 200 ]]; check "SPA-Deep-Link weiter ok" $? "HTTP $c"
-out="$("${C[@]}" "https://example.org:${PORT}/" --resolve "example.org:${PORT}:127.0.0.1")"; [[ "$out" == *WORDPRESS* ]]; check "WordPress-Vhost unveraendert" $?
+out="$("${C[@]}" "https://example.org:${PORT}/" --resolve "example.org:${PORT}:127.0.0.1")"; [[ "$out" == *OTHERSITE* ]]; check "Andere Seite unveraendert" $?
 
 if [[ "${1:-}" == "--installed" ]]; then
   c=$(code "$BASE/matomo/index.php?module=Login"); [[ "$c" == 200 ]]; check "Login-Seite" $? "HTTP $c"
