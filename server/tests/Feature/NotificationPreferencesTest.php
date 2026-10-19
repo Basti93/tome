@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\NotificationPreferenceService;
 use Tests\TestCase;
 
 /**
@@ -78,21 +79,38 @@ class NotificationPreferencesTest extends TestCase
             ->assertOk()->assertJsonPath('notificationPreferences.absenceAlert', true);
     }
 
-    public function test_put_does_not_validate_unknown_types_or_values(): void
+    public function test_put_drops_unknown_types_and_casts_booleans(): void
     {
-        // characterization: there is no validation, unknown keys and non-boolean values are stored as sent
         $user = $this->makeUser('member');
 
-        $this->actingAsJwt($user)->putJson(self::URI, ['notification_preferences' => ['foo' => 'bar', 'absence_alert' => 'nope']])
+        $this->actingAsJwt($user)->putJson(self::URI, ['notification_preferences' => [
+            'foo' => ['nested' => str_repeat('x', 1000)], 'absence_alert' => 0, 'admin_messages' => '1', 'trainer_upcoming' => false,
+        ]])
             ->assertOk()
-            ->assertJsonPath('notificationPreferences.foo', 'bar')
-            ->assertJsonPath('notificationPreferences.absenceAlert', 'nope');
+            ->assertJsonMissingPath('notificationPreferences.foo')
+            ->assertJsonPath('notificationPreferences.absenceAlert', false)
+            ->assertJsonPath('notificationPreferences.adminMessages', true)
+            ->assertJsonPath('notificationPreferences.trainerUpcoming', false);
+
+        $stored = $user->fresh()->notification_preferences;
+        $expected = array_keys((new NotificationPreferenceService)->getDefaultPreferences());
+        $actual = array_keys($stored);
+        sort($expected);
+        sort($actual);
+        $this->assertSame($expected, $actual);
+        $this->assertSame([], array_filter($stored, fn ($v) => ! is_bool($v)));
     }
 
-    public function test_put_with_a_non_array_payload_is_a_500(): void
+    public function test_put_rejects_non_boolean_values_and_non_array_payloads_with_422(): void
     {
-        // characterization: NotificationPreferenceService::updatePreferences(array) throws a TypeError
-        $this->actingAsJwt($this->makeUser('member'))->putJson(self::URI, ['notification_preferences' => 'x'])->assertStatus(500);
+        $user = $this->makeUser('member');
+
+        $this->actingAsJwt($user)->putJson(self::URI, ['notification_preferences' => ['absence_alert' => 'nope']])
+            ->assertStatus(422)->assertJsonValidationErrors(['notificationPreferences.absenceAlert']);
+        $this->actingAsJwt($user)->putJson(self::URI, ['notification_preferences' => ['absence_alert' => ['x']]])->assertStatus(422);
+        $this->actingAsJwt($user)->putJson(self::URI, ['notification_preferences' => 'x'])
+            ->assertStatus(422)->assertJsonValidationErrors(['notificationPreferences']);
+        $this->assertNull($user->fresh()->notification_preferences);
     }
 
     public function test_preferences_are_per_user(): void

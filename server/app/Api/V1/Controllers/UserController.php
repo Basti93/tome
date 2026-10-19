@@ -363,7 +363,19 @@ class UserController extends Controller
         $user = Auth::guard('api')->user();
         $service = new NotificationPreferenceService;
 
-        $preferences = $request->input('notification_preferences', []);
+        // only the known types are stored (unknown keys are dropped), each as a real boolean
+        $known = array_keys($service->getDefaultPreferences());
+        $rules = ['notification_preferences' => ['nullable', 'array']];
+        foreach ($known as $type) {
+            $rules["notification_preferences.$type"] = ['boolean'];
+        }
+        $validated = $request->validate($rules);
+        $preferences = [];
+        foreach ($known as $type) {
+            if (isset($validated['notification_preferences']) && array_key_exists($type, $validated['notification_preferences'])) {
+                $preferences[$type] = (bool) $validated['notification_preferences'][$type];
+            }
+        }
 
         $service->updatePreferences($user, $preferences);
 
