@@ -1,25 +1,26 @@
 # Matomo (Web-Analyse)
 
-Selbst gehostetes Matomo unter https://training.ssc-landau.de/matomo/ (gleiche Origin wie die App, kein eigener
+Selbst gehostetes Matomo unter https://<SITE_HOST>/matomo/ (gleiche Origin wie die App, kein eigener
 Host/Zertifikat). Die App sendet nur anonyme Ereignisse ohne Cookies, ohne Namen, E-Mail-Adressen oder IDs
 (`app/src/services/analytics.ts`, Do-Not-Track wird beachtet). Matomo laeuft als Benutzer `matomo` mit eigenem
 PHP-FPM-Pool und eigener Datenbank; WordPress und TOME bleiben unberuehrt.
 
 ## Einrichtung (einmalig, auf dem Server als root)
 
-Das ganze `deploy/`-Verzeichnis auf den Server kopieren (wie fuer `server-setup.sh`), dann:
+Das ganze `deploy/`-Verzeichnis auf den Server kopieren (wie fuer `server-setup.sh`), **inklusive `deploy/site.env`**
+(Host, Zertifikat, Mail-Absender; nicht im Git, Vorlage `deploy/site.env.example`; die Skripte brechen ohne diese Datei ab), dann:
 
 1. `sudo ./matomo-setup.sh` und die Abschnitte 1 bis 7 bestaetigen (Pakete, Benutzer, Download mit
    GPG-Signaturpruefung, FPM-Pool, Datenbank, Cron, Vhost). Abschnitt 5 zeigt die DB-Zugangsdaten **einmal** an
    (auch in `/root/matomo-db.txt`, 600). Abschnitt 7 aktiviert den Vhost mit Backup, configtest und Auto-Revert.
-2. Web-Installer: https://training.ssc-landau.de/matomo/ . Datenbankserver `localhost`, Benutzer/Passwort/DB aus
+2. Web-Installer: https://<SITE_HOST>/matomo/ . Datenbankserver `localhost`, Benutzer/Passwort/DB aus
    `/root/matomo-db.txt`, Praefix `matomo_`. Super-User mit starkem Passwort anlegen. Website: Name `TOME`,
-   URL `https://training.ssc-landau.de` (wird Seiten-ID 1). Am Ende "Do Not Track beachten" und "IP anonymisieren" aktiv lassen.
+   URL `https://<SITE_HOST>` (wird Seiten-ID 1). Am Ende "Do Not Track beachten" und "IP anonymisieren" aktiv lassen.
 3. `sudo ./matomo-setup.sh --only 8`: setzt `force_ssl`, `assume_secure_protocol`, Trusted Host, sperrt
    `config.ini.php` (640), Archivierung nur per Cron, IP-Anonymisierung (2 Bytes), Rohdaten nach 90 Tagen loeschen,
    Do-Not-Track, und deaktiviert das Plugin Live (Besucherlog/-profil).
 4. In `deploy/.env.production` die Matomo-Zeilen setzen (Vorlage: `.env.production.example`): `VITE_MATOMO_ENABLED=true`,
-   `VITE_MATOMO_URL=/matomo/`, `VITE_MATOMO_SITE_ID=1`. Danach `deploy/deploy.sh --host training.ssc-landau.de`.
+   `VITE_MATOMO_URL=/matomo/`, `VITE_MATOMO_SITE_ID=1`. Danach `deploy/deploy.sh`.
 
 ## Datenschutz-Checkliste (Oberflaeche: Administration > Datenschutz)
 
