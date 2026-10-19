@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Services\NotificationPreferenceService;
+use App\User;
 use Database\Factories\UserFactory;
 use Tests\TestCase;
 
@@ -19,7 +20,7 @@ class NotificationPreferenceServiceTest extends TestCase
     public function test_defaults_enable_all_types(): void
     {
         $this->assertSame([
-            'trainer_upcoming' => true,
+            'trainer_upcoming' => false,
             'trainer_cancel_alert' => true,
             'participant_upcoming' => true,
             'absence_alert' => true,
@@ -42,10 +43,11 @@ class NotificationPreferenceServiceTest extends TestCase
         $user = UserFactory::new()->create();
 
         foreach (array_keys($this->service->getDefaultPreferences()) as $type) {
-            $this->assertSame($type !== 'trainer_evaluation_reminder_email', $this->service->isNotificationEnabled($user, $type), $type);
+            $this->assertSame(! in_array($type, User::OPT_IN_NOTIFICATION_TYPES, true), $this->service->isNotificationEnabled($user, $type), $type);
         }
-        // older stored preferences without the key: e-mail stays off, the others on
-        $old = UserFactory::new()->create(['notification_preferences' => ['trainer_upcoming' => false]]);
+        // older stored preferences without the key: opt-in types stay off, the others on
+        $old = UserFactory::new()->create(['notification_preferences' => ['absence_alert' => false]]);
+        $this->assertFalse($this->service->isNotificationEnabled($old, 'trainer_upcoming'));
         $this->assertFalse($this->service->isNotificationEnabled($old, 'trainer_evaluation_reminder_email'));
         $this->assertTrue($this->service->isNotificationEnabled($old, 'trainer_evaluation_reminder'));
         $this->assertTrue($this->service->isNotificationEnabled($user, 'some_unknown_type'), 'unknown types default to enabled');
@@ -59,7 +61,8 @@ class NotificationPreferenceServiceTest extends TestCase
 
         $fresh = $user->fresh();
         $this->assertFalse($fresh->notification_preferences['absence_alert']);
-        $this->assertTrue($fresh->notification_preferences['trainer_upcoming']);
+        $this->assertFalse($fresh->notification_preferences['trainer_upcoming'], 'the trainer reminder is opt-in');
+        $this->assertTrue($fresh->notification_preferences['trainer_cancel_alert']);
         $this->assertFalse($this->service->isNotificationEnabled($fresh, 'absence_alert'));
         $this->assertTrue($this->service->isNotificationEnabled($fresh, 'admin_messages'));
     }
@@ -80,6 +83,7 @@ class NotificationPreferenceServiceTest extends TestCase
         $user = UserFactory::new()->create(['notification_preferences' => ['absence_alert' => false]]);
 
         $this->assertSame(array_merge($this->service->getDefaultPreferences(), ['absence_alert' => false]), $this->service->getPreferences($user->fresh()));
-        $this->assertTrue($user->fresh()->isNotificationEnabled('trainer_upcoming'), 'missing keys count as enabled');
+        $this->assertTrue($user->fresh()->isNotificationEnabled('trainer_cancel_alert'), 'missing keys count as enabled');
+        $this->assertFalse($user->fresh()->isNotificationEnabled('trainer_upcoming'), 'except the opt-in types');
     }
 }
