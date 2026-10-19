@@ -4,28 +4,20 @@
       <v-col>
         <v-card color="secondary">
           <v-toolbar >
-            <v-container fluid>
-              <v-row class="align-center">
-                <v-col cols="6">
-                  <v-toolbar-title>Trainingsserien</v-toolbar-title>
-                </v-col>
-                <v-col cols="6">
-                  <v-select
-                      class="pt-6"
-                      :items="filterBranches"
-                      v-model="filterBranchId"
-                      @update:model-value="filterChanged()"
-                      item-title="name"
-                      item-value="id"
-                      flat
-                      density="compact"
-                      label="Sparte auswählen"
-                      prepend-icon="bubble_chart"
-                  >
-                  </v-select>
-                </v-col>
-              </v-row>
-            </v-container>
+            <v-toolbar-title>Trainingsserien</v-toolbar-title>
+            <v-select
+                class="mr-2 series-branch-filter"
+                :items="filterBranches"
+                v-model="filterBranchId"
+                @update:model-value="filterChanged()"
+                item-title="name"
+                item-value="id"
+                flat
+                hide-details
+                density="compact"
+                label="Sparte auswählen"
+            >
+            </v-select>
             <v-spacer></v-spacer>
             <template v-slot:extension>
               <v-btn
@@ -406,5 +398,7 @@ export default {
 </script>
 
 <style scoped>
-
+.series-branch-filter {
+  max-width: 220px;
+}
 </style>

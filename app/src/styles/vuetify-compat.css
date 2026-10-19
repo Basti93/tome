@@ -19,7 +19,7 @@
 .v-list-item-title,
 .v-list-item-subtitle {
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .v-toolbar-title {
   font-size: 1.125rem;
@@ -83,6 +83,13 @@
   }
   .v-dialog--fullscreen > .v-overlay__content > .v-card {
     border-radius: 0;
+  }
+  /* decorative field icons cost ~40px of width */
+  .v-text-field > .v-input__prepend,
+  .v-select > .v-input__prepend,
+  .v-autocomplete > .v-input__prepend,
+  .v-textarea > .v-input__prepend {
+    display: none;
   }
   .v-list {
     --v-list-prepend-gap: 12px;
