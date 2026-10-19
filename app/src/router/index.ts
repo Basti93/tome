@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { analytics } from '@/services/analytics'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -61,6 +62,10 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
+  // Track page view
+  const pageTitle = (to.name as string) || 'Page'
+  analytics.trackPageView(pageTitle)
+
   if (to.matched.some(record => record.meta.requiresAuth)) {
     const authStore = useAuthStore()
     if (!authStore.user) {

@@ -141,6 +141,7 @@ import { PASSWORD_POLICY, getPasswordHint, getPasswordValidationRules } from '@/
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import moment from 'moment'
+import { analytics } from '@/services/analytics'
 
 export default {
   setup() {
@@ -241,6 +242,8 @@ export default {
           password_confirmation: this.passwordConfirm,
         });
         this.completed = true;
+        // Track successful signup
+        analytics.trackEvent('Authentication', 'Signup', 'trainer')
         useSnackbarStore().show("Erfolgreich registriert", "success")
       } catch (error) {
         console.log(error);
