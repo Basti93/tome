@@ -5,15 +5,16 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\CreateUnregisteredUserRequest;
 use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
+use App\Services\AuthLogService;
 use App\Services\NotificationPreferenceService;
+use App\Support\ProfileImage;
 use App\User;
 use Auth;
 use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserController extends Controller
@@ -26,9 +27,9 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('jwt.auth', []);
-        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getBirthdayUsers']]);
+        $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getBirthdayUsers', 'getAllAbsenceUsers']]);
         $this->middleware('permission:create-user', ['only' => ['create', 'store', 'createUnregistered']]);
-        $this->middleware('permission:update-user', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'removeAbsence', 'invite']]);
         $this->middleware('permission:delete-user', ['only' => ['destroy']]);
     }
 
@@ -159,7 +160,12 @@ class UserController extends Controller
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
                 });
             })
-            ->get();
+            ->get()
+            ->map(fn (User $user) => [
+                'firstName' => $user->firstName,
+                'familyName' => $user->familyName,
+                'birthdate' => $user->birthdate,
+            ]);
 
         return response()->json($birthdayUser);
     }
@@ -191,10 +197,9 @@ class UserController extends Controller
             $user->birthdate = null;
         }
 
-        // delete old image because there is a new one
+        // delete old image because there is a new one (only files that match the profile image naming scheme)
         if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info('delete profile image '.'/'.$user->profile_image_name);
-            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
+            ProfileImage::deleteIfValid($user->profile_image_name);
         }
         // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
@@ -216,10 +221,9 @@ class UserController extends Controller
             $user->active = $request->input('active') == 'true' ? 1 : 0;
         }
 
-        // delete old image because there is a new one
+        // delete old image because there is a new one (only files that match the profile image naming scheme)
         if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info('delete profile image '.'/'.$user->profile_image_name);
-            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
+            ProfileImage::deleteIfValid($user->profile_image_name);
         }
         // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
@@ -249,10 +253,9 @@ class UserController extends Controller
         if ($request->has('active')) {
             $user->active = $request->input('active') == 'true' ? 1 : 0;
         }
-        // delete old image because there is a new one
+        // delete old image because there is a new one (only files that match the profile image naming scheme)
         if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            Log::info('delete profile image '.'/'.$user->profile_image_name);
-            Storage::disk('public_app')->delete('/'.$user->profile_image_name);
+            ProfileImage::deleteIfValid($user->profile_image_name);
         }
         // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
@@ -297,6 +300,28 @@ class UserController extends Controller
             'status' => 'ok',
         ], 200);
 
+    }
+
+    /**
+     * Invite a user: sends a "set your password" mail that reuses the password reset token and link.
+     */
+    public function invite($id)
+    {
+        $user = User::findOrFail($id);
+
+        if (empty($user->email)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The user has no email address',
+            ], 422);
+        }
+
+        $user->sendInvitation(Password::createToken($user));
+        AuthLogService::log('invite_sent', $user->id, ['by' => Auth::guard('api')->id()], request());
+
+        return response()->json([
+            'status' => 'ok',
+        ], 200);
     }
 
     public function destroy($id)

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Mail\InvitePassword;
 use App\Mail\ResetPassword;
 use Hash;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -131,6 +132,14 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
+     * Frontend link (hash router) on which a user sets a new password with a reset token.
+     */
+    public function passwordResetUrl(string $token): string
+    {
+        return config('app.vue_url', 'http://localhost:8080').'/#/reset-password?token='.$token.'&email='.urlencode($this->email);
+    }
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token
@@ -138,7 +147,14 @@ class User extends Authenticatable implements JWTSubject
      */
     public function sendPasswordResetNotification($token)
     {
-        $resetUrl = config('app.vue_url', 'http://localhost:8080').'/#/reset-password?token='.$token.'&email='.urlencode($this->email);
-        Mail::to($this->email)->send(new ResetPassword($this, $resetUrl));
+        Mail::to($this->email)->send(new ResetPassword($this, $this->passwordResetUrl($token)));
+    }
+
+    /**
+     * Send the invitation mail ("set your password") that uses the password reset token and link.
+     */
+    public function sendInvitation(string $token): void
+    {
+        Mail::to($this->email)->send(new InvitePassword($this, $this->passwordResetUrl($token)));
     }
 }

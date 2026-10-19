@@ -62,7 +62,7 @@ class SimpleUserController extends Controller
             'userId' => $user->id,
             'from' => $fromFormatted,
             'until' => $untilFormatted,
-            'absenceReason' => $user->absenceReason,
+            'absenceReason' => (string) $user->absenceReason,
         ]);
 
         return response()->json([

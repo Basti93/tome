@@ -55,12 +55,6 @@ parameters:
 			path: app/Api/V1/Controllers/GroupController.php
 
 		-
-			message: '#^Method Illuminate\\Filesystem\\FilesystemAdapter\:\:makeDirectory\(\) invoked with 3 parameters, 1 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: app/Api/V1/Controllers/ImageController.php
-
-		-
 			message: '#^Method App\\Api\\V1\\Controllers\\LocationController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
 			identifier: class.notFound
 			count: 1
@@ -949,12 +943,6 @@ parameters:
 			path: app/Http/Resources/TrainingSeries.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Notifications/PasswordResetNotification.php
-
-		-
 			message: '#^PHPDoc type array of property App\\Providers\\AuthServiceProvider\:\:\$policies is not covariant with PHPDoc type array\<class\-string, class\-string\> of overridden property Illuminate\\Foundation\\Support\\Providers\\AuthServiceProvider\:\:\$policies\.$#'
 			identifier: property.phpDocType
 			count: 1
@@ -965,12 +953,6 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: app/Providers/EventServiceProvider.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/FirebaseMessagingService.php
 
 		-
 			message: '#^Access to an undefined property App\\Training\:\:\$contents\.$#'

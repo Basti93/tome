@@ -3,10 +3,13 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\ProfileImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Format;
 use Intervention\Image\ImageManager;
 
 class ImageController extends Controller
@@ -19,38 +22,57 @@ class ImageController extends Controller
         $this->middleware('jwt.auth', []);
     }
 
+    /**
+     * Stores a profile image.
+     *
+     * The upload is never kept as is: it is decoded, scaled to a height of 400px (aspect ratio
+     * preserved) and re-encoded as JPEG under a random name on the `public` disk
+     * (storage/app/public/profile_images, served through the `public/storage` symlink at
+     * `<APP_URL>/storage/<imageUrl>`). Nothing is written to a web root such as `public_app`.
+     */
     public function uploadProfileImage(Request $request)
     {
-        $file = $request->file('profile_image');
-        if (! $file) {
+        if (! $request->file('profile_image')) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'No file provided',
             ], 400);
         }
 
+        // standard 422 {message, errors: {profile_image: [...]}}
+        Validator::make($request->all(), [
+            'profile_image' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+                'dimensions:min_width=50,min_height=50,max_width=8000,max_height=8000',
+            ],
+        ])->validate();
+
+        $path = ProfileImage::DIRECTORY.'/'.ProfileImage::randomName().'.jpg';
+        $disk = Storage::disk(ProfileImage::DISK);
+
         try {
-            // Ensure directory exists
-            Storage::disk('public_app')->makeDirectory('profile_images', 0755, true);
-
-            // Store the file
-            $path = Storage::disk('public_app')->putFile('profile_images', $file);
-            $fullPath = Storage::disk('public_app')->path($path);
-
-            // Process image using Intervention Image v3 with explicit GD driver
             $manager = new ImageManager(new Driver);
-            $manager->decodePath($fullPath)
-                ->resize(height: 400, width: null)
-                ->save($fullPath, quality: 65);
+            $encoded = $manager->decodePath($request->file('profile_image')->getRealPath())
+                ->scale(height: 400)
+                ->encodeUsingFormat(Format::JPEG, quality: 80);
 
-            Log::info('Image uploaded: '.$fullPath);
+            if (! $disk->put($path, $encoded->toString())) {
+                throw new \RuntimeException('Could not write the profile image');
+            }
 
             return response()->json([
                 'status' => 'ok',
                 'imageUrl' => $path,
             ], 201);
-        } catch (\Exception $e) {
-            Log::error('Image upload error: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            if ($disk->exists($path)) {
+                $disk->delete($path);
+            }
+            Log::error('Profile image upload failed: '.$e::class);
 
             return response()->json([
                 'status' => 'error',

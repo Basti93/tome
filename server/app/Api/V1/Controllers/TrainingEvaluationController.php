@@ -13,7 +13,7 @@ use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingEvaluationController extends Controller
@@ -25,7 +25,7 @@ class TrainingEvaluationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant']]);
+        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant', 'updateAccountingTime', 'getAccountingTimeStatistics', 'exportAccountingTimes']]);
     }
 
     public function getPastTrainingsForTrainer($userId)
@@ -42,22 +42,28 @@ class TrainingEvaluationController extends Controller
         return TrainingEvaluationResource::collection($trainings);
     }
 
+    /**
+     * Streams the accounting times of one trainer as an XLSX download (nothing is stored on disk).
+     * Trainers may only export their own times, admins may export anyone's.
+     */
     public function exportAccountingTimes(ExportAccountingTimesRequest $request)
     {
-        $fromInput = $request->input('from');
-        $toInput = $request->input('to');
-        $from = DateTime::createFromFormat(DateTime::ISO8601, $fromInput);
-        $to = DateTime::createFromFormat(DateTime::ISO8601, $toInput);
-        $userId = $request->input('userId');
+        $from = DateTime::createFromFormat(DateTime::ISO8601, (string) $request->input('from'));
+        $to = DateTime::createFromFormat(DateTime::ISO8601, (string) $request->input('to'));
+        if ($from === false || $to === false) {
+            throw ValidationException::withMessages(['from' => ['Ungültiger Zeitraum.']]);
+        }
+
+        $actingUser = $request->user('api');
+        $userId = (int) $request->input('userId');
+        if ($userId !== (int) $actingUser->id && ! $actingUser->hasRole('admin')) {
+            abort(403, 'Forbidden');
+        }
         $user = User::findOrFail($userId);
 
-        $filename = '/accounting_times/ul_abrechnung_'.strtolower($user->firstName).'_'.strtolower($user->familyName).'_'.$from->format('d_m_Y').'_'.$to->format('d_m_Y').'.xls';
-        Excel::store(new TrainingTrainerExport($user, $from, $to), $filename, 'public', \Maatwebsite\Excel\Excel::XLS);
+        $filename = 'abrechnung_'.$from->format('Y-m-d').'_'.$to->format('Y-m-d').'.xlsx';
 
-        return response()->json([
-            'status' => 'ok',
-            'fileName' => $filename,
-        ]);
+        return Excel::download(new TrainingTrainerExport($user, $from, $to), $filename, \Maatwebsite\Excel\Excel::XLSX);
     }
 
     public function trainingEvaluated($trainingId)
@@ -145,7 +151,6 @@ class TrainingEvaluationController extends Controller
      */
     public function getAccountingTimeStatistics()
     {
-        Log::info('getAccountingTimeStatistics');
         $groupIds = request()->query('groupIds');
         $year = request()->query('year');
         $cacheKey = 'accounting_time_statistics'.$year.$groupIds;

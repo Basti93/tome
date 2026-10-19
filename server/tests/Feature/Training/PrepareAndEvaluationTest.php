@@ -9,6 +9,7 @@ use Database\Factories\LocationFactory;
 use Database\Factories\TrainingFactory;
 use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
 
@@ -53,18 +54,6 @@ class PrepareAndEvaluationTest extends TestCase
         $this->assertSame([$content->id], $t->contents()->pluck('contents.id')->all());
         $this->assertSame('2099-10-01 17:00:00', $t->start);
         $this->assertSame('2099-10-01 18:00:00', $t->end);
-    }
-
-    public function test_prepared_route_of_trainingprepare_is_broken(): void
-    {
-        // BUG: POST trainingprepare/{id}/prepared is routed to TrainingPrepareController@trainingEvaluated,
-        // a method that does not exist (the controller only has trainingPrepared), so it answers 500.
-        // The working endpoint is POST training/{id}/prepared (TrainingController).
-        $trainer = $this->makeUser('trainer');
-        $t = TrainingFactory::new()->create();
-
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/prepared")->assertStatus(500);
-        $this->assertSame(0, (int) $t->fresh()->prepared);
     }
 
     public function test_prepare_endpoints_404_for_unknown_training(): void
@@ -188,21 +177,61 @@ class PrepareAndEvaluationTest extends TestCase
         $this->assertTrue(Cache::has('accounting_time_statistics2098'));
     }
 
-    public function test_export_accounting_times_stores_an_xls_file(): void
+    public function test_export_accounting_times_is_a_direct_xlsx_download(): void
     {
         Excel::fake();
+        Storage::fake('public');
         $trainer = $this->makeUser('trainer', ['firstName' => 'Tina', 'familyName' => 'Trainer']);
 
         $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
             'userId' => $trainer->id,
             'from' => '2099-01-01T00:00:00+0100',
             'to' => '2099-01-31T00:00:00+0100',
-        ])->assertOk()->assertExactJson([
-            'status' => 'ok',
-            'fileName' => '/accounting_times/ul_abrechnung_tina_trainer_01_01_2099_31_01_2099.xls',
-        ]);
+        ])->assertOk();
 
-        Excel::assertStored('/accounting_times/ul_abrechnung_tina_trainer_01_01_2099_31_01_2099.xls', 'public');
+        // no person names in the file name, nothing stored on a public disk
+        Excel::assertDownloaded('abrechnung_2099-01-01_2099-01-31.xlsx');
+        Storage::disk('public')->assertDirectoryEmpty('/');
+    }
+
+    public function test_export_accounting_times_returns_a_real_xlsx_with_attachment_header(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $group = GroupFactory::new()->create();
+        $training = TrainingFactory::new()->between('2099-01-10 18:00:00', '2099-01-10 19:30:00')->forGroups([$group])->withTrainers([$trainer])->create();
+        TrainingTrainer::where('training_id', $training->id)->update(['accounting_time_start' => '2099-01-10 18:00:00', 'accounting_time_end' => '2099-01-10 19:30:00']);
+
+        $response = $this->actingAsJwt($trainer)->post('/api/v1/trainingevaluation/exportaccountingtimes', [
+            'userId' => $trainer->id,
+            'from' => '2099-01-01T00:00:00+0100',
+            'to' => '2099-01-31T00:00:00+0100',
+        ], ['Accept' => 'application/json'])->assertOk();
+
+        $this->assertStringContainsString('attachment', $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('abrechnung_2099-01-01_2099-01-31.xlsx', $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('spreadsheetml', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('PK', $response->baseResponse->getFile()->getContent(), 'an XLSX is a zip archive');
+    }
+
+    public function test_trainers_may_only_export_their_own_accounting_times(): void
+    {
+        Excel::fake();
+        $trainer = $this->makeUser('trainer');
+        $other = $this->makeUser('trainer');
+        $body = ['userId' => $other->id, 'from' => '2099-01-01T00:00:00+0100', 'to' => '2099-01-31T00:00:00+0100'];
+
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
+        $this->actingAsJwt($this->makeUser('member'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
+        $this->actingAsJwt($this->makeUser('admin'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertOk();
+    }
+
+    public function test_export_accounting_times_rejects_unparsable_dates(): void
+    {
+        $trainer = $this->makeUser('trainer');
+
+        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
+            'userId' => $trainer->id, 'from' => 'yesterday', 'to' => '2099-01-31T00:00:00+0100',
+        ])->assertStatus(422);
     }
 
     public function test_export_accounting_times_validates_input(): void
