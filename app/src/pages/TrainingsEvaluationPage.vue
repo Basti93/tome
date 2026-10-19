@@ -9,21 +9,19 @@
             <v-btn
                 v-if="xs"
                 color="primary"
-                outlined
                 title="Übungsleiter-Abrechnung exportieren"
-                small
-                v-on:click="showAccountingDialog = true"
+                size="small"
+                v-on:click="showAccountingDialog = true" variant="outlined"
             >
               <v-icon>mdi-file-document-outline</v-icon>
             </v-btn>
             <v-btn
                 v-else
-                outlined
                 title="Übungsleiter-Abrechnung exportieren"
                 color="primary"
-                v-on:click="showAccountingDialog = true"
+                v-on:click="showAccountingDialog = true" variant="outlined"
             >
-              <v-icon left>mdi-file-document-outline</v-icon>
+              <v-icon start>mdi-file-document-outline</v-icon>
               ÜL-Abrechnung
             </v-btn>
           </v-toolbar>
@@ -55,9 +53,8 @@
                             <v-card-text class="text-center">
                               <v-alert type="success"
                                        class="text-small"
-                                       dense
-                                       outlined
-                                       v-if="selectedTraining.evaluated">
+                                       density="compact"
+                                       v-if="selectedTraining.evaluated" variant="outlined">
                                 Training abgeschlossen
                               </v-alert>
                               <v-dialog v-model="confirmEvaluationDialog" persistent max-width="290">
@@ -82,7 +79,7 @@
                                   </v-card-text>
                                   <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn color="primary" text @click="confirmEvaluationDialog = false">Abbrechen
+                                    <v-btn color="primary" @click="confirmEvaluationDialog = false" variant="text">Abbrechen
                                     </v-btn>
                                     <v-btn color="primary" test @click="evaluated()">Bestätigen</v-btn>
                                   </v-card-actions>
@@ -110,7 +107,7 @@
                                 </v-list-item-subtitle>
 
                                 <template v-slot:append v-if="!selectedTraining.evaluated">
-                                  <v-btn color="primary" @click="editTime(item)" outlined size="small">
+                                  <v-btn color="primary" @click="editTime(item)" size="small" variant="outlined">
                                     <v-icon>mdi-pencil</v-icon>
                                   </v-btn>
                                 </template>
@@ -320,7 +317,7 @@
                           class="text-small"
                           pa-0
                           ma-0
-                          outlined>
+                          variant="outlined">
                         Keine abgehaltenen Trainings für dich verfügbar
                       </v-alert>
                     </div>
@@ -345,8 +342,8 @@
           </v-btn>
           Abrechnungszeitraum ändern
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="updateAccountingTime">
-            <v-icon left>mdi-check</v-icon>
+          <v-btn color="primary" @click="updateAccountingTime" variant="text">
+            <v-icon start>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>

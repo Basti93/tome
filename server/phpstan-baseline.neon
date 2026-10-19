@@ -445,42 +445,6 @@ parameters:
 			path: app/Console/Commands/UpcomingTrainingNotifications.php
 
 		-
-			message: '#^Method App\\Exceptions\\Handler\:\:render\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^Method App\\Exceptions\\Handler\:\:unauthenticated\(\) should return Illuminate\\Http\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^Method App\\Exceptions\\Handler\:\:unauthenticated\(\) should return Illuminate\\Http\\Response but returns Illuminate\\Http\\RedirectResponse\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$exception$#'
-			identifier: parameter.notFound
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$throwable$#'
-			identifier: parameter.notFound
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^PHPDoc type array of property App\\Exceptions\\Handler\:\:\$dontReport is not covariant with PHPDoc type array\<int, class\-string\<Throwable\>\> of overridden property Illuminate\\Foundation\\Exceptions\\Handler\:\:\$dontReport\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Exceptions/Handler.php
-
-		-
 			message: '#^Access to an undefined property App\\Exports\\TrainingTrainerExport\:\:\$from\.$#'
 			identifier: property.notFound
 			count: 2
@@ -509,18 +473,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Group.php
-
-		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\EncryptCookies\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Cookie\\Middleware\\EncryptCookies\:\:\$except\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Http/Middleware/EncryptCookies.php
-
-		-
-			message: '#^PHPDoc type array of property App\\Http\\Middleware\\VerifyCsrfToken\:\:\$except is not covariant with PHPDoc type array\<int, string\> of overridden property Illuminate\\Foundation\\Http\\Middleware\\PreventRequestForgery\:\:\$except\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Http/Middleware/VerifyCsrfToken.php
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Branch\:\:\$colorHex\.$#'

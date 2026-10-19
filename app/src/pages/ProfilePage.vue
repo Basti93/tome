@@ -13,7 +13,7 @@
                 @click="save()"
                 :class="{ 'pulse': hasUnsavedChanges }"
             >
-              <v-icon left>mdi-content-save</v-icon>
+              <v-icon start>mdi-content-save</v-icon>
               Speichern
               <v-badge
                   v-if="hasUnsavedChanges"
@@ -127,7 +127,7 @@
                                         elevation="1"
                                         @click="showPasswordDialog = true"
                                     >
-                                      <v-icon left>mdi-shield-lock</v-icon>
+                                      <v-icon start>mdi-shield-lock</v-icon>
                                       Passwort ändern
                                     </v-btn>
                                   </v-col>
@@ -142,7 +142,7 @@
                                             <v-col md="10" offset-md="1">
                                               <v-alert
                                                   type="info"
-                                                  outlined
+                                                  variant="outlined"
                                               >
                                                 Falls du nicht nur Trainer sondern auch noch aktiver Sportler bist,
                                                 kannst
@@ -171,7 +171,7 @@
                                   <v-col md="6" offset-md="3">
                                     <v-alert
                                         type="info"
-                                        outlined
+                                        variant="outlined"
                                     >
                                       Wähle deine Hauptsparte um die App auf dich abzustimmen.
                                     </v-alert>
@@ -184,7 +184,7 @@
                                         multiple
                                         chips
                                         closable-chips
-                                        dense
+                                        density="compact"
                                         label="Hauptsparte auswählen"
                                         prepend-icon="mdi-bubble-chart"
                                     >

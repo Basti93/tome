@@ -63,7 +63,7 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn to="/login" text>Abbrechen</v-btn>
+                  <v-btn to="/login" variant="text">Abbrechen</v-btn>
                   <v-btn
                       :disabled="!passwordFormValid || loading"
                       :loading="loading"
@@ -90,7 +90,7 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn to="/login" text>Abbrechen</v-btn>
+                  <v-btn to="/login" variant="text">Abbrechen</v-btn>
                   <v-btn
                       :disabled="!emailFormValid || loading"
                       :loading="loading"

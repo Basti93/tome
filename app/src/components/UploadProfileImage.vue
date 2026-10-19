@@ -39,7 +39,7 @@
             color="error"
             title="Profilbild löschen"
             size="small">
-          <v-icon left>mdi-trash-can</v-icon>
+          <v-icon start>mdi-trash-can</v-icon>
           Löschen
         </v-btn>
       </v-col>

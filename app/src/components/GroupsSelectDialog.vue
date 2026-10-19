@@ -8,7 +8,7 @@
         <v-toolbar-title>Filter ändern</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" v-on:click="done" :disabled="!valid"><v-icon left>mdi-check</v-icon>Auswählen</v-btn>
+          <v-btn color="primary" v-on:click="done" :disabled="!valid" variant="text"><v-icon start>mdi-check</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-divider></v-divider>

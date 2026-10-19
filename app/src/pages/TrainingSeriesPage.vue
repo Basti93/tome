@@ -18,7 +18,7 @@
                       item-title="name"
                       item-value="id"
                       flat
-                      dense
+                      density="compact"
                       label="Sparte auswählen"
                       prepend-icon="bubble_chart"
                   >
@@ -30,10 +30,9 @@
             <template v-slot:extension>
               <v-btn
                   title="Neue Trainingsserie anlegen"
-                  fab
-                  absolute
-                  bottom
-                  left
+                  icon
+                  position="absolute"
+                  location="bottom left"
                   elevation="1"
                   color="primary"
                   @click="openCreateDialog()">
@@ -52,8 +51,8 @@
                   <v-toolbar-title>{{editDialogTitle}}</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <v-btn text color="primary" @click="save()">
-                      <v-icon left>mdi-check</v-icon>
+                    <v-btn color="primary" @click="save()" variant="text">
+                      <v-icon start>mdi-check</v-icon>
                       Speichern
                     </v-btn>
                   </v-toolbar-items>
@@ -85,7 +84,7 @@
                                 class="text-small"
                                 pa-0
                                 ma-0
-                                outlined>
+                                variant="outlined">
                               Trainings von aktiven Trainingsserien werden immer eine Woche im Voraus erstellt.
                             </v-alert>
                           </v-col>
@@ -165,18 +164,16 @@
                         <template v-slot:[`item.trainerIds`]="{ item }">
                           <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
                                   :key="trainer.id"
-                                  small
-                                  outlined
-                                  class="ma-1">
+                                  size="small"
+                                  class="ma-1" variant="outlined">
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
                         <template v-slot:[`item.groupIds`]="{ item }">
                           <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
                                   :key="group.id"
-                                  small
-                                  outlined
-                                  class="ma-1">
+                                  size="small"
+                                  class="ma-1" variant="outlined">
                             {{ group.name }}
                           </v-chip>
                         </template>

@@ -39,7 +39,7 @@
 
                                 <v-divider></v-divider>
                                 <v-card-text>
-                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" dense>
+                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" density="compact">
                                     <v-list-subheader>Sportler</v-list-subheader>
 
                                     <v-list-item
@@ -48,7 +48,7 @@
                                       {{ user.getFullNameFamilyFirst() }}
                                     </v-list-item>
                                   </v-list>
-                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" dense>
+                                  <v-list subheader :color="getBranchColorByGroupId(group.id)" density="compact">
                                     <v-list-subheader>Trainingszeiten</v-list-subheader>
 
                                     <v-list-item

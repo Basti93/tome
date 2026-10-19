@@ -24,11 +24,10 @@
               </v-col>
               <v-col cols="auto">
                 <v-btn
-                    small
-                    outlined
+                    size="small"
                     @click="resendVerificationEmail()"
                     :loading="resendLoading"
-                    color="warning"
+                    color="warning" variant="outlined"
                 >
                   Erneut senden
                 </v-btn>

@@ -5,7 +5,7 @@
           <v-col cols="12">
             <v-card flat class="mb-4">
               <v-card-title class="text-body-large font-weight-bold">
-                <v-icon left>mdi-bell</v-icon>
+                <v-icon start>mdi-bell</v-icon>
                 Trainer-Benachrichtigungen
               </v-card-title>
               <v-card-text>
@@ -28,7 +28,7 @@
           <v-col cols="12">
             <v-card flat class="mb-4">
               <v-card-title class="text-body-large font-weight-bold">
-                <v-icon left>mdi-bell</v-icon>
+                <v-icon start>mdi-bell</v-icon>
                 Sportler-Benachrichtigungen
               </v-card-title>
               <v-card-text>
@@ -44,7 +44,7 @@
           <v-col cols="12">
             <v-card flat>
               <v-card-title class="text-body-large font-weight-bold">
-                <v-icon left>mdi-bell</v-icon>
+                <v-icon start>mdi-bell</v-icon>
                 Sonstige Benachrichtigungen
               </v-card-title>
               <v-card-text>
@@ -68,10 +68,9 @@
         <v-row class="mt-4">
           <v-col cols="12" class="text-right">
             <v-btn
-              text
               @click="reset"
               :disabled="!hasChanges"
-              class="mr-2"
+              class="mr-2" variant="text"
             >
               Zurücksetzen
             </v-btn>
@@ -82,7 +81,7 @@
               :disabled="!hasChanges || loading"
               :loading="loading"
             >
-              <v-icon left>mdi-content-save</v-icon>
+              <v-icon start>mdi-content-save</v-icon>
               Speichern
             </v-btn>
           </v-col>

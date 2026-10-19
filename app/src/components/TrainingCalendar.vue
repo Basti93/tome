@@ -1,12 +1,12 @@
 <template>
   <v-sheet>
     <v-toolbar flat class="mb-2">
-      <v-btn fab text small @click="prev">
-        <v-icon small>mdi-chevron-left</v-icon>
+      <v-btn icon variant="text" size="small" @click="prev">
+        <v-icon size="small">mdi-chevron-left</v-icon>
       </v-btn>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
-      <v-btn fab text small @click="next">
-        <v-icon small>mdi-chevron-right</v-icon>
+      <v-btn icon variant="text" size="small" @click="next">
+        <v-icon size="small">mdi-chevron-right</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
 
@@ -15,15 +15,15 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-menu>
-            <template v-slot:activator="{ on }">
+            <template v-slot:activator="{ props }">
               <v-btn
-                  small
+                  size="small"
                   color="primary"
-                  outlined
-                  v-on="on"
+                  variant="outlined"
+                  v-bind="props"
               >
                 <span>{{ typeToLabel[type] }}</span>
-                <v-icon right>mdi-menu-down</v-icon>
+                <v-icon end>mdi-menu-down</v-icon>
               </v-btn>
             </template>
             <v-list>
@@ -38,12 +38,12 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-btn text
+          <v-btn
                  color="primary"
-                 small
+                 size="small"
                  class="mr-4 ml-4"
-                 @click="setToday">
-            <v-icon left>mdi-palette</v-icon>
+                 @click="setToday" variant="text">
+            <v-icon start>mdi-palette</v-icon>
             Heute
           </v-btn>
         </v-toolbar-items>
@@ -72,7 +72,6 @@
         v-model="selectedOpen"
         :close-on-content-click="false"
         :activator="selectedElement"
-        offset-x
     >
       <v-card
           min-width="350px"
@@ -92,82 +91,78 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn @click="selectedOpen = false"
-                 text>
+                 variant="text">
             <v-icon>mdi-cancel</v-icon>
           </v-btn>
         </v-toolbar>
         <v-card-text v-if="selectedEvent.type == 'training'">
           <v-label v-if="privateMode && selectedEvent.evaluated">
-            <v-icon left color="primary">mdi-check</v-icon>
+            <v-icon start color="primary">mdi-check</v-icon>
             Abgeschlossen
           </v-label>
           <v-label v-if="privateMode && !selectedEvent.evaluated">
-            <v-icon left color="error">mdi-cancel</v-icon>
+            <v-icon start color="error">mdi-cancel</v-icon>
             Nicht Abgeschlossen
           </v-label>
           <br/>
           <span class="label text-small">Von</span>
-          <v-chip small outlined class="ma-1">
-            <v-icon left color="primary">mdi-clock-outline</v-icon>
+          <v-chip size="small" class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-clock-outline</v-icon>
             {{ dayjs(selectedEvent.start).format('HH:mm') }}
           </v-chip>
           <span class="label text-small">bis</span>
-          <v-chip small outlined class="ml-1">
-            <v-icon left color="primary">mdi-clock-outline</v-icon>
+          <v-chip size="small" class="ml-1" variant="outlined">
+            <v-icon start color="primary">mdi-clock-outline</v-icon>
             {{ dayjs(selectedEvent.end).format('HH:mm') }}
           </v-chip>
           <br />
-          <v-chip v-if="selectedEvent.location" outlined small class="ma-1">
-            <v-icon left color="primary">mdi-map-marker</v-icon>
+          <v-chip v-if="selectedEvent.location" size="small" class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-map-marker</v-icon>
             {{ selectedEvent.location }}
           </v-chip>
           <br />
           <h4 v-if="selectedEvent.participantCount">{{ selectedEvent.participantCount }} Teilnehmer</h4>
           <h4>Gruppen</h4>
           <v-chip
-              outlined
-              small
+              size="small"
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId' + groupId"
-              class="ma-1">
-            <v-icon left color="primary">mdi-account</v-icon>
+              class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
           <v-chip
-              outlined
-              small
+              size="small"
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId' + trainerId"
-              class="ma-1">
-            <v-icon left color="primary">mdi-account</v-icon>
+              class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
         <v-card-text v-else-if="selectedEvent.type == 'planed-training'">
           <v-label>
-            <v-icon left color="info">mdi-information</v-icon>
+            <v-icon start color="info">mdi-information</v-icon>
             Geplantes Training, noch nicht bestätigt
           </v-label>
           <br/>
           <h4>Gruppen</h4>
           <v-chip
-              outlined
-              small
+              size="small"
               v-for="(groupId) in selectedEvent.groupIds"
               :key="'groupId_2_' + groupId"
-              class="ma-1">
-            <v-icon left color="primary">mdi-account</v-icon>
+              class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-account</v-icon>
             {{ getGroupById(groupId).name }}
           </v-chip>
           <h4>Trainer</h4>
           <v-chip
-              outlined
-              small
+              size="small"
               v-for="(trainerId) in selectedEvent.trainerIds"
               :key="'trainerId_2_' + trainerId"
-              class="ma-1">
-            <v-icon left color="primary">mdi-account</v-icon>
+              class="ma-1" variant="outlined">
+            <v-icon start color="primary">mdi-account</v-icon>
             {{ getFullName(trainerId) }}
           </v-chip>
         </v-card-text>
@@ -180,7 +175,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck TODO(safety-net): 32 pre-existing vue-tsc errors in this file; fix them and remove this line
 import Training from "@/models/Training";
 import { useMasterDataStore } from '@/store/masterData';
 import httpClient from '@/http/api';
@@ -192,17 +186,17 @@ export default {
     privateMode: Boolean,
   },
   data: () => ({
-    events: [],
+    events: [] as any[],
     weekday: [1, 2, 3, 4, 5, 6, 0],
-    categories: [],
-    trainings: [],
-    start: null,
-    end: null,
-    focus: null,
-    selectedEvent: {},
-    selectedElement: null,
+    categories: [] as any[],
+    trainings: [] as Training[],
+    start: null as any,
+    end: null as any,
+    focus: null as any,
+    selectedEvent: {} as any,
+    selectedElement: null as any,
     selectedOpen: false,
-    type: 'month',
+    type: 'month' as 'month' | 'week' | 'day' | 'category',
     typeToLabel: {
       month: 'Monat',
       week: 'Woche',
@@ -239,6 +233,10 @@ export default {
     },
   },
   methods: {
+    dayjs,
+    getGroupById(groupId: number) {
+      return useMasterDataStore().getGroupById(groupId) ?? { name: '' };
+    },
     getBranchByGroupId(groupId: number) {
       return useMasterDataStore().getBranchByGroupId(groupId);
     },
@@ -325,6 +323,7 @@ export default {
               trainingData.comment,
               false,
               false,
+              false,
           );
           this.trainings.push(training);
 
@@ -353,7 +352,8 @@ export default {
         });
       }
     },
-    showEvent({nativeEvent, event}) {
+    // Vuetify 4 calls the click handlers with (nativeEvent, scope), not with one merged object
+    showEvent(nativeEvent: Event, {event}: {event: any}) {
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
@@ -371,11 +371,11 @@ export default {
 
       nativeEvent.stopPropagation();
     },
-    viewDay({date}): void {
+    viewDay(_nativeEvent: Event, {date}: {date: string}): void {
       this.focus = date;
       this.type = 'day';
     },
-    getEventColor(event) {
+    getEventColor(event: any) {
       return event.color;
     },
     setToday(): void {
@@ -387,16 +387,17 @@ export default {
     next(): void {
       this.$refs.calendar.next();
     },
-    updateRange({start, end}) {
+    updateRange({start, end}: {start: any, end: any}) {
       this.start = start;
       this.end = end;
       this.loadData();
     },
-    formatDayTime(timeObj) {
+    formatDayTime(timeObj: any) {
       return timeObj.time;
     },
-    getFullName(trainerId) {
+    getFullName(trainerId: number) {
       const trainer = this.getSimpleTrainerById(trainerId);
+      if (!trainer) return '';
       return trainer.firstName + " " + trainer.familyName;
     }
   },

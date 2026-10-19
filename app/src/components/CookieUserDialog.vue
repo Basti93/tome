@@ -11,18 +11,17 @@
         <v-toolbar-title>Wer bist du?</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" @click="done"><v-icon left>mdi-check</v-icon>Auswählen</v-btn>
+          <v-btn color="primary" @click="done" variant="text"><v-icon start>mdi-check</v-icon>Auswählen</v-btn>
         </v-toolbar-items>
       </v-toolbar>
         <v-divider></v-divider>
         <v-card-text class="mt-2">
           <v-alert
                   type="info"
-                  outlined
                   pa-1
                   ma-0
-                  dense
-                  class="caption"
+                  density="compact"
+                  class="caption" variant="outlined"
           >
             Wähle deinen Namen aus um deine Trainings zu sehen.
           </v-alert>

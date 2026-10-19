@@ -6,8 +6,8 @@
           <v-toolbar flat>
             <v-toolbar-title>Aktuelle Trainings</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-chip outlined>
-              <v-icon left color="primary">mdi-account</v-icon>
+            <v-chip variant="outlined">
+              <v-icon start color="primary">mdi-account</v-icon>
               {{ filterDisplayValue }}
             </v-chip>
             <v-btn icon color="primary" @click="filterDialogVisible = true">
@@ -34,7 +34,7 @@
                   <v-toolbar-title>Filter ändern</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <v-btn text color="primary" @click="filterDone">
+                    <v-btn color="primary" @click="filterDone" variant="text">
                       <v-icon>mdi-check</v-icon>
                     </v-btn>
                   </v-toolbar-items>
@@ -80,10 +80,9 @@
                       <v-alert
                           v-if="!initializing && !selectedTraining"
                           type="info"
-                          outlined
                           pa-1
                           ma-0
-                          class="caption"
+                          class="caption" variant="outlined"
                       >
                         Momentan gibt es keine kommenden Trainings für deine Gruppe ☹️
                       </v-alert>

@@ -1,7 +1,6 @@
 <template>
   <v-snackbar
-    bottom
-    right
+    location="bottom right"
     v-model="snackbar.visible"
     :timeout="snackbar.timeout"
     v-bind:color="snackbar.color">

@@ -9,21 +9,21 @@
           <v-row>
             <v-col>
               <span class="label text-small">Von</span>
-              <v-chip small outlined class="ma-1">
-                <v-icon left color="primary">mdi-clock-outline</v-icon>
+              <v-chip size="small" class="ma-1" variant="outlined">
+                <v-icon start color="primary">mdi-clock-outline</v-icon>
                 {{ start.format('HH:mm') }}
               </v-chip>
               <span class="label text-small">bis</span>
-              <v-chip small outlined class="ml-1">
-                <v-icon left color="primary">mdi-clock-outline</v-icon>
+              <v-chip size="small" class="ml-1" variant="outlined">
+                <v-icon start color="primary">mdi-clock-outline</v-icon>
                 {{ end.format('HH:mm') }}
               </v-chip>
             </v-col>
           </v-row>
           <v-row>
             <v-col>
-              <v-chip outlined small class="ma-1">
-                <v-icon left color="primary">mdi-map-marker</v-icon>
+              <v-chip size="small" class="ma-1" variant="outlined">
+                <v-icon start color="primary">mdi-map-marker</v-icon>
                 {{ location }}
               </v-chip>
             </v-col>
@@ -38,26 +38,24 @@
                   class="ma-2"
                   @click="currentUser ? participate() : showCookieUserLogin()">
                 Teilnehmen
-                <v-icon right>mdi-thumb-up</v-icon>
+                <v-icon end>mdi-thumb-up</v-icon>
               </v-btn>
               <v-btn
                   style="min-width: 150px"
-                  outlined
                   v-if="attending || notYet"
                   color="red lighten-2"
                   class="ma-2"
-                  @click="currentUser ? cancelParticipation() : showCookieUserLogin()">
-                <v-icon left>mdi-thumb-down</v-icon>
+                  @click="currentUser ? cancelParticipation() : showCookieUserLogin()" variant="outlined">
+                <v-icon start>mdi-thumb-down</v-icon>
                 Absagen
               </v-btn>
               <v-alert
                   v-if="notYet && automaticAttend"
                   type="info"
-                  outlined
                   pa-1
                   ma-0
                   class="caption"
-                  dense>
+                  density="compact" variant="outlined">
                 Du wirst 24 Stunden vor dem Training automatisch angemeldet.
               </v-alert>
             </v-col>
@@ -66,11 +64,10 @@
             <v-col>
               <v-alert
                   type="warning"
-                  outlined
                   pa-1
                   ma-0
                   class="caption"
-                  dense
+                  density="compact" variant="outlined"
               >
                 Teilnehmen nicht möglich. Du bist keiner dieser Gruppen zugeordnet. Frage einen Trainer bei Problemen.
               </v-alert>
@@ -90,8 +87,8 @@
             class="tp-upcoming-training__text ma-1"
             style="white-space: pre-line;word-break: break-all;"
             type="info"
-            dense
-            outlined
+            density="compact"
+            variant="outlined"
         >
           <div v-html="urlify(comment)"></div>
         </v-alert>
@@ -152,11 +149,11 @@
           <v-toolbar-title>Kurzfristige Absage</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text
+            <v-btn
                    color="primary"
                    @click="cancelParticipation(cancelReason)"
-                   :disabled="!cancelDialogValid">
-              <v-icon left>mdi-check</v-icon>
+                   :disabled="!cancelDialogValid" variant="text">
+              <v-icon start>mdi-check</v-icon>
               Absage abschicken
             </v-btn>
           </v-toolbar-items>
@@ -169,10 +166,9 @@
                 <v-col cols="12">
                   <v-alert
                       type="warning"
-                      outlined
                       pa-1
                       ma-0
-                      class="caption"
+                      class="caption" variant="outlined"
                   >
                     Das Training findet innerhalb der nächsten 24 Stunden statt. Bitte gib einen Grund für deine Absage
                     an.
@@ -180,11 +176,10 @@
                 </v-col>
                 <v-col cols="12">
                   <v-textarea
-                      filled
                       label="Gib hier einen Grund an"
                       required
                       :rules="cancelReasonRules"
-                      v-model="cancelReason">
+                      v-model="cancelReason" variant="filled">
 
                   </v-textarea>
                 </v-col>

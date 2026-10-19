@@ -13,8 +13,8 @@
                 <v-toolbar-title>Passwort ändern</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="save()" :disabled="!valid">
-                        <v-icon right>mdi-check</v-icon>
+                    <v-btn color="primary" @click="save()" :disabled="!valid" variant="text">
+                        <v-icon end>mdi-check</v-icon>
                         Speichern
                     </v-btn>
                 </v-toolbar-items>

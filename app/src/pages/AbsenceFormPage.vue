@@ -57,9 +57,9 @@
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker
-                                    v-model="absenceStart"
-                                    :min="new Date().toISOString().substr(0, 10)"
-                                    @input="menuStart = false"
+                                    v-model="absenceStartDate"
+                                    :min="today"
+                                    @update:model-value="menuStart = false"
                                 ></v-date-picker>
                               </v-menu>
                             </v-col>
@@ -86,9 +86,9 @@
                                   ></v-text-field>
                                 </template>
                                 <v-date-picker
-                                    v-model="absenceEnd"
-                                    :min="new Date().toISOString().substr(0, 10)"
-                                    @input="menuEnd = false"
+                                    v-model="absenceEndDate"
+                                    :min="absenceStart || today"
+                                    @update:model-value="menuEnd = false"
                                 ></v-date-picker>
                               </v-menu>
                             </v-col>
@@ -100,8 +100,7 @@
                                   v-model="absenceReason"
                                   label="Grund der Abwesenheit (Nur für Trainer sichtbar)"
                                   :rules="requiredRule"
-                                  outlined
-                                  required
+                                  required variant="outlined"
                               ></v-textarea>
                             </v-col>
                             <v-col cols="12">
@@ -157,7 +156,7 @@
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loadingUsers" v-on:click="loadAllAbsenceUsers()">
-                                  <v-icon left>mdi-refresh</v-icon>
+                                  <v-icon start>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -246,6 +245,19 @@ const currentUserId = computed(() => {
   }
   return null
 })
+
+// v-date-picker (Vuetify 3/4) works with Date objects; the form state stays a 'YYYY-MM-DD' string
+const today = dayjs().format('YYYY-MM-DD')
+function dateModel(source) {
+  return computed({
+    get: () => (source.value ? dayjs(source.value, 'YYYY-MM-DD').toDate() : null),
+    set: (value) => {
+      source.value = value ? dayjs(value).format('YYYY-MM-DD') : null
+    },
+  })
+}
+const absenceStartDate = dateModel(absenceStart)
+const absenceEndDate = dateModel(absenceEnd)
 
 const absenceStartFormatted = computed(() => {
   return formatDate(absenceStart.value)

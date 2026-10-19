@@ -31,26 +31,24 @@
                               <v-col>
                                 Von
                                 <v-chip
-                                    outlined
-                                    @click="editTime()"
+                                    @click="editTime()" variant="outlined"
                                 >
                                   <v-icon
-                                      small
+                                      size="small"
                                       color="primary"
-                                      left>
+                                      start>
                                     edit
                                   </v-icon>
                                   {{ selectedTraining.start.format('HH:mm') }}
                                 </v-chip>
                                 Uhr bis
                                 <v-chip
-                                    outlined
-                                    @click="editTime()"
+                                    @click="editTime()" variant="outlined"
                                 >
                                   <v-icon
-                                      small
+                                      size="small"
                                       color="primary"
-                                      left>
+                                      start>
                                     edit
                                   </v-icon>
                                   {{ selectedTraining.end.format('HH:mm') }}
@@ -72,24 +70,23 @@
                                 ></v-select>
                                 <v-btn @click="saveEditLocation()"
                                        color="primary"
-                                       text>
+                                       variant="text">
                                   <v-icon>mdi-check</v-icon>
                                 </v-btn>
                                 <v-btn @click="cancelEditLocation()"
                                        color="primary"
-                                       text>
+                                       variant="text">
                                   <v-icon>mdi-cancel</v-icon>
                                 </v-btn>
                               </v-col>
                               <v-col v-else>
                                 <v-chip
-                                    outlined
-                                    @click="editLocation()"
+                                    @click="editLocation()" variant="outlined"
                                 >
                                   <v-icon
-                                      small
+                                      size="small"
                                       color="primary"
-                                      left>
+                                      start>
                                     edit
                                   </v-icon>
                                   {{ getLocationNameById(selectedTraining.locationId) }}
@@ -102,7 +99,7 @@
                                     :href="sharelink"
                                     target="_blank"
                                     color="primary">
-                                  <v-icon left>mdi-share-variant</v-icon>
+                                  <v-icon start>mdi-share-variant</v-icon>
                                   Mit Whatsapp teilen
                                 </v-btn>
                               </v-col>
@@ -130,10 +127,9 @@
                                   cols="9"
                               >
                                 <v-textarea
-                                    filled
                                     label="Kommentar"
                                     rows="3"
-                                    v-model="editComment"
+                                    v-model="editComment" variant="filled"
                                 ></v-textarea>
                               </v-col>
                               <v-col
@@ -162,13 +158,12 @@
                                   md="10"
                               >
                                 <v-textarea
-                                    filled
                                     @click="startEditComment()"
                                     label="Kommentar"
                                     v-model="selectedTraining.comment"
                                     readonly
                                     rows="3"
-                                    append-icon="edit"
+                                    append-icon="edit" variant="filled"
                                 ></v-textarea>
                               </v-col>
                             </v-row>
@@ -268,7 +263,7 @@
                       class="text-small"
                       pa-0
                       ma-0
-                      outlined>
+                      variant="outlined">
                     Keine Trainings für dich verfügbar
                   </v-alert>
                 </v-col>
@@ -305,8 +300,8 @@
           </v-btn>
           Trainingszeit ändern
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="updateTrainingTime">
-            <v-icon left>mdi-check</v-icon>
+          <v-btn color="primary" @click="updateTrainingTime" variant="text">
+            <v-icon start>mdi-check</v-icon>
             Speichern
           </v-btn>
         </v-card-title>

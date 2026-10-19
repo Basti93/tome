@@ -40,7 +40,7 @@
                                                     v-bind="props"
                                             ></v-text-field>
                                         </template>
-                                        <v-date-picker v-model="trainingDate" @input="dateMenuOpened = false"></v-date-picker>
+                                        <v-date-picker v-model="trainingDate" @update:model-value="dateMenuOpened = false"></v-date-picker>
                                     </v-menu>
                                 </v-col>
                                 <v-col cols="6" md="3">
@@ -59,7 +59,7 @@
                                                     v-bind="props"
                                             ></v-text-field>
                                         </template>
-                                        <v-time-picker v-model="startTime" @input="startMenuOpened = false" format="24hr"></v-time-picker>
+                                        <v-time-picker v-model="startTime" @update:model-value="startMenuOpened = false" format="24hr"></v-time-picker>
                                     </v-menu>
                                 </v-col>
                                 <v-col cols="6" md="3">
@@ -78,7 +78,7 @@
                                                     v-bind="props"
                                             ></v-text-field>
                                         </template>
-                                        <v-time-picker v-model="endTime" @input="endMenuOpened = false" format="24hr"></v-time-picker>
+                                        <v-time-picker v-model="endTime" @update:model-value="endMenuOpened = false" format="24hr"></v-time-picker>
                                     </v-menu>
                                 </v-col>
                                 <v-col cols="12">
@@ -137,9 +137,8 @@
                                 </v-col>
                                 <v-col cols="12">
                                     <v-textarea
-                                            filled
                                             label="Kommentar"
-                                            v-model="editedItem.comment"
+                                            v-model="editedItem.comment" variant="filled"
                                     ></v-textarea>
                                 </v-col>
                             </v-row>
@@ -202,7 +201,7 @@
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" @click="close">Abbrechen</v-btn>
-                <v-btn color="primary" @click="save"><v-icon left>mdi-check</v-icon>Speichern</v-btn>
+                <v-btn color="primary" @click="save"><v-icon start>mdi-check</v-icon>Speichern</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

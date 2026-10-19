@@ -9,7 +9,7 @@
                 <v-toolbar-title v-else>Benutzer Bearbeiten</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                    <v-btn text color="primary" @click="save"><v-icon left>mdi-check</v-icon>Speichern</v-btn>
+                    <v-btn color="primary" @click="save" variant="text"><v-icon start>mdi-check</v-icon>Speichern</v-btn>
                 </v-toolbar-items>
             </v-toolbar>
             <v-divider class="pb-2"></v-divider>
@@ -20,8 +20,7 @@
                         class="text-small"
                         pa-0
                         ma-0
-                        outlined
-                        dismissible>
+                        dismissible variant="outlined">
                     Vorläufige Benutzer können an Trainings teilnehmen aber sich nicht einloggen. Mit einer E-Mail-Adresse kann der Benutzer anschließend per Einladung (Benutzerverwaltung, "Einladung senden") zum Login eingeladen werden.
                 </v-alert>
               <v-form

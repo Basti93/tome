@@ -18,7 +18,7 @@
                       item-title="name"
                       item-value="id"
                       flat
-                      dense
+                      density="compact"
                       label="Sparte auswählen"
                       prepend-icon="bubble_chart"
                   >
@@ -29,10 +29,9 @@
             <template v-slot:extension>
               <v-btn
                   title="Neues Training anlegen"
-                  fab
-                  absolute
-                  bottom
-                  left
+                  icon
+                  position="absolute"
+                  location="bottom left"
                   elevation="1"
                   color="primary"
                   @click="create()">
@@ -75,18 +74,16 @@
                         <template v-slot:[`item.trainerIds`]="{ item }">
                           <v-chip v-for="(trainer) in getSimpleTrainersByIds(item.trainerIds)"
                                   :key="trainer.id"
-                                  small
-                                  outlined
-                                  class="ma-1">
+                                  size="small"
+                                  class="ma-1" variant="outlined">
                             {{ trainer.firstName }}
                           </v-chip>
                         </template>
                         <template v-slot:[`item.groupIds`]="{ item }">
                           <v-chip v-for="(group) in getGroupsByIds(item.groupIds)"
                                   :key="group.id"
-                                  small
-                                  outlined
-                                  class="ma-1">
+                                  size="small"
+                                  class="ma-1" variant="outlined">
                             {{ group.name }}
                           </v-chip>
                         </template>
@@ -104,7 +101,7 @@
                         </template>
                         <template v-slot:no-data>
                           <v-btn color="primary" :disabled="loading" @click="loadData()">
-                            <v-icon left>mdi-refresh</v-icon>
+                            <v-icon start>mdi-refresh</v-icon>
                             Keine Daten gefunden
                           </v-btn>
                         </template>
@@ -133,8 +130,8 @@
           <v-toolbar-title>{{ editDialogTitle }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="save">
-              <v-icon left>mdi-check</v-icon>
+            <v-btn color="primary" @click="save" variant="text">
+              <v-icon start>mdi-check</v-icon>
               Speichern
             </v-btn>
           </v-toolbar-items>

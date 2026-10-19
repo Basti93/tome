@@ -7,11 +7,10 @@
   >
     <template v-slot:activator="{ props }">
       <v-chip
-        outlined
           class="ma-1"
-          v-bind="props"
+          v-bind="props" variant="outlined"
       >
-        <v-icon left :color="group.branch.colorHex">mdi-account-multiple</v-icon>
+        <v-icon start :color="group.branch.colorHex">mdi-account-multiple</v-icon>
         {{ group.getWithBranchName() }}
       </v-chip>
     </template>

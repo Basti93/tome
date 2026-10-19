@@ -8,9 +8,8 @@
   >
     <template v-slot:activator="{ props }">
       <v-chip
-          outlined
           class="ma-1"
-          v-bind="props"
+          v-bind="props" variant="outlined"
       >
         <v-avatar left>
           <v-img v-if="imageUrl"

@@ -46,7 +46,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="resendDialog = false">Abbrechen</v-btn>
+          <v-btn @click="resendDialog = false" variant="text">Abbrechen</v-btn>
           <v-btn color="primary" :loading="resendLoading" @click="submitResend">Senden</v-btn>
         </v-card-actions>
       </v-card>

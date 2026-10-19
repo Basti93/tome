@@ -10,17 +10,15 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-            text
-            v-on:click="cancel()"
+            v-on:click="cancel()" variant="text"
         >
-          <v-icon left>mdi-cancel</v-icon>
+          <v-icon start>mdi-cancel</v-icon>
           Abbrechen
         </v-btn>
         <v-btn
-            text
-            v-on:click="confirm()"
+            v-on:click="confirm()" variant="text"
         >
-          <v-icon left>mdi-check</v-icon>
+          <v-icon start>mdi-check</v-icon>
           Bestätigen
         </v-btn>
 

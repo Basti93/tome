@@ -45,11 +45,10 @@
       color="primary"
       title="Training auswählen"
       @click="showMobileList = true"
-      fab
+      icon
       elevation="3"
-      fixed
-      bottom
-      right
+      position="fixed"
+      location="bottom right"
       class="mb-4 mr-4"
   >
     <v-icon>mdi-format-list-bulleted</v-icon>

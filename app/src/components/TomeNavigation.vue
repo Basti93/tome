@@ -13,7 +13,7 @@
         <div class="d-block">{{ loggedInUser.firstName }}&nbsp;{{ loggedInUser.familyName }}</div>
       </v-container>
       <v-divider></v-divider>
-      <v-list dense class="pt-2">
+      <v-list density="compact" class="pt-2">
         <v-list-item
             to="/"
             @click="drawer = false">
@@ -193,9 +193,8 @@
       >
         <template v-slot:activator="{ props }">
           <v-btn
-              text
               v-bind="props"
-              v-show="mdAndUp"
+              v-show="mdAndUp" variant="text"
           >
             <span>{{ loggedInUser.firstName }}&nbsp;{{ loggedInUser.familyName }}</span>
             <ProfileImage :firstName="loggedInUser.firstName"

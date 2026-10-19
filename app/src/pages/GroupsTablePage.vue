@@ -15,10 +15,9 @@
                 <template v-slot:activator="{ props }">
                   <v-btn
                       title="Neue Gruppe erstellen"
-                      fab
-                      absolute
-                      bottom
-                      left
+                      icon
+                      position="absolute"
+                      location="bottom left"
                       elevation="1"
                       color="primary"
                       v-bind="props"
@@ -35,8 +34,8 @@
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>mdi-check</v-icon>
+                      <v-btn color="primary" v-on:click="save()" variant="text">
+                        <v-icon start>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -99,12 +98,12 @@
                                 color="primary"
                                 elevation="1"
                                 v-on:click="addSelectedUsersToGroup()">
-                              <v-icon left>mdi-plus</v-icon>
+                              <v-icon start>mdi-plus</v-icon>
                               Hinzufügen
                             </v-btn>
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-list dense>
+                            <v-list density="compact">
                               <v-list-item-title>{{ editedItem.userIds.length }} Mitglieder</v-list-item-title>
                               <v-list-item
                                   v-for="item in editedUsers"
@@ -175,7 +174,7 @@
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>mdi-refresh</v-icon>
+                                  <v-icon start>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>

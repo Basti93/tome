@@ -15,10 +15,9 @@
                 <template v-slot:activator="{ props }">
                   <v-btn
                       title="Neuen Trainingsort erstellen"
-                      fab
-                      absolute
-                      bottom
-                      left
+                      icon
+                      position="absolute"
+                      location="bottom left"
                       elevation="1"
                       color="primary"
                       v-bind="props"
@@ -35,8 +34,8 @@
                     <v-toolbar-title>{{ titleDialog }}</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text color="primary" v-on:click="save()">
-                        <v-icon left>mdi-check</v-icon>
+                      <v-btn color="primary" v-on:click="save()" variant="text">
+                        <v-icon start>mdi-check</v-icon>
                         Speichern
                       </v-btn>
                     </v-toolbar-items>
@@ -97,7 +96,7 @@
                             <v-row>
                               <v-col>
                                 <v-btn color="error" :disabled="loading" v-on:click="loadData()">
-                                  <v-icon left>mdi-refresh</v-icon>
+                                  <v-icon start>mdi-refresh</v-icon>
                                   Keine Daten gefunden
                                 </v-btn>
                               </v-col>
@@ -118,10 +117,9 @@
       <v-col>
       <v-alert
           type="info"
-          outlined
           pa-1
           ma-0
-          class="caption"
+          class="caption" variant="outlined"
       >
         Um Trainingsorte zu löschen bitte den Admin fragen
       </v-alert>

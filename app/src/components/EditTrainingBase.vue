@@ -139,9 +139,8 @@
       </v-col>
       <v-col cols="12">
         <v-textarea
-            filled
             label="Kommentar"
-            v-model.lazy="editedComment"
+            v-model.lazy="editedComment" variant="filled"
         ></v-textarea>
       </v-col>
     </v-row>
