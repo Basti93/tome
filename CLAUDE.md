@@ -70,6 +70,9 @@ npm run build           # Production build to /dist
 npm run build:serve     # Build + copy to /server/public
 npm run deploy          # Copy dist/ to /server/public
 npm run lint            # ESLint with auto-fix
+npm run lint:check      # ESLint, no fixing (used by CI)
+npm run type-check      # vue-tsc --noEmit
+npm run test            # Vitest unit tests
 ```
 
 #### Backend (`/server`)
@@ -79,7 +82,7 @@ php artisan serve             # Dev server (port 8000)
 php artisan migrate           # Run migrations
 php artisan db:seed           # Seed database
 php artisan jwt:secret -f     # Generate JWT secret
-phpunit                       # Run tests
+vendor/bin/phpunit            # Run tests (needs the MySQL test DB, see "Checks & Tests")
 ```
 
 ## Architecture
@@ -89,7 +92,7 @@ phpunit                       # Run tests
 - **Controllers**: `/server/app/Api/V1/Controllers/` — `TrainingController` is the largest (core logic)
 - **Resources**: `/server/app/Http/Resources/` — transform Eloquent models to JSON (responses are camelCase via `laravel-camelcase-json`)
 - **Auth**: JWT via `php-open-source-saver/jwt-auth`; roles/permissions via `spatie/laravel-permission` (checked with `permission:` middleware in controller constructors)
-- **Key models**: `Training` (core entity) → has many `TrainingParticipation`, `TrainingTrainer`; belongs to many `Group`, `Content`. Trainings use soft deletes (marked, not hard-deleted).
+- **Key models**: `Training` (core entity) → has many `TrainingParticipation`, `TrainingTrainer`; belongs to many `Group`, `Content`. Trainings are flagged via the `deleted` column by `PATCH training/{id}/deleteinfuture` (list queries filter `deleted = false`); `DELETE training/{id}` really deletes the row.
 - **Integrations**: Firebase Cloud Messaging HTTP v1 via `kreait/firebase-php` (push notifications), Excel export (`maatwebsite/excel`), image processing (`intervention/image`)
 - **Push Notifications**: Firebase FCM (100% free, unlimited). Users can manage preferences via `notification_preferences` JSON column (defaults all enabled).
   - Service: `/server/app/Services/NotificationPreferenceService.php` — checks if notification type enabled before sending
@@ -106,7 +109,7 @@ phpunit                       # Run tests
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
 
 ### Authentication Flow
-Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger automatic token refresh via HTTP interceptors.
+Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger a token refresh via HTTP interceptors (note: `POST /auth/refresh` currently answers 500, pinned in `tests/Feature/Auth/SessionTest.php`).
 
 ## Setup
 
@@ -154,7 +157,7 @@ MAIL_*              # Email config for password reset + monthly stats
 
 ## Key Conventions
 - API responses are camelCase (handled automatically by `laravel-camelcase-json`)
-- Trainings use soft deletes — check for `markedForDeletion` flags rather than assuming hard deletion
+- Trainings can be flagged `deleted` (not removed) — list endpoints filter on `deleted = false`; `DELETE` is a hard delete
 - Unregistered users (cookie auth) are allowed to check in/out — do not gate this on a registered account
 - Vue 3 with Composition API and TypeScript for type safety
 - Pinia stores for state management (replacing Vuex)
@@ -170,3 +173,23 @@ MAIL_*              # Email config for password reset + monthly stats
 - **The same server hosts the club's WordPress site ssc-landau.de (`/var/www/wp-website`). Never touch it**, and don't change shared Apache/PHP/MySQL config without explicit approval.
 - Migration plan and security audit: `docs/internal/` (gitignored — the GitHub repo is public, never commit server details or personal data).
 - The DB contains personal data of minors: query only aggregates, never print names/emails.
+
+## Checks & Tests
+
+`make check` runs everything CI runs (`.github/workflows/ci.yml`): backend `pint --test`, `phpstan` (larastan level 5 + baseline), `phpunit`, then frontend `lint:check`, `type-check` (vue-tsc), `vitest` and `build`. `make audit` runs `composer audit` and `npm audit --omit=dev`; it is allowed to fail.
+
+### Backend tests (`/server/tests`)
+- Suites: `Unit`, `Feature` (HTTP-level characterization of `/api/v1`), `Console` (Artisan commands). The old `tests/Functional` directory is stale and not part of any suite.
+- Tests run against **MySQL** (database `tome_test`, `RefreshDatabase`), never against the dev database:
+  ```bash
+  make test-db                      # docker compose up -d mysql + CREATE DATABASE tome_test
+  cd server && vendor/bin/phpunit   # or: php artisan test --filter=LoginTest
+  ```
+- Connection settings are defaults in `server/phpunit.xml` (127.0.0.1:3306, root/root); override them with the `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` environment variables (CI does this). Use `make check SKIP_TEST_DB=1` if a MySQL is already running elsewhere.
+- `Tests\TestCase` seeds the production roles/permissions (admin, trainer, member), fakes mail and mocks the FCM facade, so nothing leaves the process. Use the factories in `server/database/factories` and the helpers `makeUser($role)`, `actingAsJwt($user)` (HttpOnly cookie) and `actingAsBearer($user)`.
+- Tests that pin known bugs say `BUG` in a comment or use `markTestSkipped('BUG: ...')`.
+- Static analysis: `cd server && vendor/bin/phpstan analyse` (config `phpstan.neon`, baseline `phpstan-baseline.neon`); style: `vendor/bin/pint` (laravel preset; `--test` only checks).
+
+### Frontend tests (`/app`)
+- `npm run test` (vitest, jsdom; `npm run test:watch` for watch mode). Tests live next to the code as `*.test.ts`; `@/http/api` is mocked for store tests.
+- Files with pre-existing type errors carry a `// @ts-nocheck TODO(safety-net)` marker at the top of their `<script>`; remove the marker once the file's errors are fixed.

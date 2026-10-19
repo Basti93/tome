@@ -1,4 +1,18 @@
-.PHONY: help docker-up docker-down docker-init docker-logs db-migrate db-seed db-reset db-backup frontend-build
+.PHONY: help docker-up docker-down docker-init docker-logs db-migrate db-seed db-reset db-backup frontend-build \
+	check check-backend check-frontend test test-backend test-frontend test-db audit lint-fix
+
+# docker compose v2 ("docker compose") or the legacy "docker-compose" binary, whichever exists
+COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo docker-compose)
+PHP ?= php
+
+# Backend test database (MySQL from docker-compose.yml, root/root on 127.0.0.1:3306).
+# Override for CI or another server: make check DB_HOST=... DB_PASSWORD=...
+export DB_HOST ?= 127.0.0.1
+export DB_PORT ?= 3306
+export DB_DATABASE ?= tome_test
+export DB_USERNAME ?= root
+export DB_PASSWORD ?= root
+
 
 help:
 	@echo "TOME Development Commands"
@@ -24,6 +38,15 @@ help:
 	@echo "Frontend:"
 	@echo "  make frontend-build    Build and deploy frontend"
 	@echo "  make frontend-dev      Start Vite dev server"
+	@echo ""
+	@echo "Checks & tests:"
+	@echo "  make check             Everything CI runs: pint, phpstan, phpunit, eslint, vue-tsc, vitest, build"
+	@echo "  make check-backend     pint --test, phpstan, phpunit (needs MySQL: make test-db)"
+	@echo "  make check-frontend    lint:check, type-check, vitest, build"
+	@echo "  make test              Backend + frontend tests only"
+	@echo "  make test-db           Start docker MySQL and create the tome_test database"
+	@echo "  make audit             composer audit + npm audit (allowed to fail)"
+	@echo "  make lint-fix          Apply pint and eslint --fix"
 	@echo ""
 	@echo "Other:"
 	@echo "  make shell             Access Laravel shell"
@@ -124,5 +147,52 @@ shell:
 
 verify-matomo:
 	bash docker/scripts/verify-matomo.sh
+
+# ---------------------------------------------------------------------------
+# Checks & tests
+# ---------------------------------------------------------------------------
+
+# Starts the docker MySQL (if needed) and creates the dedicated test database.
+# Skip with SKIP_TEST_DB=1 when a MySQL is already reachable via DB_HOST/DB_PORT.
+test-db:
+ifndef SKIP_TEST_DB
+	$(COMPOSE) up -d mysql
+	@echo "Waiting for MySQL ..."
+	@until $(COMPOSE) exec -T mysql mysqladmin ping -uroot -proot --silent >/dev/null 2>&1; do sleep 2; done
+	@$(COMPOSE) exec -T mysql mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS $(DB_DATABASE) CHARACTER SET utf8 COLLATE utf8_unicode_ci" 2>/dev/null
+	@echo "Test database $(DB_DATABASE) is ready"
+endif
+
+check-backend: test-db
+	cd server && $(PHP) vendor/bin/pint --test app database routes tests
+	cd server && $(PHP) vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+	cd server && $(PHP) vendor/bin/phpunit
+
+check-frontend:
+	cd app && npm run lint:check
+	cd app && npm run type-check
+	cd app && npm run test
+	cd app && npm run build
+
+check: check-backend check-frontend
+	@echo ""
+	@echo "make check: all backend and frontend checks passed"
+
+test-backend: test-db
+	cd server && $(PHP) vendor/bin/phpunit
+
+test-frontend:
+	cd app && npm run test
+
+test: test-backend test-frontend
+
+lint-fix:
+	cd server && $(PHP) vendor/bin/pint app database routes tests
+	cd app && npm run lint
+
+# Known advisories exist until the dependency upgrade lands, so failures are ignored (leading "-").
+audit:
+	-cd server && composer audit
+	-cd app && npm audit --omit=dev
 
 .DEFAULT_GOAL := help
