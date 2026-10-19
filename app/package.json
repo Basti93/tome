@@ -29,7 +29,7 @@
     "vue-cal": "^4.10.0",
     "vue-router": "^5.4.0",
     "vue3-apexcharts": "^1.11.1",
-    "vuetify": "^3.5.0"
+    "vuetify": "^3.13.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
