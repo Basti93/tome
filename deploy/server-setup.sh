@@ -211,7 +211,7 @@ if ask 2 "Systembenutzer ${TOME_USER}"; then
   # Ist die Datei leer, die Schluessel des aufrufenden Admins uebernehmen (idempotent: nur fehlende Zeilen anhaengen).
   AUTH_KEYS="/home/${TOME_USER}/.ssh/authorized_keys"
   ADMIN_USER="${SUDO_USER:-}"
-  ADMIN_KEYS="$(getent passwd "$ADMIN_USER" | cut -d: -f6)/.ssh/authorized_keys"
+  ADMIN_KEYS="$( { [ -n "$ADMIN_USER" ] && getent passwd "$ADMIN_USER" | cut -d: -f6; } || true )/.ssh/authorized_keys"
   if [ -n "$ADMIN_USER" ] && [ ! -s "$AUTH_KEYS" ] && [ -r "$ADMIN_KEYS" ]; then
     copied=0
     while IFS= read -r line; do
@@ -227,7 +227,7 @@ if ask 2 "Systembenutzer ${TOME_USER}"; then
   elif [ -s "$AUTH_KEYS" ]; then
     ok "authorized_keys von ${TOME_USER} enthaelt bereits Schluessel (${AUTH_KEYS}), nichts kopiert"
   else
-    info "Keine Schluessel von ${ADMIN_USER} gefunden (${ADMIN_KEYS})"
+    info "Keine Admin-Schluessel zum Kopieren gefunden (SUDO_USER=${ADMIN_USER:-leer})"
   fi
   info "Weitere Deploy-Schluessel eintragen: ${AUTH_KEYS}"
   info "Tipp: ssh-copy-id funktioniert nicht ohne Passwort; Schluessel als root anhaengen:"
