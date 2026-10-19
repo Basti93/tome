@@ -79,24 +79,24 @@ self.addEventListener('fetch', (event) => {
   )
 })
 
-// Handle Firebase notifications
+// Handle Firebase notifications.
+// This service worker deliberately does not load the Firebase SDK: FCM delivers web push messages
+// through the standard Push API, so the payload is parsed here. This avoids coupling the worker to a
+// specific (CDN) SDK version. The backend sends data-only messages ({title, body, ...} in `data`);
+// `notification` and top-level payloads are accepted as well.
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received:', event)
-
-  if (!event.data) {
-    console.log('[SW] No data in push event')
-    return
-  }
+  if (!event.data) return
 
   try {
-    const data = event.data.json()
-    console.log('[SW] Push data:', data)
+    const payload = event.data.json()
+    const data = payload.data || {}
+    const notification = payload.notification || {}
 
-    const title = data.title || 'T.O.M.E.'
-    const body = data.body || 'New notification'
+    const title = data.title || notification.title || payload.title || 'T.O.M.E.'
+    const body = data.body || notification.body || payload.body || 'Neue Benachrichtigung'
 
     const options = {
-      body: body,
+      body,
       icon: '/img/icons/icon-192x192.png',
       badge: '/img/icons/icon-72x72.png',
       tag: 'tome-notification',
@@ -106,9 +106,7 @@ self.addEventListener('push', (event) => {
       },
     }
 
-    event.waitUntil(
-      self.registration.showNotification(title, options)
-    )
+    event.waitUntil(self.registration.showNotification(title, options))
   } catch (error) {
     console.error('[SW] Error processing push notification:', error)
   }
