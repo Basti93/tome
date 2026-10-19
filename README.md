@@ -127,7 +127,7 @@ Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginControll
 ### Frontend `.env.local` (Optional)
 ```
 # Override API URL (defaults to /api/v1)
-VITE_APP_API_URL=http://localhost:8000/api/v1
+# VITE_APP_API_URL=/api/v1
 ```
 
 ### Backend `.env` (Key Variables)

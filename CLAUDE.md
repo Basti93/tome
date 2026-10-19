@@ -107,7 +107,7 @@ vendor/bin/phpunit            # Run tests (needs the MySQL test DB, see "Checks 
 - **HTTP**: Fetch API with JWT interceptors for API calls; `httpClient.post(url, body, { responseType: 'blob' })` returns a Blob plus response headers (used by the accounting export, which downloads the XLSX directly via `helpers/download.ts`, filename from Content-Disposition, fallback `abrechnung.xlsx`)
 - **Dates**: dayjs (`@/helpers/dayjs`: German locale + plugins). Use `parseApiDate()` for API values (lenient, local time, like the old moment parsing); dayjs objects are immutable.
 - **Build/Tooling**: Vite 8, Vitest 5 (jsdom 30), ESLint 10 flat config (`app/eslint.config.js`, typescript-eslint + eslint-plugin-vue), vue-tsc 3 on TypeScript 5.9 (typescript-eslint does not support TS 7 yet). `npm audit` reports 0 findings (`overrides` pins `@grpc/grpc-js`).
-- **Anonymous API data**: unauthenticated `/simpleuser*` returns abbreviated family names ("M.") and `profileImageName: null`; unauthenticated `/group` returns `userIds: []`. Always render images through `profileImageUrl()` (`helpers/profile-image.ts`, null-safe, base `VITE_IMAGE_FOLDER_URL`) and list group members via `masterData.getSimpleUsersByGroupId()` (uses `SimpleUser.groupIds`), never `group.userIds`, in public views.
+- **Anonymous API data**: unauthenticated `/simpleuser*` returns abbreviated family names ("M.") and `profileImageName: null`; unauthenticated `/group` returns `userIds: []`. Always render images through `profileImageUrl()` (`helpers/profile-image.ts`, null-safe, base `VITE_IMAGE_FOLDER_URL`, default `/api/storage`) and list group members via `masterData.getSimpleUsersByGroupId()` (uses `SimpleUser.groupIds`), never `group.userIds`, in public views.
 - **Analytics (Matomo, cookieless)**: `services/analytics.ts`. Only active with `VITE_MATOMO_ENABLED=true` + `VITE_MATOMO_URL` + `VITE_MATOMO_SITE_ID`; `disableCookies` is pushed first, Do-Not-Track is respected, no user ID or personal data in events (page views use the route name). Server settings and the consent reasoning are in `MATOMO_SETUP.md`.
 - **Push notifications**: `services/push.ts` (Firebase 13 modular API): registers `public/firebase-messaging-sw.js` (no Firebase SDK inside, handles the plain Push payload), `getToken` with `VITE_FIREBASE_VAPID_KEY` + the SW registration, then `POST notifications/subscribe` `{ firebaseToken, userId }` after login or when the user grants permission (`App.vue`). Foreground messages show a snackbar; unsupported/unconfigured/denied states degrade silently.
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
@@ -120,7 +120,7 @@ Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginControll
 - Admin bypass: `Gate::before` in `AuthServiceProvider` lets role `admin` pass every permission check (the admin role holds no permissions in the DB). Trainers: training/user/series/group permissions; members: read/checkin only.
 - Signup is closed (no `auth/signup`). Admins/trainers (`update-user`) invite with `POST /v1/user/{id}/invite` -> German "set password" mail using the password reset token/link (`{VUE_APP_URL}/#/reset-password?token=..&email=..`); setting a password via reset/invite marks the email as verified. Login requires `email_verified_at`; migration `2026_10_19_000000` backfills existing users.
 - Public (no login) endpoints return minimal data: `simpleuser*` family name as initial + no photo, `group*` without `userIds`, `training/upcoming` participants without cancel reasons. Logged-in users (`auth('api')->check()`) get everything. `storeAbsence` is public, throttled and validated (future, <= 365 days).
-- Profile images: `POST user/me/uploadprofileimage` validates, re-encodes to JPEG (height 400), stores `profile_images/<40 alnum>.jpg` on the `public` disk (`storage/app/public`, served at `<APP_URL>/storage/<name>`). `profileImageName` must match `App\Support\ProfileImage::PATTERN`; only matching files are deleted.
+- Profile images: `POST user/me/uploadprofileimage` validates, re-encodes to JPEG (height 400), stores `profile_images/<40 alnum>.jpg` on the `public` disk (`storage/app/public`, served at `/api/storage/<name>`: nginx alias to `storage/app/public` with PHP disabled; the Vite dev server proxies it to Laravel's `/storage`). `profileImageName` must match `App\Support\ProfileImage::PATTERN`; only matching files are deleted.
 - Accounting export: `POST trainingevaluation/exportaccountingtimes` streams an XLSX (`abrechnung_<from>_<to>.xlsx`); trainers only for themselves, admins for anyone. Nothing is stored on disk.
 - Schedule lives in `routes/console.php` (tests: `ScheduleTest`); the old `Kernel.php` was never loaded in Laravel 11+. Reminders every 30 min between 6 and 22 h; users opt out via notification preferences. FCM tokens reported invalid/unregistered are deleted.
 - Data retention: `php artisan tome:retention {--dry-run}` (monthly, prints counts only; rules in `App\Services\RetentionService`: users without activity for 24/12 months and not admin, old participations/cancel reasons, deleted trainings, stale tokens, auth logs > 90 days).
@@ -151,7 +151,7 @@ VITE_FIREBASE_APP_ID=your_dev_app_id
 VITE_FIREBASE_VAPID_KEY=your_vapid_public_key
 
 # Optional: Override API URL (defaults to /api/v1)
-VITE_APP_API_URL=http://localhost:8000/api/v1
+# VITE_APP_API_URL=/api/v1
 
 # Optional: Matomo (cookieless); all three must be set, see MATOMO_SETUP.md
 VITE_MATOMO_ENABLED=true
@@ -178,6 +178,10 @@ FCM_SERVER_KEY / FCM_SENDER_ID   # Firebase push notifications
 MAIL_*              # Email config for password reset + monthly stats
 ```
 
+## URL scheme
+- SPA at `/`; API at `/api/v1/*`; uploads at `/api/storage/*` (static, never executes scripts); legacy `/api/api/*` answers HTTP 410 JSON (nginx and a Laravel route) so stale PWA builds reload.
+- Docker: if a `tome-mysql` container already exists from another compose project, attach it with `docker network connect --alias mysql tome_tome-network tome-mysql` and start the rest with `docker-compose up -d --no-deps laravel nginx`.
+
 ## Key Conventions
 - API responses are camelCase (handled automatically by `laravel-camelcase-json`)
 - Trainings can be flagged `deleted` (not removed) — list endpoints filter on `deleted = false`; `DELETE` is a hard delete
@@ -203,7 +207,7 @@ MAIL_*              # Email config for password reset + monthly stats
 `make check` runs everything CI runs (`.github/workflows/ci.yml`): backend `pint --test`, `phpstan` (larastan level 5 + baseline), `phpunit`, then frontend `lint:check`, `type-check` (vue-tsc), `vitest` and `build`. `make audit` runs `composer audit` and `npm audit --omit=dev`; it is allowed to fail.
 
 ### Backend tests (`/server/tests`)
-- Suites: `Unit`, `Feature` (HTTP-level characterization of `/api/v1`), `Console` (Artisan commands). The old `tests/Functional` directory is stale and not part of any suite.
+- Suites: `Unit`, `Feature` (HTTP-level characterization of `/api/v1`), `Console` (Artisan commands).
 - Tests run against **MySQL** (database `tome_test`, `RefreshDatabase`), never against the dev database:
   ```bash
   make test-db                      # docker compose up -d mysql + CREATE DATABASE tome_test

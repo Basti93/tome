@@ -28,7 +28,7 @@ class ImageController extends Controller
      * The upload is never kept as is: it is decoded, scaled to a height of 400px (aspect ratio
      * preserved) and re-encoded as JPEG under a random name on the `public` disk
      * (storage/app/public/profile_images, served through the `public/storage` symlink at
-     * `<APP_URL>/storage/<imageUrl>`). Nothing is written to a web root such as `public_app`.
+     * `/api/storage/<imageUrl>`). Nothing is written to a web root such as `public_app`.
      */
     public function uploadProfileImage(Request $request)
     {
