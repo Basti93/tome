@@ -33,7 +33,7 @@
               <v-card-text>
                 <ul class="info-list">
                   <li>Öffentlich sichtbar sind nur Vorname und Anfangsbuchstabe des Nachnamens</li>
-                  <li>Personen ohne Trainingsteilnahme seit 24 Monaten werden automatisch gelöscht</li>
+                  <li>Personen, die längere Zeit nicht am Training teilgenommen haben, werden automatisch gelöscht</li>
                   <li>Keine Tracking-Cookies</li>
                 </ul>
               </v-card-text>

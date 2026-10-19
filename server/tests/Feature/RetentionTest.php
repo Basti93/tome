@@ -87,7 +87,7 @@ class RetentionTest extends TestCase
 
     public function test_a_user_without_recent_activity_is_deleted_with_everything_attached(): void
     {
-        $user = $this->staleUser(['email' => 'old@example.com', 'profile_image_name' => 'profile_images/'.str_repeat('a', 40).'.jpg'], 'trainer');
+        $user = $this->staleUser(['email' => 'old@example.com', 'profile_image_name' => 'profile_images/'.str_repeat('a', 40).'.jpg'], 'member');
         Storage::disk('public')->put('profile_images/'.str_repeat('a', 40).'.jpg', 'img');
         $group = GroupFactory::new()->create();
         $branch = BranchFactory::new()->create();
@@ -123,6 +123,44 @@ class RetentionTest extends TestCase
         // the recently created user (fixture user keeper) and its pivots are untouched
         $this->assertTrue($this->userExists($keeper));
         $this->assertSame(1, DB::table('user_group')->where('user_id', $keeper->id)->count());
+
+        // only personal data goes: groups and branches survive, only the memberships of the deleted user disappear
+        $this->assertTrue(DB::table('groups')->where('id', $group->id)->exists());
+        $this->assertTrue(DB::table('groups')->where('id', $keeperGroup->id)->exists());
+        $this->assertTrue(DB::table('branches')->where('id', $branch->id)->exists());
+        $this->assertTrue(DB::table('trainings')->where('id', $oldTraining->id)->exists());
+        $this->assertSame(0, DB::table('user_group')->where('group_id', $group->id)->count());
+        $this->assertSame(1, DB::table('user_group')->where('group_id', $keeperGroup->id)->count());
+    }
+
+    public function test_the_inactivity_window_is_configurable(): void
+    {
+        $user12 = $this->staleUser(createdAt: $this->cutoff(40));
+        $user24 = $this->staleUser(createdAt: $this->cutoff(40));
+        // last attended 18 months ago: inactive for N=12, still active for N=24
+        $this->participate($this->training($this->cutoff(18)), $user12);
+        $this->participate($this->training($this->cutoff(18)), $user24);
+
+        config(['tome.retention.inactive_months' => 24]);
+        $this->assertSame(0, $this->retain(dryRun: true)['users']);
+
+        config(['tome.retention.inactive_months' => 12]);
+        $this->assertSame(2, $this->retain(dryRun: true)['users']);
+        $this->assertSame(2, $this->retain()['users']);
+        $this->assertFalse($this->userExists($user12));
+        $this->assertFalse($this->userExists($user24));
+    }
+
+    public function test_the_account_age_uses_the_configured_window_too(): void
+    {
+        $young = $this->staleUser(createdAt: $this->cutoff(10));
+        $old = $this->staleUser(createdAt: $this->cutoff(14));
+
+        config(['tome.retention.inactive_months' => 12]);
+        $this->retain();
+
+        $this->assertTrue($this->userExists($young));
+        $this->assertFalse($this->userExists($old));
     }
 
     public function test_attended_participation_in_an_evaluated_training_protects_for_24_months(): void
@@ -181,7 +219,7 @@ class RetentionTest extends TestCase
         $this->assertFalse($this->userExists($onDeleted), 'assignments on deleted trainings do not count');
     }
 
-    public function test_admins_are_never_deleted_but_other_roles_are(): void
+    public function test_admins_and_trainers_are_never_deleted_but_members_are(): void
     {
         $admin = $this->staleUser([], 'admin');
         $trainer = $this->staleUser([], 'trainer');
@@ -191,10 +229,10 @@ class RetentionTest extends TestCase
         $counts = $this->retain();
 
         $this->assertTrue($this->userExists($admin));
-        $this->assertFalse($this->userExists($trainer));
+        $this->assertTrue($this->userExists($trainer), 'trainers are kept regardless of their last assignment');
         $this->assertFalse($this->userExists($member));
         $this->assertFalse($this->userExists($noRole));
-        $this->assertSame(3, $counts['users']);
+        $this->assertSame(2, $counts['users']);
     }
 
     public function test_accounts_younger_than_24_months_are_kept_and_unknown_age_is_deleted(): void

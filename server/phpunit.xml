@@ -23,6 +23,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="RETENTION_ENABLED" value="false"/>
+        <env name="RETENTION_INACTIVE_MONTHS" value="24"/>
         <env name="APP_KEY" value="base64:dGVzdGluZ2tleXRlc3Rpbmdrb2V5dGVzdGluZzEyMzQ="/>
         <env name="JWT_SECRET" value="phpunit-jwt-secret-phpunit-jwt-secret-1234567890"/>
         <env name="DB_CONNECTION" value="mysql"/>

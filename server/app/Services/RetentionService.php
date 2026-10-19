@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\DB;
  *
  * Rules (all "within" checks are inclusive, i.e. a training exactly on the cut-off still counts as recent):
  *
- * Users are deleted when ALL hold
- *  - no attended (attend = 1) participation in an evaluated, non-deleted training within 24 months
+ * Users are deleted when ALL hold (N = config tome.retention.inactive_months, default 24)
+ *  - no attended (attend = 1) participation in an evaluated, non-deleted training within N months
  *  - no trainer assignment on a non-deleted training within 12 months (future trainings count)
- *  - not role admin
- *  - created_at older than 24 months, or null
+ *  - neither role admin nor role trainer
+ *  - created_at older than N months, or null
  * together with participations, trainer assignments, group/branch pivots, roles/permissions,
  * notification tokens, training notification markers, auth logs, password reset tokens and the profile image file.
  *
@@ -28,15 +28,14 @@ use Illuminate\Support\Facades\DB;
  *  - notification tokens not updated for 12 months are deleted
  *  - auth logs older than 90 days are deleted
  *
+ * Only user rows and their personal data are removed: groups, branches, trainings (except long deleted ones)
+ * and series are never deleted because their members left.
+ *
  * Only counts are reported, never names.
  */
 class RetentionService
 {
-    public const USER_PARTICIPATION_MONTHS = 24;
-
     public const USER_TRAINER_MONTHS = 12;
-
-    public const USER_MIN_AGE_MONTHS = 24;
 
     public const CANCEL_REASON_MONTHS = 12;
 
@@ -130,9 +129,10 @@ class RetentionService
 
     private function userCandidates(CarbonImmutable $now): Builder
     {
-        $participationCutoff = $now->subMonths(self::USER_PARTICIPATION_MONTHS);
+        $inactiveMonths = max(1, (int) config('tome.retention.inactive_months', 24));
+        $participationCutoff = $now->subMonths($inactiveMonths);
         $trainerCutoff = $now->subMonths(self::USER_TRAINER_MONTHS);
-        $createdCutoff = $now->subMonths(self::USER_MIN_AGE_MONTHS);
+        $createdCutoff = $now->subMonths($inactiveMonths);
 
         return DB::table('users')
             ->where(function ($query) use ($createdCutoff) {
@@ -159,7 +159,7 @@ class RetentionService
                     ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
                     ->whereColumn('model_has_roles.model_id', 'users.id')
                     ->where('model_has_roles.model_type', User::class)
-                    ->where('roles.name', 'admin');
+                    ->whereIn('roles.name', ['admin', 'trainer']);
             });
     }
 

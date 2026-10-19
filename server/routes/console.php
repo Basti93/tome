@@ -30,4 +30,6 @@ Schedule::command('user:absence-clean')->dailyAt('1:00')->sendOutputTo(storage_p
 Schedule::command('emails:last-month-statistics')->monthlyOn(1)->appendOutputTo(storage_path('logs/com_email_monthly_statistics.log'));
 
 // GDPR data retention (inactive users, old participations, tokens, auth logs); prints counts only
-Schedule::command('tome:retention')->monthlyOn(1, '03:00')->appendOutputTo(storage_path('logs/com_retention.log'));
+// Off until RETENTION_ENABLED=true (see config/tome.php); `php artisan tome:retention --dry-run` always works.
+Schedule::command('tome:retention')->monthlyOn(1, '03:00')->appendOutputTo(storage_path('logs/com_retention.log'))
+    ->when(fn () => (bool) config('tome.retention.enabled'));

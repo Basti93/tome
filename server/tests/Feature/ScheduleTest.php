@@ -69,4 +69,21 @@ class ScheduleTest extends TestCase
             $this->assertContains($command, $registered);
         }
     }
+
+    public function test_the_scheduled_retention_run_is_off_by_default_and_can_be_enabled(): void
+    {
+        $this->assertFalse(config('tome.retention.enabled'), 'default: off, so nothing is deleted right after go-live');
+        $event = $this->events()['tome:retention'];
+        $this->assertFalse($event->filtersPass($this->app));
+
+        config(['tome.retention.enabled' => true]);
+        $this->assertTrue($event->filtersPass($this->app));
+    }
+
+    public function test_a_manual_retention_dry_run_works_while_the_schedule_is_off(): void
+    {
+        $this->assertFalse(config('tome.retention.enabled'));
+
+        $this->artisan('tome:retention', ['--dry-run' => true])->assertSuccessful();
+    }
 }
