@@ -55,15 +55,19 @@ Geplantes Fenster, z. B. abends ohne Training (ca. 30 Minuten).
    - `sudo tar -czf /root/tome-old-app-$(date +%F).tar.gz -C /var/www tome`
    - Beide Dateien zusaetzlich auf den Mac kopieren (`scp`).
 2. **Uploads erneut kopieren**, um spaete Uploads zu erfassen: `sudo /tmp/tome-deploy/server-setup.sh --only 8`
-3. **Deploy** am Mac: `deploy/deploy.sh --host SERVER`.
+3. **Alten Scheduler abschalten (Pflicht, vor dem Deploy)**: `sudo crontab -e` (root) und die Zeile
+   `* * * * * cd /var/www/tome/api && php artisan schedule:run >> /dev/null 2>&1` mit `#` auskommentieren.
+   Der neue Scheduler (`/etc/cron.d/tome-scheduler`) startet, sobald `current` existiert; sonst liefen beide
+   (`training:series`, `training:automatic-attend` u. a.) gleichzeitig auf derselben DB.
+4. **Deploy** am Mac: `deploy/deploy.sh --host SERVER`.
    Das Skript fuehrt die Migrationen auf der echten DB aus und macht vorher einen Dump
    (`/var/backups/tome/pre-deploy-*.sql.gz`). Beim ersten Deploy meldet der Health-Check eine Warnung, solange der
    alte Vhost aktiv ist; das ist erwartet.
    Ab hier ist die alte App durch die Schemaaenderungen u. U. nicht mehr lauffaehig.
-4. **Vhost umschalten**: `sudo /tmp/tome-deploy/server-setup.sh --only 12`.
+5. **Vhost umschalten**: `sudo /tmp/tome-deploy/server-setup.sh --only 12`.
    Das Skript sichert den alten Vhost nach `/root/tome-vhost-backup/`, prueft die Konfiguration, laedt Apache neu
    und stellt bei einem Fehler selbst den alten Zustand wieder her.
-5. **Smoke-Tests** (Browser und Kommandozeile):
+6. **Smoke-Tests** (Browser und Kommandozeile):
    - `https://training.ssc-landau.de/` laedt die neue App, Login funktioniert, ein Training oeffnen, Check-in/out,
      ein Profilbild ist sichtbar, Infos-Seite mit Dokumenten.
    - `curl -s https://training.ssc-landau.de/api/v1/health` liefert `{"status":"ok"}`.
@@ -71,11 +75,11 @@ Geplantes Fenster, z. B. abends ohne Training (ca. 30 Minuten).
    - WordPress `https://ssc-landau.de` laedt unveraendert.
    - Nur zur Orientierung: `deploy/prod-sim/smoke.sh` prueft dieselben Punkte automatisch gegen die Simulation
      (Muster fuer eigene Curl-Befehle; Test-Login und `127.0.0.1`-Aufloesung gelten nur dort).
-6. **Retention nur melden** (nichts loeschen):
+7. **Retention nur melden** (nichts loeschen):
    `sudo -u tome php8.4 /var/www/tome-app/current/server/artisan tome:retention --dry-run`
    Die Zahlen notieren. **Das echte Loeschen (ohne `--dry-run`, auch der monatliche Scheduler-Lauf am 1. um 03:00)
    erst nach ausdruecklicher Freigabe**, sonst vorher den Eintrag in `routes/console.php` pruefen.
-7. **Push pruefen**: Als Trainer in der App Benachrichtigungen aktivieren (Profil), eine Testbenachrichtigung
+8. **Push pruefen**: Als Trainer in der App Benachrichtigungen aktivieren (Profil), eine Testbenachrichtigung
    ausloesen (Command `notification:test`/`TestNotification` in `server/app/Console/Commands`, vorher dessen Signatur lesen)
    und das Eintreffen auf dem Handy bestaetigen. Logs: `/var/www/tome-app/shared/storage/logs/`.
 
@@ -104,6 +108,9 @@ Die alte App bleibt **zwei Wochen** unveraendert liegen (`/var/www/tome`, alter 
    entstanden sind, gehen dabei verloren (vorher Dump der neuen DB ziehen: `sudo /usr/local/sbin/tome-backup`).
 3. Uploads: neue Uploads aus `/var/www/tome-app/shared/storage/app/public` bei Bedarf nach
    `/var/www/tome/api/storage/app/public` kopieren.
+4. Scheduler umstellen: in `sudo crontab -e` (root) die Zeile `* * * * * cd /var/www/tome/api && php artisan schedule:run >> /dev/null 2>&1`
+   wieder aktivieren und den neuen Scheduler deaktivieren (`sudo mv /etc/cron.d/tome-scheduler /root/tome-scheduler.disabled`),
+   damit nicht beide laufen.
 
 ## 5. Firebase (Push)
 
@@ -140,6 +147,7 @@ Hinweis CSP: Erlaubt sind `firebaseinstallations.googleapis.com`, `fcmregistrati
 - Alte App entfernen: `/var/www/tome` (vorher Tarball behalten), alten Vhost-Backup und das Final-Backup archivieren.
 - Alten FPM-/Datenbank-Zugang der alten App (`ssc_u271ss834`) pruefen und, falls nur sie ihn nutzte, entziehen.
 - `/root/tome-vhost-backup/` und die Eintraege `*.new` in `sites-available` aufraeumen.
+- In roots Crontab (`sudo crontab -e`) die alten rsync-/tar-Backupzeilen fuer `/var/www/tome` (`/var/backup/tome` taeglich/woechentlich/monatlich) und die auskommentierte `schedule:run`-Zeile entfernen; `/var/backup/tome` danach archivieren.
 - Pruefen, ob die 410-Regel fuer `/api/api` noch gebraucht wird (Zugriffslog `tome-access.log`).
 
 ## Anhang: Fehlersuche
