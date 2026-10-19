@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\PublicApi;
 
-use App\Faq;
 use App\NotificationToken;
 use Database\Factories\BranchFactory;
 use Database\Factories\ContentFactory;
@@ -11,7 +10,7 @@ use Database\Factories\LocationFactory;
 use Database\Factories\TrainingSeriesFactory;
 use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -244,25 +243,11 @@ class MasterDataTest extends TestCase
         $this->assertSame([$s1->id], $ids);
     }
 
-    public function test_faq_lists_all_entries(): void
+    public function test_the_faq_feature_is_gone(): void
     {
-        $faq = new Faq;
-        $faq->headline = 'Wie?';
-        $faq->content = 'So.';
-        $faq->save();
-
-        $this->getJson('/api/v1/faq')->assertOk()->assertExactJson([
-            ['id' => $faq->id, 'headline' => 'Wie?', 'content' => 'So.'],
-        ]);
-    }
-
-    public function test_faq_files_lists_only_pdfs_of_the_infos_folder(): void
-    {
-        Storage::fake('public');
-        Storage::disk('public')->put('infos/a.pdf', 'x');
-        Storage::disk('public')->put('infos/b.txt', 'x');
-
-        $this->getJson('/api/v1/faq/files')->assertOk()->assertExactJson(['infos/a.pdf']);
+        $this->getJson('/api/v1/faq')->assertNotFound();
+        $this->getJson('/api/v1/faq/files')->assertNotFound();
+        $this->assertFalse(Schema::hasTable('faqs'));
     }
 
     public function test_notification_subscribe_stores_the_token_and_reassigns_it(): void

@@ -19,18 +19,6 @@ parameters:
 			path: app/Api/V1/Controllers/ChangePasswordController.php
 
 		-
-			message: '#^Method App\\Api\\V1\\Controllers\\FaqController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/FaqController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\FaqController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\JsonResponse\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Api/V1/Controllers/FaqController.php
-
-		-
 			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:getByBranchId\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
 			identifier: class.notFound
 			count: 1

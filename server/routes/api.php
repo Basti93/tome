@@ -20,11 +20,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/', 'App\\Api\\V1\\Controllers\\BranchController@index');
     });
 
-    Route::prefix('faq')->group(function () {
-        Route::get('/', 'App\\Api\\V1\\Controllers\\FaqController@index');
-        Route::get('/files', 'App\\Api\\V1\\Controllers\\FaqController@getAllInfoDocuments');
-    });
-
     Route::prefix('notifications')->group(function () {
         Route::post('/subscribe', 'App\\Api\\V1\\Controllers\\NotificationController@subscribe');
     });

@@ -213,7 +213,7 @@ class PublicTrainingTest extends TestCase
 
     public function test_public_listing_endpoints_need_no_authentication(): void
     {
-        foreach (['simpleuser', 'simpleuser/trainers', 'group', 'branch', 'location', 'content', 'trainingSeries', 'training/upcoming', 'faq'] as $path) {
+        foreach (['simpleuser', 'simpleuser/trainers', 'group', 'branch', 'location', 'content', 'trainingSeries', 'training/upcoming'] as $path) {
             $this->getJson("/api/v1/$path")->assertOk();
         }
         $this->assertSame(0, Training::count());
