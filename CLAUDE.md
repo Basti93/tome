@@ -87,7 +87,7 @@ vendor/bin/phpunit            # Run tests (needs the MySQL test DB, see "Checks 
 
 ## Architecture
 
-### Backend (Laravel 11, PHP 8.2+)
+### Backend (Laravel 13, PHP 8.4)
 - **API**: plain Laravel routing in `server/routes/api.php` at `/api/v1/` (Dingo was removed in the 2026 migration), public and JWT-protected routes
 - **Controllers**: `/server/app/Api/V1/Controllers/` — `TrainingController` is the largest (core logic)
 - **Resources**: `/server/app/Http/Resources/` — transform Eloquent models to JSON (responses are camelCase via `laravel-camelcase-json`)
@@ -109,7 +109,18 @@ vendor/bin/phpunit            # Run tests (needs the MySQL test DB, see "Checks 
 - **Pages vs Components**: `/src/pages/` are full-screen route targets; `/src/components/` are reusable dialogs, forms, and UI elements
 
 ### Authentication Flow
-Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger a token refresh via HTTP interceptors (note: `POST /auth/refresh` currently answers 500, pinned in `tests/Feature/Auth/SessionTest.php`).
+Users authenticate with JWT stored in **HttpOnly cookies** (set by LoginController). The browser automatically sends the cookie with all same-origin requests. The `JwtFromCookie` middleware extracts the token and sets the Authorization header for API routes. 401 responses trigger a token refresh via HTTP interceptors. `POST /auth/refresh` (no `jwt.auth` middleware, works with an expired access token inside `jwt.refresh_ttl`) blacklists the old token and sets a fresh cookie; 401 otherwise.
+
+### Backend notes (2026 upgrade)
+- Versions: Laravel 13, spatie/laravel-permission 8, kreait/firebase-php 8, intervention/image 4, maatwebsite/excel 4, phpunit 12. `composer.json` requires PHP ^8.4 and pins `config.platform.php` to 8.4.1 so resolution is identical on every PHP >= 8.4 (Symfony 8 needs 8.4.1). `composer audit` must stay at 0 advisories.
+- Admin bypass: `Gate::before` in `AuthServiceProvider` lets role `admin` pass every permission check (the admin role holds no permissions in the DB). Trainers: training/user/series/group permissions; members: read/checkin only.
+- Signup is closed (no `auth/signup`). Admins/trainers (`update-user`) invite with `POST /v1/user/{id}/invite` -> German "set password" mail using the password reset token/link (`{VUE_APP_URL}/#/reset-password?token=..&email=..`); setting a password via reset/invite marks the email as verified. Login requires `email_verified_at`; migration `2026_10_19_000000` backfills existing users.
+- Public (no login) endpoints return minimal data: `simpleuser*` family name as initial + no photo, `group*` without `userIds`, `training/upcoming` participants without cancel reasons. Logged-in users (`auth('api')->check()`) get everything. `storeAbsence` is public, throttled and validated (future, <= 365 days).
+- Profile images: `POST user/me/uploadprofileimage` validates, re-encodes to JPEG (height 400), stores `profile_images/<40 alnum>.jpg` on the `public` disk (`storage/app/public`, served at `<APP_URL>/storage/<name>`). `profileImageName` must match `App\Support\ProfileImage::PATTERN`; only matching files are deleted.
+- Accounting export: `POST trainingevaluation/exportaccountingtimes` streams an XLSX (`abrechnung_<from>_<to>.xlsx`); trainers only for themselves, admins for anyone. Nothing is stored on disk.
+- Schedule lives in `routes/console.php` (tests: `ScheduleTest`); the old `Kernel.php` was never loaded in Laravel 11+. Reminders every 30 min between 6 and 22 h; users opt out via notification preferences. FCM tokens reported invalid/unregistered are deleted.
+- Data retention: `php artisan tome:retention {--dry-run}` (monthly, prints counts only; rules in `App\Services\RetentionService`: users without activity for 24/12 months and not admin, old participations/cancel reasons, deleted trainings, stale tokens, auth logs > 90 days).
+- `GET /v1/health` (public): `{"status":"ok"}` or 503 `{"status":"unavailable"}` after a DB ping. With `APP_DEBUG=false` no exception text reaches clients. Logs: `daily` channel, 14 days (`LOG_DAILY_DAYS`).
 
 ## Setup
 

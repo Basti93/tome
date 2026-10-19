@@ -57,6 +57,7 @@ class SendTrainingNotificationsToUsers extends Command
 
         $users = User::whereIn('id', $userIds)->get();
         $recipientTokens = [];
+        $processedUserIds = [];
         foreach ($users as $user) {
             // Check if notification type is enabled for this user
             if ($preferenceKey && ! $notificationPreferenceService->isNotificationEnabled($user, $preferenceKey)) {
@@ -64,6 +65,7 @@ class SendTrainingNotificationsToUsers extends Command
 
                 continue;
             }
+            $processedUserIds[] = $user->id;
             // check if notifications is already sent
             $this->info('User '.'#'.$user->id.' has '.count($user->notificationTokens).' tokens');
             if (! $storeStatus || ! UserTrainingNotification::whereType($notificationType)->where('user_id', $user->id)->where('training_id', $trainingId)->exists()) {
@@ -77,6 +79,8 @@ class SendTrainingNotificationsToUsers extends Command
         }
         $this->info(count($recipientTokens).' Recipients found');
         if (empty($recipientTokens)) {
+            $this->markAsSent($storeStatus, $processedUserIds, $trainingId, $notificationType);
+
             return;
         }
 
@@ -96,12 +100,28 @@ class SendTrainingNotificationsToUsers extends Command
             NotificationToken::whereToken($tokenToDelete)->delete();
         }
 
-        if ($storeStatus) {
-            // update notification table
-            UserTrainingNotification::whereType($notificationType)->delete();
-            foreach ($users as $user) {
+        $this->markAsSent($storeStatus, $processedUserIds, $trainingId, $notificationType);
+    }
+
+    /**
+     * Remember who was already notified about this training so that the reminder (which runs every
+     * 30 minutes) is sent once. Only markers of this training are touched: wiping all markers of the
+     * type made the reminders for other trainings fire again on every run.
+     *
+     * @param  array<int, int>  $userIds
+     */
+    private function markAsSent($storeStatus, array $userIds, $trainingId, int $notificationType): void
+    {
+        if (! $storeStatus) {
+            return;
+        }
+
+        foreach ($userIds as $userId) {
+            $exists = UserTrainingNotification::whereType($notificationType)
+                ->where('user_id', $userId)->where('training_id', $trainingId)->exists();
+            if (! $exists) {
                 $utn = new UserTrainingNotification;
-                $utn->user_id = $user->id;
+                $utn->user_id = $userId;
                 $utn->training_id = $trainingId;
                 $utn->type = $notificationType;
                 $utn->save();

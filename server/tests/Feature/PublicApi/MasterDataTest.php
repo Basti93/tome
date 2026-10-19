@@ -3,12 +3,14 @@
 namespace Tests\Feature\PublicApi;
 
 use App\Faq;
+use App\NotificationToken;
 use Database\Factories\BranchFactory;
 use Database\Factories\ContentFactory;
 use Database\Factories\GroupFactory;
 use Database\Factories\LocationFactory;
 use Database\Factories\TrainingSeriesFactory;
 use Database\Factories\UserFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -275,6 +277,18 @@ class MasterDataTest extends TestCase
         $this->postJson('/api/v1/notifications/subscribe', ['userId' => $u2->id, 'firebaseToken' => 'tok-1'])->assertStatus(201);
         $this->assertDatabaseCount('user_notification_token', 1);
         $this->assertDatabaseHas('user_notification_token', ['token' => 'tok-1', 'user_id' => $u2->id]);
+    }
+
+    public function test_resubscribing_the_same_token_refreshes_updated_at(): void
+    {
+        $user = $this->makeUser('member');
+        $this->postJson('/api/v1/notifications/subscribe', ['userId' => $user->id, 'firebaseToken' => 'tok-2'])->assertStatus(201);
+        DB::table('user_notification_token')->where('token', 'tok-2')->update(['updated_at' => now()->subMonths(11)]);
+
+        $this->postJson('/api/v1/notifications/subscribe', ['userId' => $user->id, 'firebaseToken' => 'tok-2'])->assertStatus(201);
+
+        // a token that is still in use must not look stale to tome:retention
+        $this->assertTrue(NotificationToken::whereToken('tok-2')->first()->updated_at->isAfter(now()->subMinute()));
     }
 
     public function test_notification_subscribe_validates_input(): void

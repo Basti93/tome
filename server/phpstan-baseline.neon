@@ -67,6 +67,12 @@ parameters:
 			path: app/Api/V1/Controllers/LocationController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$email_verified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/ResetPasswordController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$password\.$#'
 			identifier: property.notFound
 			count: 1
@@ -430,6 +436,12 @@ parameters:
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
 			identifier: larastan.relationExistence
 			count: 2
+			path: app/Console/Commands/UpcomingTrainingNotifications.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Console/Commands/UpcomingTrainingNotifications.php
 
 		-

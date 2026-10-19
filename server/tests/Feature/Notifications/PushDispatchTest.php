@@ -244,6 +244,49 @@ class PushDispatchTest extends TestCase
         $this->assertStringContainsString('Ort: Halle 1', $this->sent[0]['body']);
     }
 
+    public function test_reminders_are_sent_once_per_training_even_with_several_trainings_in_the_window(): void
+    {
+        $a = $this->soonTraining();
+        $b = $this->soonTraining();
+        $user = $this->userWithToken('tok');
+        $a->participants()->attach($user->id, ['attend' => 1]);
+        $b->participants()->attach($user->id, ['attend' => 1]);
+
+        // the scheduler runs this every 30 minutes
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+
+        $this->assertCount(2, $this->sent, 'one push per training, not one per run');
+        $this->assertSame(2, UserTrainingNotification::where('user_id', $user->id)->count());
+    }
+
+    public function test_reminders_skip_deleted_trainings(): void
+    {
+        $training = $this->soonTraining();
+        $training->deleted = 1;
+        $training->save();
+        $user = $this->userWithToken('tok');
+        $training->participants()->attach($user->id, ['attend' => 1]);
+        $training->trainers()->attach($user->id);
+
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+        $this->artisan('notification:upcomingTrainingForTrainer')->assertSuccessful();
+
+        $this->assertCount(0, $this->sent);
+    }
+
+    public function test_participant_reminder_works_for_trainings_without_a_location(): void
+    {
+        $training = TrainingFactory::new()->between(now()->addHours(2)->format('Y-m-d H:i:s'), now()->addHours(3)->format('Y-m-d H:i:s'))->create(['location_id' => null]);
+        $user = $this->userWithToken('tok');
+        $training->participants()->attach($user->id, ['attend' => 1]);
+
+        $this->artisan('notification:upcomingTraining')->assertSuccessful();
+
+        $this->assertCount(1, $this->sent);
+    }
+
     public function test_trainer_reminder_goes_to_trainers_with_trainer_upcoming_enabled(): void
     {
         $training = $this->soonTraining();

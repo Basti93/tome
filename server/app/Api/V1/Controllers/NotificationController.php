@@ -15,10 +15,13 @@ class NotificationController extends Controller
         $foundEntry = NotificationToken::whereToken($token)->first();
 
         if ($foundEntry) {
-            // update if user_id changed or do nothing
+            // reassign if the user changed; otherwise only refresh updated_at, which marks the
+            // token as still in use (tome:retention deletes tokens not seen for 12 months)
             if ($foundEntry->user_id != $userId) {
                 $foundEntry->user_id = $userId;
                 $foundEntry->save();
+            } else {
+                $foundEntry->touch();
             }
         } else {
             // create new

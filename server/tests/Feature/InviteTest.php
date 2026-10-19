@@ -14,7 +14,7 @@ class InviteTest extends TestCase
 {
     public function test_invite_sends_a_mail_with_a_usable_password_reset_link(): void
     {
-        $invitee = $this->makeUser('member', ['email' => 'kind@example.com', 'firstName' => 'Kim']);
+        $invitee = $this->makeUser('member', ['email' => 'kind@example.com', 'firstName' => 'Kim', 'email_verified_at' => null]);
 
         $this->actingAsJwt($this->makeUser('admin'))->postJson("/api/v1/user/{$invitee->id}/invite")
             ->assertOk()->assertExactJson(['status' => 'ok']);
@@ -44,6 +44,7 @@ class InviteTest extends TestCase
             'password' => 'Neu12345!x',
             'password_confirmation' => 'Neu12345!x',
         ])->assertOk();
+        $this->assertNotNull($invitee->fresh()->email_verified_at, 'setting a password counts as verifying the email');
         $this->postJson('/api/v1/auth/login', ['email' => 'kind@example.com', 'password' => 'Neu12345!x'])->assertOk();
     }
 
