@@ -15,11 +15,13 @@ describe('referenced icons exist', () => {
     const html = readFileSync(join(root, 'index.html'), 'utf8')
     const refs = paths(html, /<link[^>]+href="(\/[^"]+\.(?:png|json|ico|svg))"/g)
     expect(refs.length).toBeGreaterThan(0)
-    for (const ref of refs) expect(existsSync(join(publicDir, ref)), ref).toBe(true)
+    // /manifest.json is generated at build time from manifest.template.json (see vite-manifest.ts)
+    for (const ref of refs.filter((r) => r !== '/manifest.json')) expect(existsSync(join(publicDir, ref)), ref).toBe(true)
+    expect(existsSync(join(root, 'manifest.template.json'))).toBe(true)
   })
 
   it('manifest.json', () => {
-    const manifest = JSON.parse(readFileSync(join(publicDir, 'manifest.json'), 'utf8'))
+    const manifest = JSON.parse(readFileSync(join(root, 'manifest.template.json'), 'utf8'))
     expect(manifest.icons.length).toBeGreaterThan(0)
     for (const icon of manifest.icons) expect(existsSync(join(publicDir, icon.src)), icon.src).toBe(true)
   })
