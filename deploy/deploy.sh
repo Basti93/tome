@@ -182,7 +182,14 @@ SWITCHED=1
 switch_to "$RELEASE_ID" || rollback_and_exit "Umschalten fehlgeschlagen"
 
 log "Health-Check"
-health_check || rollback_and_exit "Health-Check nach dem Umschalten fehlgeschlagen"
+if ! health_check; then
+  if [[ -z "$PREVIOUS" ]]; then
+    # Erstinstallation: der neue Vhost ist meist noch nicht aktiv (server-setup.sh Abschnitt 12 folgt danach)
+    warn "Health-Check fehlgeschlagen, aber es gibt kein vorheriges Release. Erwartet, solange der neue Vhost noch nicht aktiv ist."
+  else
+    rollback_and_exit "Health-Check nach dem Umschalten fehlgeschlagen"
+  fi
+fi
 
 # ---------------------------------------------------------------- 6. Aufraeumen
 trap - ERR
