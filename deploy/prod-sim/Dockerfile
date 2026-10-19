@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends software-proper
  && add-apt-repository -y ppa:ondrej/php \
  && apt-get update && apt-get install -y --no-install-recommends \
     apache2 php8.4-fpm php8.4-cli php8.4-mysql php8.4-mbstring php8.4-xml php8.4-gd php8.4-zip php8.4-curl php8.4-intl php8.4-bcmath php8.4-opcache \
-    mysql-client sudo cron rsync openssl procps \
+    mysql-client sudo cron rsync openssl procps unzip gnupg \
  && rm -rf /var/lib/apt/lists/*
 RUN a2dismod -f mpm_prefork mpm_worker >/dev/null 2>&1 || true; a2enmod mpm_event proxy proxy_fcgi ssl headers rewrite >/dev/null \
  && a2dissite 000-default >/dev/null

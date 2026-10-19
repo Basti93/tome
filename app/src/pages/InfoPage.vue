@@ -34,7 +34,7 @@
                 <ul class="info-list">
                   <li>Öffentlich sichtbar sind nur Vorname und Anfangsbuchstabe des Nachnamens</li>
                   <li>Personen, die längere Zeit nicht am Training teilgenommen haben, werden automatisch gelöscht</li>
-                  <li>Keine Tracking-Cookies</li>
+                  <li>Anonyme Nutzungsstatistik ohne Cookies (Matomo)</li>
                 </ul>
               </v-card-text>
             </v-card>
