@@ -171,288 +171,255 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs, { parseApiDate } from '@/helpers/dayjs'
-import TrainingCalendar from "../components/TrainingCalendar.vue";
-import EditTrainingBase from "../components/EditTrainingBase.vue";
-import {formatDate, parseDate} from "../helpers/date-helpers"
-import ConfirmDialog from "../components/ConfirmDialog.vue";
-import Training from "../models/Training";
+import { parseApiDate } from '@/helpers/dayjs'
+import TrainingCalendar from '../components/TrainingCalendar.vue'
+import EditTrainingBase from '../components/EditTrainingBase.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
+import Training from '../models/Training'
 
-export default {
-  setup() {
-    return { dayjs, parseApiDate };
-  },
-  name: "TrainingsTablePage",
-  components: {ConfirmDialog, EditTrainingBase, TrainingCalendar},
-  data: function () {
-    return {
-      showFilterDialog: false,
-      showConfirmDialog: false,
-      itemToDelete: null,
-      filterBranchId: Number,
-      filterBranches: [{id: -1, name: 'Alle'}],
-      editDialog: false,
-      editDialogTitle: String,
-      loading: false,
-      total: null,
-      rowsPerPageItems: [5, 10, 20, 50, 100],
-      totalItems: 0,
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: [],
-      initializing: true,
-      editDialogDateMenu: false,
-      editDialogStartMenu: false,
-      editDialogEndMenu: false,
-      editDialogFilteredUsers: [],
-      headers: [
-        { title: 'Datum', value: 'date', sortable: true},
-        { title: 'Von', value: 'start', sortable: false},
-        { title: 'Bis', value: 'end', sortable: false},
-        { title: 'Ort', value: 'locationId', sortable: true},
-        { title: 'Trainer', value: 'trainerIds', sortable: false},
-        { title: 'Gruppen', value: 'groupIds', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      trainings: [],
-      trainers: [],
-      editedId: null,
-      editedItem: {
-        id: null,
-        date: null,
-        start: null,
-        end: null,
-        locationId: null,
-        trainerIds: [] as Array<Number>,
-        groupIds: [] as Array<Number>,
-        contentIds: [] as Array<Number>,
-        automaticAttend: true,
-        comment: null,
-      },
-      defaultItem: {
-        id: null,
-        date: new Date().toISOString().substr(0, 10),
-        start: '09:00',
-        end: '12:00',
-        locationId: null,
-        trainerIds: [] as Array<Number>,
-        groupIds: [] as Array<Number>,
-        contentIds: [] as Array<Number>,
-        automaticAttend: true,
-        comment: null,
-      },
-      activeView: 0,
-    }
-  },
-  created() {
-    const masterData = useMasterDataStore();
-    const loggedInUser = useAuthStore().user;
-    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
-      this.filterBranchId = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id;
-    }
-    this.filterBranches = this.filterBranches.concat(masterData.branches)
-    this.loadData();
-  },
-  computed: {
-    loggedInUser() { return useAuthStore().user },
-    locations() { return useMasterDataStore().locations },
-    branches() { return useMasterDataStore().branches },
-    groups() { return useMasterDataStore().groups },
-    editedItemDateFormatted() {
-      return this.formatDate(this.editedItemDate)
-    },
-    editedItemDate: {
-      get: function () {
-        return this.editedItem.date
-      },
-      set: function (newValue) {
-        this.editedItem.date = newValue
-      }
-    },
-    trainerBranchIds() {
-      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
-    },
-  },
-  watch: {
-    page: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    itemPerPage: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    sortBy: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    editedItemDate() {
-      this.editedItem.dateFormatted = this.formatDate(this.editedItem.date)
-    },
-  },
-  methods: {
-    filterChanged() {
-      this.loadData();
-    },
-    loadData() {
-      const masterData = useMasterDataStore();
-      this.loading = true;
-      this.trainings = [];
-      let url = '/training';
-      // get by sort option
-      if (this.sortBy && this.sortBy.length > 0) {
-        const sortColumn = this.sortBy[0];
-        const direction = sortColumn.order === 'desc' ? 'desc' : 'asc';
-        url += '/sort?direction=' + direction + '&sortBy=' + sortColumn.key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
-      } else {
-        url += '?page=' + this.page + '&per_page=' + this.itemsPerPage
-      }
-      // Don't set filter with the general item 'Allgemein'
-      if (this.filterBranchId > 0) {
-        url += '&groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-      }
-      const p1 = httpClient.get(url).then(function (res) {
-        for (const jsonObj of res.data.data) {
-          this.trainings.push(new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, jsonObj.trainerIds, jsonObj.participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.automaticAttend === 1 ? true : false));
-        }
-        this.page = res.data.meta.currentPage;
-        this.totalItems = res.data.meta.total;
-        this.total = res.data.meta.total;
-      }.bind(this));
+const authStore = useAuthStore()
+const masterData = useMasterDataStore()
 
-      const p2 = httpClient.get('/user/trainer').then(function (res) {
-        this.trainers = res.data;
-      }.bind(this));
-
-      Promise.all([p1, p2]).then(() => {
-        this.loading = false
-      }).finally(() => {
-        this.initializing = false;
-      });
-    },
-    trainingBaseChanged(item) {
-      Object.assign(this.editedItem, item)
-    },
-    confirmAndDelete(item) {
-      this.itemToDelete = item;
-      this.showConfirmDialog = true;
-    },
-    async deleteItem() {
-      this.showConfirmDialog = false
-        const {data} = await httpClient.patch('/training/' + this.itemToDelete.id + '/deleteinfuture');
-        if (data.status == 'ok') {
-          useSnackbarStore().show("Training erfolgreich gelöscht", "success")
-          this.loadData();
-        } else {
-          useSnackbarStore().show("Training konnte nicht gelöscht werden", "error")
-        }
-    },
-    editItem(item) {
-      this.editDialogTitle = 'Training bearbeiten'
-      this.editedId = item.id;
-      Object.assign(this.editedItem, item)
-      this.editedItemDate = parseApiDate(item.start).format('YYYY-MM-DD')
-      this.editedItem.start = parseApiDate(item.start).format('HH:mm')
-      this.editedItem.end = parseApiDate(item.end).format('HH:mm')
-      this.editDialog = true
-    },
-    create() {
-      this.editedId = null;
-      this.editedItem = {...this.defaultItem}
-      this.editDialogTitle = 'Training erstellen'
-      this.editDialog = true
-    },
-    fullName: item => item.firstName + ' ' + item.familyName,
-    close() {
-      this.editDialog = false
-      setTimeout(() => {
-        this.editedItem = {...this.defaultItem}
-      }, 300)
-    },
-    save() {
-      const self = this;
-      const postData = {
-        id: null,
-        start: parseApiDate(self.editedItem.date + 'T' + self.editedItem.start).format(),
-        end: parseApiDate(self.editedItem.date + 'T' + self.editedItem.end).format(),
-        locationId: self.editedItem.locationId,
-        groupIds: self.editedItem.groupIds,
-        trainerIds: self.editedItem.trainerIds,
-        contentIds: self.editedItem.contentIds,
-        comment: self.editedItem.comment,
-        automaticAttend: self.editedItem.automaticAttend,
-      }
-      if (self.editedId) {
-        postData.id = self.editedId;
-        httpClient.put('/training/' + self.editedId, postData)
-            .then(function (res) {
-              if (!res.data.error) {
-                self.close()
-                useSnackbarStore().show("Training gespeichert", "success")
-                httpClient.get('/training/' + self.editedId)
-                    .then(function ({data}) {
-                      const index = self.trainings.findIndex(t => (t && t.id == self.editedId));
-                      self.trainings.splice(index, 1, data.data);
-                    });
-
-              } else {
-                console.error(res.data.error);
-                useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
-              }
-            })
-            .catch(function (err) {
-              console.log(err);
-              useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
-            })
-      } else {
-
-        httpClient.post('/training', postData)
-            .then(function (res) {
-              if (!res.data.error) {
-                self.close()
-                useSnackbarStore().show("Training gespeichert", "success")
-                self.loadData();
-              } else {
-                console.error(res.data.error);
-                useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
-              }
-            })
-            .catch(function (err) {
-              console.log(err);
-              useSnackbarStore().show("Training konnte nicht gespeichert werden", "error")
-            })
-      }
-    },
-    getLocationNameById(locationId) {
-      return useMasterDataStore().getLocationNameById(locationId);
-    },
-    getSimpleTrainersByIds(trainerIds) {
-      return useMasterDataStore().getSimpleTrainersByIds(trainerIds);
-    },
-    getGroupsByIds(groupIds) {
-      return useMasterDataStore().getGroupsByIds(groupIds);
-    },
-    formatDate,
-    parseDate,
-  },
+const showConfirmDialog = ref(false)
+const itemToDelete = ref<any>(null)
+const filterBranchId = ref<number | null>(null)
+const filterBranches = ref<any[]>([{ id: -1, name: 'Alle' }])
+const editDialog = ref(false)
+const editDialogTitle = ref('')
+const loading = ref(false)
+const total = ref<number | null>(null)
+const totalItems = ref(0)
+const page = ref(1)
+const itemsPerPage = ref(10)
+const sortBy = ref<any[]>([])
+const headers = [
+  { title: 'Datum', value: 'date', sortable: true },
+  { title: 'Von', value: 'start', sortable: false },
+  { title: 'Bis', value: 'end', sortable: false },
+  { title: 'Ort', value: 'locationId', sortable: true },
+  { title: 'Trainer', value: 'trainerIds', sortable: false },
+  { title: 'Gruppen', value: 'groupIds', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const trainings = ref<any[]>([])
+const trainers = ref<any[]>([])
+const editedId = ref<number | null>(null)
+const editedItem = ref<any>({
+  id: null,
+  date: null,
+  start: null,
+  end: null,
+  locationId: null,
+  trainerIds: [],
+  groupIds: [],
+  contentIds: [],
+  automaticAttend: true,
+  comment: null
+})
+const defaultItem = {
+  id: null,
+  date: new Date().toISOString().substr(0, 10),
+  start: '09:00',
+  end: '12:00',
+  locationId: null,
+  trainerIds: [],
+  groupIds: [],
+  contentIds: [],
+  automaticAttend: true,
+  comment: null
 }
+const activeView = ref(0)
+
+const loggedInUser = computed(() => authStore.user)
+const groups = computed(() => masterData.groups)
+
+function loadData() {
+  loading.value = true
+  trainings.value = []
+  let url = '/training'
+  // get by sort option
+  if (sortBy.value && sortBy.value.length > 0) {
+    const sortColumn = sortBy.value[0]
+    const direction = sortColumn.order === 'desc' ? 'desc' : 'asc'
+    url += '/sort?direction=' + direction + '&sortBy=' + sortColumn.key + '&page=' + page.value + '&per_page=' + itemsPerPage.value
+  } else {
+    url += '?page=' + page.value + '&per_page=' + itemsPerPage.value
+  }
+  // Don't set filter with the general item 'Allgemein'
+  if (filterBranchId.value! > 0) {
+    url += '&groupIds=' + masterData.getGroupsByBranchId(filterBranchId.value).map((g) => g.id)
+  }
+  const p1 = httpClient.get(url).then((res) => {
+    for (const jsonObj of res.data.data) {
+      trainings.value.push(
+        new Training(
+          jsonObj.id,
+          jsonObj.start,
+          jsonObj.end,
+          jsonObj.locationId,
+          jsonObj.groupIds,
+          jsonObj.contentIds,
+          jsonObj.trainerIds,
+          jsonObj.participants,
+          jsonObj.comment,
+          jsonObj.prepared === 1 ? true : false,
+          jsonObj.evaluated === 1 ? true : false,
+          jsonObj.automaticAttend === 1 ? true : false
+        )
+      )
+    }
+    page.value = res.data.meta.currentPage
+    totalItems.value = res.data.meta.total
+    total.value = res.data.meta.total
+  })
+
+  const p2 = httpClient.get('/user/trainer').then((res) => {
+    trainers.value = res.data
+  })
+
+  Promise.all([p1, p2]).then(() => {
+    loading.value = false
+  })
+}
+
+function filterChanged() {
+  loadData()
+}
+
+function trainingBaseChanged(item: any) {
+  Object.assign(editedItem.value, item)
+}
+
+function confirmAndDelete(item: any) {
+  itemToDelete.value = item
+  showConfirmDialog.value = true
+}
+
+async function deleteItem() {
+  showConfirmDialog.value = false
+  const { data } = await httpClient.patch('/training/' + itemToDelete.value.id + '/deleteinfuture')
+  if (data.status == 'ok') {
+    useSnackbarStore().show('Training erfolgreich gelöscht', 'success')
+    loadData()
+  } else {
+    useSnackbarStore().show('Training konnte nicht gelöscht werden', 'error')
+  }
+}
+
+function editItem(item: any) {
+  editDialogTitle.value = 'Training bearbeiten'
+  editedId.value = item.id
+  Object.assign(editedItem.value, item)
+  editedItem.value.date = parseApiDate(item.start).format('YYYY-MM-DD')
+  editedItem.value.start = parseApiDate(item.start).format('HH:mm')
+  editedItem.value.end = parseApiDate(item.end).format('HH:mm')
+  editDialog.value = true
+}
+
+function create() {
+  editedId.value = null
+  editedItem.value = { ...defaultItem }
+  editDialogTitle.value = 'Training erstellen'
+  editDialog.value = true
+}
+
+function close() {
+  editDialog.value = false
+  setTimeout(() => {
+    editedItem.value = { ...defaultItem }
+  }, 300)
+}
+
+function save() {
+  const postData = {
+    id: null as number | null,
+    start: parseApiDate(editedItem.value.date + 'T' + editedItem.value.start).format(),
+    end: parseApiDate(editedItem.value.date + 'T' + editedItem.value.end).format(),
+    locationId: editedItem.value.locationId,
+    groupIds: editedItem.value.groupIds,
+    trainerIds: editedItem.value.trainerIds,
+    contentIds: editedItem.value.contentIds,
+    comment: editedItem.value.comment,
+    automaticAttend: editedItem.value.automaticAttend
+  }
+  if (editedId.value) {
+    postData.id = editedId.value
+    const id = editedId.value
+    httpClient
+      .put('/training/' + id, postData)
+      .then((res) => {
+        if (!res.data.error) {
+          close()
+          useSnackbarStore().show('Training gespeichert', 'success')
+          httpClient.get('/training/' + id).then(({ data }) => {
+            const index = trainings.value.findIndex((t) => t && t.id == id)
+            trainings.value.splice(index, 1, data.data)
+          })
+        } else {
+          console.error(res.data.error)
+          useSnackbarStore().show('Training konnte nicht gespeichert werden', 'error')
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+        useSnackbarStore().show('Training konnte nicht gespeichert werden', 'error')
+      })
+  } else {
+    httpClient
+      .post('/training', postData)
+      .then((res) => {
+        if (!res.data.error) {
+          close()
+          useSnackbarStore().show('Training gespeichert', 'success')
+          loadData()
+        } else {
+          console.error(res.data.error)
+          useSnackbarStore().show('Training konnte nicht gespeichert werden', 'error')
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+        useSnackbarStore().show('Training konnte nicht gespeichert werden', 'error')
+      })
+  }
+}
+
+function getLocationNameById(locationId: number) {
+  return masterData.getLocationNameById(locationId)
+}
+
+function getSimpleTrainersByIds(trainerIds: number[]) {
+  return masterData.getSimpleTrainersByIds(trainerIds)
+}
+
+function getGroupsByIds(groupIds: number[]) {
+  return masterData.getGroupsByIds(groupIds)
+}
+
+for (const source of [page, sortBy]) {
+  watch(
+    source,
+    () => {
+      if (!loading.value) {
+        loadData()
+      }
+    },
+    { deep: true }
+  )
+}
+
+const user = authStore.user
+if (user && user.trainerBranchIds && user.trainerBranchIds.length > 0) {
+  filterBranchId.value = masterData.getBranchById(user.trainerBranchIds[0]).id
+}
+filterBranches.value = filterBranches.value.concat(masterData.branches)
+loadData()
 </script>
 
 <style scoped>

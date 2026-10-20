@@ -202,199 +202,175 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs, { parseApiDate } from '@/helpers/dayjs'
-import EditTrainingBase from "../components/EditTrainingBase.vue";
-import TrainingSeries from "@/models/TrainingSeries";
-import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers"
-import WeekdaysComponent from "../components/WeekdaysComponent.vue";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
+import EditTrainingBase from '../components/EditTrainingBase.vue'
+import TrainingSeries from '@/models/TrainingSeries'
+import { dayArrayToString } from '../helpers/date-helpers'
+import WeekdaysComponent from '../components/WeekdaysComponent.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 
-export default {
-  setup() {
-    return { dayjs, parseApiDate };
-  },
-  name: "TrainingSeriesPage",
-  components: {ConfirmDialog, EditTrainingBase, WeekdaysComponent},
-  data() {
-    return {
-      activeTab: 0,
-      showFilterDialog: false,
-      showConfirmDialog: false,
-      itemToDelete: null,
-      filterBranches: [{id: -1, name: 'Alle'}],
-      filterBranchId: null,
-      trainers: [],
-      trainingSeriesList: [] as TrainingSeries[],
-      showCreateDialog: false,
-      loading: false,
-      editDialogTitle: "",
-      headers: [
-        { title: 'Id', value: 'id', sortable: false},
-        { title: 'Wochentage', value: 'weekdays', sortable: false},
-        { title: 'Start', value: 'startTime', sortable: false},
-        { title: 'Ende', value: 'endTime', sortable: false},
-        { title: 'Trainer', value: 'trainerIds', sortable: false},
-        { title: 'Gruppen', value: 'groupIds', sortable: false},
-        { title: 'Ausgesetzt bis', value: 'deferUntil', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      defaultTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true),
-      editedTrainingSeries: new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true) as TrainingSeries,
-    }
-  },
-  created() {
-    const masterData = useMasterDataStore();
-    const loggedInUser = useAuthStore().user;
-    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
-      this.filterBranchId = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id;
-    }
-    this.filterBranches = this.filterBranches.concat(masterData.branches)
-    this.fetchData();
-  },
-  computed: {
-    loggedInUser() { return useAuthStore().user },
-    groups() { return useMasterDataStore().groups },
-    branches() { return useMasterDataStore().branches },
-    trainerGroupIds() {
-      return this.loggedInUser ? this.loggedInUser.trainerGroupIds : []
-    },
-    trainerBranchIds() {
-      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
-    },
-    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
-    getSimpleTrainersByIds() { return (ids) => useMasterDataStore().getSimpleTrainersByIds(ids) },
-  },
-  methods: {
-    openCreateDialog() {
-      this.editDialogTitle = 'Serie anlegen'
-      this.editedTrainingSeries = {...this.defaultTrainingSeries};
-      this.showCreateDialog = true
-    },
-    seriesChanged(item) {
-      this.editedTrainingSeries.id = item.id;
-      this.editedTrainingSeries.startTime = item.start;
-      this.editedTrainingSeries.endTime = item.end;
-      this.editedTrainingSeries.locationId = item.locationId;
-      this.editedTrainingSeries.groupIds = item.groupIds;
-      this.editedTrainingSeries.trainerIds = item.trainerIds;
-      this.editedTrainingSeries.comment = item.comment;
-      this.editedTrainingSeries.trainerIds = item.trainerIds;
-      this.editedTrainingSeries.automaticAttend = item.automaticAttend;
-    },
-    async fetchData() {
-      try {
-        this.loading = true;
-        this.trainingSeriesList = [];
-        let seriesUrl = '/trainingSeries';
-        const masterData = useMasterDataStore();
-        // Don't set filter with the general item 'Allgemein'
-        if (this.filterBranchId > 0) {
-          seriesUrl += '?groupIds=' + masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-        }
-        const response = await httpClient.get(seriesUrl);
-        for (const responseObject of response.data.data) {
-          this.trainingSeriesList.push(TrainingSeries.from(responseObject))
-        }
+const authStore = useAuthStore()
+const masterData = useMasterDataStore()
 
-        const trainerRes = await httpClient.get('/user/trainer');
-        this.trainers = trainerRes.data;
-      } finally {
-        this.loading = false;
-      }
+const activeTab = ref(0)
+const showConfirmDialog = ref(false)
+const itemToDelete = ref<any>(null)
+const filterBranches = ref<any[]>([{ id: -1, name: 'Alle' }])
+const filterBranchId = ref<number | null>(null)
+const trainers = ref<any[]>([])
+const trainingSeriesList = ref<TrainingSeries[]>([])
+const showCreateDialog = ref(false)
+const loading = ref(false)
+const editDialogTitle = ref('')
+const headers = [
+  { title: 'Id', value: 'id', sortable: false },
+  { title: 'Wochentage', value: 'weekdays', sortable: false },
+  { title: 'Start', value: 'startTime', sortable: false },
+  { title: 'Ende', value: 'endTime', sortable: false },
+  { title: 'Trainer', value: 'trainerIds', sortable: false },
+  { title: 'Gruppen', value: 'groupIds', sortable: false },
+  { title: 'Ausgesetzt bis', value: 'deferUntil', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const defaultTrainingSeries = new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true)
+const editedTrainingSeries = ref<any>(
+  new TrainingSeries(null, '09:00', '12:00', null, [], [], [], null, [], null, true)
+)
 
-    },
-    editItem(item) {
-      this.editDialogTitle = 'Serie bearbeiten';
-      this.editedTrainingSeries = {...item};
-      const momDeferUntil = parseApiDate(item.deferUntil);
-      if (momDeferUntil.isValid()) {
-        this.editedTrainingSeries.deferUntil = momDeferUntil.format('YYYY-MM-DD')
-      }
-      this.showCreateDialog = true;
-    },
-    confirmAndDelete(item) {
-      this.itemToDelete = item;
-      this.showConfirmDialog = true;
-    },
-    async deleteItem() {
-      this.showConfirmDialog = false
-      const response = await httpClient.delete('/trainingSeries/' + this.itemToDelete.id);
-      if (response.data.status === 'ok') {
-        useSnackbarStore().show("Serie erfolgreich gelöscht", "success")
-        this.trainingSeriesList.splice(this.trainingSeriesList.indexOf(this.itemToDelete), 1)
-      } else {
-        useSnackbarStore().show("Serie konnte nicht gelöscht werden", "error")
-      }
-    },
-    async save() {
-      const momDeferUntil = parseApiDate(this.editedTrainingSeries.deferUntil);
-      const postData: Record<string, any> = {
-        startTime: this.editedTrainingSeries.startTime,
-        endTime: this.editedTrainingSeries.endTime,
-        weekdays: this.editedTrainingSeries.weekdays,
-        comment: this.editedTrainingSeries.comment,
-        locationId: this.editedTrainingSeries.locationId,
-        trainerIds: this.editedTrainingSeries.trainerIds,
-        groupIds: this.editedTrainingSeries.groupIds,
-        // the series dialog hides the content picker; send the stored ones, otherwise sync() would drop them
-        contentIds: this.editedTrainingSeries.contentIds ?? [],
-        deferUntil: momDeferUntil.isValid() ? momDeferUntil.format() : null,
-        automaticAttend: this.editedTrainingSeries.automaticAttend,
+const groups = computed(() => masterData.groups)
 
-      };
-      let url = '/trainingSeries';
-      const isUpdate = !!this.editedTrainingSeries.id;
-      try {
-        let res;
-        if (isUpdate) {
-          url += '/' + this.editedTrainingSeries.id;
-          postData.id = this.editedTrainingSeries.id;
-          res = await httpClient.put(url, postData);
-        } else {
-          res = await httpClient.post(url, postData);
-        }
+const getGroupsByIds = (ids: number[]) => masterData.getGroupsByIds(ids)
+const getSimpleTrainersByIds = (ids: number[]) => masterData.getSimpleTrainersByIds(ids)
 
-        if (res.data.status == 'ok') {
-          this.showCreateDialog = false;
-          this.fetchData();
-          useSnackbarStore().show(isUpdate ? 'Serie erfolgreich gespeichert' : 'Serie erfolgreich erstellt', 'success');
-        }
-      } catch (error: any) {
-        const errors = error?.response?.data?.errors;
-        const detail = errors ? ' (' + Object.keys(errors).join(', ') + ')' : '';
-        useSnackbarStore().show('Serie konnte nicht gespeichert werden' + detail, 'error');
-      }
-
-    },
-    filterChanged() {
-      this.fetchData();
-    },
-    removeMilleSec(time: String) {
-      return time ? time.substring(0, time.length - 3) : '';
-    },
-    checkDeferUntilIsActive(item: TrainingSeries) {
-      const momDeferUntil = dayjs(item.deferUntil);
-      return momDeferUntil.isValid() && momDeferUntil >= dayjs().startOf('day');
-    },
-    weekdaysChanged(weekdays) {
-      this.editedTrainingSeries.weekdays = weekdays;
-    },
-    getLocationNameById(locationId) {
-      return useMasterDataStore().getLocationNameById(locationId);
-    },
-    getGroupsByIds(groupIds) {
-      return useMasterDataStore().getGroupsByIds(groupIds);
-    },
-    dayArrayToString,
-    formatDate,
-    parseDate,
-  },
+function openCreateDialog() {
+  editDialogTitle.value = 'Serie anlegen'
+  editedTrainingSeries.value = { ...defaultTrainingSeries }
+  showCreateDialog.value = true
 }
+
+function seriesChanged(item: any) {
+  editedTrainingSeries.value.id = item.id
+  editedTrainingSeries.value.startTime = item.start
+  editedTrainingSeries.value.endTime = item.end
+  editedTrainingSeries.value.locationId = item.locationId
+  editedTrainingSeries.value.groupIds = item.groupIds
+  editedTrainingSeries.value.trainerIds = item.trainerIds
+  editedTrainingSeries.value.comment = item.comment
+  editedTrainingSeries.value.automaticAttend = item.automaticAttend
+}
+
+async function fetchData() {
+  try {
+    loading.value = true
+    trainingSeriesList.value = []
+    let seriesUrl = '/trainingSeries'
+    // Don't set filter with the general item 'Allgemein'
+    if (filterBranchId.value! > 0) {
+      seriesUrl += '?groupIds=' + masterData.getGroupsByBranchId(filterBranchId.value).map((g) => g.id)
+    }
+    const response = await httpClient.get(seriesUrl)
+    for (const responseObject of response.data.data) {
+      trainingSeriesList.value.push(TrainingSeries.from(responseObject))
+    }
+
+    const trainerRes = await httpClient.get('/user/trainer')
+    trainers.value = trainerRes.data
+  } finally {
+    loading.value = false
+  }
+}
+
+function editItem(item: any) {
+  editDialogTitle.value = 'Serie bearbeiten'
+  editedTrainingSeries.value = { ...item }
+  const momDeferUntil = parseApiDate(item.deferUntil)
+  if (momDeferUntil.isValid()) {
+    editedTrainingSeries.value.deferUntil = momDeferUntil.format('YYYY-MM-DD')
+  }
+  showCreateDialog.value = true
+}
+
+function confirmAndDelete(item: any) {
+  itemToDelete.value = item
+  showConfirmDialog.value = true
+}
+
+async function deleteItem() {
+  showConfirmDialog.value = false
+  const response = await httpClient.delete('/trainingSeries/' + itemToDelete.value.id)
+  if (response.data.status === 'ok') {
+    useSnackbarStore().show('Serie erfolgreich gelöscht', 'success')
+    trainingSeriesList.value.splice(trainingSeriesList.value.indexOf(itemToDelete.value), 1)
+  } else {
+    useSnackbarStore().show('Serie konnte nicht gelöscht werden', 'error')
+  }
+}
+
+async function save() {
+  const series = editedTrainingSeries.value
+  const momDeferUntil = parseApiDate(series.deferUntil)
+  const postData: Record<string, any> = {
+    startTime: series.startTime,
+    endTime: series.endTime,
+    weekdays: series.weekdays,
+    comment: series.comment,
+    locationId: series.locationId,
+    trainerIds: series.trainerIds,
+    groupIds: series.groupIds,
+    // the series dialog hides the content picker; send the stored ones, otherwise sync() would drop them
+    contentIds: series.contentIds ?? [],
+    deferUntil: momDeferUntil.isValid() ? momDeferUntil.format() : null,
+    automaticAttend: series.automaticAttend
+  }
+  let url = '/trainingSeries'
+  const isUpdate = !!series.id
+  try {
+    let res
+    if (isUpdate) {
+      url += '/' + series.id
+      postData.id = series.id
+      res = await httpClient.put(url, postData)
+    } else {
+      res = await httpClient.post(url, postData)
+    }
+
+    if (res.data.status == 'ok') {
+      showCreateDialog.value = false
+      fetchData()
+      useSnackbarStore().show(isUpdate ? 'Serie erfolgreich gespeichert' : 'Serie erfolgreich erstellt', 'success')
+    }
+  } catch (error: any) {
+    const errors = error?.response?.data?.errors
+    const detail = errors ? ' (' + Object.keys(errors).join(', ') + ')' : ''
+    useSnackbarStore().show('Serie konnte nicht gespeichert werden' + detail, 'error')
+  }
+}
+
+function filterChanged() {
+  fetchData()
+}
+
+function checkDeferUntilIsActive(item: TrainingSeries) {
+  const momDeferUntil = dayjs(item.deferUntil)
+  return momDeferUntil.isValid() && momDeferUntil >= dayjs().startOf('day')
+}
+
+function weekdaysChanged(weekdays: number[]) {
+  editedTrainingSeries.value.weekdays = weekdays
+}
+
+const loggedInUser = authStore.user
+if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
+  filterBranchId.value = masterData.getBranchById(loggedInUser.trainerBranchIds[0]).id
+}
+filterBranches.value = filterBranches.value.concat(masterData.branches)
+fetchData()
 </script>
 
 <style scoped>
