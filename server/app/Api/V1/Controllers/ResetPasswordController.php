@@ -5,6 +5,7 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\ResetPasswordRequest;
 use App\Http\Controllers\Controller;
 use App\Services\AuthLogService;
+use App\Support\PasswordBrokers;
 use App\User;
 use Config;
 use Illuminate\Contracts\Auth\PasswordBroker;
@@ -40,8 +41,8 @@ class ResetPasswordController extends Controller
         $user = User::where('email', '=', $request->get('email'))->first();
         if ($user) {
             // whatever else was pending for this account is void now
-            Password::broker('users')->deleteToken($user);
-            Password::broker('invites')->deleteToken($user);
+            PasswordBrokers::get('users')->deleteToken($user);
+            PasswordBrokers::get('invites')->deleteToken($user);
             AuthLogService::passwordReset($user->id, $request);
         }
 

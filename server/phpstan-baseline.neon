@@ -43,12 +43,6 @@ parameters:
 			path: app/Api/V1/Controllers/LocationController.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:deleteToken\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Api/V1/Controllers/ResetPasswordController.php
-
-		-
 			message: '#^Method App\\Api\\V1\\Controllers\\SimpleUserController\:\:getTrainers\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
 			identifier: class.notFound
 			count: 1
@@ -177,12 +171,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Api/V1/Controllers/UserController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:createToken\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Api/V1/Controllers/UserController.php
 

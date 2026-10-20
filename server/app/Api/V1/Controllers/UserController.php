@@ -7,6 +7,7 @@ use App\Api\V1\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use App\Services\AuthLogService;
 use App\Services\NotificationPreferenceService;
+use App\Support\PasswordBrokers;
 use App\Support\ProfileImage;
 use App\User;
 use Auth;
@@ -366,7 +367,7 @@ class UserController extends Controller
             ], 422);
         }
 
-        $user->sendInvitation(Password::broker('invites')->createToken($user));
+        $user->sendInvitation(PasswordBrokers::get('invites')->createToken($user));
         AuthLogService::log('invite_sent', $user->id, ['by' => Auth::guard('api')->id()], request());
 
         return response()->json([
