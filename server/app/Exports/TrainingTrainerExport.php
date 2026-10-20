@@ -33,7 +33,7 @@ class TrainingTrainerExport implements FromCollection, ShouldAutoSize, WithHeadi
      */
     public function map($trainingTrainer): array
     {
-        $training = Training::whereId($trainingTrainer->training_id)->first();
+        $training = Training::withTrashed()->find($trainingTrainer->training_id);
         $location = Location::whereId($training->location_id)->first();
 
         return [

@@ -32,7 +32,6 @@ class TrainingEvaluationController extends Controller
     public function getPastTrainingsForTrainer($userId)
     {
         $trainings = Training::where('start', '<=', DB::raw('NOW()'))
-            ->where('deleted', false)
             ->whereHas('trainers', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
@@ -146,7 +145,7 @@ class TrainingEvaluationController extends Controller
     /** Admins may use any training, other users only trainings they are a trainer of. */
     private function findAccessibleTraining(Request $request, $trainingId): Training
     {
-        $training = Training::where('deleted', false)->findOrFail($trainingId);
+        $training = Training::findOrFail($trainingId);
         $user = $request->user('api');
         if (! $user->hasRole('admin') && ! $training->trainers()->where('users.id', $user->id)->exists()) {
             abort(403, 'Forbidden');

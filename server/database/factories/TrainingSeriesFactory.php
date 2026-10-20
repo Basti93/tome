@@ -17,7 +17,7 @@ class TrainingSeriesFactory extends Factory
         return [
             'startTime' => '18:00:00',
             'endTime' => '19:30:00',
-            'weekdays' => json_encode([1, 2, 3, 4, 5, 6, 7]),
+            'weekdays' => [1, 2, 3, 4, 5, 6, 7],
             'comment' => null,
             'defer_until' => null,
             'automatic_attend' => 0,
@@ -28,7 +28,7 @@ class TrainingSeriesFactory extends Factory
     /** @param  int[]  $days  ISO weekday numbers, 1 = Monday ... 7 = Sunday */
     public function onWeekdays(array $days): static
     {
-        return $this->state(fn () => ['weekdays' => json_encode($days)]);
+        return $this->state(fn () => ['weekdays' => $days]);
     }
 
     public function forGroups(iterable $groups): static

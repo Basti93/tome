@@ -3,14 +3,16 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Training extends Model
 {
-    //
+    use SoftDeletes;
+
     protected $appends = ['group_ids', 'trainer_ids', 'content_ids'];
 
-    protected $hidden = ['updated_at', 'created_at'];
+    protected $hidden = ['updated_at', 'created_at', 'deleted_at'];
 
     public function participants()
     {

@@ -84,7 +84,7 @@ class RetentionService
                 ->where('trainings.start', '>=', $now->subMonths(self::PARTICIPATION_MONTHS))
                 ->whereNotNull('training_participation.cancelreason');
             $oldParticipations = $this->participationsOlderThan($now->subMonths(self::PARTICIPATION_MONTHS));
-            $trainingIds = DB::table('trainings')->where('deleted', 1)
+            $trainingIds = DB::table('trainings')->whereNotNull('deleted_at')
                 ->where('start', '<', $now->subMonths(self::DELETED_TRAINING_MONTHS))->pluck('id')->all();
             $tokens = DB::table('user_notification_token')->where('updated_at', '<', $now->subMonths(self::TOKEN_MONTHS));
             $logs = DB::table('auth_logs')->where('created_at', '<', $now->subDays(self::AUTH_LOG_DAYS));
@@ -144,14 +144,14 @@ class RetentionService
                     ->whereColumn('training_participation.user_id', 'users.id')
                     ->where('training_participation.attend', 1)
                     ->where('trainings.evaluated', 1)
-                    ->where('trainings.deleted', 0)
+                    ->whereNull('trainings.deleted_at')
                     ->where('trainings.start', '>=', $participationCutoff);
             })
             ->whereNotExists(function ($query) use ($trainerCutoff) {
                 $query->select(DB::raw(1))->from('training_trainer')
                     ->join('trainings', 'trainings.id', '=', 'training_trainer.training_id')
                     ->whereColumn('training_trainer.user_id', 'users.id')
-                    ->where('trainings.deleted', 0)
+                    ->whereNull('trainings.deleted_at')
                     ->where('trainings.start', '>=', $trainerCutoff);
             })
             ->whereNotExists(function ($query) {

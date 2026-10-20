@@ -20,7 +20,6 @@ class TrainingFactory extends Factory
             'comment' => null,
             'prepared' => 0,
             'evaluated' => 0,
-            'deleted' => 0,
             'automatic_attend' => 0,
             'location_id' => null,
         ];

@@ -112,7 +112,7 @@ class TrainingCalendarController extends Controller
 
     private function createTrainingsForSeries($series, $period)
     {
-        $weekdaysArray = json_decode($series->weekdays);
+        $weekdaysArray = $series->weekdays;
         $result = [];
 
         // iterate through the days

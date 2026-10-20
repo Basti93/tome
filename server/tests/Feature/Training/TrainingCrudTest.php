@@ -29,7 +29,7 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $old = TrainingFactory::new()->between('2099-01-01 10:00:00', '2099-01-01 11:00:00')->create();
         $new = TrainingFactory::new()->between('2099-02-01 10:00:00', '2099-02-01 11:00:00')->create();
-        TrainingFactory::new()->create(['deleted' => 1]);
+        TrainingFactory::new()->create(['deleted_at' => now()]);
 
         $response = $this->actingAsJwt($trainer)->getJson('/api/v1/training')->assertOk();
 
@@ -199,7 +199,7 @@ class TrainingCrudTest extends TestCase
 
         $this->actingAsJwt($trainer)->patchJson("/api/v1/training/{$t->id}/deleteinfuture")->assertOk()->assertExactJson(['status' => 'ok']);
 
-        $this->assertSame(1, (int) $t->fresh()->deleted);
+        $this->assertSoftDeleted('trainings', ['id' => $t->id]);
         $this->getJson('/api/v1/training/upcoming')->assertJsonCount(0, 'data');
     }
 

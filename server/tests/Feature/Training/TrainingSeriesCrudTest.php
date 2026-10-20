@@ -44,7 +44,7 @@ class TrainingSeriesCrudTest extends TestCase
 
         $series = TrainingSeries::firstOrFail();
         $this->assertSame('18:00:00', $series->startTime);
-        $this->assertSame('[1,3]', $series->weekdays);
+        $this->assertSame([1, 3], $series->weekdays);
         $this->assertSame('Serie', $series->comment);
         $this->assertSame(1, (int) $series->automatic_attend);
         $this->assertSame('2099-12-31 00:00:00', $series->defer_until);
@@ -94,7 +94,7 @@ class TrainingSeriesCrudTest extends TestCase
 
         $series->refresh();
         $this->assertSame('neu', $series->comment);
-        $this->assertSame('[5]', $series->weekdays);
+        $this->assertSame([5], $series->weekdays);
         $this->assertSame([$g2->id], $series->groups()->pluck('groups.id')->all());
     }
 
@@ -154,7 +154,7 @@ class TrainingSeriesCrudTest extends TestCase
         ])->assertStatus(201);
 
         $series = TrainingSeries::firstOrFail();
-        $this->assertSame('[1,3]', $series->weekdays);
+        $this->assertSame([1, 3], $series->weekdays);
 
         $this->actingAsJwt($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", [
             'id' => $series->id, 'startTime' => '09:00', 'endTime' => '12:00', 'weekdays' => [2, 4], 'comment' => 'x',
@@ -162,6 +162,6 @@ class TrainingSeriesCrudTest extends TestCase
             'deferUntil' => null, 'automaticAttend' => false,
         ])->assertStatus(201);
 
-        $this->assertSame('[2,4]', $series->fresh()->weekdays);
+        $this->assertSame([2, 4], $series->fresh()->weekdays);
     }
 }

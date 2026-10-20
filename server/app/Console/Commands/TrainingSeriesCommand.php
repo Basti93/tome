@@ -63,7 +63,7 @@ class TrainingSeriesCommand extends Command
 
     private function processSeries($series, $start, $end, $period)
     {
-        $weekdaysArray = json_decode($series->weekdays);
+        $weekdaysArray = $series->weekdays;
         if (! is_array($weekdaysArray)) {
             // a corrupt series must not stop the creation of all the other series
             $this->warn('Series with id '.$series->id.' has invalid weekdays, skipping');
@@ -83,7 +83,7 @@ class TrainingSeriesCommand extends Command
                     continue;
                 }
 
-                // check if training is already created
+                // check if training is already created (raw query: trainings deleted in the future still count)
                 if (DB::table('trainings')
                     ->whereDate('start', $dt->format('Y-m-d'))
                     ->where('training_series_id', $series->id)

@@ -27,7 +27,6 @@ class EvaluationReminder extends Command
     public function handle(NotificationPreferenceService $preferences)
     {
         $trainings = Training::with(['trainers.notificationTokens', 'groups'])
-            ->where('deleted', false)
             ->where('evaluated', false)
             ->whereBetween('end', [now()->subDays(7)->toDateTimeString(), now()->subHours(2)->toDateTimeString()])
             ->whereHas('trainers')

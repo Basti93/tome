@@ -34,7 +34,7 @@ class TrainingTrainer extends Pivot
 
     public function training()
     {
-        return $this->belongsTo(Training::class);
+        return $this->belongsTo(Training::class)->withTrashed();
     }
 
     public function getAccountingHoursAttribute()

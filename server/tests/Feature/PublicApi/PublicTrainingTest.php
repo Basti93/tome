@@ -76,7 +76,7 @@ class PublicTrainingTest extends TestCase
         $later = TrainingFactory::new()->between('2099-04-02 18:00:00', '2099-04-02 19:00:00')->create();
         $sooner = TrainingFactory::new()->between('2099-04-01 18:00:00', '2099-04-01 19:00:00')->create();
         TrainingFactory::new()->inPast()->create();
-        TrainingFactory::new()->between('2099-04-03 18:00:00', '2099-04-03 19:00:00')->create(['deleted' => 1]);
+        TrainingFactory::new()->between('2099-04-03 18:00:00', '2099-04-03 19:00:00')->create(['deleted_at' => now()]);
 
         $ids = collect($this->getJson('/api/v1/training/upcoming')->assertOk()->json('data'))->pluck('id')->all();
 

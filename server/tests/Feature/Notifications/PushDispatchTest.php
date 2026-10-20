@@ -264,7 +264,7 @@ class PushDispatchTest extends TestCase
     public function test_reminders_skip_deleted_trainings(): void
     {
         $training = $this->soonTraining();
-        $training->deleted = 1;
+        $training->delete();
         $training->save();
         $user = $this->userWithToken('tok');
         $training->participants()->attach($user->id, ['attend' => 1]);

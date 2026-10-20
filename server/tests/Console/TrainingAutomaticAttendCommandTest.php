@@ -77,7 +77,7 @@ class TrainingAutomaticAttendCommandTest extends TestCase
         $tooFar = $this->soon(30)->forGroups([$group])->create(['automatic_attend' => 1]);
         $past = TrainingFactory::new()->inPast(1)->forGroups([$group])->create(['automatic_attend' => 1]);
         $noFlag = $this->soon()->forGroups([$group])->create(['automatic_attend' => 0]);
-        $deleted = $this->soon()->forGroups([$group])->create(['automatic_attend' => 1, 'deleted' => 1]);
+        $deleted = $this->soon()->forGroups([$group])->create(['automatic_attend' => 1, 'deleted_at' => now()]);
 
         $this->artisan('training:automatic-attend')->assertSuccessful();
 

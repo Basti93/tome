@@ -26,7 +26,7 @@ class PrepareAndEvaluationTest extends TestCase
         }
         TrainingFactory::new()->withTrainers([$other])->create();
         TrainingFactory::new()->inPast()->withTrainers([$trainer])->create();
-        TrainingFactory::new()->withTrainers([$trainer])->create(['deleted' => 1]);
+        TrainingFactory::new()->withTrainers([$trainer])->create(['deleted_at' => now()]);
 
         $response = $this->actingAsJwt($trainer)->getJson("/api/v1/trainingprepare/{$trainer->id}")->assertOk();
 

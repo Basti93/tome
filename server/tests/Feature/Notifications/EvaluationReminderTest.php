@@ -245,7 +245,7 @@ class EvaluationReminderTest extends TestCase
     {
         $trainer = $this->trainer();
         $this->trainingEnded(5, $trainer, ['evaluated' => 1]);
-        $this->trainingEnded(5, $trainer, ['deleted' => 1]);
+        $this->trainingEnded(5, $trainer, ['deleted_at' => now()]);
         $end = now()->subHours(5);
         TrainingFactory::new()->between($end->copy()->subMinutes(90)->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s'))->create();
 

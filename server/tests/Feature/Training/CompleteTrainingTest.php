@@ -145,7 +145,7 @@ class CompleteTrainingTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
         $t = $this->training([$trainer]);
-        $t->forceFill(['deleted' => 1])->save();
+        $t->forceFill(['deleted_at' => now()])->save();
 
         $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => []])->assertNotFound();
         $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/999999/complete', ['attendeeIds' => []])->assertNotFound();

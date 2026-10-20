@@ -39,7 +39,6 @@ class TrainingController extends Controller
         $groupIds = request()->query('groupIds');
 
         $trainings = Training::orderBy('start', 'desc')
-            ->where('deleted', false)
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
@@ -70,7 +69,6 @@ class TrainingController extends Controller
         }
 
         $trainings = Training::orderBy($sortBy, $direction)
-            ->where('deleted', false)
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
                     $query->whereIn('group_id', preg_split('/,/', $groupIds));
@@ -88,7 +86,6 @@ class TrainingController extends Controller
         $branchId = request()->query('branchId');
 
         $trainings = Training::where('start', '>=', DB::raw('NOW()'))
-            ->where('deleted', false)
             ->orderBy('start', 'asc')
             ->when($groupIds, function ($query, $groupIds) {
                 $query->whereHas('groups', function ($query) use ($groupIds) {
@@ -161,8 +158,7 @@ class TrainingController extends Controller
     public function deleteinfuture($trainingId)
     {
         $training = Training::findOrFail($trainingId);
-        $training->deleted = 1;
-        $training->save();
+        $training->delete();
 
         return response()->json([
             'status' => 'ok',
@@ -368,15 +364,10 @@ class TrainingController extends Controller
 
     public function destroy($id)
     {
-        $training = Training::findOrFail($id);
-        if ($training) {
-            $training->delete();
+        Training::withTrashed()->findOrFail($id)->forceDelete();
 
-            return response()->json([
-                'status' => 'ok',
-            ], 201);
-        } else {
-            return response()->json(error);
-        }
+        return response()->json([
+            'status' => 'ok',
+        ], 201);
     }
 }

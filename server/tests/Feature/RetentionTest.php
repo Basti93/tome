@@ -58,7 +58,7 @@ class RetentionTest extends TestCase
     private function training(CarbonImmutable $start, bool $evaluated = true, bool $deleted = false): Training
     {
         return TrainingFactory::new()->between($this->format($start), $this->format($start->addMinutes(90)))
-            ->create(['evaluated' => $evaluated ? 1 : 0, 'deleted' => $deleted ? 1 : 0]);
+            ->create(['evaluated' => $evaluated ? 1 : 0, 'deleted_at' => $deleted ? now() : null]);
     }
 
     private function participate(Training $training, User $user, ?int $attend = 1, ?string $cancelReason = null): void

@@ -20,7 +20,7 @@ class TrainingSeries extends JsonResource
             'id' => $this->id,
             'startTime' => substr($this->startTime, 0, 5),
             'endTime' => substr($this->endTime, 0, 5),
-            'weekdays' => json_decode($this->weekdays),
+            'weekdays' => $this->weekdays,
             'locationId' => $this->location_id,
             'groupIds' => $this->group_ids,
             'trainerIds' => $this->trainer_ids,

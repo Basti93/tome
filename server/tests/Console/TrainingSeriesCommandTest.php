@@ -122,11 +122,11 @@ class TrainingSeriesCommandTest extends TestCase
     {
         $series = TrainingSeriesFactory::new()->onWeekdays([$this->weekday(2)])->create();
         $this->artisan('training:series')->assertSuccessful();
-        Training::where('training_series_id', $series->id)->update(['deleted' => 1]);
+        Training::where('training_series_id', $series->id)->update(['deleted_at' => now()]);
 
         $this->artisan('training:series')->assertSuccessful();
 
-        $this->assertSame(1, Training::where('training_series_id', $series->id)->count());
+        $this->assertSame(1, Training::withTrashed()->where('training_series_id', $series->id)->count());
     }
 
     public function test_two_series_with_the_same_weekday_do_not_block_each_other(): void

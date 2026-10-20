@@ -60,7 +60,6 @@ class EmailTrainingAttendanceStatistics extends Command
             foreach ($groupUsers as $groupUser) {
                 $userId = $groupUser->id;
                 $trainingsCount = Training::whereBetween('start', [$from, $until])
-                    ->where('deleted', false)
                     ->where('evaluated', true)
                     ->whereHas('groups', function ($query) use ($groupId) {
                         $query->where('group_id', $groupId);

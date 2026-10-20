@@ -42,7 +42,7 @@ class UpcomingTrainingNotifications extends Command
     {
         $now = date('Y-m-d H:i:s');
         $in4Hours = date('Y-m-d H:i:s', time() + 14400);
-        $upcomingTrainings = Training::with('participants', 'participants.notificationTokens')->whereBetween('start', [$now, $in4Hours])->where('deleted', false)->get();
+        $upcomingTrainings = Training::with('participants', 'participants.notificationTokens')->whereBetween('start', [$now, $in4Hours])->get();
         $this->info('Found  '.count($upcomingTrainings).' Trainings in the next 4h ('.$now.') - ('.$in4Hours.')');
 
         foreach ($upcomingTrainings as $training) {

@@ -11,6 +11,8 @@ class TrainingSeries extends Model
 
     protected $hidden = ['updated_at', 'created_at'];
 
+    protected $casts = ['weekdays' => 'array'];
+
     public function trainers()
     {
         return $this->belongsToMany('App\User', 'training_series_trainer', 'training_id', 'user_id');

@@ -13,7 +13,7 @@ class MigrateAccountingTime extends Migration
      */
     public function up()
     {
-        $trainings = Training::with('trainers')->get();
+        $trainings = Training::withoutGlobalScopes()->with('trainers')->get();
         echo 'Found '.$trainings->count().' Trainings';
         foreach ($trainings as $training) {
             $trainers = TrainingTrainer::where('training_id', $training->id)->get();
