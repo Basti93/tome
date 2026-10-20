@@ -171,7 +171,7 @@ import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import GroupsSelectDialog from '../components/GroupsSelectDialog.vue'
-import User from '../models/User'
+import User, { userFromApi } from '../models/User'
 import EditUserDialog from '../components/EditUserDialog.vue'
 import Group from '../models/Group'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
@@ -243,22 +243,7 @@ function dataLoaded(res: any) {
   for (let i = 0; i < res.data.data.length; i++) {
     const userObj = res.data.data[i]
     users.value.push(
-      new User(
-        userObj.id,
-        userObj.email,
-        userObj.firstName,
-        userObj.familyName,
-        userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-        userObj.active === 1 ? true : false,
-        userObj.groupIds,
-        userObj.roleNames,
-        userObj.trainerBranchIds,
-        userObj.registered,
-        userObj.profileImageName,
-        userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-        userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
-        userObj.absenceReason
-      )
+      userFromApi(userObj)
     )
   }
   page.value = res.data.currentPage

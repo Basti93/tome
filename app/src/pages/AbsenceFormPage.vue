@@ -185,7 +185,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { formatDate } from "@/helpers/date-helpers"
-import User from "../models/User"
+import User, { userFromApi } from "../models/User"
 import ConfirmDialog from "../components/ConfirmDialog.vue"
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
@@ -279,27 +279,14 @@ function getAllSimpleUsersWithGroup() {
 }
 
 async function loadAllAbsenceUsers() {
+  // the list is for trainers (needs a login); the form itself is public
+  if (!loggedInUser.value) return
   loadingUsers.value = true
   absenceUsers.value = []
-  const { data } = await httpClient.get('user/allAbsence')
+  const { data } = await httpClient.get('user/allAbsence').catch(() => ({ data: {} as any }))
   if (data.data) {
     for (const userObj of data.data) {
-      absenceUsers.value.push(new User(
-        userObj.id,
-        userObj.email,
-        userObj.firstName,
-        userObj.familyName,
-        userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-        userObj.active === 1 ? true : false,
-        userObj.groupIds,
-        userObj.roleNames,
-        userObj.trainerBranchIds,
-        userObj.registered,
-        userObj.profileImageName,
-        userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-        userObj.absenceEnd ? parseApiDate(userObj.absenceEnd) : null,
-        userObj.absenceReason
-      ))
+      absenceUsers.value.push(userFromApi(userObj))
     }
     page.value = data.currentPage
     total.value = data.total

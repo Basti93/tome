@@ -349,7 +349,7 @@ import TrainingContent from '@/components/TrainingContent.vue'
 import TomeListItemProfileImage from '@/components/ListItemProfileImage.vue'
 import TrainingSelector from '../components/TrainingSelector.vue'
 import GroupChip from '../components/GroupChip.vue'
-import User from '../models/User'
+import User, { userFromApi } from '../models/User'
 
 const { xs } = useDisplay()
 const authStore = useAuthStore()
@@ -518,22 +518,7 @@ async function fetchData() {
     const userRes = await httpClient.get('/user')
     for (const userObj of userRes.data) {
       users.value.push(
-        new User(
-          userObj.id,
-          userObj.email,
-          userObj.firstName,
-          userObj.familyName,
-          userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-          userObj.active === 1 ? true : false,
-          userObj.groupIds,
-          userObj.roleNames,
-          userObj.trainerBranchIds,
-          userObj.registered,
-          userObj.profileImageName,
-          userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-          userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
-          userObj.absenceReason
-        )
+        userFromApi(userObj)
       )
     }
   } catch (error) {

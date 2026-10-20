@@ -109,3 +109,17 @@ describe('Training models', () => {
     expect(TrainingSeries.from({ id: 2, automaticAttend: 0 }).automaticAttend).toBe(false)
   })
 })
+
+describe('userFromApi', () => {
+  it('parses the absence start and the absence end separately (the end used to be parsed from the start)', async () => {
+    const { userFromApi } = await import('./User')
+    const user = userFromApi({
+      id: 1, email: 'a@example.org', firstName: 'A', familyName: 'B', active: 1, groupIds: [], roleNames: [], trainerBranchIds: [],
+      absenceStart: '2030-03-01T00:00:00+01:00', absenceEnd: '2030-03-20T00:00:00+01:00', absenceReason: 'Urlaub',
+    })
+
+    expect(user.absenceStart!.format('YYYY-MM-DD')).toBe('2030-03-01')
+    expect(user.absenceEnd!.format('YYYY-MM-DD')).toBe('2030-03-20')
+    expect(userFromApi({ id: 2, absenceStart: null, absenceEnd: null }).absenceEnd).toBeNull()
+  })
+})

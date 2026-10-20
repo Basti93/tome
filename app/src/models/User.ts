@@ -1,4 +1,4 @@
-import type { Dayjs } from '@/helpers/dayjs'
+import { parseApiDate, type Dayjs } from '@/helpers/dayjs'
 
 export default class User {
 
@@ -86,4 +86,24 @@ export default class User {
         return this.familyName + " " + this.firstName;
     }
 
+}
+
+/** A user as listed by the API (`/user`, `/user/allAbsence`); dates are parsed once, here (start and end separately). */
+export function userFromApi(userObj: any): User {
+  return new User(
+    userObj.id,
+    userObj.email,
+    userObj.firstName,
+    userObj.familyName,
+    userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
+    userObj.active === 1,
+    userObj.groupIds,
+    userObj.roleNames,
+    userObj.trainerBranchIds,
+    userObj.registered,
+    userObj.profileImageName,
+    userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+    userObj.absenceEnd ? parseApiDate(userObj.absenceEnd) : null,
+    userObj.absenceReason,
+  )
 }
