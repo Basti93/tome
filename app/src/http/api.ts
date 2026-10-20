@@ -52,8 +52,9 @@ interface ApiError extends Error {
  */
 export function redirectToLogin() {
   const current = (window.location.hash || '#/').slice(1)
-  const target = current.startsWith('/login') ? '/' : current
-  window.location.href = `/#/login?redirect=${encodeURIComponent(target)}`
+  // already on the login page (several requests fail at once): keep the first ?redirect=
+  if (current.startsWith('/login')) return
+  window.location.href = `/#/login?redirect=${encodeURIComponent(current)}`
 }
 
 async function request<T = any>(

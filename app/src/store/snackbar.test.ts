@@ -40,4 +40,15 @@ describe('snackbar store', () => {
     expect(store.visible).toBe(false)
     expect(store.text).toBe('x')
   })
+
+  it('every show() bumps a counter so a repeated message restarts the display', () => {
+    const store = useSnackbarStore()
+
+    store.show('Fehler', 'error')
+    const first = store.count
+    store.show('Fehler', 'error')
+
+    expect(store.count).toBe(first + 1)
+    expect(store.visible).toBe(true)
+  })
 })

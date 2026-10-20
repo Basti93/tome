@@ -13,7 +13,7 @@
             <template v-if="completed">
               <v-alert type="success" icon="mdi-check-circle" class="mb-4">
                 <strong>Passwort zurückgesetzt</strong>
-                <p class="mb-0">Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.</p>
+                <p class="mb-0">Dein Passwort wurde erfolgreich zurückgesetzt. Du kannst dich jetzt mit deinem neuen Passwort anmelden.</p>
               </v-alert>
               <v-btn color="primary" to="/login">Zur Anmeldung</v-btn>
             </template>
@@ -22,7 +22,7 @@
             <template v-else-if="emailSent">
               <v-alert type="success" icon="mdi-check-circle" class="mb-4">
                 <strong>E-Mail gesendet</strong>
-                <p class="mb-0">Bitte überprüfen Sie Ihren E-Mail-Posteingang. Wir haben einen Passwort-Zurücksetzen-Link an {{ email }} gesendet.</p>
+                <p class="mb-0">Wenn ein Konto mit {{ email }} existiert, haben wir einen Link zum Zurücksetzen des Passworts gesendet. Bitte prüfe deinen E-Mail-Posteingang.</p>
               </v-alert>
               <v-btn color="primary" @click="emailSent = false">Neuen Link anfordern</v-btn>
             </template>
@@ -78,7 +78,7 @@
 
             <!-- Request Email Form -->
             <template v-else>
-              <p class="mb-4">Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.</p>
+              <p class="mb-4">Gib deine E-Mail-Adresse ein, und wir senden dir einen Link zum Zurücksetzen deines Passworts.</p>
               <v-form v-model="emailFormValid">
                 <v-text-field
                     v-model="email"
@@ -164,13 +164,25 @@ export default {
     },
   },
   created() {
-    const emailParam = this.route.query.email
-    const tokenParam = this.route.query.token
-
-    if (emailParam) this.email = emailParam as string
-    if (tokenParam) this.token = tokenParam as string
+    this.applyQuery()
+  },
+  watch: {
+    // a reset link opened in the same tab while this page is shown (same route, new query)
+    'route.query'() {
+      this.applyQuery()
+    },
   },
   methods: {
+    applyQuery() {
+      const emailParam = this.route.query.email
+      const tokenParam = this.route.query.token
+      if (emailParam) this.email = emailParam as string
+      if (tokenParam) {
+        this.token = tokenParam as string
+        this.emailSent = false
+        this.completed = false
+      }
+    },
     getPasswordHint(): string {
       return getPasswordHint()
     },
@@ -179,7 +191,7 @@ export default {
         this.loading = true
         await httpClient.post('/auth/recovery', { email: this.email })
         this.emailSent = true
-        useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
+        useSnackbarStore().show('Anfrage gesendet', 'success')
       } catch (error) {
         useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
       } finally {

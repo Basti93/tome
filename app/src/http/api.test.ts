@@ -125,6 +125,13 @@ describe('httpClient', () => {
 
     expect(auth.logout).toHaveBeenCalled()
     expect(location.href).toBe('/#/login?redirect=%2FquickEvaluation%2F7')
+
+    // a second failing request must not overwrite the redirect target
+    location.hash = '#/login?redirect=%2FquickEvaluation%2F7'
+    location.href = ''
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 401)).mockResolvedValueOnce(jsonResponse({ message: 'broken' }, 500))
+    await expect(httpClient.get('/training')).rejects.toBeTruthy()
+    expect(location.href).toBe('')
   })
 
   it('treats an HTML page answered to a JSON request (the SPA index.html) as an error', async () => {

@@ -19,7 +19,7 @@
             <v-row class="align-center">
               <v-col>
                 <strong>E-Mail nicht verifiziert</strong>
-                <p class="mb-0">Bitte bestätigen Sie Ihre E-Mail-Adresse, um sich anzumelden.</p>
+                <p class="mb-0">Bitte bestätige deine E-Mail-Adresse, um dich anzumelden.</p>
                 <p class="caption mb-0">{{ emailForResend }}</p>
               </v-col>
               <v-col cols="auto">
@@ -156,7 +156,7 @@ export default {
           if (data.code === 'email_not_verified') {
             this.emailNotVerifiedError = true
             this.emailForResend = this.email
-            useSnackbarStore().show("E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.", "error")
+            useSnackbarStore().show("E-Mail-Adresse nicht bestätigt. Bitte bestätige deine E-Mail.", "error")
           } else {
             useSnackbarStore().show(data.message, "error")
           }
@@ -183,9 +183,9 @@ export default {
         if (status === 403 && data?.code === 'email_not_verified') {
           this.emailNotVerifiedError = true
           this.emailForResend = this.email
-          useSnackbarStore().show("E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.", "error")
+          useSnackbarStore().show("E-Mail-Adresse nicht bestätigt. Bitte bestätige deine E-Mail.", "error")
         } else if (status === 429) {
-          useSnackbarStore().show("Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.", "error")
+          useSnackbarStore().show("Zu viele Anmeldeversuche. Bitte warte einen Moment.", "error")
         } else if (data?.errors) {
           const first = Object.values(data.errors)[0]
           const message = Array.isArray(first) ? first[0] : first
@@ -205,7 +205,7 @@ export default {
         await httpClient.post('/auth/email/send', {
           email: this.emailForResend
         })
-        useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet. Bitte überprüfen Sie Ihren E-Mail-Eingang.', 'success')
+        useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet. Bitte prüfe deinen E-Mail-Eingang.', 'success')
       } catch (error) {
         console.log(error)
         useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')

@@ -48,7 +48,9 @@ class PasswordAndEmailTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertOk();
         }
-        $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertStatus(429);
+        $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertStatus(429)
+            ->assertJsonPath('message', 'Zu viele Anfragen. Bitte warte einen Moment und versuche es dann erneut.')
+            ->assertHeader('Retry-After');
     }
 
     public function test_reset_with_valid_token_changes_the_password(): void

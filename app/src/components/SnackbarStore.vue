@@ -1,5 +1,6 @@
 <template>
   <v-snackbar
+    :key="snackbar.count"
     location="bottom right"
     v-model="snackbar.visible"
     :timeout="snackbar.timeout"

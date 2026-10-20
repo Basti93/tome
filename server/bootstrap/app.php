@@ -40,6 +40,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // rate limit answers (login, password recovery, invites ...) in German for the snackbar
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => 'Zu viele Anfragen. Bitte warte einen Moment und versuche es dann erneut.'], 429, $e->getHeaders());
+            }
+        });
         $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) => $request->is('api/*') || $request->expectsJson());
         // With APP_DEBUG=false no exception text may reach the client (class names, SQL, model names, paths).
         $exceptions->render(function (ModelNotFoundException|NotFoundHttpException $e, Request $request) {
