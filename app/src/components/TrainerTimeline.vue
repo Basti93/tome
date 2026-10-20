@@ -10,13 +10,14 @@
     </v-card-title>
     <v-divider></v-divider>
     <v-card-text class="pa-0">
-      <apexchart ref="trainerTimeLineChart" type="bar" height="600" :options="options" :series="series"/>
+      <apexchart ref="trainerTimeLineChart" type="bar" height="600" :options="themedOptions" :series="series"/>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useTheme } from 'vuetify'
 import StatisticsFilter1 from './StatisticsFilter1.vue'
 import { useAuthStore } from '@/store/auth'
 import httpClient from '@/http/api'
@@ -98,6 +99,19 @@ function filterYearChanged(year: number) {
 }
 
 fetchData()
+
+// ApexCharts has its own colors: follow the Vuetify theme (dark mode)
+const vuetifyTheme = useTheme()
+const themedOptions = computed(() => {
+  const dark = vuetifyTheme.current.value.dark
+  return {
+    ...options.value,
+    chart: { ...options.value.chart, foreColor: dark ? '#e0e0e0' : '#373d3f' },
+    theme: { mode: dark ? 'dark' : 'light' },
+    grid: { borderColor: dark ? '#444' : '#e0e0e0' },
+    tooltip: { theme: dark ? 'dark' : 'light' },
+  }
+})
 </script>
 
 <style scoped>

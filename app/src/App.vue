@@ -73,9 +73,13 @@ import Navigation from '@/components/TomeNavigation.vue'
 import SnackbarStore from '@/components/SnackbarStore.vue'
 import AnnouncementDialog from '@/components/AnnouncementDialog.vue'
 import { useSnackbarStore } from '@/store/snackbar'
+import { useThemeMode } from '@/composables/themeMode'
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { listenForForegroundMessages, registerPushToken, type PushStatus } from '@/services/push'
+
+// light / dark / system (profile setting), applied to Vuetify
+useThemeMode()
 
 const snackbarStore = useSnackbarStore()
 const authStore = useAuthStore()

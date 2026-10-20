@@ -100,7 +100,7 @@ watch(
         text-align: center;
 
         &--selected {
-          background-color: #efefef;
+          background-color: rgba(var(--v-theme-on-surface), 0.08);
 
           &:after {
             font-family: "Material Icons";

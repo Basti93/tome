@@ -359,7 +359,7 @@ initializing.value = false
     position: relative;
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, var(--selected-color) 8%, white) 0%,
+      color-mix(in srgb, var(--selected-color) 8%, rgb(var(--v-theme-surface))) 0%,
       transparent 25%
     );
     margin-left: 6px;

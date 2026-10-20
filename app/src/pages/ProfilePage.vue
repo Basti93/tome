@@ -60,6 +60,9 @@
                             <v-card-text>
                               <v-container>
                                 <v-row>
+                                  <v-col cols="12">
+                                    <ThemeModeSetting />
+                                  </v-col>
                                   <v-col cols="12" sm="6">
                                     <v-text-field
                                         v-model="editUser.firstName"
@@ -218,6 +221,7 @@
 </template>
 
 <script setup lang="ts">
+import ThemeModeSetting from '@/components/ThemeModeSetting.vue'
 import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import ChangePasswordDialog from '@/components/ChangePasswordDialog.vue'

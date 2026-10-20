@@ -42,7 +42,7 @@
   <!-- Mobile: extended button (only with something to choose from) and full-screen dialog -->
   <v-btn
       v-if="showSwitchButton"
-      color="white"
+      color="surface"
       class="tp-training-selector__switch text-primary font-weight-bold"
       prepend-icon="mdi-calendar-multiple"
       elevation="6"
@@ -277,7 +277,7 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
   }
 
   &__day-section {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 
     &:last-child {
       border-bottom: none;
@@ -294,12 +294,12 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
     transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
+      background-color: rgba(var(--v-theme-on-surface), 0.04);
     }
   }
 
   &__chevron {
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(var(--v-theme-on-surface), 0.5);
     transition: transform 0.2s ease;
     flex-shrink: 0;
     font-size: 1.5rem;
@@ -326,8 +326,8 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
 
   &__panel-count {
     font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.5);
-    background-color: rgba(0, 0, 0, 0.05);
+    color: rgba(var(--v-theme-on-surface), 0.5);
+    background-color: rgba(var(--v-theme-on-surface), 0.05);
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
   }
@@ -352,20 +352,20 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
     border-left: 4px solid;
     padding: 0.5rem 0.75rem;
     position: relative;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 
     &:last-child {
       border-bottom: none;
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-      box-shadow: inset 2px 0 0 rgba(0, 0, 0, 0.08);
+      background-color: rgba(var(--v-theme-on-surface), 0.02);
+      box-shadow: inset 2px 0 0 rgba(var(--v-theme-on-surface), 0.08);
     }
 
     &--active {
       border-left-width: 6px;
-      background-color: color-mix(in srgb, var(--active-color, #60cc69) 12%, white);
+      background-color: color-mix(in srgb, var(--active-color, #60cc69) 12%, rgb(var(--v-theme-surface)));
       box-shadow: inset 2px 0 0 var(--active-color, #60cc69);
       font-weight: 500;
     }
@@ -380,7 +380,7 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
 
   &__item-time {
     font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(var(--v-theme-on-surface), 0.7);
   }
 
   &__card-header {
@@ -398,14 +398,14 @@ selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || 
 
   &__time {
     font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(var(--v-theme-on-surface), 0.6);
     line-height: 1.2;
     margin-top: 0.2rem;
   }
 
   &__location {
     font-size: 0.75rem;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(var(--v-theme-on-surface), 0.5);
     line-height: 1.2;
     margin-top: 0.15rem;
   }

@@ -3,6 +3,7 @@ import '@/styles/vuetify-compat.css'
 import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
 import { de } from 'vuetify/locale'
+import { initialTheme } from '@/composables/themeMode'
 
 export default createVuetify({
   // Compact defaults: Vuetify 4 (Material Design 3) is roomy, which wastes space on phones.
@@ -32,13 +33,21 @@ export default createVuetify({
     defaultSet: 'mdi'
   },
   theme: {
-    defaultTheme: 'light',
+    defaultTheme: initialTheme(),
     themes: {
       light: {
         colors: {
           primary: '#60cc69',
           secondary: '#efefef',
           accent: '#000000'
+        }
+      },
+      dark: {
+        dark: true,
+        colors: {
+          primary: '#60cc69',
+          secondary: '#2a2a2a',
+          accent: '#ffffff'
         }
       }
     }
