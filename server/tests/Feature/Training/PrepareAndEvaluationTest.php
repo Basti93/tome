@@ -73,7 +73,7 @@ class PrepareAndEvaluationTest extends TestCase
 
         $response->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $past->id);
         $this->assertSame(
-            ['id', 'start', 'end', 'locationId', 'groupIds', 'trainers', 'participants', 'contentIds', 'comment', 'prepared', 'evaluated'],
+            ['id', 'start', 'end', 'locationId', 'groupIds', 'trainers', 'participants', 'contentIds', 'comment', 'note', 'prepared', 'evaluated'],
             array_keys($response->json('data.0'))
         );
         $response->assertJsonPath('data.0.trainers.0.userId', $trainer->id)

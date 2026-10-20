@@ -20,6 +20,7 @@
                 </div>
                 <div v-if="locationName" class="mb-1"><v-icon size="small">mdi-map-marker</v-icon> {{ locationName }}</div>
                 <div class="mb-2"><v-icon size="small">mdi-account-group</v-icon> {{ groupNames }}</div>
+                <GroupNotes class="mb-2" compact :group-ids="next.training.groupIds ?? []"></GroupNotes>
                 <div data-test="counts">
                   <strong>{{ summary.yes }}</strong> zugesagt, <strong>{{ summary.cancellations.length }}</strong> abgesagt
                 </div>
@@ -69,6 +70,7 @@ import { computed, onMounted, ref } from 'vue'
 import dayjs, { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
 import BirthdayHint from '@/components/BirthdayHint.vue'
+import GroupNotes from '@/components/GroupNotes.vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { participationSummary, pickNextTraining, todaysBirthdays, type UpcomingTraining } from '@/helpers/today'

@@ -26,6 +26,7 @@ class TrainingEvaluation extends JsonResource
             'participants' => $this->trainingParticipation,
             'contentIds' => $this->content_ids,
             'comment' => $this->comment,
+            'note' => $this->note,
             'prepared' => $this->prepared,
             'evaluated' => $this->evaluated,
         ];

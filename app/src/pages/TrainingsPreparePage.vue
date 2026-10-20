@@ -119,6 +119,7 @@
                               :group="item"></GroupChip>
                         </v-card-text>
                       </v-card>
+                      <GroupNotes :group-ids="selectedTraining.groupIds ?? []"></GroupNotes>
                       <v-card class="ma-1">
                         <v-card-text class="pa-0 pa-md-4">
                           <v-container no-gutters>
@@ -334,6 +335,7 @@
 </template>
 
 <script setup lang="ts">
+import GroupNotes from '@/components/GroupNotes.vue'
 import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'

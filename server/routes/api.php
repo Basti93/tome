@@ -112,10 +112,12 @@ Route::prefix('v1')->group(function () {
             Route::get('{id}/detail', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@getTrainingDetail');
             Route::post('{id}/complete', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@completeTraining');
             Route::post('{id}/evaluated', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@trainingEvaluated');
+            Route::post('{id}/note', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateNote');
             Route::post('{id}/updateaccountingtime', 'App\\Api\\V1\\Controllers\\TrainingEvaluationController@updateAccountingTime');
         });
 
         Route::prefix('trainingprepare')->group(function () {
+            Route::get('/notes', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@groupNotes');
             Route::get('/{id}', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@getUpcomingTrainingsForTrainer');
             Route::post('{id}/updatetrainingtime', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateTrainingTime');
             Route::post('{id}/updatelocation', 'App\\Api\\V1\\Controllers\\TrainingPrepareController@updateLocation');

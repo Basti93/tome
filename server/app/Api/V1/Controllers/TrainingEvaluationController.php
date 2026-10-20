@@ -26,7 +26,7 @@ class TrainingEvaluationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant', 'updateAccountingTime', 'getAccountingTimeStatistics', 'exportAccountingTimes', 'completeTraining', 'getTrainingDetail']]);
+        $this->middleware('permission:update-training', ['only' => ['getAccountingTimes', 'getPastTrainingsForTrainer', 'trainingEvaluated', 'addParticipant', 'removeParticipant', 'updateAccountingTime', 'getAccountingTimeStatistics', 'exportAccountingTimes', 'completeTraining', 'getTrainingDetail', 'updateNote']]);
     }
 
     public function getPastTrainingsForTrainer($userId)
@@ -88,6 +88,7 @@ class TrainingEvaluationController extends Controller
         $data = $request->validate([
             'attendeeIds' => 'present|array',
             'attendeeIds.*' => 'integer|distinct|exists:users,id',
+            'note' => 'sometimes|nullable|string|max:1000',
             'trainerTimes' => 'sometimes|array',
             'trainerTimes.*.userId' => 'required|integer',
             'trainerTimes.*.start' => 'required|date',
@@ -135,11 +136,32 @@ class TrainingEvaluationController extends Controller
                 $tt->save();
             }
 
+            if (array_key_exists('note', $data)) {
+                $training->note = $this->cleanNote($data['note']);
+            }
             $training->evaluated = true;
             $training->save();
         });
 
         return TrainingEvaluationResource::make(Training::findOrFail($training->id));
+    }
+
+    /** Edit the note of a training afterwards (assigned trainers and admins). */
+    public function updateNote(Request $request, $trainingId)
+    {
+        $training = $this->findAccessibleTraining($request, $trainingId);
+        $data = $request->validate(['note' => 'present|nullable|string|max:1000']);
+        $training->note = $this->cleanNote($data['note']);
+        $training->save();
+
+        return TrainingEvaluationResource::make($training);
+    }
+
+    private function cleanNote(?string $note): ?string
+    {
+        $note = trim((string) $note);
+
+        return $note === '' ? null : $note;
     }
 
     /** Admins may use any training, other users only trainings they are a trainer of. */

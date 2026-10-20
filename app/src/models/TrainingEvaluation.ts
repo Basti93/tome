@@ -14,6 +14,7 @@ export default class Training {
     comment: string;
     evaluated: boolean;
     prepared: boolean;
+    note: string;
 
     static from(jsonString: string) {
         const jsonObj = JSON.parse(jsonString);
@@ -25,11 +26,11 @@ export default class Training {
         for (const trainer of jsonObj.trainers) {
             trainers.push(TrainingTrainer.from(trainer));
         }
-        return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, trainers, participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false)
+        return new Training(jsonObj.id, jsonObj.start, jsonObj.end, jsonObj.locationId, jsonObj.groupIds, jsonObj.contentIds, trainers, participants, jsonObj.comment, jsonObj.prepared === 1 ? true : false, jsonObj.evaluated === 1 ? true : false, jsonObj.note ?? '')
     }
 
 
-    constructor(id: number, start: Dayjs, end: Dayjs, locationId: number, groupIds: number[], contentIds: number[], trainers: TrainingTrainer[], participants: TrainingParticipant[], comment: string, prepared: boolean, evaluated: boolean) {
+    constructor(id: number, start: Dayjs, end: Dayjs, locationId: number, groupIds: number[], contentIds: number[], trainers: TrainingTrainer[], participants: TrainingParticipant[], comment: string, prepared: boolean, evaluated: boolean, note: string = '') {
         this.id = id;
         this.start = start;
         this.end = end;
@@ -41,5 +42,6 @@ export default class Training {
         this.comment = comment;
         this.evaluated = evaluated;
         this.prepared = prepared;
+        this.note = note;
     }
 }

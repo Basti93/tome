@@ -102,6 +102,12 @@
         </v-card-text>
       </v-card>
 
+      <v-card class="mb-3">
+        <v-card-text>
+          <TrainingNoteField v-model="note"></TrainingNoteField>
+        </v-card-text>
+      </v-card>
+
       <v-btn
         color="primary"
         size="x-large"
@@ -123,6 +129,7 @@ import { useRoute, useRouter } from 'vue-router'
 import httpClient from '@/http/api'
 import { parseApiDate, type Dayjs } from '@/helpers/dayjs'
 import BirthdayHint from '@/components/BirthdayHint.vue'
+import TrainingNoteField from '@/components/TrainingNoteField.vue'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 
@@ -150,6 +157,7 @@ const presentIds = ref<Set<number>>(new Set())
 const baseMemberIds = ref<number[]>([])
 const extraIds = ref<number[]>([])
 const addCandidate = ref<number | null>(null)
+const note = ref('')
 
 const fullName = (u: { firstName?: string; familyName?: string } | undefined, id: number) =>
   u ? `${u.firstName ?? ''} ${u.familyName ?? ''}`.trim() : `Person #${id}`
@@ -209,6 +217,7 @@ async function load() {
       evaluated: t.evaluated === 1 || t.evaluated === true,
     }
 
+    note.value = t.note ?? ''
     trainerRows.value = (t.trainers ?? []).map((tr: any) => {
       const trainer = masterData.getSimpleTrainerById(tr.userId)
       return {
@@ -263,6 +272,7 @@ async function complete() {
   try {
     await httpClient.post(`/trainingevaluation/${training.value.id}/complete`, {
       attendeeIds: [...presentIds.value],
+      note: note.value.trim(),
       trainerTimes,
     })
     snackbar.show('Training abgeschlossen', 'success')

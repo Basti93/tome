@@ -135,6 +135,19 @@ describe('TrainingQuickEvaluationPage', () => {
     expect(push).toHaveBeenCalledWith('/trainingsEvaluation')
   })
 
+  it('sends the trimmed note with the completion and prefills an existing one', async () => {
+    http.get.mockResolvedValue(trainingResponse({ note: 'Alt' }))
+    const w = await mountPage()
+    const field = w.find('[data-test="training-note"] textarea')
+    expect((field.element as HTMLTextAreaElement).value).toBe('Alt')
+
+    await field.setValue('  Aufwärmen kürzen ')
+    await w.find('[data-test="complete"]').trigger('click')
+    await flushPromises()
+
+    expect(http.post.mock.calls[0][1].note).toBe('Aufwärmen kürzen')
+  })
+
   it('does not submit when the end is not after the start', async () => {
     const w = await mountPage()
     await w.find('[data-test="trainer-end-1"] input').setValue('17:00')

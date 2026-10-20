@@ -12,7 +12,8 @@ class Training extends Model
 
     protected $appends = ['group_ids', 'trainer_ids', 'content_ids'];
 
-    protected $hidden = ['updated_at', 'created_at', 'deleted_at'];
+    // note: trainers' notes, only exposed through the trainer endpoints (TrainingEvaluation resource, group notes)
+    protected $hidden = ['updated_at', 'created_at', 'deleted_at', 'note'];
 
     public function participants()
     {

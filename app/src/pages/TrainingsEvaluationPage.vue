@@ -98,6 +98,12 @@
                             </v-card-text>
                           </v-card>
                           <v-card class="ma-1">
+                            <v-card-text>
+                              <TrainingNoteField v-model="selectedTraining.note"></TrainingNoteField>
+                              <v-btn variant="text" color="primary" data-test="save-note" @click="saveNote">Notiz speichern</v-btn>
+                            </v-card-text>
+                          </v-card>
+                          <v-card class="ma-1">
                             <v-card-title>Trainer</v-card-title>
                             <v-card-subtitle>Diese Zeiten werden für die ÜL-Abrechnung verwendet</v-card-subtitle>
                             <v-card-text>
@@ -409,6 +415,7 @@ import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
 import BirthdayHint from '@/components/BirthdayHint.vue'
+import TrainingNoteField from '@/components/TrainingNoteField.vue'
 import TrainingParticipant from '@/models/TrainingParticipant'
 import TrainingTrainer from '@/models/TrainingTrainer'
 import TrainingEvaluation from '@/models/TrainingEvaluation'
@@ -547,7 +554,8 @@ async function fetchData() {
             participants,
             trObj.comment,
             trObj.prepared === 1 ? true : false,
-            trObj.evaluated === 1 ? true : false
+            trObj.evaluated === 1 ? true : false,
+            trObj.note ?? ''
           )
         )
       }
@@ -610,8 +618,21 @@ async function removeParticipantToUndecided(userId: number) {
   }
 }
 
+async function saveNote() {
+  const training = selectedTraining.value
+  try {
+    await httpClient.post('/trainingevaluation/' + training.id + '/note', { note: (training.note ?? '').trim() })
+    training.note = (training.note ?? '').trim()
+    useSnackbarStore().show('Notiz gespeichert', 'success')
+  } catch {
+    useSnackbarStore().show('Die Notiz konnte nicht gespeichert werden.', 'error')
+  }
+}
+
 async function evaluated() {
   confirmEvaluationDialog.value = false
+  // the note typed before completing is saved with it
+  if ((selectedTraining.value.note ?? '').trim()) await saveNote()
   const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/evaluated')
   if (data.status == 'ok') {
     selectedTraining.value.evaluated = true

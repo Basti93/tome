@@ -595,6 +595,12 @@ parameters:
 			path: app/Http/Resources/TrainingEvaluation.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$note\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TrainingEvaluation.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\TrainingEvaluation\:\:\$prepared\.$#'
 			identifier: property.notFound
 			count: 1
