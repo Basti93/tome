@@ -35,6 +35,7 @@ class ChangePasswordRequest extends FormRequest
         $requirementsText = implode(', ', $passwordRequirements);
 
         return [
+            'current_password.required' => 'Bitte gib dein aktuelles Passwort ein.',
             'password.required' => 'Das Passwort ist erforderlich.',
             'password.min' => "Das Passwort muss mindestens {$minLength} Zeichen lang sein.",
             'password.regex' => "Das Passwort muss {$requirementsText} enthalten.",

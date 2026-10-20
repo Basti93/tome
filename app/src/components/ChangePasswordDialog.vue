@@ -28,10 +28,21 @@
                         <v-col cols="12">
                             <v-text-field
                                     type="password"
+                                    :rules="[v => !!v || 'Bitte gib dein aktuelles Passwort ein']"
+                                    v-model="currentPassword"
+                                    autocomplete="current-password"
+                                    prepend-icon="lock"
+                                    label="Aktuelles Passwort"
+                                    required
+                            ></v-text-field>
+
+                            <v-text-field
+                                    type="password"
                                     :rules="passwordRules"
                                     v-model="password"
+                                    autocomplete="new-password"
                                     prepend-icon="security"
-                                    label="Passwort"
+                                    label="Neues Passwort"
                                     required
                             ></v-text-field>
 
@@ -40,7 +51,8 @@
                                     :rules="[ confirmPassword ]"
                                     v-model="passwordConfirm"
                                     prepend-icon="security"
-                                    label="Passwort bestätigen"
+                                    autocomplete="new-password"
+                                    label="Neues Passwort bestätigen"
                                     required
                             ></v-text-field>
                         </v-col>
@@ -66,6 +78,7 @@ export default {
     data: function () {
         return {
             valid: true,
+            currentPassword: null,
             password: null,
             passwordConfirm: null,
             passwordRules: getPasswordValidationRules(),
@@ -86,6 +99,7 @@ export default {
     },
     methods: {
         reset() {
+            this.currentPassword = null;
             this.password = null;
             this.passwordConfirm = null;
         },
@@ -101,7 +115,7 @@ export default {
         },
         async save() {
             try {
-                const response = await httpClient.post('/user/me/changepassword', {'password': this.password})
+                const response = await httpClient.post('/user/me/changepassword', {'current_password': this.currentPassword, 'password': this.password})
                 if (response.data.status === 'ok') {
                     useSnackbarStore().show("Passwort geändert", "success")
                     this.show = false;

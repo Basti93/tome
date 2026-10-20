@@ -156,7 +156,7 @@ class AccountFlowsTest extends TestCase
     {
         $user = $this->makeUser('member', ['email' => 'm@example.com']);
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['password' => 'Neu12345!x'])->assertStatus(201);
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'Neu12345!x'])->assertStatus(201);
 
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'Neu12345!x'])->assertOk();
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'Password1!'])->assertStatus(403);

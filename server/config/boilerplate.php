@@ -14,6 +14,7 @@ return [
 
     'change_password' => [
         'validation_rules' => [
+            'current_password' => 'required|string',
             'password' => 'required|min:8|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*?&.]/',
         ]
     ],

@@ -186,17 +186,38 @@ class PasswordAndEmailTest extends TestCase
         $this->postJson('/api/v1/auth/email/send', ['email' => 'kaputt'])->assertStatus(422);
     }
 
-    public function test_change_password_requires_authentication_and_policy(): void
+    public function test_change_password_requires_authentication_the_current_password_and_the_policy(): void
     {
-        $this->postJson('/api/v1/user/me/changepassword', ['password' => 'NewSecret1!'])->assertStatus(401);
-
         $user = $this->makeUser('member', ['email' => 'm@example.com']);
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['password' => 'weak'])
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'weak'])
             ->assertStatus(422);
 
         $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['password' => 'NewSecret1!'])
+            ->assertStatus(422)->assertJsonValidationErrors(['currentPassword']);
+
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])
+            ->assertStatus(422)->assertJsonPath('message', 'Das aktuelle Passwort ist falsch.');
+        $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'NewSecret1!'])->assertStatus(403);
+
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'NewSecret1!'])->assertOk();
+    }
+
+    public function test_change_password_requires_a_login(): void
+    {
+        $this->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])->assertStatus(401);
+    }
+
+    public function test_guessing_the_current_password_is_throttled(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com']);
+        for ($i = 0; $i < 5; $i++) {
+            $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])->assertStatus(422);
+        }
+
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
+            ->assertStatus(429);
     }
 }
