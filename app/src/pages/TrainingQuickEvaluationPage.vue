@@ -63,11 +63,11 @@
           <v-list-item
             v-for="m in members"
             :key="m.id"
-            :title="m.name"
             :subtitle="m.extra ? 'Zusätzlich hinzugefügt' : undefined"
             data-test="member-row"
             @click="toggle(m.id)"
           >
+            <template #title>{{ m.name }}<BirthdayHint v-if="training" :user-id="m.id" :date="training.start" /></template>
             <template #append>
               <v-btn
                 :data-test="`toggle-${m.id}`"
@@ -122,6 +122,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import httpClient from '@/http/api'
 import { parseApiDate, type Dayjs } from '@/helpers/dayjs'
+import BirthdayHint from '@/components/BirthdayHint.vue'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 

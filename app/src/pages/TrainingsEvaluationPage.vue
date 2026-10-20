@@ -149,7 +149,7 @@
                                     </tome-list-item-profile-image>
                                   </template>
 
-                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-title>{{ fullName(item) }}<BirthdayHint :user-id="item.id" :date="selectedTraining.start" /></v-list-item-title>
                                   <v-list-item-subtitle>
                                   <span class="label">{{
                                       getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
@@ -207,7 +207,7 @@
                                     </tome-list-item-profile-image>
                                   </template>
 
-                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-title>{{ fullName(item) }}<BirthdayHint :user-id="item.id" :date="selectedTraining.start" /></v-list-item-title>
                                   <v-list-item-subtitle>
                                   <span class="label">{{
                                       getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
@@ -277,7 +277,7 @@
                                     </tome-list-item-profile-image>
                                   </template>
 
-                                  <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                                  <v-list-item-title>{{ fullName(item) }}<BirthdayHint :user-id="item.id" :date="selectedTraining.start" /></v-list-item-title>
                                   <v-list-item-subtitle>
                                 <span class="label">{{
                                     getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
@@ -408,6 +408,7 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
+import BirthdayHint from '@/components/BirthdayHint.vue'
 import TrainingParticipant from '@/models/TrainingParticipant'
 import TrainingTrainer from '@/models/TrainingTrainer'
 import TrainingEvaluation from '@/models/TrainingEvaluation'

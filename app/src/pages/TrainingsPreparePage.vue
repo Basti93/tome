@@ -211,7 +211,7 @@
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-title>{{ fullName(item) }}<BirthdayHint :user-id="item.id" :date="selectedTraining.start" /></v-list-item-title>
                               <v-list-item-subtitle>
                                 <span class="label">{{
                                     getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
@@ -239,7 +239,7 @@
                                   :image-path="item.profileImageName">
                               </tome-list-item-profile-image>
 
-                              <v-list-item-title>{{ fullName(item) }}</v-list-item-title>
+                              <v-list-item-title>{{ fullName(item) }}<BirthdayHint :user-id="item.id" :date="selectedTraining.start" /></v-list-item-title>
                               <v-list-item-subtitle>
                                 <span class="label">{{
                                     getGroupsByIds(item.groupIds).map(g => g.name).join(', ')
@@ -341,6 +341,7 @@ import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
+import BirthdayHint from '@/components/BirthdayHint.vue'
 import Training from '@/models/Training'
 import TrainingParticipant from '@/models/TrainingParticipant'
 import TrainingContent from '@/components/TrainingContent.vue'

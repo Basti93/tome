@@ -180,7 +180,7 @@ export const useMasterDataStore = defineStore('masterData', {
       this.setLocations(locations.data.data)
       this.setContents(contents.data)
       this.setSimpleTrainers(trainers.data.data)
-      this.setSimpleUsers(resUsers.data.data.map((u: any) => new SimpleUser(u.id, u.firstName, u.familyName, u.groupIds)))
+      this.setSimpleUsers(resUsers.data.data.map((u: any) => new SimpleUser(u.id, u.firstName, u.familyName, u.groupIds, u.birthdate)))
       this.setTrainingSeries(resTrainingSeries.data.data.map((ts: any) => TrainingSeries.from(ts)))
     }
   }

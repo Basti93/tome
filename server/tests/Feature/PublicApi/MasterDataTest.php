@@ -279,4 +279,16 @@ class MasterDataTest extends TestCase
         $this->postJson('/api/v1/notifications/subscribe', [])
             ->assertStatus(422)->assertJsonValidationErrors(['userId', 'firebaseToken']);
     }
+
+    public function test_the_birthdate_is_only_sent_to_logged_in_trainers_and_admins(): void
+    {
+        $kid = UserFactory::new()->create(['firstName' => 'Mia', 'familyName' => 'Alt', 'birthdate' => '2015-10-20']);
+        $row = fn ($response) => collect($response->json('data'))->firstWhere('id', $kid->id);
+
+        $this->assertArrayNotHasKey('birthdate', $row($this->getJson('/api/v1/simpleuser')->assertOk()), 'anonymous');
+        $this->assertArrayNotHasKey('birthdate', $row($this->getJson('/api/v1/simpleuser/trainers')->assertOk()) ?? [], 'anonymous trainers list');
+        $this->assertArrayNotHasKey('birthdate', $row($this->actingAsUser($this->makeUser('member'))->getJson('/api/v1/simpleuser')->assertOk()), 'member');
+        $this->assertSame('2015-10-20', $row($this->actingAsUser($this->makeUser('trainer'))->getJson('/api/v1/simpleuser')->assertOk())['birthdate']);
+        $this->assertSame('2015-10-20', $row($this->actingAsUser($this->makeUser('admin'))->getJson('/api/v1/simpleuser')->assertOk())['birthdate']);
+    }
 }

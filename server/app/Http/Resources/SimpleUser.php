@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class SimpleUser extends JsonResource
 {
@@ -19,7 +20,7 @@ class SimpleUser extends JsonResource
         $authenticated = auth('api')->check();
         $familyName = $this->familyName;
 
-        return [
+        $data = [
             'id' => $this->id,
             'firstName' => $this->firstName,
             'familyName' => $authenticated ? $familyName : self::initial($familyName),
@@ -28,6 +29,15 @@ class SimpleUser extends JsonResource
             'trainerBranchIds' => $this->trainerBranchIds,
             'active' => $this->active,
         ];
+
+        // The birthdate (birthday hint in the trainer views) is only for logged in trainers and admins: the key does
+        // not exist for anybody else.
+        if ($authenticated && auth('api')->user()->hasAnyRole(['trainer', 'admin'])) {
+            $birthdate = $this->resource->birthdate;
+            $data['birthdate'] = $birthdate ? Carbon::parse($birthdate)->format('Y-m-d') : null;
+        }
+
+        return $data;
     }
 
     /** First letter plus a dot ("Meier" -> "M."); an empty name stays empty. */
