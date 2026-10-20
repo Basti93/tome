@@ -93,6 +93,7 @@ import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { refreshMasterData } from '@/helpers/refreshMasterData'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
 import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
@@ -207,7 +208,7 @@ export default {
         useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet. Bitte überprüfen Sie Ihren E-Mail-Eingang.', 'success')
       } catch (error) {
         console.log(error)
-        useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+        useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
       } finally {
         this.resendLoading = false
       }

@@ -183,7 +183,9 @@ class UserController extends Controller
 
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
-        $user->email = $request->input('email');
+        if ($request->has('email')) {
+            $user->email = $request->input('email');
+        }
 
         // Handle birthdate - only set if provided and not empty
         $birthdateInput = $request->input('birthdate');
@@ -228,7 +230,22 @@ class UserController extends Controller
         // set new profile image
         $user->profile_image_name = $request->input('profileImageName');
 
-        if (! $user->update($request->all())) {
+        // Changing the address of an account that can log in would allow taking it over via "Passwort vergessen":
+        // only admins may do that (trainers can still set the address of users who have no password yet).
+        if ($request->has('email') && $request->input('email') !== $user->email
+            && ! empty($user->password) && ! Auth::guard('api')->user()->hasRole('admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Die E-Mail-Adresse eines Kontos mit Anmeldung kann nur ein Admin ändern.',
+            ], 403);
+        }
+
+        // only these fields are editable (never password, notification preferences, ...)
+        $fields = $request->only(['firstName', 'familyName', 'birthdate']);
+        if ($request->has('email')) {
+            $fields['email'] = $request->input('email');
+        }
+        if (! $user->update($fields)) {
             throw new HttpException(500);
         }
 
@@ -249,6 +266,7 @@ class UserController extends Controller
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
         $user->birthdate = $request->input('birthdate');
+        $user->email = $request->input('email');
         // active boolean to 0 and 1
         if ($request->has('active')) {
             $user->active = $request->input('active') == 'true' ? 1 : 0;
@@ -312,7 +330,7 @@ class UserController extends Controller
         if (empty($user->email)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'The user has no email address',
+                'message' => 'Der Benutzer hat keine E-Mail-Adresse.',
             ], 422);
         }
 

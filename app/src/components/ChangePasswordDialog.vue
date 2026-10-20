@@ -54,6 +54,8 @@
 <script lang="ts">
 import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
+import { apiErrorMessage } from '@/helpers/apiError'
+import { getPasswordValidationRules } from '@/constants/passwordPolicy'
 
 export default {
     name: "ChangePasswordDialog",
@@ -66,9 +68,7 @@ export default {
             valid: true,
             password: null,
             passwordConfirm: null,
-            passwordRules: [
-                v => !!v || 'Wird benötigt',
-            ],
+            passwordRules: getPasswordValidationRules(),
         }
     },
     computed: {
@@ -109,7 +109,7 @@ export default {
                     useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
                 }
             } catch (error) {
-                useSnackbarStore().show("Fehler beim Ändern des Passworts", "error")
+                useSnackbarStore().show(apiErrorMessage(error, "Fehler beim Ändern des Passworts"), "error")
             }
         }
     }

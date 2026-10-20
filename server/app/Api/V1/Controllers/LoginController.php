@@ -32,10 +32,7 @@ class LoginController extends Controller
         if ($user && $user->locked_until && Carbon::parse($user->locked_until)->isFuture()) {
             AuthLogService::loginFailed($request->input('email'), 'Account locked', $request);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Account locked due to too many failed login attempts. Please try again later.',
-            ], 403);
+            return $this->lockedResponse();
         }
 
         try {
@@ -48,10 +45,7 @@ class LoginController extends Controller
                     if ($locked) {
                         AuthLogService::loginFailed($request->input('email'), 'Too many failed attempts', $request);
 
-                        return response()->json([
-                            'status' => 'error',
-                            'message' => 'Account locked due to too many failed login attempts. Please try again later.',
-                        ], 403);
+                        return $this->lockedResponse();
                     }
                 }
 
@@ -59,7 +53,8 @@ class LoginController extends Controller
 
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Unauthorized',
+                    'message' => 'E-Mail oder Passwort ist falsch.',
+                    'code' => 'invalid_credentials',
                 ], 403);
             }
 
@@ -73,8 +68,20 @@ class LoginController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Please verify your email before logging in.',
+                'message' => 'Bitte bestätige zuerst deine E-Mail-Adresse.',
                 'code' => 'email_not_verified',
+            ], 403);
+        }
+
+        // deactivated members (e.g. left the club) cannot log in
+        if ($user && ! $user->active) {
+            Auth::guard('api')->logout();
+            AuthLogService::loginFailed($request->input('email'), 'Account inactive', $request);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dieses Konto ist deaktiviert. Bitte wende dich an deinen Trainer.',
+                'code' => 'inactive',
             ], 403);
         }
 
@@ -95,6 +102,15 @@ class LoginController extends Controller
         ])->withCookie(
             cookie('jwt_token', $token, $refreshTtlMinutes, '/', null, $secureCookie, true, false, 'Strict')
         );
+    }
+
+    private function lockedResponse()
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Zu viele fehlgeschlagene Anmeldeversuche. Das Konto ist für '.self::LOCKOUT_DURATION_MINUTES.' Minuten gesperrt.',
+            'code' => 'locked',
+        ], 403);
     }
 
     private function incrementFailedLoginAttempts(User $user): bool

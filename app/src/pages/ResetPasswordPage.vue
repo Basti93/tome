@@ -113,7 +113,8 @@
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { useRouter, useRoute } from 'vue-router'
-import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
+import { PASSWORD_POLICY, getPasswordHint, getPasswordValidationRules } from '@/constants/passwordPolicy'
+import { apiErrorMessage } from '@/helpers/apiError'
 
 export default {
   name: "ResetPasswordPage",
@@ -139,10 +140,7 @@ export default {
         (v: any) => !!v || 'E-mail wird benötigt',
         (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein'
       ],
-      passwordRules: [
-        (v: any) => !!v || 'Passwort wird benötigt',
-        (v: any) => (v && v.length >= 8) || 'Passwort muss mindestens 8 Zeichen lang sein',
-      ],
+      passwordRules: getPasswordValidationRules(),
       passwordConfirmRules: [
         (v: any) => !!v || 'Passwortbestätigung wird benötigt',
         (v: any) => v === (this as any).password || 'Passwörter müssen übereinstimmen',
@@ -174,7 +172,7 @@ export default {
   },
   methods: {
     getPasswordHint(): string {
-      return 'Mindestens 8 Zeichen, empfohlen: Großbuchstaben und Zahlen/Sonderzeichen'
+      return getPasswordHint()
     },
     async requestResetEmail() {
       try {
@@ -183,16 +181,7 @@ export default {
         this.emailSent = true
         useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
       } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Versand der E-Mail', 'error')
-        }
+        useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
       } finally {
         this.loading = false
       }
@@ -209,16 +198,7 @@ export default {
         this.completed = true
         useSnackbarStore().show('Passwort erfolgreich zurückgesetzt', 'success')
       } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Zurücksetzen des Passworts', 'error')
-        }
+        useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Zurücksetzen des Passworts'), 'error')
       } finally {
         this.loading = false
       }

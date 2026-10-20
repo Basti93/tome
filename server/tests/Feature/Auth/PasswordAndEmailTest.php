@@ -31,9 +31,9 @@ class PasswordAndEmailTest extends TestCase
         $this->assertDatabaseHas('auth_logs', ['action' => 'password_reset_requested']);
     }
 
-    public function test_recovery_for_unknown_email_is_404(): void
+    public function test_recovery_for_unknown_email_looks_exactly_like_success(): void
     {
-        $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertStatus(404);
+        $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertOk()->assertExactJson(['status' => 'ok']);
         Mail::assertNothingSent();
     }
 
@@ -46,7 +46,7 @@ class PasswordAndEmailTest extends TestCase
     public function test_recovery_is_throttled_to_three_per_minute(): void
     {
         for ($i = 0; $i < 3; $i++) {
-            $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertStatus(404);
+            $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertOk();
         }
         $this->postJson('/api/v1/auth/recovery', ['email' => 'nobody@example.com'])->assertStatus(429);
     }
@@ -69,7 +69,7 @@ class PasswordAndEmailTest extends TestCase
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => UserFactory::PASSWORD])->assertStatus(403);
     }
 
-    public function test_reset_with_invalid_token_is_500(): void
+    public function test_reset_with_an_invalid_token_is_a_german_422(): void
     {
         $this->makeUser('member', ['email' => 'm@example.com']);
 
@@ -78,7 +78,41 @@ class PasswordAndEmailTest extends TestCase
             'email' => 'm@example.com',
             'password' => 'NewSecret1!',
             'password_confirmation' => 'NewSecret1!',
-        ])->assertStatus(500);
+        ])->assertStatus(422)->assertJsonPath('code', 'invalid_token')
+            ->assertJsonPath('message', 'Der Link ist ungültig oder abgelaufen. Bitte fordere über „Passwort vergessen“ einen neuen an.');
+
+        // unknown e-mail: same answer, no account enumeration
+        $this->postJson('/api/v1/auth/reset', [
+            'token' => 'invalid', 'email' => 'nobody@example.com', 'password' => 'NewSecret1!', 'password_confirmation' => 'NewSecret1!',
+        ])->assertStatus(422)->assertJsonPath('code', 'invalid_token');
+    }
+
+    public function test_an_expired_or_used_reset_token_is_rejected(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com']);
+        $body = fn ($token) => ['token' => $token, 'email' => 'm@example.com', 'password' => 'NewSecret1!', 'password_confirmation' => 'NewSecret1!'];
+
+        $expired = Password::createToken($user);
+        $this->travel(61)->minutes();
+        $this->postJson('/api/v1/auth/reset', $body($expired))->assertStatus(422)->assertJsonPath('code', 'invalid_token');
+        $this->travelBack();
+
+        $used = Password::createToken($user);
+        $this->postJson('/api/v1/auth/reset', $body($used))->assertOk();
+        $this->postJson('/api/v1/auth/reset', $body($used))->assertStatus(422);
+    }
+
+    public function test_a_reset_lifts_the_lockout_and_marks_an_invited_user_registered(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com', 'registered' => 0, 'failed_login_attempts' => 5, 'locked_until' => now()->addMinutes(10)]);
+        $token = Password::createToken($user);
+
+        $this->postJson('/api/v1/auth/reset', ['token' => $token, 'email' => 'm@example.com', 'password' => 'NewSecret1!', 'password_confirmation' => 'NewSecret1!'])->assertOk();
+
+        $fresh = $user->fresh();
+        $this->assertNull($fresh->locked_until);
+        $this->assertSame(0, (int) $fresh->failed_login_attempts);
+        $this->assertSame(1, (int) $fresh->registered);
     }
 
     public function test_reset_validates_policy_and_confirmation(): void
@@ -96,7 +130,7 @@ class PasswordAndEmailTest extends TestCase
         $this->postJson('/api/v1/auth/email/verify', ['token' => 'abc123'])
             ->assertOk()
             ->assertJsonPath('status', 'ok')
-            ->assertJsonPath('message', 'Email verified successfully.');
+            ->assertJsonPath('message', 'Deine E-Mail-Adresse wurde bestätigt. Du kannst dich jetzt anmelden.');
 
         $user->refresh();
         $this->assertNotNull($user->email_verified_at);
@@ -108,14 +142,14 @@ class PasswordAndEmailTest extends TestCase
     {
         $this->postJson('/api/v1/auth/email/verify', ['token' => 'nope'])
             ->assertStatus(400)
-            ->assertJsonPath('message', 'Invalid or expired verification token.');
+            ->assertJsonPath('message', 'Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere auf der Anmeldeseite einen neuen an.');
 
         $user = UserFactory::new()->unverified()->create(['email_verification_token' => 'old-token']);
         Carbon::setTestNow(Carbon::now()->addHours(25));
 
         $this->postJson('/api/v1/auth/email/verify', ['token' => 'old-token'])
             ->assertStatus(400)
-            ->assertJsonPath('message', 'Verification token has expired. Please request a new one.');
+            ->assertJsonPath('message', 'Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere auf der Anmeldeseite einen neuen an.');
         $this->assertNull($user->fresh()->email_verified_at);
     }
 
@@ -125,7 +159,7 @@ class PasswordAndEmailTest extends TestCase
 
         $this->postJson('/api/v1/auth/email/send', ['email' => 'new@example.com'])
             ->assertOk()
-            ->assertJsonPath('message', 'Verification email sent.');
+            ->assertJsonPath('message', 'Falls ein unbestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde eine E-Mail gesendet.');
 
         Mail::assertSent(VerifyEmail::class, fn ($m) => $m->hasTo('new@example.com'));
         $this->assertNotNull($user->fresh()->email_verification_token);
@@ -137,14 +171,17 @@ class PasswordAndEmailTest extends TestCase
 
         $this->postJson('/api/v1/auth/email/send', ['email' => 'm@example.com'])
             ->assertOk()
-            ->assertJsonPath('message', 'Email already verified.');
+            ->assertJsonPath('message', 'Falls ein unbestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde eine E-Mail gesendet.');
         Mail::assertNothingSent();
     }
 
-    public function test_send_verification_email_requires_existing_user(): void
+    public function test_send_verification_email_for_an_unknown_address_looks_the_same_and_sends_nothing(): void
     {
         $this->postJson('/api/v1/auth/email/send', ['email' => 'nobody@example.com'])
-            ->assertStatus(422)->assertJsonValidationErrors(['email']);
+            ->assertOk()
+            ->assertJsonPath('message', 'Falls ein unbestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde eine E-Mail gesendet.');
+        Mail::assertNothingSent();
+        $this->postJson('/api/v1/auth/email/send', ['email' => 'kaputt'])->assertStatus(422);
     }
 
     public function test_change_password_requires_authentication_and_policy(): void

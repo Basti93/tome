@@ -56,6 +56,7 @@
 
 <script>
 import httpClient from '@/http/api'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useSnackbarStore } from '@/store/snackbar'
 
 export default {
@@ -86,7 +87,7 @@ export default {
       }
     } catch (error) {
       console.log(error)
-      this.errorMessage = error?.data?.message || 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.'
+      this.errorMessage = apiErrorMessage(error, 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.')
       this.verified = false
     } finally {
       this.loading = false
@@ -105,7 +106,7 @@ export default {
         useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet', 'success')
       } catch (error) {
         console.log(error)
-        useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+        useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
       } finally {
         this.resendLoading = false
       }

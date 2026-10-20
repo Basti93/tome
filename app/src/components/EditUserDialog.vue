@@ -46,6 +46,15 @@
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-col>
+                        <v-col cols="12">
+                            <v-text-field
+                                    v-model="email"
+                                    label="E-Mail (optional, nötig für die Einladung)"
+                                    type="email"
+                                    :rules="[v => !v || /.+@.+\..+/.test(v) || 'Bitte eine gültige E-Mail-Adresse eingeben']"
+                                    prepend-icon="email"
+                            ></v-text-field>
+                        </v-col>
                         <v-col cols="12" md="6">
                             <v-menu
                                     ref="birthdateMenu"
@@ -104,6 +113,7 @@ import UploadProfileImage from "./UploadProfileImage";
 import {formatDate, parseDate} from "../helpers/date-helpers"
 import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useSnackbarStore } from '@/store/snackbar'
 
     export default {
@@ -119,6 +129,7 @@ import { useSnackbarStore } from '@/store/snackbar'
             'editUserId',
             'editFirstName',
             'editFamilyName',
+            'editEmail',
             'editBirthdate',
             'editProfileImageName',
             'editGroupIds',
@@ -129,6 +140,7 @@ import { useSnackbarStore } from '@/store/snackbar'
                 valid: false,
                 firstName: null,
                 familyName: null,
+                email: null,
                 birthdate: null,
                 groupIds: [],
                 profileImageName: null,
@@ -165,6 +177,7 @@ import { useSnackbarStore } from '@/store/snackbar'
                     const postData = {
                         firstName: this.firstName,
                         familyName: this.familyName,
+                        email: this.email ? this.email.trim() : null,
                         groupIds: this.groupIds,
                         profileImageName: this.profileImageName,
                         active: this.active,
@@ -198,7 +211,8 @@ import { useSnackbarStore } from '@/store/snackbar'
                     }
                 } catch (error) {
                     console.error(error);
-                    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
+                    // e.g. 422 "Diese E-Mail-Adresse wird bereits verwendet."
+                    useSnackbarStore().show(apiErrorMessage(error, 'Speichern fehlgeschlagen'), 'error')
                 }
             },
             imageChanged(file) {
@@ -215,6 +229,7 @@ import { useSnackbarStore } from '@/store/snackbar'
             assignValues() {
               this.firstName = this.editFirstName;
               this.familyName = this.editFamilyName;
+              this.email = this.editEmail || null;
               this.birthdate = this.editBirthdate ? parseApiDate(this.editBirthdate).format('YYYY-MM-DD') : null;
               this.groupIds = this.editGroupIds;
               this.active = this.editActive;
