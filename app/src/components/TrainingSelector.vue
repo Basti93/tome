@@ -39,19 +39,20 @@
     </div>
   </div>
 
-  <!-- Mobile FAB and full-screen dialog -->
+  <!-- Mobile: extended button (only with something to choose from) and full-screen dialog -->
   <v-btn
-      v-if="!mdAndUp"
-      color="primary"
-      title="Training auswählen"
-      @click="showMobileList = true"
-      icon
-      elevation="3"
+      v-if="showSwitchButton"
+      color="white"
+      class="tp-training-selector__switch text-primary font-weight-bold"
+      prepend-icon="mdi-calendar-multiple"
+      elevation="6"
+      rounded="pill"
+      size="large"
       position="fixed"
-      location="bottom right"
-      class="mb-4 mr-4"
+      location="bottom center"
+      @click="showMobileList = true"
   >
-    <v-icon>mdi-format-list-bulleted</v-icon>
+    Anderes Training
   </v-btn>
 
   <v-dialog
@@ -101,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useDisplay } from 'vuetify'
 import Training from '../models/Training'
 import { useAuthStore } from '@/store/auth'
@@ -122,6 +123,13 @@ const emit = defineEmits<{
 const { xs, mdAndUp } = useDisplay()
 const selectedTraining = ref<Training | null>(null)
 const showMobileList = ref(false)
+
+// on small screens the button is only useful when there is more than one training to choose from
+const showSwitchButton = computed(() => !mdAndUp.value && (props.trainings?.length ?? 0) > 1)
+
+// the page gets bottom padding while the button floats above the footer (see vuetify-compat.css)
+watch(showSwitchButton, (visible) => document.body.classList.toggle('has-training-switch', visible), { immediate: true })
+onBeforeUnmount(() => document.body.classList.remove('has-training-switch'))
 const expandedDays = ref<Record<number, boolean>>({})
 
 const loggedInUser = computed(() => useAuthStore().user)
