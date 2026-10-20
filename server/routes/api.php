@@ -60,6 +60,8 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('attendance', 'App\\Api\\V1\\Controllers\\AttendanceController@index');
+
         Route::prefix('user')->group(function () {
             Route::get('/', 'App\\Api\\V1\\Controllers\\UserController@index');
             Route::get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');

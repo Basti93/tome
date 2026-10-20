@@ -95,6 +95,15 @@
           <v-list-item-title>Orte</v-list-item-title>
         </v-list-item>
         <v-list-item
+            v-show="hasRoles"
+            to="/attendance"
+            @click="drawer = false">
+          <template v-slot:prepend>
+            <v-icon>mdi-table-check</v-icon>
+          </template>
+          <v-list-item-title>Anwesenheit</v-list-item-title>
+        </v-list-item>
+        <v-list-item
             v-show="loggedInUser"
             to="/statistics"
             @click="drawer = false">
