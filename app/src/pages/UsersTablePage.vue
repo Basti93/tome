@@ -163,256 +163,231 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import dayjs, { parseApiDate } from '@/helpers/dayjs'
-import GroupsSelectDialog from "../components/GroupsSelectDialog.vue";
-import User from "../models/User";
-import EditUserDialog from "../components/EditUserDialog.vue";
-import {formatDate} from "../helpers/date-helpers"
-import Group from "../models/Group";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
+import GroupsSelectDialog from '../components/GroupsSelectDialog.vue'
+import User from '../models/User'
+import EditUserDialog from '../components/EditUserDialog.vue'
+import Group from '../models/Group'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { inviteUser } from '@/services/userInvite'
 
-export default {
-  setup() {
-    return { dayjs, parseApiDate };
-  },
-  name: "UsersTablePage",
-  components: {ConfirmDialog, EditUserDialog, GroupsSelectDialog},
-  data: function () {
-    return {
-      showDialog: false,
-      showFilterDialog: false,
-      showConfirmDialog: false,
-      itemToDelete: null,
-      invitingUserId: null,
-      filterBranchId: null,
-      filterGroupIds: [],
-      editGroups: [],
-      loading: false,
-      total: null,
-      rowsPerPageItems: [5, 10, 20, 50, 100],
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: [],
-      searchText: '',
-      headers: [
-        { title: 'Vorname', value: 'firstName', sortable: true},
-        { title: 'Nachname', value: 'familyName', sortable: true},
-        { title: 'Alter', value: 'birthdate', sortable: true},
-        { title: 'Gruppen', value: 'groups', sortable: false},
-        { title: 'Aktiv', value: 'active', sortable: true},
-        { title: 'Registriert', value: 'registered', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      users: [],
-      editedItem: {
-        id: null,
-        firstName: null,
-        familyName: null,
-        email: null,
-        birthdate: null,
-        profileImageName: null,
-        groupIds: [],
-        isTrainer: false,
-        active: false,
-      },
-      defaultItem: {
-        id: null,
-        firstName: '',
-        familyName: '',
-        email: null,
-        birthdate: null,
-        profileImageName: null,
-        groupIds: [],
-        isTrainer: false,
-        active: true,
-      },
-      birthdateMenu: false,
-    }
-  },
-  created() {
-    const masterData = useMasterDataStore();
-    const loggedInUser = useAuthStore().user;
-    if (loggedInUser && loggedInUser.trainerBranchIds && loggedInUser.trainerBranchIds.length > 0) {
-      this.filterBranchId = loggedInUser.trainerBranchIds[0];
-      this.filterGroupIds = masterData.getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-    }
-    this.loadData();
-  },
-  computed: {
-    loggedInUser() { return useAuthStore().user },
-    trainerBranchIds() {
-      return this.loggedInUser ? this.loggedInUser.trainerBranchIds : []
-    },
-    filterGroups(): Array<Group> {
-      const masterData = useMasterDataStore();
-      if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        return masterData.getGroupsByIds(this.filterGroupIds);
-      } else if (this.filterBranchId) {
-        return masterData.getGroupsByBranchId(this.filterBranchId);
-      }
-      return [];
-    },
-    birthdateFormatted() {
-      return this.formatDate(this.editedItem.birthdate)
-    },
-  },
-  methods: {
-    filterChanged({branchId: branchId, groupdIds: groupIds}) {
-      this.filterGroupIds = groupIds;
-      this.filterBranchId = branchId;
-      if (!this.filterGroupIds || this.filterGroupIds.length == 0) {
-        this.filterGroupIds = useMasterDataStore().getGroupsByBranchId(this.filterBranchId).map(g => g.id);
-      }
-      this.loadData();
-    },
-    async loadData() {
-      this.loading = true;
-      let url = null;
-      // get by sort option
-      if (this.sortBy[0]) {
-        // Vuetify 3: sortBy is an array of { key, order }
-        const direction = this.sortBy[0].order === 'desc' ? 'desc' : 'asc';
-        url = '/user/sort?direction=' + direction + '&sortBy=' + this.sortBy[0].key + '&page=' + this.page + '&per_page=' + this.itemsPerPage
-      } else {
-        url = '/user?page=' + this.page + '&per_page=' + this.itemsPerPage
-      }
-      if (this.filterGroupIds && this.filterGroupIds.length > 0) {
-        url += '&groupIds=' + this.filterGroupIds;
-      } else if (this.filterBranchId) {
-        url += '&branchId=' + this.filterBranchId;
-      }
-      if (this.searchText && this.searchText.trim().length > 0) {
-        url += '&searchText=' + this.searchText;
-      }
+const authStore = useAuthStore()
+const masterData = useMasterDataStore()
 
-      try {
-        const request = await httpClient.get(url);
-        this.dataLoaded(request)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    dataLoaded(res) {
-      this.users = [];
-      const self = this;
-      for (let i = 0; i < res.data.data.length; i++) {
-        const userObj = res.data.data[i];
-        self.users.push(new User(
-            userObj.id,
-            userObj.email,
-            userObj.firstName,
-            userObj.familyName,
-            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-            userObj.active === 1 ? true : false,
-            userObj.groupIds,
-            userObj.roleNames,
-            userObj.trainerBranchIds,
-            userObj.registered,
-            userObj.profileImageName,
-            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
-            userObj.absenceReason
-        ))
-      }
-      self.page = res.data.currentPage;
-      self.total = res.data.total;
-    },
-    editItem(item?) {
-      if (item) {
-        this.editedItem = {...item}
-      } else {
-        this.editedItem = {...this.defaultItem}
-      }
-      this.showDialog = true
-    },
-    canDeleteUser(item) {
-      return this.loggedInUser.isAdmin && !item.isTrainer && !item.isAdmin
-    },
-    canEditUser(item) {
-      return (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer) && !item.isTrainer && !item.isAdmin
-    },
-    // admins and trainers hold the `update-user` permission
-    canInviteUser(item) {
-      return !!item.email && !!this.loggedInUser && (this.loggedInUser.isAdmin || this.loggedInUser.isTrainer)
-    },
-    async sendInvitation(item) {
-      this.invitingUserId = item.id;
-      try {
-        await inviteUser(item.id, item.firstName + ' ' + item.familyName);
-      } finally {
-        this.invitingUserId = null;
-      }
-    },
-    confirmAndDelete(item) {
-      this.itemToDelete = item;
-      this.showConfirmDialog = true;
-    },
-    async deleteItem() {
-      this.showConfirmDialog = false;
-      const response = await httpClient.delete('/user/' + this.itemToDelete.id);
-      if (response.data.status === 'ok') {
-        useSnackbarStore().show("Benutzer " + this.itemToDelete.firstName + " " + this.itemToDelete.familyName + " erfolgreich gelöscht", "success")
-        this.users.splice(this.users.indexOf(this.itemToDelete), 1)
-      } else {
-        useSnackbarStore().show("Benutzer konnte nicht gelöscht werden", "error")
-      }
-    },
-    reset() {
-      this.filterGroupId = null;
-      this.loadData();
-    },
-    getGroupsByIds(groupIds) {
-      return useMasterDataStore().getGroupsByIds(groupIds);
-    },
-    formatDate,
-  },
-  watch: {
-    searchText: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    page: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    itemsPerPage: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    sortBy: {
-      handler() {
-        if (!this.loading) {
-          this.loadData();
-        }
-      },
-      deep: true,
-    },
-    birthdateMenu(val) {
-      // Vuetify 3 does not have activePicker API - removed this functionality
-      // val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
-    },
-  },
+const showDialog = ref(false)
+const showFilterDialog = ref(false)
+const showConfirmDialog = ref(false)
+const itemToDelete = ref<any>(null)
+const invitingUserId = ref<number | null>(null)
+const filterBranchId = ref<number | null>(null)
+const filterGroupIds = ref<any[]>([])
+const loading = ref(false)
+const total = ref<number | null>(null)
+const rowsPerPageItems = [5, 10, 20, 50, 100]
+const page = ref(1)
+const itemsPerPage = ref(10)
+const sortBy = ref<any[]>([])
+const searchText = ref('')
+const headers = [
+  { title: 'Vorname', value: 'firstName', sortable: true },
+  { title: 'Nachname', value: 'familyName', sortable: true },
+  { title: 'Alter', value: 'birthdate', sortable: true },
+  { title: 'Gruppen', value: 'groups', sortable: false },
+  { title: 'Aktiv', value: 'active', sortable: true },
+  { title: 'Registriert', value: 'registered', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const users = ref<User[]>([])
+const editedItem = ref<any>({
+  id: null,
+  firstName: null,
+  familyName: null,
+  email: null,
+  birthdate: null,
+  profileImageName: null,
+  groupIds: [],
+  isTrainer: false,
+  active: false
+})
+const defaultItem = {
+  id: null,
+  firstName: '',
+  familyName: '',
+  email: null,
+  birthdate: null,
+  profileImageName: null,
+  groupIds: [],
+  isTrainer: false,
+  active: true
 }
+
+const loggedInUser = computed(() => authStore.user)
+
+const filterGroups = computed((): Group[] => {
+  if (filterGroupIds.value && filterGroupIds.value.length > 0) {
+    return masterData.getGroupsByIds(filterGroupIds.value)
+  } else if (filterBranchId.value) {
+    return masterData.getGroupsByBranchId(filterBranchId.value)
+  }
+  return []
+})
+
+function dataLoaded(res: any) {
+  users.value = []
+  for (let i = 0; i < res.data.data.length; i++) {
+    const userObj = res.data.data[i]
+    users.value.push(
+      new User(
+        userObj.id,
+        userObj.email,
+        userObj.firstName,
+        userObj.familyName,
+        userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
+        userObj.active === 1 ? true : false,
+        userObj.groupIds,
+        userObj.roleNames,
+        userObj.trainerBranchIds,
+        userObj.registered,
+        userObj.profileImageName,
+        userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+        userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
+        userObj.absenceReason
+      )
+    )
+  }
+  page.value = res.data.currentPage
+  total.value = res.data.total
+}
+
+async function loadData() {
+  loading.value = true
+  let url = null
+  // get by sort option
+  if (sortBy.value[0]) {
+    // Vuetify 3: sortBy is an array of { key, order }
+    const direction = sortBy.value[0].order === 'desc' ? 'desc' : 'asc'
+    url =
+      '/user/sort?direction=' +
+      direction +
+      '&sortBy=' +
+      sortBy.value[0].key +
+      '&page=' +
+      page.value +
+      '&per_page=' +
+      itemsPerPage.value
+  } else {
+    url = '/user?page=' + page.value + '&per_page=' + itemsPerPage.value
+  }
+  if (filterGroupIds.value && filterGroupIds.value.length > 0) {
+    url += '&groupIds=' + filterGroupIds.value
+  } else if (filterBranchId.value) {
+    url += '&branchId=' + filterBranchId.value
+  }
+  if (searchText.value && searchText.value.trim().length > 0) {
+    url += '&searchText=' + searchText.value
+  }
+
+  try {
+    const request = await httpClient.get(url)
+    dataLoaded(request)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+function filterChanged({ branchId, groupdIds }: { branchId: number | null; groupdIds: any[] | null }) {
+  filterGroupIds.value = groupdIds as any[]
+  filterBranchId.value = branchId
+  if (!filterGroupIds.value || filterGroupIds.value.length == 0) {
+    filterGroupIds.value = masterData.getGroupsByBranchId(filterBranchId.value).map((g) => g.id)
+  }
+  loadData()
+}
+
+function editItem(item?: any) {
+  if (item) {
+    editedItem.value = { ...item }
+  } else {
+    editedItem.value = { ...defaultItem }
+  }
+  showDialog.value = true
+}
+
+function canDeleteUser(item: any) {
+  return loggedInUser.value!.isAdmin && !item.isTrainer && !item.isAdmin
+}
+
+function canEditUser(item: any) {
+  return (loggedInUser.value!.isAdmin || loggedInUser.value!.isTrainer) && !item.isTrainer && !item.isAdmin
+}
+
+// admins and trainers hold the `update-user` permission
+function canInviteUser(item: any) {
+  return !!item.email && !!loggedInUser.value && (loggedInUser.value.isAdmin || loggedInUser.value.isTrainer)
+}
+
+async function sendInvitation(item: any) {
+  invitingUserId.value = item.id
+  try {
+    await inviteUser(item.id, item.firstName + ' ' + item.familyName)
+  } finally {
+    invitingUserId.value = null
+  }
+}
+
+function confirmAndDelete(item: any) {
+  itemToDelete.value = item
+  showConfirmDialog.value = true
+}
+
+async function deleteItem() {
+  showConfirmDialog.value = false
+  const response = await httpClient.delete('/user/' + itemToDelete.value.id)
+  if (response.data.status === 'ok') {
+    useSnackbarStore().show(
+      'Benutzer ' + itemToDelete.value.firstName + ' ' + itemToDelete.value.familyName + ' erfolgreich gelöscht',
+      'success'
+    )
+    users.value.splice(users.value.indexOf(itemToDelete.value), 1)
+  } else {
+    useSnackbarStore().show('Benutzer konnte nicht gelöscht werden', 'error')
+  }
+}
+
+function reset() {
+  loadData()
+}
+
+function getGroupsByIds(groupIds: any[]) {
+  return masterData.getGroupsByIds(groupIds)
+}
+
+for (const source of [searchText, page, itemsPerPage, sortBy]) {
+  watch(
+    source,
+    () => {
+      if (!loading.value) {
+        loadData()
+      }
+    },
+    { deep: true }
+  )
+}
+
+const user = authStore.user
+if (user && user.trainerBranchIds && user.trainerBranchIds.length > 0) {
+  filterBranchId.value = user.trainerBranchIds[0]
+  filterGroupIds.value = masterData.getGroupsByBranchId(filterBranchId.value).map((g) => g.id)
+}
+loadData()
 </script>
 
 <style scoped>
