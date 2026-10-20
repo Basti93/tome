@@ -77,75 +77,56 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import Group from "../models/Group";
-import User from "../models/User";
-import {dayArrayToString, formatDate, parseDate} from "../helpers/date-helpers";
-import TrainingSeries from "../models/TrainingSeries";
-import { useAuthStore } from '@/store/auth';
-import { useMasterDataStore } from '@/store/masterData';
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { dayArrayToString } from '../helpers/date-helpers'
+import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  name: "GroupsOverviewPage",
-  components: {},
-  data() {
-    return {
-      loading: false,
-      headers: [
-        { title: 'Name', value: 'name', sortable: false},
-        { title: 'Sparte', value: 'branchId', sortable: false},
-        { title: 'Mitglieder', value: 'userCount', sortable: false},
-      ],
-    };
-  },
-  created() {
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user;
-    },
-    groups() {
-      return useMasterDataStore().groups;
-    },
-    trainingSeries() {
-      return useMasterDataStore().trainingSeries;
-    },
-  },
-  methods: {
-    getSimpleUsersByGroupId(groupId) {
-      return useMasterDataStore().getSimpleUsersByGroupId(groupId);
-    },
-    getSimpleTrainersByGroupId(groupId) {
-      return useMasterDataStore().getSimpleTrainersByGroupId(groupId);
-    },
-    getTrainingSeriesByGroupId(groupId) {
-      return useMasterDataStore().getTrainingSeriesByGroupId(groupId);
-    },
-    getLocationNameById(locationId) {
-      return useMasterDataStore().getLocationNameById(locationId);
-    },
-    getBranchColorByGroupId(groupId) {
-      const group = useMasterDataStore().groups.find(g => g.id === groupId);
-      if (group) {
-        const branch = useMasterDataStore().branches.find(b => b.id === group.branchId);
-        return branch ? branch.colorHex : '#000000';
-      }
-      return '#000000'; 
-    },
-    getBranchNameByGroupId(groupId) {
-      const group = useMasterDataStore().groups.find(g => g.id === groupId);
-      if (group) {
-        const branch = useMasterDataStore().branches.find(b => b.id === group.branchId);
-        return branch ? branch.name : 'Unknown';
-      }
-      return 'Unknown';
-    },
-    dayArrayToString,
-    formatDate,
-    parseDate,
-  },
-};
+const masterData = useMasterDataStore()
 
+const loading = ref(false)
+const headers = [
+  { title: 'Name', value: 'name', sortable: false },
+  { title: 'Sparte', value: 'branchId', sortable: false },
+  { title: 'Mitglieder', value: 'userCount', sortable: false }
+]
+
+const groups = computed(() => masterData.groups)
+const trainingSeries = computed(() => masterData.trainingSeries)
+
+function getSimpleUsersByGroupId(groupId: number) {
+  return masterData.getSimpleUsersByGroupId(groupId)
+}
+
+function getSimpleTrainersByGroupId(groupId: number) {
+  return masterData.getSimpleTrainersByGroupId(groupId)
+}
+
+function getTrainingSeriesByGroupId(groupId: number) {
+  return masterData.getTrainingSeriesByGroupId(groupId)
+}
+
+function getLocationNameById(locationId: number) {
+  return masterData.getLocationNameById(locationId)
+}
+
+function getBranchColorByGroupId(groupId: number) {
+  const group = masterData.groups.find((g) => g.id === groupId)
+  if (group) {
+    const branch = masterData.branches.find((b) => b.id === group.branchId)
+    return branch ? branch.colorHex : '#000000'
+  }
+  return '#000000'
+}
+
+function getBranchNameByGroupId(groupId: number) {
+  const group = masterData.groups.find((g) => g.id === groupId)
+  if (group) {
+    const branch = masterData.branches.find((b) => b.id === group.branchId)
+    return branch ? branch.name : 'Unknown'
+  }
+  return 'Unknown'
+}
 </script>
 
 <style scoped lang="scss">
