@@ -199,203 +199,193 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
-import Group from "../models/Group";
-import Branch from "../models/Branch";
-import User from "../models/User"
-import TomeListItemProfileImage from "../components/ListItemProfileImage.vue";
-import ConfirmDialog from "../components/ConfirmDialog.vue";
-import { useAuthStore } from '@/store/auth'
+import Group from '../models/Group'
+import Branch from '../models/Branch'
+import User from '../models/User'
+import TomeListItemProfileImage from '../components/ListItemProfileImage.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
 
-export default {
-  setup() {
-    const { xs, md } = useDisplay()
-    return { xs, md }
-  },
-  name: "GroupsTablePage",
-  components: {ConfirmDialog, TomeListItemProfileImage},
-  data: function () {
-    return {
-      loading: false,
-      groups: [],
-      users: [],
-      filteredUsers: [],
-      selectedUserIds: [],
-      total: null,
-      rowsPerPageItems: [5, 10, 20, 50, 100],
-      page: 1,
-      itemsPerPage: 10,
-      headers: [
-        { title: 'Name', value: 'name', sortable: false},
-        { title: 'Sparte', value: 'branchId', sortable: false},
-        { title: 'Mitglieder', value: 'userCount', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      editedItem: {
-        id: null,
-        name: null,
-        branchId: null,
-        userIds: [],
-      },
-      defaultItem: {
-        id: null,
-        name: null,
-        branchId: null,
-        userIds: [],
-      },
-      showConfirmDialog: false,
-      itemToDelete: null,
-      showDialog: false,
-      titleDialog: null,
-      validDialog: false,
-    }
-  },
-  created() {
-    this.loadData();
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    branches() {
-      return useMasterDataStore().branches
-    },
-    editedUsers() {
-      return this.users.filter(u => this.editedItem.userIds.indexOf(u.id) >= 0)
-    },
-  },
-  methods: {
-    getBranchById(branchId) {
-      return useMasterDataStore().getBranchById(branchId)
-    },
-    async loadData() {
-      this.loading = true
-      try {
-        await Promise.all([this.loadGroups(), this.loadUsers()]);
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async loadGroups() {
-      const {data} = await httpClient.get('/group')
-      this.groups = [];
-      for (let i = 0; i < data.data.length; i++) {
-        const groupObj = data.data[i];
-        this.groups.push(new Group(groupObj.id, groupObj.name, groupObj.branchId, this.getBranchById(groupObj.branchId), groupObj.userIds));
-      }
-      this.page = data.currentPage;
-      this.total = data.total;
-    },
-    async loadUsers() {
-      this.users = [];
-      const userRes = await httpClient.get('/user');
-      for (const userObj of userRes.data) {
-        this.users.push(new User(
-            userObj.id,
-            userObj.email,
-            userObj.firstName,
-            userObj.familyName,
-            userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-            userObj.active === 1 ? true : false,
-            userObj.groupIds,
-            userObj.roleNames,
-            userObj.trainerBranchIds,
-            userObj.registered,
-            userObj.profileImageName,
-            userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-            userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
-            userObj.absenceReason
-        ));
-      }
-    },
-    async save() {
-      const { valid } = await this.$refs.form.validate();
-      if (!valid) return;
-      try {
-        const postData = {
-          name: this.editedItem.name,
-          branchId: this.editedItem.branchId,
-          userIds: this.editedItem.userIds,
-        }
+const { xs } = useDisplay()
+const masterData = useMasterDataStore()
 
-        let response = null;
-        if (this.editedItem.id) {
-          response = await httpClient.put('/group/' + this.editedItem.id, postData);
-        } else {
-          response = await httpClient.post('/group', postData);
-        }
-        if (response && response.data.error) {
-          useSnackbarStore().show("Gruppe konnte nicht gespeichert werden", "error")
-        } else {
-          useSnackbarStore().show("Gruppe gespeichert", "success")
-          this.showDialog = false;
-          await this.loadData();
-          this.updateMasterData();
-        }
-      } catch (error) {
-        console.error(error);
-        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
-      }
-    },
-    createItem() {
-      this.titleDialog = "Gruppe erstellen"
-      this.showDialog = true;
-      this.editedItem = {...this.defaultItem}
-      this.selectedUserIds = [];
-      this.filteredUsers = this.users.slice();
-    },
-    editItem(group: Group) {
-      this.titleDialog = "Gruppe bearbeiten"
-      this.showDialog = true;
-      this.editedItem = {...group}
-      this.selectedUserIds = [];
-      this.filteredUsers = this.users.filter(u => !(this.editedItem.userIds.indexOf(u.id) >= 0));
-    },
-    confirmAndDelete(group: Group) {
-      this.itemToDelete = group;
-      this.showConfirmDialog = true;
-    },
-    async deleteItem() {
-      this.showConfirmDialog = false
-      const {data} = await httpClient.delete('/group/' + this.itemToDelete.id);
-      await this.loadData();
-      this.updateMasterData();
+const form = ref<any>(null)
+const loading = ref(false)
+const groups = ref<Group[]>([])
+const users = ref<User[]>([])
+const filteredUsers = ref<User[]>([])
+const selectedUserIds = ref<any[]>([])
+const total = ref<number | null>(null)
+const rowsPerPageItems = [5, 10, 20, 50, 100]
+const page = ref(1)
+const itemsPerPage = ref(10)
+const headers = [
+  { title: 'Name', value: 'name', sortable: false },
+  { title: 'Sparte', value: 'branchId', sortable: false },
+  { title: 'Mitglieder', value: 'userCount', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const defaultItem = { id: null, name: null, branchId: null, userIds: [] }
+const editedItem = ref<any>({ id: null, name: null, branchId: null, userIds: [] })
+const showConfirmDialog = ref(false)
+const itemToDelete = ref<any>(null)
+const showDialog = ref(false)
+const titleDialog = ref<string | null>(null)
+const validDialog = ref(false)
 
-      if (data.status === 'ok') {
-        useSnackbarStore().show("Gruppe " + this.itemToDelete.name + " erfolgreich gelöscht", "success")
-      } else {
-        useSnackbarStore().show("Gruppe konnte nicht gelöscht werden", "error")
-      }
-    },
-    addSelectedUsersToGroup() {
-      this.editedItem.userIds = this.editedItem.userIds .concat(this.selectedUserIds)
-      this.filteredUsers = this.users.filter(u => !(this.editedItem.userIds.indexOf(u.id) >= 0));
-      this.selectedUserIds = []
-    },
-    removeUserFromGroup(userIdToRemove) {
-      this.editedItem.userIds = this.editedItem.userIds.filter(userId => userId !== userIdToRemove)
-      this.filteredUsers.push(this.users.filter(u => u.id == userIdToRemove)[0])
-    },
-    closeDialog() {
-      this.$refs.form.resetValidation();
-      this.showDialog = false;
-    },
-    updateMasterData() {
-      useMasterDataStore().setGroups(this.groups);
-    },
-    buildFullBranchname(item: Branch) {
-      return item.getShortNameAndName();
-    },
-    fullName: item => item.firstName + ' ' + item.familyName,
+const branches = computed(() => masterData.branches)
+const editedUsers = computed(() => users.value.filter((u) => editedItem.value.userIds.indexOf(u.id) >= 0))
+
+function getBranchById(branchId: number) {
+  return masterData.getBranchById(branchId)
+}
+
+async function loadGroups() {
+  const { data } = await httpClient.get('/group')
+  groups.value = []
+  for (let i = 0; i < data.data.length; i++) {
+    const groupObj = data.data[i]
+    groups.value.push(
+      new Group(groupObj.id, groupObj.name, groupObj.branchId, getBranchById(groupObj.branchId), groupObj.userIds)
+    )
+  }
+  page.value = data.currentPage
+  total.value = data.total
+}
+
+async function loadUsers() {
+  users.value = []
+  const userRes = await httpClient.get('/user')
+  for (const userObj of userRes.data) {
+    users.value.push(
+      new User(
+        userObj.id,
+        userObj.email,
+        userObj.firstName,
+        userObj.familyName,
+        userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
+        userObj.active === 1 ? true : false,
+        userObj.groupIds,
+        userObj.roleNames,
+        userObj.trainerBranchIds,
+        userObj.registered,
+        userObj.profileImageName,
+        userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+        userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
+        userObj.absenceReason
+      )
+    )
   }
 }
+
+async function loadData() {
+  loading.value = true
+  try {
+    await Promise.all([loadGroups(), loadUsers()])
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+function updateMasterData() {
+  masterData.setGroups(groups.value)
+}
+
+async function save() {
+  const { valid } = await form.value.validate()
+  if (!valid) return
+  try {
+    const postData = {
+      name: editedItem.value.name,
+      branchId: editedItem.value.branchId,
+      userIds: editedItem.value.userIds
+    }
+
+    let response = null
+    if (editedItem.value.id) {
+      response = await httpClient.put('/group/' + editedItem.value.id, postData)
+    } else {
+      response = await httpClient.post('/group', postData)
+    }
+    if (response && response.data.error) {
+      useSnackbarStore().show('Gruppe konnte nicht gespeichert werden', 'error')
+    } else {
+      useSnackbarStore().show('Gruppe gespeichert', 'success')
+      showDialog.value = false
+      await loadData()
+      updateMasterData()
+    }
+  } catch (error) {
+    console.error(error)
+    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
+  }
+}
+
+function createItem() {
+  titleDialog.value = 'Gruppe erstellen'
+  showDialog.value = true
+  editedItem.value = { ...defaultItem }
+  selectedUserIds.value = []
+  filteredUsers.value = users.value.slice()
+}
+
+function editItem(group: Group) {
+  titleDialog.value = 'Gruppe bearbeiten'
+  showDialog.value = true
+  editedItem.value = { ...group }
+  selectedUserIds.value = []
+  filteredUsers.value = users.value.filter((u) => !(editedItem.value.userIds.indexOf(u.id) >= 0))
+}
+
+function confirmAndDelete(group: Group) {
+  itemToDelete.value = group
+  showConfirmDialog.value = true
+}
+
+async function deleteItem() {
+  showConfirmDialog.value = false
+  const { data } = await httpClient.delete('/group/' + itemToDelete.value.id)
+  await loadData()
+  updateMasterData()
+
+  if (data.status === 'ok') {
+    useSnackbarStore().show('Gruppe ' + itemToDelete.value.name + ' erfolgreich gelöscht', 'success')
+  } else {
+    useSnackbarStore().show('Gruppe konnte nicht gelöscht werden', 'error')
+  }
+}
+
+function addSelectedUsersToGroup() {
+  editedItem.value.userIds = editedItem.value.userIds.concat(selectedUserIds.value)
+  filteredUsers.value = users.value.filter((u) => !(editedItem.value.userIds.indexOf(u.id) >= 0))
+  selectedUserIds.value = []
+}
+
+function removeUserFromGroup(userIdToRemove: number) {
+  editedItem.value.userIds = editedItem.value.userIds.filter((userId: number) => userId !== userIdToRemove)
+  filteredUsers.value.push(users.value.filter((u) => u.id == userIdToRemove)[0])
+}
+
+function closeDialog() {
+  form.value.resetValidation()
+  showDialog.value = false
+}
+
+function buildFullBranchname(item: Branch) {
+  return item.getShortNameAndName()
+}
+
+const fullName = (item: { firstName: string; familyName: string }) => item.firstName + ' ' + item.familyName
+
+loadData()
 </script>
 
 <style scoped>

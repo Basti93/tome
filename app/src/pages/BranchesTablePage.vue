@@ -143,118 +143,114 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import { useDisplay } from 'vuetify';
-import httpClient from '@/http/api';
-import { useSnackbarStore } from '@/store/snackbar';
-import { useMasterDataStore } from '@/store/masterData';
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useDisplay } from 'vuetify'
+import httpClient from '@/http/api'
+import { useSnackbarStore } from '@/store/snackbar'
+import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  setup() {
-    const { xs, md } = useDisplay()
-    return { xs, md }
-  },
-  name: "BranchesTablePage",
-  data: function () {
-    return {
-      loading: false,
-      branches: [],
-      total: null,
-      rowsPerPageItems: [5, 10, 20, 50, 100],
-      page: 1,
-      itemsPerPage: 10,
-      headers: [
-        { title: 'Name', value: 'name', sortable: false},
-        { title: 'Kurzname', value: 'shortName', sortable: false},
-        { title: 'Farbe', value: 'colorHex', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      editedItem: {
-        id: null,
-        name: null,
-        shortName: null,
-        color: null,
-      },
-      showDialog: false,
-      titleDialog: null,
-      validDialog: false,
-    }
-  },
-  created() {
-    this.loadData();
-  },
-  methods: {
-    async loadData() {
-      this.loading = true
-      try {
-        await this.loadBranches();
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async loadBranches() {
-      const {data} = await httpClient.get('/branch')
-      this.branches = data.data;
-      this.page = data.currentPage;
-      this.total = data.total;
-    },
-    async save() {
-      const { valid } = await this.$refs.form.validate();
-      if (!valid) return;
-      try {
-        const postData = {
-          name: this.editedItem.name,
-          shortName: this.editedItem.shortName,
-          colorHex: this.editedItem.color,
-        }
+const { xs } = useDisplay()
 
-        let response = null;
-        if (this.editedItem.id) {
-          response = await httpClient.put('/branch/' + this.editedItem.id, postData);
-        } else {
-          response = await httpClient.post('/branch', postData);
-        }
-        if (response && response.data.error) {
-          useSnackbarStore().show("Sparte konnte nicht gespeichert werden", "error")
-        } else {
-          useSnackbarStore().show("Sparte gespeichert", "success")
-          this.showDialog = false;
-          await this.loadData();
-          this.updateMasterData();
-        }
-      } catch (error) {
-        console.error(error);
-        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
-      }
-    },
-    createItem() {
-      this.titleDialog = "Sparte erstellen"
-      this.editedItem.id = null
-      this.editedItem.name = null
-      this.editedItem.shortName = null
-      this.editedItem.color = "#000000"
-      this.showDialog = true;
-    },
-    editItem(branch) {
-      this.titleDialog = "Sparte bearbeiten"
-      this.editedItem.id = branch.id
-      this.editedItem.name = branch.name
-      this.editedItem.shortName = branch.shortName
-      this.editedItem.color = branch.colorHex
-      this.showDialog = true;
-    },
-    closeDialog() {
-      this.$refs.form.resetValidation();
-      this.showDialog = false;
-    },
-    updateMasterData() {
-      const masterDataStore = useMasterDataStore();
-      masterDataStore.setBranches(this.branches);
-    },
+const form = ref<any>(null)
+const loading = ref(false)
+const branches = ref<any[]>([])
+const total = ref<number | null>(null)
+const rowsPerPageItems = [5, 10, 20, 50, 100]
+const page = ref(1)
+const itemsPerPage = ref(10)
+const headers = [
+  { title: 'Name', value: 'name', sortable: false },
+  { title: 'Kurzname', value: 'shortName', sortable: false },
+  { title: 'Farbe', value: 'colorHex', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const editedItem = ref<any>({
+  id: null,
+  name: null,
+  shortName: null,
+  color: null
+})
+const showDialog = ref(false)
+const titleDialog = ref<string | null>(null)
+const validDialog = ref(false)
+
+async function loadBranches() {
+  const { data } = await httpClient.get('/branch')
+  branches.value = data.data
+  page.value = data.currentPage
+  total.value = data.total
+}
+
+async function loadData() {
+  loading.value = true
+  try {
+    await loadBranches()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
   }
 }
+
+function updateMasterData() {
+  useMasterDataStore().setBranches(branches.value)
+}
+
+async function save() {
+  const { valid } = await form.value.validate()
+  if (!valid) return
+  try {
+    const postData = {
+      name: editedItem.value.name,
+      shortName: editedItem.value.shortName,
+      colorHex: editedItem.value.color
+    }
+
+    let response = null
+    if (editedItem.value.id) {
+      response = await httpClient.put('/branch/' + editedItem.value.id, postData)
+    } else {
+      response = await httpClient.post('/branch', postData)
+    }
+    if (response && response.data.error) {
+      useSnackbarStore().show('Sparte konnte nicht gespeichert werden', 'error')
+    } else {
+      useSnackbarStore().show('Sparte gespeichert', 'success')
+      showDialog.value = false
+      await loadData()
+      updateMasterData()
+    }
+  } catch (error) {
+    console.error(error)
+    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
+  }
+}
+
+function createItem() {
+  titleDialog.value = 'Sparte erstellen'
+  editedItem.value.id = null
+  editedItem.value.name = null
+  editedItem.value.shortName = null
+  editedItem.value.color = '#000000'
+  showDialog.value = true
+}
+
+function editItem(branch: any) {
+  titleDialog.value = 'Sparte bearbeiten'
+  editedItem.value.id = branch.id
+  editedItem.value.name = branch.name
+  editedItem.value.shortName = branch.shortName
+  editedItem.value.color = branch.colorHex
+  showDialog.value = true
+}
+
+function closeDialog() {
+  form.value.resetValidation()
+  showDialog.value = false
+}
+
+loadData()
 </script>
 
 <style scoped>
