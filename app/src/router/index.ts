@@ -33,6 +33,11 @@ const router = createRouter({
       meta: { requiresAuth: true, forTrainers: true }
     },
     {
+      path: '/hours', name: 'Hours',
+      component: () => import('@/pages/HoursPage.vue'),
+      meta: { requiresAuth: true, forTrainers: true }
+    },
+    {
       path: '/attendance', name: 'Attendance',
       component: () => import('@/pages/AttendancePage.vue'),
       meta: { requiresAuth: true, forTrainers: true }

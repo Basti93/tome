@@ -13,7 +13,7 @@ import httpClient from '@/http/api'
 import NotificationPreferencesForm from './NotificationPreferencesForm.vue'
 
 const vuetify = createVuetify({ components, directives })
-const http = httpClient as unknown as { get: ReturnType<typeof vi.fn> }
+const http = httpClient as unknown as { get: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> }
 
 describe('NotificationPreferencesForm', () => {
   beforeEach(() => {
@@ -71,7 +71,7 @@ describe('NotificationPreferencesForm', () => {
 
   it('has a birthday push checkbox that is on by default and saved with the other preferences', async () => {
     http.get.mockResolvedValue({ data: { notificationPreferences: { trainerUpcoming: false, trainerBirthday: true } } })
-    http.put = vi.fn().mockResolvedValue({ data: { status: 'ok', notificationPreferences: { trainerBirthday: false } } })
+    http.put.mockResolvedValue({ data: { status: 'ok', notificationPreferences: { trainerBirthday: false } } })
     const w = mount(NotificationPreferencesForm, { global: { plugins: [vuetify] }, attachTo: document.body })
     await flushPromises()
 

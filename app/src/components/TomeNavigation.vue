@@ -96,6 +96,15 @@
         </v-list-item>
         <v-list-item
             v-show="hasRoles"
+            to="/hours"
+            @click="drawer = false">
+          <template v-slot:prepend>
+            <v-icon>mdi-clock-outline</v-icon>
+          </template>
+          <v-list-item-title>Meine Stunden</v-list-item-title>
+        </v-list-item>
+        <v-list-item
+            v-show="hasRoles"
             to="/attendance"
             @click="drawer = false">
           <template v-slot:prepend>

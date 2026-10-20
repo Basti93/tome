@@ -102,7 +102,12 @@ async function load() {
   }
 }
 
-watch(year, load)
+const emit = defineEmits<{ (e: 'year-changed', year: number): void }>()
+
+watch(year, (value) => {
+  emit('year-changed', value)
+  load()
+})
 onMounted(load)
 </script>
 

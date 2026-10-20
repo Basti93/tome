@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useSnackbarStore } from '@/store/snackbar'
@@ -69,7 +69,8 @@ import dayjs from '@/helpers/dayjs'
 import { filenameFromContentDisposition, saveBlob } from '@/helpers/download'
 
 const { xs } = useDisplay()
-defineProps<{ visible: boolean }>()
+// from/to (YYYY-MM-DD) prefill the period every time the dialog opens (default: the last 6 months)
+const props = defineProps<{ visible: boolean; from?: string; to?: string }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const authStore = useAuthStore()
@@ -80,6 +81,12 @@ const valid = ref(true)
 const dateFrom = ref(dayjs().subtract(6, 'month').format('YYYY-MM-DD'))
 const dateTo = ref(dayjs().format('YYYY-MM-DD'))
 const creatingExcelReport = ref(false)
+
+watch(() => props.visible, (open) => {
+  if (!open) return
+  dateFrom.value = props.from ?? dayjs().subtract(6, 'month').format('YYYY-MM-DD')
+  dateTo.value = props.to ?? dayjs().format('YYYY-MM-DD')
+})
 
 const required = (value: string) => !!value || 'Pflichtfeld'
 

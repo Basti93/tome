@@ -49,10 +49,6 @@
                           <v-icon>mdi-shield-check</v-icon>
                           Trainer
                         </v-tab>
-                        <v-tab v-if="loggedInUser.isAdmin || loggedInUser.isTrainer" value="hours">
-                          <v-icon>mdi-clock-outline</v-icon>
-                          Stunden
-                        </v-tab>
                         <v-tab value="notifications">
                           <v-icon>mdi-bell</v-icon>
                           Benachrichtigungen
@@ -201,9 +197,6 @@
                             </v-card-text>
                           </v-card>
                         </v-window-item>
-                        <v-window-item v-if="loggedInUser.isAdmin || loggedInUser.isTrainer" value="hours">
-                          <MyHours v-if="activeTab === 'hours'" />
-                        </v-window-item>
                         <v-window-item value="notifications">
                           <v-card flat>
                             <v-card-text>
@@ -227,7 +220,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
-import MyHours from '@/components/MyHours.vue'
 import ChangePasswordDialog from '@/components/ChangePasswordDialog.vue'
 import UploadProfileImage from '@/components/UploadProfileImage.vue'
 import NotificationPreferencesForm from '@/components/NotificationPreferencesForm.vue'
