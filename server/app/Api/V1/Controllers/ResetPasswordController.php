@@ -15,11 +15,18 @@ class ResetPasswordController extends Controller
 {
     public function resetPassword(ResetPasswordRequest $request, JWTAuth $JWTAuth)
     {
-        $response = $this->broker()->reset(
-            $this->credentials($request), function ($user, $password) {
-                $this->reset($user, $password);
+        // reset links (60 minutes) and invitation links (7 days) come from two brokers with their own token tables
+        $response = Password::INVALID_TOKEN;
+        foreach (['users', 'invites'] as $name) {
+            $response = Password::broker($name)->reset(
+                $this->credentials($request), function ($user, $password) {
+                    $this->reset($user, $password);
+                }
+            );
+            if ($response === Password::PASSWORD_RESET) {
+                break;
             }
-        );
+        }
 
         if ($response !== Password::PASSWORD_RESET) {
             // expired, used or wrong token and unknown e-mail look the same (no account enumeration)
@@ -32,6 +39,9 @@ class ResetPasswordController extends Controller
 
         $user = User::where('email', '=', $request->get('email'))->first();
         if ($user) {
+            // whatever else was pending for this account is void now
+            Password::broker('users')->deleteToken($user);
+            Password::broker('invites')->deleteToken($user);
             AuthLogService::passwordReset($user->id, $request);
         }
 

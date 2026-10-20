@@ -334,7 +334,7 @@ class UserController extends Controller
             ], 422);
         }
 
-        $user->sendInvitation(Password::createToken($user));
+        $user->sendInvitation(Password::broker('invites')->createToken($user));
         AuthLogService::log('invite_sent', $user->id, ['by' => Auth::guard('api')->id()], request());
 
         return response()->json([

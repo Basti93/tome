@@ -7,6 +7,7 @@ use App\Mail\ResetPassword;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 /**
@@ -178,5 +179,48 @@ class AccountFlowsTest extends TestCase
         $this->assertSame('kind@example.com', $kid->fresh()->email);
 
         $this->actingAsJwt($this->makeUser('admin'))->putJson("/api/v1/user/{$victim->id}", $payload('neu@example.com'))->assertStatus(201);
+    }
+
+    public function test_invite_links_are_valid_for_7_days_but_reset_links_only_for_60_minutes(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com']);
+        $admin = $this->makeUser('admin');
+        $body = fn ($token) => ['token' => $token, 'email' => 'm@example.com', 'password' => 'Neu12345!x', 'password_confirmation' => 'Neu12345!x'];
+
+        $this->actingAsJwt($admin)->postJson("/api/v1/user/{$user->id}/invite")->assertOk();
+        $invite = $this->tokenFrom($this->sentLink(InvitePassword::class, 'm@example.com'))['token'];
+        $this->travel(2)->days();
+        $this->postJson('/api/v1/auth/reset', $body($invite))->assertOk();
+
+        // a second invitation that is not used for 8 days has expired
+        $this->travelBack();
+        $this->actingAsJwt($admin)->postJson("/api/v1/user/{$user->id}/invite")->assertOk();
+        $expired = null;
+        Mail::assertSent(InvitePassword::class, function ($mail) use (&$expired) {
+            $expired = $this->tokenFrom($mail->resetLink)['token'];
+
+            return true;
+        });
+        $this->travel(8)->days();
+        $this->postJson('/api/v1/auth/reset', $body($expired))->assertStatus(422)->assertJsonPath('code', 'invalid_token');
+        $this->travelBack();
+
+        // a reset token is NOT stretched to 7 days: it is rejected after 61 minutes (and not accepted as an invite)
+        $reset = Password::createToken($user);
+        $this->travel(61)->minutes();
+        $this->postJson('/api/v1/auth/reset', $body($reset))->assertStatus(422);
+        $this->travelBack();
+        $reset2 = Password::createToken($user);
+        $this->travel(30)->minutes();
+        $this->postJson('/api/v1/auth/reset', $body($reset2))->assertOk();
+    }
+
+    public function test_the_invite_mail_names_the_validity_in_days(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com']);
+
+        $this->actingAsJwt($this->makeUser('admin'))->postJson("/api/v1/user/{$user->id}/invite")->assertOk();
+
+        Mail::assertSent(InvitePassword::class, fn ($mail) => str_contains($mail->render(), '7 Tage gültig'));
     }
 }

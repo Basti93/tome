@@ -12,7 +12,7 @@
     <br />
     <p><a href="{{$resetLink}}">Klick hier, um dein Passwort festzulegen</a></p>
     <br />
-    <p>Dieser Link läuft in {{ config('auth.passwords.users.expire', 60) }} Minuten ab. Danach kannst du über "Passwort vergessen" auf der Anmeldeseite einen neuen Link anfordern.</p>
+    <p>Dieser Link ist {{ (int) round(config('auth.passwords.invites.expire', 10080) / 1440) }} Tage gültig. Danach kannst du über "Passwort vergessen" auf der Anmeldeseite einen neuen Link anfordern.</p>
     <br />
     <p>Falls du diese Einladung nicht erwartet hast, ignoriere diese E-Mail.</p>
 </body>
