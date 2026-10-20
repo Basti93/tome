@@ -97,6 +97,13 @@ return [
       'table' => 'password_resets',
       'expire' => 60,
     ],
+    // invitation links ("set your password") are valid for 7 days; they live in their own table so that a
+    // password reset token (60 minutes) can never be stretched to 7 days
+    'invites' => [
+      'provider' => 'users',
+      'table' => 'password_invites',
+      'expire' => 10080,
+    ],
   ],
 
 ];

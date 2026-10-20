@@ -192,160 +192,155 @@
   </div>
 </template>
 
-<script lang="ts">
-import TrainingContent from "./TrainingContent.vue";
-import ProfileImage from "./ProfileImage.vue";
-import User from "../models/User";
-import Training from "../models/Training";
-import GroupChip from "./GroupChip.vue";
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import TrainingContent from './TrainingContent.vue'
+import ProfileImage from './ProfileImage.vue'
+import User from '../models/User'
+import Training from '../models/Training'
+import GroupChip from './GroupChip.vue'
 import { useMasterDataStore } from '@/store/masterData'
 import httpClient from '@/http/api'
 import { analytics } from '@/services/analytics'
 
-export default {
-  name: "TrainingCheckIn",
-  emits: ['checkedIn', 'checkedOut', 'showCookieUserLogin'],
-  components: {GroupChip, TrainingContent, ProfileImage},
-  props: {
-    training: Training,
-    currentUser: User,
-    isCookieUser: Boolean,
-    participants: Array,
-  },
-  data: function () {
-    return {
-      id: null,
-      start: null,
-      end: null,
-      location: null,
-      groups: [],
-      trainers: [],
-      contentIds: [],
-      comment: null,
-      showCancelDialog: false,
-      cancelReason: null,
-      cancelDialogValid: true,
-      cancelReasonRules: [
-        v => !!v || 'Pflichtfeld'
-      ],
-      automaticAttend: false,
-    }
-  },
-  created() {
-    const store = useMasterDataStore()
-    this.id = this.training.id;
-    this.start = this.training.start;
-    this.end = this.training.end;
-    this.location = store.getLocationNameById(this.training.locationId);
-    this.groups = store.getGroupsByIds(this.training.groupIds);
-    this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
-    this.contentIds = this.training.contentIds;
-    this.comment = this.training.comment;
-    this.automaticAttend = this.training.automaticAttend;
-  },
-  computed: {
-    attending: function () {
-      if (this.currentUser && this.participants) {
-        return this.participants.filter(p => (p.userId === this.currentUser.id && p.attend)).length > 0;
-      }
-      return false;
-    },
-    notYet: function () {
-      if (this.currentUser && this.participants) {
-        const found = this.participants.filter(p => (p.userId === this.currentUser.id));
-        return (!found || found.length === 0 || found[0].attend === null);
-      }
-      return false;
-    },
-    participantCount: function () {
-      return this.training.participants ? this.training.participants.filter(p => p.attend).length : null;
-    },
-  },
-  watch: {
-    training: function () {
-      const store = useMasterDataStore()
-      this.id = this.training.id;
-      this.start = this.training.start;
-      this.end = this.training.end;
-      this.location = store.getLocationNameById(this.training.locationId);
-      this.groups = store.getGroupsByIds(this.training.groupIds);
-      this.trainers = store.getSimpleTrainersByIds(this.training.trainerIds);
-      this.contentIds = this.training.contentIds;
-      this.comment = this.training.comment;
+const props = defineProps<{
+  training: Training
+  currentUser?: User | null
+  isCookieUser?: boolean
+  participants?: any[]
+}>()
 
-    },
-  },
-  methods: {
-    allowedToCheckIn() {
-      if (this.currentUser) {
-        if (this.currentUser.groupIds) {
-          return this.groups.map(g => g.id).filter(gId => this.currentUser.groupIds.includes(gId)).length > 0;
-        }
+const emit = defineEmits<{
+  checkedIn: []
+  checkedOut: []
+  showCookieUserLogin: []
+}>()
+
+const store = useMasterDataStore()
+
+const id = ref<any>(null)
+const start = ref<any>(null)
+const end = ref<any>(null)
+const location = ref<any>(null)
+const groups = ref<any[]>([])
+const trainers = ref<any[]>([])
+const contentIds = ref<any[]>([])
+const comment = ref<string | null | undefined>(null)
+const showCancelDialog = ref(false)
+const cancelReason = ref<string | null>(null)
+const cancelDialogValid = ref(true)
+const cancelReasonRules = [(v: string) => !!v || 'Pflichtfeld']
+const automaticAttend = ref<boolean | undefined>(false)
+
+function loadTraining() {
+  id.value = props.training.id
+  start.value = props.training.start
+  end.value = props.training.end
+  location.value = store.getLocationNameById(props.training.locationId)
+  groups.value = store.getGroupsByIds(props.training.groupIds)
+  trainers.value = store.getSimpleTrainersByIds(props.training.trainerIds)
+  contentIds.value = props.training.contentIds
+  comment.value = props.training.comment
+}
+
+loadTraining()
+automaticAttend.value = props.training.automaticAttend
+
+watch(
+  () => props.training,
+  () => loadTraining()
+)
+
+const attending = computed(() => {
+  if (props.currentUser && props.participants) {
+    return props.participants.filter((p) => p.userId === props.currentUser!.id && p.attend).length > 0
+  }
+  return false
+})
+
+const notYet = computed(() => {
+  if (props.currentUser && props.participants) {
+    const found = props.participants.filter((p) => p.userId === props.currentUser!.id)
+    return !found || found.length === 0 || found[0].attend === null
+  }
+  return false
+})
+
+const participantCount = computed(() =>
+  props.training.participants ? props.training.participants.filter((p: any) => p.attend).length : null
+)
+
+function allowedToCheckIn() {
+  if (props.currentUser) {
+    if (props.currentUser.groupIds) {
+      return groups.value.map((g) => g.id).filter((gId) => props.currentUser!.groupIds.includes(gId)).length > 0
+    }
+  }
+  return true
+}
+
+function showCookieUserLogin() {
+  emit('showCookieUserLogin')
+}
+
+async function participate() {
+  try {
+    let url = 'training/' + id.value
+    if (props.isCookieUser) {
+      url += '/checkinunregistered/' + props.currentUser!.id
+    } else {
+      url += '/checkin/' + props.currentUser!.id
+    }
+    //send post
+    const { data } = await httpClient.post(url)
+    if (data.status === 'ok') {
+      // Track check-in event
+      analytics.trackEvent('Training', 'CheckIn')
+      emit('checkedIn')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function cancelParticipation(reason?: string | null) {
+  try {
+    let url = 'training/' + id.value
+    if (props.isCookieUser) {
+      url += '/checkoutunregistered/'
+    } else {
+      url += '/checkout/'
+    }
+    url += props.currentUser!.id
+    let postData = {}
+    if (reason) {
+      postData = {
+        reason: reason
       }
-      return true;
-    },
-    showCookieUserLogin() {
-      this.$emit('showCookieUserLogin');
-    },
-    async participate() {
-      try {
-        let url = 'training/' + this.id;
-        if (this.isCookieUser) {
-          url += '/checkinunregistered/' + this.currentUser.id;
-        } else {
-          url += '/checkin/' + this.currentUser.id;
-        }
-        //send post
-        const {data} = await httpClient.post(url);
-        if (data.status === 'ok') {
-          // Track check-in event
-          analytics.trackEvent('Training', 'CheckIn')
-          this.$emit('checkedIn')
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    async cancelParticipation(reason?: string) {
-      try {
-        let url = 'training/' + this.id;
-        if (this.isCookieUser) {
-          url += '/checkoutunregistered/';
-        } else {
-          url += '/checkout/';
-        }
-        url += this.currentUser.id;
-        let postData = {};
-        if (reason) {
-          postData = {
-            reason: reason,
-          }
-        }
-        //send post
-        const {data} = await httpClient.post(url, postData);
-        if (data.status === 'ok') {
-          // Track check-out event
-          analytics.trackEvent('Training', 'CheckOut')
-          this.cancelReason = null;
-          this.showCancelDialog = false;
-          this.$emit('checkedOut')
-        } else if (data.status === 'cancel_needs_reason') {
-          this.showCancelDialog = true;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    fullName: item => item.firstName + ' ' + item.familyName,
-    urlify(text) {
-      if (text) {
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlRegex, function (url) {
-          return '<a target="_blank" href="' + url + '">' + url + '</a>';
-        })
-      }
-    },
-  },
+    }
+    //send post
+    const { data } = await httpClient.post(url, postData)
+    if (data.status === 'ok') {
+      // Track check-out event
+      analytics.trackEvent('Training', 'CheckOut')
+      cancelReason.value = null
+      showCancelDialog.value = false
+      emit('checkedOut')
+    } else if (data.status === 'cancel_needs_reason') {
+      showCancelDialog.value = true
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function urlify(text?: string | null) {
+  if (text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    return text.replace(urlRegex, function (url) {
+      return '<a target="_blank" href="' + url + '">' + url + '</a>'
+    })
+  }
 }
 </script>
 

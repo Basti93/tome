@@ -11,12 +11,12 @@
           class="ma-1"
           v-bind="props" variant="outlined"
       >
-        <v-avatar left>
+        <v-avatar start size="28" class="profile-chip-avatar">
           <v-img v-if="imageUrl"
                  :src="imageUrl"
                  :alt="fullName"
           ></v-img>
-          <v-icon v-else>mdi-account-circle</v-icon>
+          <v-icon v-else size="28">mdi-account-circle</v-icon>
         </v-avatar>
         {{ fullName }}
       </v-chip>
@@ -57,38 +57,30 @@
   </v-avatar>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { profileImageUrl } from '@/helpers/profile-image'
-export default {
-  name: "ProfileImage",
-  props: {
-    imagePath: String,
-    firstName: String,
-    familyName: String,
-    clickable: Boolean,
-    size: String,
-    right: Boolean,
-    left: Boolean,
-  },
-  data: function () {
-    return {
-      dSize: 24,
-      menu: false,
-    }
-  },
-  created() {
-    if (this.size) {
-      this.dSize = this.size;
-    }
-  },
-  computed: {
-    imageUrl() {
-      return profileImageUrl(this.imagePath);
-    },
-    fullName() {
-      return this.firstName + " " + this.familyName;
-    }
-  },
-}
+
+const props = defineProps<{
+  imagePath?: string | null
+  firstName?: string
+  familyName?: string
+  clickable?: boolean
+  size?: string
+  right?: boolean
+  left?: boolean
+}>()
+
+const menu = ref(false)
+const dSize = computed(() => props.size || 24)
+const imageUrl = computed(() => profileImageUrl(props.imagePath))
+const fullName = computed(() => props.firstName + ' ' + props.familyName)
 </script>
 
+<style scoped>
+/* Vuetify 4 `start` avatars sit flush with the chip edge: leave some air to the edge and to the name */
+.profile-chip-avatar {
+  margin-inline-start: 0;
+  margin-inline-end: 8px;
+}
+</style>

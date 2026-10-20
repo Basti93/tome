@@ -9,7 +9,6 @@ use App\User;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ForgotPasswordController extends Controller
 {
@@ -17,8 +16,9 @@ class ForgotPasswordController extends Controller
     {
         $user = User::where('email', '=', $request->get('email'))->first();
 
-        if (! $user) {
-            throw new NotFoundHttpException;
+        // the answer never reveals whether an account exists for the address
+        if (! $user || empty($user->email)) {
+            return response()->json(['status' => 'ok'], 200);
         }
 
         $broker = $this->getPasswordBroker();

@@ -346,10 +346,6 @@ function resetFormData() {
   userId.value = null
 }
 
-function fullName(item) {
-  return item.firstName + ' ' + item.familyName
-}
-
 onMounted(() => {
   users.value = getAllSimpleUsersWithGroup()
   if (currentUserId.value) {

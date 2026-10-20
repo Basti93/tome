@@ -33,7 +33,7 @@ export default class User {
             const jsonObj = JSON.parse(jsonString);
             const user = new User(jsonObj.id, jsonObj.email, jsonObj.firstName, jsonObj.familyName, jsonObj.birthdate, jsonObj.active === 1 ? true : false, jsonObj.groupIds, jsonObj.roleNames, jsonObj.trainerBranchIds, jsonObj.registered === 1 ? true : false, jsonObj.profileImageName, jsonObj.absenceStart, jsonObj.absenceEnd, jsonObj.absenceReason)
             user.notificationPreferences = jsonObj.notification_preferences || {
-                trainer_upcoming: true,
+                trainer_upcoming: false,
                 trainer_cancel_alert: true,
                 participant_upcoming: true,
                 absence_alert: true,
@@ -64,7 +64,7 @@ export default class User {
         this.absenceEnd = absenceEnd
         this.absenceReason = absenceReason
         this.notificationPreferences = {
-            trainer_upcoming: true,
+            trainer_upcoming: false,
             trainer_cancel_alert: true,
             participant_upcoming: true,
             absence_alert: true,

@@ -1,4 +1,3 @@
-import TrainingParticipant from "@/models/TrainingParticipant";
 import type { Dayjs } from '@/helpers/dayjs'
 
 export default class TrainingSeries {

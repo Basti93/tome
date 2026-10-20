@@ -100,194 +100,158 @@
   </v-dialog>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, watch } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-import Training from "../models/Training";
+import Training from '../models/Training'
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useMasterDataStore } from '@/store/masterData'
 
-export default defineComponent({
-  name: "TrainingSelector",
-  props: {
-    // Training and TrainingEvaluation both work; the selector only reads their shared fields
-    trainings: Array as () => any[],
-    application: String,
-    selectedTrainingId: Number,
-  },
-  emits: ['change'],
-  setup(props, { emit }) {
-    const { xs, mdAndUp } = useDisplay()
-    const selectedTraining = ref<Training | null>(null)
-    const showMobileList = ref(false)
-    const expandedDays = ref<Record<number, boolean>>({})
+const props = defineProps<{
+  // Training and TrainingEvaluation both work; the selector only reads their shared fields
+  trainings?: any[]
+  application?: string
+  selectedTrainingId?: number
+}>()
 
-    const loggedInUser = computed(() => useAuthStore().user)
-    const cookieUser = computed(() => useCookieAuthStore().cookieUser)
+const emit = defineEmits<{
+  change: [trainingId: number]
+}>()
 
-    const currentUser = computed(() => {
-      if (loggedInUser.value) {
-        return loggedInUser.value;
-      } else if (cookieUser.value) {
-        return cookieUser.value;
-      }
-      return null;
-    })
+const { xs, mdAndUp } = useDisplay()
+const selectedTraining = ref<Training | null>(null)
+const showMobileList = ref(false)
+const expandedDays = ref<Record<number, boolean>>({})
 
-    const isEvaluation = computed(() => props.application === 'evaluation')
-    const isCheckIn = computed(() => props.application === 'checkin')
-    const isNoStatus = computed(() => !isEvaluation.value && !isCheckIn.value)
+const loggedInUser = computed(() => useAuthStore().user)
+const cookieUser = computed(() => useCookieAuthStore().cookieUser)
 
-    const groupedTrainings = computed(() => {
-      const groups: Record<string, { dateLabel: string; trainings: Training[] }> = {}
+const currentUser = computed(() => {
+  if (loggedInUser.value) {
+    return loggedInUser.value;
+  } else if (cookieUser.value) {
+    return cookieUser.value;
+  }
+  return null;
+})
 
-      ;(props.trainings as Training[]).forEach(training => {
-        const dateKey = training.start.format('YYYY-MM-DD')
-        const dateLabel = training.start.format('ddd DD.MMM')
+const isEvaluation = computed(() => props.application === 'evaluation')
+const isCheckIn = computed(() => props.application === 'checkin')
 
-        if (!groups[dateKey]) {
-          groups[dateKey] = { dateLabel, trainings: [] }
-        }
-        groups[dateKey].trainings.push(training)
-      })
+const groupedTrainings = computed(() => {
+  const groups: Record<string, { dateLabel: string; trainings: Training[] }> = {}
 
-      return Object.values(groups)
-    })
+  ;(props.trainings as Training[]).forEach(training => {
+    const dateKey = training.start.format('YYYY-MM-DD')
+    const dateLabel = training.start.format('ddd DD.MMM')
 
-    const getTrainingById = (id: number): Training | undefined => {
-      return (props.trainings as Training[]).find(t => t.id === id)
+    if (!groups[dateKey]) {
+      groups[dateKey] = { dateLabel, trainings: [] }
     }
+    groups[dateKey].trainings.push(training)
+  })
 
-    const getBranchShortNameByGroupIds = (groupIds: number[]): string => {
-      return useMasterDataStore().getBranchShortNameByGroupIds(groupIds)
-    }
+  return Object.values(groups)
+})
 
-    const getLocationById = (locationId: number): any => {
-      return useMasterDataStore().getLocationById(locationId)
-    }
+const getTrainingById = (id: number): Training | undefined => {
+  return (props.trainings as Training[]).find(t => t.id === id)
+}
 
-    const attendingStatus = (training: Training): boolean | null => {
-      if (currentUser.value) {
-        const tp = training.participants.filter(p => p.userId === currentUser.value!.id);
-        if (tp && tp.length > 0) {
-          return tp[0].attend;
-        }
-      }
-      return null;
-    }
+const getBranchShortNameByGroupIds = (groupIds: number[]): string => {
+  return useMasterDataStore().getBranchShortNameByGroupIds(groupIds)
+}
 
-    const attending = (training: Training): boolean => {
-      return attendingStatus(training) ? true : false;
-    }
+const getLocationById = (locationId: number): any => {
+  return useMasterDataStore().getLocationById(locationId)
+}
 
-    const evaluated = (training: Training): boolean => {
-      return training.evaluated;
-    }
-
-    const canceled = (training: Training): boolean => {
-      const status = attendingStatus(training);
-      return (status !== null && !status);
-    }
-
-    const checkStatusDone = (training: Training): boolean => {
-      return (isCheckIn.value && attending(training)) || (isEvaluation.value && evaluated(training))
-    }
-
-    const timelineColor = (training: Training): string => {
-      if (checkStatusDone(training)) {
-        return '#60cc69' // primary color
-      } else if (isCheckIn.value && canceled(training)) {
-        return '#ef5350' // red lighten-2
-      }
-      const mainBranch = useMasterDataStore().getBranchByGroupIds(training.groupIds);
-      if (mainBranch) {
-        return mainBranch.colorHex
-      }
-      return '#64b5f6' // blue lighten-2
-    }
-
-    const formattedDate = (training: Training): string => {
-      const dayAbbr = training.start.format('dddd').slice(0, 2)
-      const date = training.start.format('DD')
-      const month = training.start.format('MMM')
-      return `${dayAbbr} ${date}.${month}`
-    }
-
-    const statusIcon = (training: Training): string => {
-      if (checkStatusDone(training)) {
-        return isCheckIn.value ? 'mdi-thumb-up' : 'mdi-check'
-      } else if (isCheckIn.value && canceled(training)) {
-        return 'mdi-thumb-down'
-      }
-      return 'mdi-alert-decagram'
-    }
-
-    const selectTraining = (training: Training): void => {
-      selectedTraining.value = training
-      showMobileList.value = false
-      emit('change', training.id)
-    }
-
-    const toggleDayExpanded = (dayIndex: number): void => {
-      expandedDays.value[dayIndex] = !expandedDays.value[dayIndex]
-    }
-
-    const getStatusIconName = (training: Training): string => {
-      if (checkStatusDone(training)) {
-        return isCheckIn.value ? 'mdi-thumb-up' : 'mdi-check'
-      } else if (isCheckIn.value && canceled(training)) {
-        return 'mdi-thumb-down'
-      }
-      return 'mdi-help-circle-outline'
-    }
-
-    const getStatusIconColor = (training: Training): string => {
-      if (checkStatusDone(training)) {
-        return 'success'
-      } else if (isCheckIn.value && canceled(training)) {
-        return 'error'
-      }
-      return 'warning'
-    }
-
-    // Watch selectedTrainingId prop to sync internal state
-    watch(
-      () => props.selectedTrainingId,
-      (newId) => {
-        selectedTraining.value = getTrainingById(newId as number) || null
-      }
-    )
-
-    // Initialize selected training on mount
-    selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || null
-
-    return {
-      xs,
-      mdAndUp,
-      selectedTraining,
-      showMobileList,
-      expandedDays,
-      groupedTrainings,
-      selectTraining,
-      toggleDayExpanded,
-      getStatusIconName,
-      getStatusIconColor,
-      getBranchShortNameByGroupIds,
-      getLocationById,
-      timelineColor,
-      formattedDate,
-      statusIcon,
-      checkStatusDone,
-      attending,
-      evaluated,
-      canceled,
-      isCheckIn,
-      isEvaluation,
-      isNoStatus,
+const attendingStatus = (training: Training): boolean | null => {
+  if (currentUser.value) {
+    const tp = training.participants.filter(p => p.userId === currentUser.value!.id);
+    if (tp && tp.length > 0) {
+      return tp[0].attend;
     }
   }
-})
+  return null;
+}
+
+const attending = (training: Training): boolean => {
+  return attendingStatus(training) ? true : false;
+}
+
+const evaluated = (training: Training): boolean => {
+  return training.evaluated;
+}
+
+const canceled = (training: Training): boolean => {
+  const status = attendingStatus(training);
+  return (status !== null && !status);
+}
+
+const checkStatusDone = (training: Training): boolean => {
+  return (isCheckIn.value && attending(training)) || (isEvaluation.value && evaluated(training))
+}
+
+const timelineColor = (training: Training): string => {
+  if (checkStatusDone(training)) {
+    return '#60cc69' // primary color
+  } else if (isCheckIn.value && canceled(training)) {
+    return '#ef5350' // red lighten-2
+  }
+  const mainBranch = useMasterDataStore().getBranchByGroupIds(training.groupIds);
+  if (mainBranch) {
+    return mainBranch.colorHex
+  }
+  return '#64b5f6' // blue lighten-2
+}
+
+const formattedDate = (training: Training): string => {
+  const dayAbbr = training.start.format('dddd').slice(0, 2)
+  const date = training.start.format('DD')
+  const month = training.start.format('MMM')
+  return `${dayAbbr} ${date}.${month}`
+}
+
+const selectTraining = (training: Training): void => {
+  selectedTraining.value = training
+  showMobileList.value = false
+  emit('change', training.id)
+}
+
+const toggleDayExpanded = (dayIndex: number): void => {
+  expandedDays.value[dayIndex] = !expandedDays.value[dayIndex]
+}
+
+const getStatusIconName = (training: Training): string => {
+  if (checkStatusDone(training)) {
+    return isCheckIn.value ? 'mdi-thumb-up' : 'mdi-check'
+  } else if (isCheckIn.value && canceled(training)) {
+    return 'mdi-thumb-down'
+  }
+  return 'mdi-help-circle-outline'
+}
+
+const getStatusIconColor = (training: Training): string => {
+  if (checkStatusDone(training)) {
+    return 'success'
+  } else if (isCheckIn.value && canceled(training)) {
+    return 'error'
+  }
+  return 'warning'
+}
+
+// Watch selectedTrainingId prop to sync internal state
+watch(
+  () => props.selectedTrainingId,
+  (newId) => {
+    selectedTraining.value = getTrainingById(newId as number) || null
+  }
+)
+
+// Initialize selected training on mount
+selectedTraining.value = getTrainingById(props.selectedTrainingId as number) || null
 </script>
 
 <style lang="scss" scoped>

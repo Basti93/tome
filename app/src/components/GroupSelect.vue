@@ -22,63 +22,63 @@
     </v-card>
 </template>
 
-<script>
-  import { useMasterDataStore } from '@/store/masterData'
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useMasterDataStore } from '@/store/masterData'
 
-  export default {
-    name: "GroupSelect",
-    emits: ['branchSelected', 'groupSelected'],
-    props: {
-      'branchId': Number,
-      'groupId': Number,
-    },
-    data() {
-      return {
-        selectedBranchId: null,
-        selectedGroupId: null,
-        groupItems: [],
-      }
-    },
-    computed: {
-      groups() {
-        return useMasterDataStore().groups
-      },
-      branches() {
-        return useMasterDataStore().branches
-      },
-    },
-    methods: {
-      fillGroupSelect: function () {
-        this.groupItems = [];
-        for (const group of this.groups) {
-            if (this.selectedBranchId === group.branchId) {
-                this.groupItems.push(group);
-            }
-        }
-      },
-    },
-    watch: {
-      groupId: function () {
-        this.selectedGroupId = this.groupId;
-      },
-      branchId: function () {
-        this.selectedBranchId = this.branchId;
-      },
-      selectedBranchId: function () {
-        if (this.selectedBranchId) {
-          this.fillGroupSelect();
-        } else {
-          this.selectedGroupId = null;
-          this.groupItems = []
-        }
-        this.$emit('branchSelected', this.selectedBranchId)
-        this.$emit('groupSelected', this.selectedGroupId)
-      },
-      selectedGroupId: function () {
-        this.$emit('groupSelected', this.selectedGroupId)
-      },
+const props = defineProps<{
+  branchId?: number
+  groupId?: number
+}>()
+
+const emit = defineEmits<{
+  branchSelected: [branchId: number | null]
+  groupSelected: [groupId: number | null]
+}>()
+
+const masterData = useMasterDataStore()
+
+const selectedBranchId = ref<number | null>(null)
+const selectedGroupId = ref<number | null>(null)
+const groupItems = ref<any[]>([])
+
+const groups = computed(() => masterData.groups)
+const branches = computed(() => masterData.branches)
+
+function fillGroupSelect() {
+  groupItems.value = []
+  for (const group of groups.value) {
+    if (selectedBranchId.value === group.branchId) {
+      groupItems.value.push(group)
     }
   }
+}
+
+watch(
+  () => props.groupId,
+  () => {
+    selectedGroupId.value = props.groupId as number
+  }
+)
+watch(
+  () => props.branchId,
+  () => {
+    selectedBranchId.value = props.branchId as number
+  }
+)
+watch(selectedBranchId, () => {
+  if (selectedBranchId.value) {
+    fillGroupSelect()
+  } else {
+    selectedGroupId.value = null
+    groupItems.value = []
+  }
+  emit('branchSelected', selectedBranchId.value)
+  emit('groupSelected', selectedGroupId.value)
+})
+watch(selectedGroupId, () => {
+  emit('groupSelected', selectedGroupId.value)
+})
 </script>
 
 <style scoped>

@@ -27,60 +27,50 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  name: "TrainingContent",
-  emits: ['change'],
-  props: {
-    contentIds: Array,
-    selectable: Boolean,
-    initContentIds: Array,
-    readonly: Boolean,
-  },
-  data: function () {
-    return {
-      contents: [],
-      selectedContentIds: [],
-    }
-  },
-  created() {
-    this.selectedContentIds = [];
-    for (let i = 0; i < this.initContentIds.length; i++) {
-      this.selectedContentIds.push(this.initContentIds[i]);
-    }
-    this.contents = useMasterDataStore().getContentsByIds(this.contentIds);
-  },
-  methods: {
-    isSelected: function (item) {
-      return this.selectedContentIds.includes(item.id);
-    },
-    selectContent: function (contentId) {
-      console.log("selected", this.selectedContentIds)
-      if (this.selectable) {
-        const index = this.selectedContentIds.indexOf(contentId);
-        if (index === -1) {
-          this.selectedContentIds.push(contentId);
-        } else {
-          this.selectedContentIds.splice(index, 1);
-        }
-        this.$emit('change', this.selectedContentIds)
-      }
-    },
-    getImagePath(imageName) {
-      return '/img/contents/' + imageName;
-    }
-  },
-  watch: {
-    initContentIds: function () {
-      this.selectedContentIds = [];
-      for (let i = 0; i < this.initContentIds.length; i++) {
-        this.selectedContentIds.push(this.initContentIds[i]);
-      }
-    }
-  },
+const props = defineProps<{
+  contentIds?: any[]
+  selectable?: boolean
+  initContentIds: any[]
+  readonly?: boolean
+}>()
+
+const emit = defineEmits<{
+  change: [contentIds: any[]]
+}>()
+
+const selectedContentIds = ref<any[]>([...props.initContentIds])
+const contents = ref<any[]>(useMasterDataStore().getContentsByIds(props.contentIds))
+
+function isSelected(item: { id: number }) {
+  return selectedContentIds.value.includes(item.id)
 }
+
+function selectContent(contentId: number) {
+  if (props.selectable) {
+    const index = selectedContentIds.value.indexOf(contentId)
+    if (index === -1) {
+      selectedContentIds.value.push(contentId)
+    } else {
+      selectedContentIds.value.splice(index, 1)
+    }
+    emit('change', selectedContentIds.value)
+  }
+}
+
+function getImagePath(imageName: string) {
+  return '/img/contents/' + imageName
+}
+
+watch(
+  () => props.initContentIds,
+  () => {
+    selectedContentIds.value = [...props.initContentIds]
+  }
+)
 </script>
 
 <style lang="scss" scoped>

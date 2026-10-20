@@ -40,20 +40,14 @@
   </v-container>
 </template>
 
-<script>
-import TrainingParticipationBarChart from "@/components/TrainingParticipationBarChart.vue";
-import TrainerTimeline from "@/components/TrainerTimeline.vue";
+<script setup lang="ts">
+import { computed } from 'vue'
+import TrainingParticipationBarChart from '@/components/TrainingParticipationBarChart.vue'
+import TrainerTimeline from '@/components/TrainerTimeline.vue'
 import { useAuthStore } from '@/store/auth'
 
-export default {
-  name: "StatisticsPage",
-  components: {TrainerTimeline, TrainingParticipationBarChart},
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    }
-  }
-}
+const authStore = useAuthStore()
+const loggedInUser = computed(() => authStore.user)
 </script>
 
 <style scoped>

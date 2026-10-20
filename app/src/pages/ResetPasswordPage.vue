@@ -13,7 +13,7 @@
             <template v-if="completed">
               <v-alert type="success" icon="mdi-check-circle" class="mb-4">
                 <strong>Passwort zurückgesetzt</strong>
-                <p class="mb-0">Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.</p>
+                <p class="mb-0">Dein Passwort wurde erfolgreich zurückgesetzt. Du kannst dich jetzt mit deinem neuen Passwort anmelden.</p>
               </v-alert>
               <v-btn color="primary" to="/login">Zur Anmeldung</v-btn>
             </template>
@@ -22,7 +22,7 @@
             <template v-else-if="emailSent">
               <v-alert type="success" icon="mdi-check-circle" class="mb-4">
                 <strong>E-Mail gesendet</strong>
-                <p class="mb-0">Bitte überprüfen Sie Ihren E-Mail-Posteingang. Wir haben einen Passwort-Zurücksetzen-Link an {{ email }} gesendet.</p>
+                <p class="mb-0">Wenn ein Konto mit {{ email }} existiert, haben wir einen Link zum Zurücksetzen des Passworts gesendet. Bitte prüfe deinen E-Mail-Posteingang.</p>
               </v-alert>
               <v-btn color="primary" @click="emailSent = false">Neuen Link anfordern</v-btn>
             </template>
@@ -78,7 +78,7 @@
 
             <!-- Request Email Form -->
             <template v-else>
-              <p class="mb-4">Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.</p>
+              <p class="mb-4">Gib deine E-Mail-Adresse ein, und wir senden dir einen Link zum Zurücksetzen deines Passworts.</p>
               <v-form v-model="emailFormValid">
                 <v-text-field
                     v-model="email"
@@ -109,121 +109,98 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import { useRouter, useRoute } from 'vue-router'
-import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
+import { useRoute } from 'vue-router'
+import { getPasswordHint, getPasswordValidationRules } from '@/constants/passwordPolicy'
+import { apiErrorMessage } from '@/helpers/apiError'
 
-export default {
-  name: "ResetPasswordPage",
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    return { router, route, PASSWORD_POLICY }
-  },
-  data() {
-    return {
-      email: '',
-      token: '',
-      password: '',
-      passwordConfirm: '',
-      loading: false,
-      completed: false,
-      emailSent: false,
-      showPassword: false,
-      showPasswordConfirm: false,
-      emailFormValid: false,
-      passwordFormValid: false,
-      emailRules: [
-        (v: any) => !!v || 'E-mail wird benötigt',
-        (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein'
-      ],
-      passwordRules: [
-        (v: any) => !!v || 'Passwort wird benötigt',
-        (v: any) => (v && v.length >= 8) || 'Passwort muss mindestens 8 Zeichen lang sein',
-      ],
-      passwordConfirmRules: [
-        (v: any) => !!v || 'Passwortbestätigung wird benötigt',
-        (v: any) => v === (this as any).password || 'Passwörter müssen übereinstimmen',
-      ],
-    }
-  },
-  computed: {
-    passwordStrength(): number {
-      if (!this.password) return 0
-      let strength = 0
-      if (this.password.length >= 8) strength += 25
-      if (this.password.length >= 12) strength += 25
-      if (/[A-Z]/.test(this.password)) strength += 25
-      if (/[0-9!@#$%^&*]/.test(this.password)) strength += 25
-      return strength
-    },
-    passwordStrengthColor(): string {
-      if (this.passwordStrength < 50) return 'error'
-      if (this.passwordStrength < 75) return 'warning'
-      return 'success'
-    },
-  },
-  created() {
-    const emailParam = this.route.query.email
-    const tokenParam = this.route.query.token
+const route = useRoute()
 
-    if (emailParam) this.email = emailParam as string
-    if (tokenParam) this.token = tokenParam as string
-  },
-  methods: {
-    getPasswordHint(): string {
-      return 'Mindestens 8 Zeichen, empfohlen: Großbuchstaben und Zahlen/Sonderzeichen'
-    },
-    async requestResetEmail() {
-      try {
-        this.loading = true
-        await httpClient.post('/auth/recovery', { email: this.email })
-        this.emailSent = true
-        useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
-      } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Versand der E-Mail', 'error')
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    async resetPassword() {
-      try {
-        this.loading = true
-        await httpClient.post('/auth/reset', {
-          email: this.email,
-          token: this.token,
-          password: this.password,
-          password_confirmation: this.passwordConfirm,
-        })
-        this.completed = true
-        useSnackbarStore().show('Passwort erfolgreich zurückgesetzt', 'success')
-      } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Zurücksetzen des Passworts', 'error')
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-  },
+const email = ref('')
+const token = ref('')
+const password = ref('')
+const passwordConfirm = ref('')
+const loading = ref(false)
+const completed = ref(false)
+const emailSent = ref(false)
+const showPassword = ref(false)
+const showPasswordConfirm = ref(false)
+const emailFormValid = ref(false)
+const passwordFormValid = ref(false)
+const emailRules = [
+  (v: any) => !!v || 'E-mail wird benötigt',
+  (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein'
+]
+const passwordRules = getPasswordValidationRules()
+const passwordConfirmRules = [
+  (v: any) => !!v || 'Passwortbestätigung wird benötigt',
+  (v: any) => v === password.value || 'Passwörter müssen übereinstimmen'
+]
+
+const passwordStrength = computed((): number => {
+  if (!password.value) return 0
+  let strength = 0
+  if (password.value.length >= 8) strength += 25
+  if (password.value.length >= 12) strength += 25
+  if (/[A-Z]/.test(password.value)) strength += 25
+  if (/[0-9!@#$%^&*]/.test(password.value)) strength += 25
+  return strength
+})
+
+const passwordStrengthColor = computed((): string => {
+  if (passwordStrength.value < 50) return 'error'
+  if (passwordStrength.value < 75) return 'warning'
+  return 'success'
+})
+
+function applyQuery() {
+  const emailParam = route.query.email
+  const tokenParam = route.query.token
+  if (emailParam) email.value = emailParam as string
+  if (tokenParam) {
+    token.value = tokenParam as string
+    emailSent.value = false
+    completed.value = false
+  }
+}
+
+applyQuery()
+
+// a reset link opened in the same tab while this page is shown (same route, new query)
+watch(() => route.query, applyQuery)
+
+async function requestResetEmail() {
+  try {
+    loading.value = true
+    await httpClient.post('/auth/recovery', { email: email.value })
+    emailSent.value = true
+    useSnackbarStore().show('Anfrage gesendet', 'success')
+  } catch (error) {
+    useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function resetPassword() {
+  try {
+    loading.value = true
+    await httpClient.post('/auth/reset', {
+      email: email.value,
+      token: token.value,
+      password: password.value,
+      password_confirmation: passwordConfirm.value
+    })
+    completed.value = true
+    useSnackbarStore().show('Passwort erfolgreich zurückgesetzt', 'success')
+  } catch (error) {
+    useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Zurücksetzen des Passworts'), 'error')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

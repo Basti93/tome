@@ -187,6 +187,7 @@ class RetentionService
         $emails = DB::table('users')->whereIn('id', $ids)->whereNotNull('email')->pluck('email')->all();
         if ($emails !== []) {
             DB::table('password_resets')->whereIn('email', $emails)->delete();
+            DB::table('password_invites')->whereIn('email', $emails)->delete();
         }
 
         DB::table('users')->whereIn('id', $ids)->delete();

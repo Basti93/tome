@@ -1,5 +1,6 @@
 <template>
   <v-snackbar
+    :key="snackbar.count"
     location="bottom right"
     v-model="snackbar.visible"
     :timeout="snackbar.timeout"
@@ -7,19 +8,8 @@
     {{ snackbar.text }}
   </v-snackbar>
 </template>
-<script>
-  import { useSnackbarStore } from '@/store/snackbar'
+<script setup lang="ts">
+import { useSnackbarStore } from '@/store/snackbar'
 
-  export default {
-    computed: {
-      snackbar() {
-        return useSnackbarStore()
-      }
-    },
-    methods: {
-      closeSnackbar() {
-        useSnackbarStore().hide()
-      }
-    }
-  }
+const snackbar = useSnackbarStore()
 </script>

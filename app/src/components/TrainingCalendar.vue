@@ -174,234 +174,248 @@
   </v-sheet>
 </template>
 
-<script lang="ts">
-import Training from "@/models/Training";
-import { useMasterDataStore } from '@/store/masterData';
-import httpClient from '@/http/api';
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import Training from '@/models/Training'
+import { useMasterDataStore } from '@/store/masterData'
+import httpClient from '@/http/api'
 import dayjs from '@/helpers/dayjs'
 
-export default {
-  name: "TrainingCalendar",
-  props: {
-    privateMode: Boolean,
-  },
-  data: () => ({
-    events: [] as any[],
-    weekday: [1, 2, 3, 4, 5, 6, 0],
-    categories: [] as any[],
-    trainings: [] as Training[],
-    start: null as any,
-    end: null as any,
-    focus: null as any,
-    selectedEvent: {} as any,
-    selectedElement: null as any,
-    selectedOpen: false,
-    type: 'month' as 'month' | 'week' | 'day' | 'category',
-    typeToLabel: {
-      month: 'Monat',
-      week: 'Woche',
-      day: 'Tag',
-      category: 'Sparten',
-    },
-  }),
-  mounted() {
-    this.focus = dayjs().format('YYYY-MM-DD');
-  },
-  computed: {
-    branches() {
-      return useMasterDataStore().branches;
-    },
-    title() {
-      const {start, end} = this;
-      if (!start || !end) {
-        return '';
-      }
+const props = defineProps<{
+  privateMode?: boolean
+}>()
 
-      const startMonth = dayjs(start.date).format('MMMM');
-      const startYear = start.year;
-      const startDay = start.day;
+const masterData = useMasterDataStore()
 
-      switch (this.type) {
-        case 'month':
-          return `${startMonth} ${startYear}`;
-        case 'week':
-        case 'day':
-        case 'category':
-          return `${startMonth} ${startDay} ${startYear}`;
-      }
-      return '';
-    },
-  },
-  methods: {
-    dayjs,
-    getGroupById(groupId: number) {
-      return useMasterDataStore().getGroupById(groupId) ?? { name: '' };
-    },
-    getBranchByGroupId(groupId: number) {
-      return useMasterDataStore().getBranchByGroupId(groupId);
-    },
-    getSimpleTrainerById(trainerId: number) {
-      return useMasterDataStore().getSimpleTrainerById(trainerId);
-    },
-    getLocationNameById(locationId: number) {
-      return useMasterDataStore().getLocationNameById(locationId);
-    },
-    async loadData() {
-      this.trainings = [];
-      this.events = [];
-      this.categories = [];
-      this.categories = this.branches;
-      await this.loadTrainingEvents();
-      await this.loadPlannedTrainingEvents();
-      if (this.privateMode) {
-        await this.loadBirthdayEvents();
-      }
-    },
-    async loadTrainingEvents() {
-      let url = '/training/';
-      if (this.privateMode) {
-        url += 'calendar';
-      } else {
-        url += 'simplecalendar';
-      }
-      const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (const trainingData of data.data) {
-        let branch = null;
-        if (trainingData.groupIds && trainingData.groupIds.length > 0) {
-          branch = this.getBranchByGroupId(trainingData.groupIds[0]);
-        }
-        if (branch) {
-          const training = new Training(trainingData.id,
-              dayjs(trainingData.start),
-              dayjs(trainingData.end),
-              trainingData.locationId,
-              trainingData.groupIds,
-              trainingData.contentIds,
-              trainingData.trainerIds,
-              trainingData.participants,
-              trainingData.comment,
-              trainingData.prepared === 1 ? true : false,
-              trainingData.evaluated === 1 ? true : false,
-              trainingData.automaticAttend === 1 ? true : false
-          );
-          this.trainings.push(training);
+const calendar = ref<any>(null)
+const events = ref<any[]>([])
+const weekday = [1, 2, 3, 4, 5, 6, 0]
+const categories = ref<any[]>([])
+const trainings = ref<Training[]>([])
+const start = ref<any>(null)
+const end = ref<any>(null)
+const focus = ref<any>(null)
+const selectedEvent = ref<any>({})
+const selectedElement = ref<any>(null)
+const selectedOpen = ref(false)
+const type = ref<'month' | 'week' | 'day' | 'category'>('month')
+const typeToLabel = {
+  month: 'Monat',
+  week: 'Woche',
+  day: 'Tag',
+  category: 'Sparten'
+}
 
-          this.events.push({
-            name: branch.shortName,
-            branchName: branch.name,
-            start: training.start.format('YYYY-MM-DD HH:mm'),
-            end: training.end.format('YYYY-MM-DD HH:mm'),
-            groupIds: training.groupIds,
-            trainerIds: training.trainerIds,
-            location: this.getLocationNameById(training.locationId),
-            participantCount: training.participants ? training.participants.filter(p => p.attend).length : null,
-            type: 'training',
-            color: branch.colorHex,
-            evaluated: training.evaluated,
-            category: branch.name
-          });
-        }
-      }
-    },
-    async loadPlannedTrainingEvents() {
-      const url = '/training/simplecalendar/planned';
-      const {data} = await httpClient.get(url + '?start=' + this.start.date + '&end=' + this.end.date);
-      for (const trainingData of data.data) {
-        let branch = null;
-        if (trainingData.groupIds && trainingData.groupIds.length > 0) {
-          branch = this.getBranchByGroupId(trainingData.groupIds[0]);
-        }
-        if (branch) {
-          const training = new Training(trainingData.id,
-              dayjs(trainingData.start),
-              dayjs(trainingData.end),
-              trainingData.locationId,
-              trainingData.groupIds,
-              trainingData.contentIds,
-              trainingData.trainerIds,
-              [],
-              trainingData.comment,
-              false,
-              false,
-              false,
-          );
-          this.trainings.push(training);
+onMounted(() => {
+  focus.value = dayjs().format('YYYY-MM-DD')
+})
 
-          this.events.push({
-            name: branch.shortName,
-            branchName: branch.name,
-            start: training.start.format('YYYY-MM-DD HH:mm'),
-            end: training.end.format('YYYY-MM-DD HH:mm'),
-            groupIds: training.groupIds,
-            trainerIds: training.trainerIds,
-            type: 'planed-training',
-            color: branch.colorHex,
-            category: branch.name
-          });
-        }
-      }
-    },
-    async loadBirthdayEvents() {
-      const {data} = await httpClient.get('/user/birthdays?start=' + this.start.date + '&end=' + this.end.date);
-      for (const birthdayData of data) {
-        this.events.push({
-          name: birthdayData.firstName + " " + birthdayData.familyName,
-          start: this.start.date.slice(0, 4) + "-" + dayjs(birthdayData.birthdate).format('MM-DD'),
-          color: '#F57F17',
-          type: 'birthday',
-        });
-      }
-    },
-    // Vuetify 4 calls the click handlers with (nativeEvent, scope), not with one merged object
-    showEvent(nativeEvent: Event, {event}: {event: any}) {
-      const open = () => {
-        this.selectedEvent = event;
-        this.selectedElement = nativeEvent.target;
-        setTimeout(() => {
-          this.selectedOpen = true;
-        }, 10);
-      };
+const branches = computed(() => masterData.branches)
 
-      if (this.selectedOpen) {
-        this.selectedOpen = false;
-        setTimeout(open, 10);
-      } else {
-        open();
-      }
+const title = computed(() => {
+  if (!start.value || !end.value) {
+    return ''
+  }
 
-      nativeEvent.stopPropagation();
-    },
-    viewDay(_nativeEvent: Event, {date}: {date: string}): void {
-      this.focus = date;
-      this.type = 'day';
-    },
-    getEventColor(event: any) {
-      return event.color;
-    },
-    setToday(): void {
-      this.focus = new Date();
-    },
-    prev(): void {
-      this.$refs.calendar.prev();
-    },
-    next(): void {
-      this.$refs.calendar.next();
-    },
-    updateRange({start, end}: {start: any, end: any}) {
-      this.start = start;
-      this.end = end;
-      this.loadData();
-    },
-    formatDayTime(timeObj: any) {
-      return timeObj.time;
-    },
-    getFullName(trainerId: number) {
-      const trainer = this.getSimpleTrainerById(trainerId);
-      if (!trainer) return '';
-      return trainer.firstName + " " + trainer.familyName;
+  const startMonth = dayjs(start.value.date).format('MMMM')
+  const startYear = start.value.year
+  const startDay = start.value.day
+
+  switch (type.value) {
+    case 'month':
+      return `${startMonth} ${startYear}`
+    case 'week':
+    case 'day':
+    case 'category':
+      return `${startMonth} ${startDay} ${startYear}`
+  }
+  return ''
+})
+
+function getGroupById(groupId: number) {
+  return masterData.getGroupById(groupId) ?? { name: '' }
+}
+
+function getBranchByGroupId(groupId: number) {
+  return masterData.getBranchByGroupId(groupId)
+}
+
+function getSimpleTrainerById(trainerId: number) {
+  return masterData.getSimpleTrainerById(trainerId)
+}
+
+function getLocationNameById(locationId: number) {
+  return masterData.getLocationNameById(locationId)
+}
+
+async function loadTrainingEvents() {
+  let url = '/training/'
+  if (props.privateMode) {
+    url += 'calendar'
+  } else {
+    url += 'simplecalendar'
+  }
+  const { data } = await httpClient.get(url + '?start=' + start.value.date + '&end=' + end.value.date)
+  for (const trainingData of data.data) {
+    let branch = null
+    if (trainingData.groupIds && trainingData.groupIds.length > 0) {
+      branch = getBranchByGroupId(trainingData.groupIds[0])
     }
-  },
-};
+    if (branch) {
+      const training = new Training(
+        trainingData.id,
+        dayjs(trainingData.start),
+        dayjs(trainingData.end),
+        trainingData.locationId,
+        trainingData.groupIds,
+        trainingData.contentIds,
+        trainingData.trainerIds,
+        trainingData.participants,
+        trainingData.comment,
+        trainingData.prepared === 1 ? true : false,
+        trainingData.evaluated === 1 ? true : false,
+        trainingData.automaticAttend === 1 ? true : false
+      )
+      trainings.value.push(training)
+
+      events.value.push({
+        name: branch.shortName,
+        branchName: branch.name,
+        start: training.start.format('YYYY-MM-DD HH:mm'),
+        end: training.end.format('YYYY-MM-DD HH:mm'),
+        groupIds: training.groupIds,
+        trainerIds: training.trainerIds,
+        location: getLocationNameById(training.locationId),
+        participantCount: training.participants ? training.participants.filter((p) => p.attend).length : null,
+        type: 'training',
+        color: branch.colorHex,
+        evaluated: training.evaluated,
+        category: branch.name
+      })
+    }
+  }
+}
+
+async function loadPlannedTrainingEvents() {
+  const url = '/training/simplecalendar/planned'
+  const { data } = await httpClient.get(url + '?start=' + start.value.date + '&end=' + end.value.date)
+  for (const trainingData of data.data) {
+    let branch = null
+    if (trainingData.groupIds && trainingData.groupIds.length > 0) {
+      branch = getBranchByGroupId(trainingData.groupIds[0])
+    }
+    if (branch) {
+      const training = new Training(
+        trainingData.id,
+        dayjs(trainingData.start),
+        dayjs(trainingData.end),
+        trainingData.locationId,
+        trainingData.groupIds,
+        trainingData.contentIds,
+        trainingData.trainerIds,
+        [],
+        trainingData.comment,
+        false,
+        false,
+        false
+      )
+      trainings.value.push(training)
+
+      events.value.push({
+        name: branch.shortName,
+        branchName: branch.name,
+        start: training.start.format('YYYY-MM-DD HH:mm'),
+        end: training.end.format('YYYY-MM-DD HH:mm'),
+        groupIds: training.groupIds,
+        trainerIds: training.trainerIds,
+        type: 'planed-training',
+        color: branch.colorHex,
+        category: branch.name
+      })
+    }
+  }
+}
+
+async function loadBirthdayEvents() {
+  const { data } = await httpClient.get('/user/birthdays?start=' + start.value.date + '&end=' + end.value.date)
+  for (const birthdayData of data) {
+    events.value.push({
+      name: birthdayData.firstName + ' ' + birthdayData.familyName,
+      start: start.value.date.slice(0, 4) + '-' + dayjs(birthdayData.birthdate).format('MM-DD'),
+      color: '#F57F17',
+      type: 'birthday'
+    })
+  }
+}
+
+async function loadData() {
+  trainings.value = []
+  events.value = []
+  categories.value = []
+  categories.value = branches.value
+  await loadTrainingEvents()
+  await loadPlannedTrainingEvents()
+  if (props.privateMode) {
+    await loadBirthdayEvents()
+  }
+}
+
+// Vuetify 4 calls the click handlers with (nativeEvent, scope), not with one merged object
+function showEvent(nativeEvent: Event, { event }: { event: any }) {
+  const open = () => {
+    selectedEvent.value = event
+    selectedElement.value = nativeEvent.target
+    setTimeout(() => {
+      selectedOpen.value = true
+    }, 10)
+  }
+
+  if (selectedOpen.value) {
+    selectedOpen.value = false
+    setTimeout(open, 10)
+  } else {
+    open()
+  }
+
+  nativeEvent.stopPropagation()
+}
+
+function viewDay(_nativeEvent: Event, { date }: { date: string }): void {
+  focus.value = date
+  type.value = 'day'
+}
+
+function getEventColor(event: any) {
+  return event.color
+}
+
+function setToday(): void {
+  focus.value = new Date()
+}
+
+function prev(): void {
+  calendar.value.prev()
+}
+
+function next(): void {
+  calendar.value.next()
+}
+
+function updateRange({ start: rangeStart, end: rangeEnd }: { start: any; end: any }) {
+  start.value = rangeStart
+  end.value = rangeEnd
+  loadData()
+}
+
+function formatDayTime(timeObj: any) {
+  return timeObj.time
+}
+
+function getFullName(trainerId: number) {
+  const trainer = getSimpleTrainerById(trainerId)
+  if (!trainer) return ''
+  return trainer.firstName + ' ' + trainer.familyName
+}
 </script>
 
 <style scoped>

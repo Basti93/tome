@@ -36,20 +36,22 @@
                     <v-card-text>
                       <v-tabs
                           v-model="activeTab"
-                          icons-and-text
+                          class="profile-tabs"
+                          grow
+                          stacked
                       >
 
                         <v-tab>
-                          Benutzereinstellungen
                           <v-icon>mdi-account-circle</v-icon>
+                          Profil
                         </v-tab>
                         <v-tab v-if="loggedInUser.isAdmin || loggedInUser.isTrainer">
-                          Trainereinstellungen
                           <v-icon>mdi-shield-check</v-icon>
+                          Trainer
                         </v-tab>
                         <v-tab>
-                          Benachrichtigungseinstellungen
                           <v-icon>mdi-bell</v-icon>
+                          Benachrichtigungen
                         </v-tab>
                       </v-tabs>
                       <v-window v-model="activeTab">
@@ -87,7 +89,6 @@
                                   </v-col>
                                   <v-col cols="12" sm="6">
                                     <v-menu
-                                        ref="birthdateMenu"
                                         :close-on-content-click="false"
                                         v-model="birthdateMenu"
                                         :rules="requiredRule"
@@ -216,153 +217,147 @@
   </v-container>
 </template>
 
-<script>
-import ChangePasswordDialog from "@/components/ChangePasswordDialog.vue";
-import UploadProfileImage from "@/components/UploadProfileImage.vue";
-import NotificationPreferencesForm from "@/components/NotificationPreferencesForm.vue";
-import {formatDate} from "../helpers/date-helpers"
-import GroupsSelect from "../components/GroupsSelect.vue";
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useDisplay } from 'vuetify'
+import ChangePasswordDialog from '@/components/ChangePasswordDialog.vue'
+import UploadProfileImage from '@/components/UploadProfileImage.vue'
+import NotificationPreferencesForm from '@/components/NotificationPreferencesForm.vue'
+import { formatDate } from '../helpers/date-helpers'
+import GroupsSelect from '../components/GroupsSelect.vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import dayjs, { parseApiDate } from '@/helpers/dayjs'
+import { parseApiDate } from '@/helpers/dayjs'
 import User from '@/models/User'
-import { useDisplay } from 'vuetify'
 
-export default {
-  setup() {
-    const { xs } = useDisplay()
-    return { dayjs, parseApiDate, xs };
-  },
-  name: "ProfilePage",
-  components: {GroupsSelect, ChangePasswordDialog, UploadProfileImage, NotificationPreferencesForm},
-  data: function () {
-    return {
-      activeTab: 0,
-      valid: true,
-      birthdateMenu: false,
-      showPasswordDialog: false,
-      imageToUpload: null,
-      editUser: {
-        id: null,
-        firstName: null,
-        familyName: null,
-        email: null,
-        birthdate: null,
-        profileImageName: null,
-        trainerBranchIds: [],
-        groupIds: [],
-      },
-      requiredRule: [
-        v => !!v || 'Pflichtfeld'
-      ],
-      emailRules: [
-        v => !!v || 'Pflichtfeld',
-        v => /.+@.+/.test(v) || 'E-mail muss gültig sein'
-      ],
-    }
-  },
-  created() {
-    this.assignCurrentUser();
-  },
-  computed: {
-    loggedInUser() {
-      return useAuthStore().user
-    },
-    branches() {
-      return useMasterDataStore().branches
-    },
-    birthdateFormatted() {
-      return this.formatDate(this.editUser.birthdate)
-    },
-    hasUnsavedChanges() {
-      if (!this.loggedInUser) return false;
-      return (
-        this.editUser.firstName !== this.loggedInUser.firstName ||
-        this.editUser.familyName !== this.loggedInUser.familyName ||
-        this.editUser.email !== this.loggedInUser.email ||
-        this.editUser.birthdate !== this.loggedInUser.birthdate ||
-        this.imageToUpload !== null ||
-        this.editUser.profileImageName !== this.loggedInUser.profileImageName ||
-        JSON.stringify(this.editUser.groupIds) !== JSON.stringify(this.loggedInUser.groupIds) ||
-        JSON.stringify(this.editUser.trainerBranchIds) !== JSON.stringify(this.loggedInUser.trainerBranchIds)
-      );
-    }
-  },
-  methods: {
-    assignCurrentUser: function () {
-      this.editUser = {...this.loggedInUser}
-    },
-    groupsChanged: function ({groupIds}) {
-      this.editUser.groupIds = groupIds;
-    },
-    imageChanged(file) {
-      if (file && file.size) {
-        this.imageToUpload = file;
-      } else {
-        this.imageRemoved();
-      }
-    },
-    imageRemoved() {
-      this.imageToUpload = null;
-      this.editUser.profileImageName = null;
-    },
-    async uploadProfileImage() {
-      const formData = new FormData();
-      formData.append('profile_image', this.imageToUpload);
-      const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
-      if (data.status === 'ok') {
-        console.log("Image uploaded")
-        return data.imageUrl;
-      }
-      useSnackbarStore().show("Fehler beim Hochladen des Bildes.", "error")
-      throw "Image upload error";
-    },
-    async save() {
-      try {
-        const postData = {
-          firstName: this.editUser.firstName,
-          familyName: this.editUser.familyName,
-          email: this.editUser.email,
-          birthdate: this.editUser.birthdate ? parseApiDate(this.editUser.birthdate).format() : null,
-          groupIds: this.editUser.groupIds,
-          trainerBranchIds: this.editUser.trainerBranchIds,
-        };
+const { xs } = useDisplay()
+const authStore = useAuthStore()
+const masterData = useMasterDataStore()
 
-        let imageName = null;
-        if (this.imageToUpload) {
-          imageName = await this.uploadProfileImage();
-        } else if (this.editUser.profileImageName) {
-          imageName = this.editUser.profileImageName;
-        }
-        if (imageName) {
-          postData.profileImageName = imageName;
-        }
+const activeTab = ref(0)
+const valid = ref(true)
+const birthdateMenu = ref(false)
+const showPasswordDialog = ref(false)
+const imageToUpload = ref<File | null>(null)
+const editUser = ref<any>({
+  id: null,
+  firstName: null,
+  familyName: null,
+  email: null,
+  birthdate: null,
+  profileImageName: null,
+  trainerBranchIds: [],
+  groupIds: []
+})
+const requiredRule = [(v: any) => !!v || 'Pflichtfeld']
+const emailRules = [(v: any) => !!v || 'Pflichtfeld', (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein']
 
-        const {data} = await httpClient.put('user/me', postData);
-        if (data.status == 'ok') {
-          useSnackbarStore().show("Erfolgreich gespeichert", "success")
-          const {data: userData} = await httpClient.get('auth/me');
-          const user = User.from(JSON.stringify(userData))
-          useAuthStore().updateUser(user)
-          this.assignCurrentUser();
-        } else {
-          useSnackbarStore().show("Fehler beim Speichern.", "error")
-        }
-      } catch (error) {
-        useSnackbarStore().show("Fehler beim Speichern.", "error")
-      }
-    },
-    formatDate,
-    shortNameAndName(branch) {
-      return branch.name + ' (' + branch.shortName + ')';
-    }
-  },
+const loggedInUser = computed(() => authStore.user)
+const branches = computed(() => masterData.branches)
+const birthdateFormatted = computed(() => formatDate(editUser.value.birthdate))
+const hasUnsavedChanges = computed(() => {
+  const user = loggedInUser.value as any
+  if (!user) return false
+  return (
+    editUser.value.firstName !== user.firstName ||
+    editUser.value.familyName !== user.familyName ||
+    editUser.value.email !== user.email ||
+    editUser.value.birthdate !== user.birthdate ||
+    imageToUpload.value !== null ||
+    editUser.value.profileImageName !== user.profileImageName ||
+    JSON.stringify(editUser.value.groupIds) !== JSON.stringify(user.groupIds) ||
+    JSON.stringify(editUser.value.trainerBranchIds) !== JSON.stringify(user.trainerBranchIds)
+  )
+})
+
+function assignCurrentUser() {
+  editUser.value = { ...loggedInUser.value }
 }
+
+function groupsChanged({ groupIds }: { groupIds: any[] }) {
+  editUser.value.groupIds = groupIds
+}
+
+function imageRemoved() {
+  imageToUpload.value = null
+  editUser.value.profileImageName = null
+}
+
+function imageChanged(file: File | null) {
+  if (file && file.size) {
+    imageToUpload.value = file
+  } else {
+    imageRemoved()
+  }
+}
+
+async function uploadProfileImage() {
+  const formData = new FormData()
+  formData.append('profile_image', imageToUpload.value as File)
+  const { data } = await httpClient.post('/user/me/uploadprofileimage', formData)
+  if (data.status === 'ok') {
+    return data.imageUrl
+  }
+  useSnackbarStore().show('Fehler beim Hochladen des Bildes.', 'error')
+  throw 'Image upload error'
+}
+
+async function save() {
+  try {
+    const postData: Record<string, any> = {
+      firstName: editUser.value.firstName,
+      familyName: editUser.value.familyName,
+      email: editUser.value.email,
+      birthdate: editUser.value.birthdate ? parseApiDate(editUser.value.birthdate).format() : null,
+      groupIds: editUser.value.groupIds,
+      trainerBranchIds: editUser.value.trainerBranchIds
+    }
+
+    let imageName = null
+    if (imageToUpload.value) {
+      imageName = await uploadProfileImage()
+    } else if (editUser.value.profileImageName) {
+      imageName = editUser.value.profileImageName
+    }
+    if (imageName) {
+      postData.profileImageName = imageName
+    }
+
+    const { data } = await httpClient.put('user/me', postData)
+    if (data.status == 'ok') {
+      useSnackbarStore().show('Erfolgreich gespeichert', 'success')
+      const { data: userData } = await httpClient.get('auth/me')
+      const user = User.from(JSON.stringify(userData))
+      useAuthStore().updateUser(user)
+      assignCurrentUser()
+    } else {
+      useSnackbarStore().show('Fehler beim Speichern.', 'error')
+    }
+  } catch {
+    useSnackbarStore().show('Fehler beim Speichern.', 'error')
+  }
+}
+
+function shortNameAndName(branch: { name: string; shortName: string }) {
+  return branch.name + ' (' + branch.shortName + ')'
+}
+
+assignCurrentUser()
 </script>
 
 <style scoped>
+@media (max-width: 599.98px) {
+  /* three tabs must fit side by side without scrolling */
+  .profile-tabs :deep(.v-tab.v-btn) {
+    min-width: 0;
+    padding-inline: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+}
+
 .pulse {
   animation: pulse 2s infinite;
 }

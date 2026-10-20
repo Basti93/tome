@@ -151,10 +151,12 @@ class PushDispatchTest extends TestCase
     #[DataProvider('trainingTypes')]
     public function test_training_context_skips_users_who_disabled_the_matching_preference(int $type, string $preference): void
     {
-        $on = $this->userWithToken('on');
-        $off = $this->userWithToken('off', [$preference => false]);
-        $otherOff = $this->userWithToken('other', collect(['trainer_upcoming', 'trainer_cancel_alert', 'participant_upcoming'])
-            ->reject(fn ($p) => $p === $preference)->mapWithKeys(fn ($p) => [$p => false])->all());
+        $all = ['trainer_upcoming', 'trainer_cancel_alert', 'participant_upcoming'];
+        // trainer_upcoming is opt-in, so the users that should receive it have it switched on explicitly
+        $on = $this->userWithToken('on', array_fill_keys($all, true));
+        $off = $this->userWithToken('off', array_merge(array_fill_keys($all, true), [$preference => false]));
+        $otherOff = $this->userWithToken('other', collect($all)
+            ->mapWithKeys(fn ($p) => [$p => $p === $preference])->all());
         $training = TrainingFactory::new()->create();
 
         $this->artisan('notification:sendToUsersTrainingContext', [
@@ -290,9 +292,11 @@ class PushDispatchTest extends TestCase
     public function test_trainer_reminder_goes_to_trainers_with_trainer_upcoming_enabled(): void
     {
         $training = $this->soonTraining();
-        $on = $this->userWithToken('trainer-on');
+        $on = $this->userWithToken('trainer-on', ['trainer_upcoming' => true]);
         $off = $this->userWithToken('trainer-off', ['trainer_upcoming' => false]);
-        $training->trainers()->attach([$on->id, $off->id]);
+        $default = $this->userWithToken('trainer-default'); // no stored preferences: the reminder is opt-in
+        $older = $this->userWithToken('trainer-older', ['absence_alert' => true]); // stored preferences without the key
+        $training->trainers()->attach([$on->id, $off->id, $default->id, $older->id]);
         $p = UserFactory::new()->create();
         $training->participants()->attach($p->id, ['attend' => 1]);
 

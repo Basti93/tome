@@ -1,4 +1,3 @@
-// @ts-nocheck - the helpers under test are plain JavaScript
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dayArrayToString, dayNameByNumber, formatDate, parseDate } from '@/helpers/date-helpers'
 import { getRandomColor } from '@/helpers/color-helper'

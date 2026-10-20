@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import Branch from '@/models/Branch'
 import Group from '@/models/Group'
-import User from '@/models/User'
 import TrainingSeries from '@/models/TrainingSeries'
 import SimpleUser from '@/models/SimpleUser'
 import type { default as HttpClient } from '@/http/api'

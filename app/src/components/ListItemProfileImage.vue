@@ -5,28 +5,15 @@
     </v-avatar>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import { profileImageUrl } from '@/helpers/profile-image'
-    export default {
-        name: "tome-list-item-profile-image",
-        props: {
-            imagePath: String,
-            size: String,
-        },
-        data: function () {
-            return {
-                dSize: 24,
-            }
-        },
-        created() {
-          if (this.size) {
-              this.dSize = this.size;
-          }
-        },
-        computed: {
-            imageUrl() {
-                return profileImageUrl(this.imagePath);
-            },
-        },
-    }
+
+const props = defineProps<{
+  imagePath?: string
+  size?: string
+}>()
+
+const dSize = computed(() => props.size || 24)
+const imageUrl = computed(() => profileImageUrl(props.imagePath))
 </script>

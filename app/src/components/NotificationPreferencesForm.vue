@@ -104,8 +104,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
@@ -120,91 +120,77 @@ interface NotificationPreferences {
   trainer_evaluation_reminder_email: boolean
 }
 
+const emit = defineEmits<{
+  saved: [preferences: Record<string, boolean> | null]
+}>()
+
 // the API answers in camelCase (trainerUpcoming), the form and the request body use snake_case
 function snakeCaseKeys(obj?: Record<string, boolean>): Record<string, boolean> | null {
   if (!obj) return null
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase()), v]))
 }
 
-export default defineComponent({
-  name: 'NotificationPreferencesForm',
-  emits: ['saved'],
-  data() {
-    return {
-      preferences: {
-        trainer_upcoming: true,
-        trainer_cancel_alert: true,
-        participant_upcoming: true,
-        absence_alert: true,
-        admin_messages: true,
-        trainer_evaluation_reminder: true,
-        trainer_evaluation_reminder_email: false,
-      } as NotificationPreferences,
-      originalPreferences: {
-        trainer_upcoming: true,
-        trainer_cancel_alert: true,
-        participant_upcoming: true,
-        absence_alert: true,
-        admin_messages: true,
-        trainer_evaluation_reminder: true,
-        trainer_evaluation_reminder_email: false,
-      } as NotificationPreferences,
-      loading: false,
-    }
-  },
-  computed: {
-    authStore() {
-      return useAuthStore()
-    },
-    hasChanges(): boolean {
-      return JSON.stringify(this.preferences) !== JSON.stringify(this.originalPreferences)
-    },
-  },
-  async mounted() {
-    await this.loadPreferences()
-  },
-  methods: {
-    async loadPreferences() {
-      try {
-        const { data } = await httpClient.get('/user/me/notification-preferences')
-        const loaded = snakeCaseKeys(data?.notificationPreferences ?? data?.notification_preferences)
-        if (loaded) {
-          // keys missing in older stored preferences count as enabled (the e-mail reminder as disabled)
-          this.preferences = { ...this.preferences, ...loaded }
-          this.originalPreferences = { ...this.preferences }
-        }
-      } catch (error) {
-        console.error('Error loading notification preferences:', error)
-        useSnackbarStore().show('Fehler beim Laden der Benachrichtigungseinstellungen', 'error')
-      }
-    },
-    async save() {
-      this.loading = true
-      try {
-        const { data } = await httpClient.put('/user/me/notification-preferences', {
-          notification_preferences: this.preferences,
-        })
-        if (data && data.status === 'ok') {
-          this.originalPreferences = { ...this.preferences }
-          this.authStore.updateUser({
-            ...this.authStore.user,
-            notification_preferences: snakeCaseKeys(data.notificationPreferences ?? data.notification_preferences),
-          })
-          useSnackbarStore().show('Benachrichtigungseinstellungen gespeichert', 'success')
-          this.$emit('saved', snakeCaseKeys(data.notificationPreferences ?? data.notification_preferences))
-        }
-      } catch (error) {
-        console.error('Error saving notification preferences:', error)
-        useSnackbarStore().show('Fehler beim Speichern der Benachrichtigungseinstellungen', 'error')
-      } finally {
-        this.loading = false
-      }
-    },
-    reset() {
-      this.preferences = { ...this.originalPreferences }
-    },
-  },
+const defaults = (): NotificationPreferences => ({
+  trainer_upcoming: false,
+  trainer_cancel_alert: true,
+  participant_upcoming: true,
+  absence_alert: true,
+  admin_messages: true,
+  trainer_evaluation_reminder: true,
+  trainer_evaluation_reminder_email: false
 })
+
+const authStore = useAuthStore()
+
+const preferences = ref<NotificationPreferences>(defaults())
+const originalPreferences = ref<NotificationPreferences>(defaults())
+const loading = ref(false)
+
+const hasChanges = computed(() => JSON.stringify(preferences.value) !== JSON.stringify(originalPreferences.value))
+
+async function loadPreferences() {
+  try {
+    const { data } = await httpClient.get('/user/me/notification-preferences')
+    const loaded = snakeCaseKeys(data?.notificationPreferences ?? data?.notification_preferences)
+    if (loaded) {
+      // keys missing in older stored preferences count as enabled (the opt-in reminders as disabled)
+      preferences.value = { ...preferences.value, ...loaded }
+      originalPreferences.value = { ...preferences.value }
+    }
+  } catch (error) {
+    console.error('Error loading notification preferences:', error)
+    useSnackbarStore().show('Fehler beim Laden der Benachrichtigungseinstellungen', 'error')
+  }
+}
+
+async function save() {
+  loading.value = true
+  try {
+    const { data } = await httpClient.put('/user/me/notification-preferences', {
+      notification_preferences: preferences.value
+    })
+    if (data && data.status === 'ok') {
+      originalPreferences.value = { ...preferences.value }
+      authStore.updateUser({
+        ...authStore.user,
+        notification_preferences: snakeCaseKeys(data.notificationPreferences ?? data.notification_preferences)
+      } as any)
+      useSnackbarStore().show('Benachrichtigungseinstellungen gespeichert', 'success')
+      emit('saved', snakeCaseKeys(data.notificationPreferences ?? data.notification_preferences))
+    }
+  } catch (error) {
+    console.error('Error saving notification preferences:', error)
+    useSnackbarStore().show('Fehler beim Speichern der Benachrichtigungseinstellungen', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+function reset() {
+  preferences.value = { ...originalPreferences.value }
+}
+
+onMounted(loadPreferences)
 </script>
 
 <style scoped>

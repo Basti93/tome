@@ -24,16 +24,18 @@ class EmailVerificationController extends Controller
     public function sendVerificationEmail(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email',
         ]);
 
         $user = User::where('email', $request->input('email'))->first();
 
-        if ($user->email_verified_at) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'Email already verified.',
-            ]);
+        // same answer whether the account exists, is verified already or the mail was sent (no enumeration)
+        $generic = response()->json([
+            'status' => 'ok',
+            'message' => 'Falls ein unbestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde eine E-Mail gesendet.',
+        ]);
+        if (! $user || $user->email_verified_at) {
+            return $generic;
         }
 
         // Generate verification token
@@ -53,14 +55,11 @@ class EmailVerificationController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to send verification email.',
+                'message' => 'Die E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.',
             ], 500);
         }
 
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'Verification email sent.',
-        ]);
+        return $generic;
     }
 
     /**
@@ -81,7 +80,7 @@ class EmailVerificationController extends Controller
         if (! $user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid or expired verification token.',
+                'message' => 'Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere auf der Anmeldeseite einen neuen an.',
             ], 400);
         }
 
@@ -89,7 +88,7 @@ class EmailVerificationController extends Controller
         if ($user->updated_at && Carbon::parse($user->updated_at)->addHours(self::VERIFICATION_TOKEN_EXPIRY_HOURS)->isPast()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Verification token has expired. Please request a new one.',
+                'message' => 'Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere auf der Anmeldeseite einen neuen an.',
             ], 400);
         }
 
@@ -102,7 +101,7 @@ class EmailVerificationController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'message' => 'Email verified successfully.',
+            'message' => 'Deine E-Mail-Adresse wurde bestätigt. Du kannst dich jetzt anmelden.',
         ]);
     }
 }

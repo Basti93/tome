@@ -403,269 +403,280 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
-import TrainingParticipant from "@/models/TrainingParticipant";
-import TrainingTrainer from "@/models/TrainingTrainer";
-import TrainingEvaluation from "@/models/TrainingEvaluation";
-import TrainingAccountingExportDialog from "@/components/TrainingAccountingExportDialog.vue";
-import ListItemProfileImage from "../components/ListItemProfileImage.vue"
-import TrainingSelector from "../components/TrainingSelector.vue";
-import User from "../models/User";
+import TrainingParticipant from '@/models/TrainingParticipant'
+import TrainingTrainer from '@/models/TrainingTrainer'
+import TrainingEvaluation from '@/models/TrainingEvaluation'
+import TrainingAccountingExportDialog from '@/components/TrainingAccountingExportDialog.vue'
+import TomeListItemProfileImage from '../components/ListItemProfileImage.vue'
+import TrainingSelector from '../components/TrainingSelector.vue'
+import User from '../models/User'
 
-export default {
-  setup() {
-    const { xs, md } = useDisplay()
-    return { xs, md }
-  },
-  name: "TrainingsEvaluationPage",
-  components: {
-    TrainingSelector,
-    TrainingAccountingExportDialog,
-    "tome-list-item-profile-image": ListItemProfileImage
-  },
-  data: function () {
-    return {
-      pastTrainings: [] as TrainingEvaluation[],
-      dataLoaded: false,
-      selectedTrainingId: null,
-      selectedTrainerId: null,
-      animationTrigger: true,
-      users: [],
-      selectedLocationId: null,
-      trainersListGroupActive: true,
-      participantsListGroupActive: true,
-      canceledUserListGroupActive: true,
-      undecidedUsersListGroupActive: true,
-      confirmEvaluationDialog: false,
-      editStartTime: null as string | null,
-      editEndTime: null as string | null,
-      timeDialogOpened: false,
-      showCancelReasonDialog: false,
-      cancelReasonDialogText: null,
-      showAccountingDialog: false,
-    }
-  },
-  computed: {
-    loggedInUser() { return useAuthStore().user },
-    locations() { return useMasterDataStore().locations },
-    selectedTraining() {
-      return this.getUpcomingTrainingById(this.selectedTrainingId);
-    },
-    participatingUsers() {
-      if (this.selectedTraining.participants) {
-        const filteredUserIds = this.selectedTraining.participants.filter(p => p.attend).map(p => p.userId);
-        if (filteredUserIds.length > 0) {
-          return this.users.filter(u => filteredUserIds.indexOf(u.id) >= 0);
-        }
-      }
-      return [];
-    },
-    canceledUsers() {
-      if (this.selectedTraining.participants) {
-        const filteredUserIds = this.selectedTraining.participants.filter(p => !p.attend).map(p => p.userId);
-        if (filteredUserIds.length > 0) {
-          return this.users.filter(u => filteredUserIds.indexOf(u.id) >= 0);
-        }
-      }
-      return [];
-    },
-    undecidedUsers() {
-      const usersOfGroups = this.users.filter(u => u.groupIds.some(r => this.selectedTraining.groupIds.includes(r)))
-      return usersOfGroups.filter(u => !this.canceledUsers.concat(this.participatingUsers).includes(u));
-    },
-    currentUserGroupId() {
-      if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
-        return this.currentUser.groupIds[0]
-      }
-      return null
-    },
-    getGroupsByIds() { return (ids) => useMasterDataStore().getGroupsByIds(ids) },
-  },
-  created() {
-    this.fetchData();
-  },
-  methods: {
-    getCancelReason(userId: Number) {
-      const cancelreason = this.selectedTraining.participants.filter(p => p.userId == userId)[0].cancelreason;
-      if (cancelreason) {
-        return cancelreason
-      }
-      return null;
-    },
-    openCancelReasonDialog(userId: Number) {
-      const cancelReason = this.getCancelReason(userId);
-      if (cancelReason) {
-        this.cancelReasonDialogText = cancelReason;
-        this.showCancelReasonDialog = true;
-      }
-    },
-    async fetchData() {
-      try {
-        this.dataLoaded = false;
-        this.pastTrainings = [];
-        //load data
-        const res = await httpClient.get('/trainingevaluation/' + this.loggedInUser.id);
-        if (res.data.data && res.data.data.length > 0) {
-          //json result to objects
-          for (const trObj of res.data.data) {
-            const participants = [] as TrainingParticipant[];
-            for (const partObj of trObj.participants) {
-              participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason));
-            }
-            const trainers = [] as TrainingTrainer[];
-            const trainingStartTime = parseApiDate(trObj.start);
-            const trainingEndTime = parseApiDate(trObj.end);
-            for (const partObj of trObj.trainers) {
-              let timeStart;
-              if (partObj.accountingTimeStart != null) {
-                timeStart = parseApiDate(partObj.accountingTimeStart);
-              } else {
-                timeStart = trainingStartTime
-              }
-              let timeEnd;
-              if (partObj.accountingTimeEnd != null) {
-                timeEnd = parseApiDate(partObj.accountingTimeEnd);
-              } else {
-                timeEnd = trainingEndTime
-              }
-              trainers.push(new TrainingTrainer(partObj.trainingId, partObj.userId, timeStart, timeEnd));
-            }
-            this.pastTrainings.push(new TrainingEvaluation(trObj.id, trainingStartTime, trainingEndTime, trObj.locationId, trObj.groupIds, trObj.contentIds, trainers, participants, trObj.comment, trObj.prepared === 1 ? true : false, trObj.evaluated === 1 ? true : false));
-          }
-          //select first training
-          this.selectTraining(this.pastTrainings[0].id);
-        }
-        this.users = []
-        const userRes = await httpClient.get('/user');
-        for (const userObj of userRes.data) {
-          this.users.push(new User(
-              userObj.id,
-              userObj.email,
-              userObj.firstName,
-              userObj.familyName,
-              userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
-              userObj.active === 1 ? true : false,
-              userObj.groupIds,
-              userObj.roleNames,
-              userObj.trainerBranchIds,
-              userObj.registered,
-              userObj.profileImageName,
-              userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
-              userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
-              userObj.absenceReason
-          ))
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.dataLoaded = true;
-      }
-    },
-    async removeParticipant(userId) {
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
-      if (data.status == 'ok') {
-        this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
-        useSnackbarStore().show("Benutzer entfernt", "success");
-      }
-    },
-    async addParticipant(userId) {
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
-      if (data.status == 'ok') {
-        if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
-          this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, true, null));
+const { xs } = useDisplay()
+const authStore = useAuthStore()
+const masterData = useMasterDataStore()
 
-        }
-        this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = true
-        useSnackbarStore().show("Benutzer hinzugefügt", "success");
-      }
-    },
-    async addParticipantAsCanceled(userId) {
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/addparticipant/' + userId)
-      if (data.status == 'ok') {
-        if (!this.selectedTraining.participants.map(p => p.userId).includes(userId)) {
-          this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, userId, false, null));
-        } else {
-          this.selectedTraining.participants.filter(p => p.userId === userId)[0].attend = false
-        }
-        useSnackbarStore().show("Benutzer zu Absagen hinzugefügt", "success");
-      }
-    },
-    async removeParticipantToUndecided(userId) {
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/removeparticipant/' + userId)
-      if (data.status == 'ok') {
-        const index = this.selectedTraining.participants.findIndex(p => p.userId === userId);
-        if (index >= 0) {
-          this.selectedTraining.participants.splice(index, 1);
-        }
-        useSnackbarStore().show("Benutzer entfernt", "success");
-      }
-    },
-    async evaluated() {
-      this.confirmEvaluationDialog = false;
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/evaluated')
-      if (data.status == 'ok') {
-        this.selectedTraining.evaluated = true
-        useSnackbarStore().show("Training abgeschlossen", "success");
-      }
-    },
-    editTime(item: TrainingTrainer) {
-      this.selectedTrainerId = item.userId;
-      this.editStartTime = item.accountingTimeStart.format('HH:mm')
-      this.editEndTime = item.accountingTimeEnd.format('HH:mm')
-      this.timeDialogOpened = true;
-    },
-    async updateAccountingTime() {
-      this.timeDialogOpened = false;
-      const selectedTrainer = this.selectedTraining.trainers.find(t => t.userId === this.selectedTrainerId)
-      const startDateTime = selectedTrainer.accountingTimeStart.clone().set({
-        h: this.editStartTime.split(":")[0],
-        m: this.editStartTime.split(":")[1]
-      });
-      const endDateTime = selectedTrainer.accountingTimeEnd.clone().set({
-        h: this.editEndTime.split(":")[0],
-        m: this.editEndTime.split(":")[1]
-      });
-      const postData = {
-        'trainerId': this.selectedTrainerId,
-        'start': startDateTime.format(),
-        'end': endDateTime.format(),
-      };
-      const {data} = await httpClient.post('/trainingevaluation/' + this.selectedTraining.id + '/updateaccountingtime', postData)
-      if (data.status == 'ok') {
-        selectedTrainer.accountingTimeStart = startDateTime;
-        selectedTrainer.accountingTimeEnd = endDateTime;
-        useSnackbarStore().show("Zeiten aktualisiert", "success");
-      }
-    },
-    selectTraining(id) {
-      this.animationTrigger = false;
-      this.selectedTrainingId = id;
-      this.participantsListGroupActive = true;
-      this.canceledUserListGroupActive = true;
-      this.undecidedUsersListGroupActive = true;
-      setTimeout(() => {
-        this.animationTrigger = true;
-      }, 100);
-    },
-    getUpcomingTrainingById(id) {
-      return this.pastTrainings.filter(ut => ut.id == id)[0];
-    },
-    fullName: item => item.firstName + ' ' + item.familyName,
-    trainerFullName(id) {
-      return this.fullName(useMasterDataStore().getSimpleTrainerById(id))
-    },
-    getLocationNameById(locationId) {
-      return useMasterDataStore().getLocationNameById(locationId);
-    },
-  },
+const pastTrainings = ref<TrainingEvaluation[]>([])
+const dataLoaded = ref(false)
+const selectedTrainingId = ref<any>(null)
+const selectedTrainerId = ref<any>(null)
+const animationTrigger = ref(true)
+const users = ref<User[]>([])
+const participantsListGroupActive = ref(true)
+const canceledUserListGroupActive = ref(true)
+const undecidedUsersListGroupActive = ref(true)
+const confirmEvaluationDialog = ref(false)
+const editStartTime = ref<string | null>(null)
+const editEndTime = ref<string | null>(null)
+const timeDialogOpened = ref(false)
+const showCancelReasonDialog = ref(false)
+const cancelReasonDialogText = ref<string | null>(null)
+const showAccountingDialog = ref(false)
+
+const loggedInUser = computed(() => authStore.user)
+
+function getUpcomingTrainingById(id: any) {
+  return pastTrainings.value.filter((ut) => ut.id == id)[0]
 }
 
+const selectedTraining = computed<any>(() => getUpcomingTrainingById(selectedTrainingId.value))
+
+const participatingUsers = computed(() => {
+  if (selectedTraining.value.participants) {
+    const filteredUserIds = selectedTraining.value.participants
+      .filter((p: TrainingParticipant) => p.attend)
+      .map((p: TrainingParticipant) => p.userId)
+    if (filteredUserIds.length > 0) {
+      return users.value.filter((u) => filteredUserIds.indexOf(u.id) >= 0)
+    }
+  }
+  return []
+})
+
+const canceledUsers = computed(() => {
+  if (selectedTraining.value.participants) {
+    const filteredUserIds = selectedTraining.value.participants
+      .filter((p: TrainingParticipant) => !p.attend)
+      .map((p: TrainingParticipant) => p.userId)
+    if (filteredUserIds.length > 0) {
+      return users.value.filter((u) => filteredUserIds.indexOf(u.id) >= 0)
+    }
+  }
+  return []
+})
+
+const undecidedUsers = computed(() => {
+  const usersOfGroups = users.value.filter((u) => u.groupIds.some((r) => selectedTraining.value.groupIds.includes(r)))
+  return usersOfGroups.filter((u) => !canceledUsers.value.concat(participatingUsers.value).includes(u))
+})
+
+const getGroupsByIds = (ids: number[]) => masterData.getGroupsByIds(ids)
+
+function getCancelReason(userId: number) {
+  const cancelreason = selectedTraining.value.participants.filter((p: TrainingParticipant) => p.userId == userId)[0]
+    .cancelreason
+  if (cancelreason) {
+    return cancelreason
+  }
+  return null
+}
+
+function openCancelReasonDialog(userId: number) {
+  const cancelReason = getCancelReason(userId)
+  if (cancelReason) {
+    cancelReasonDialogText.value = cancelReason
+    showCancelReasonDialog.value = true
+  }
+}
+
+function selectTraining(id: any) {
+  animationTrigger.value = false
+  selectedTrainingId.value = id
+  participantsListGroupActive.value = true
+  canceledUserListGroupActive.value = true
+  undecidedUsersListGroupActive.value = true
+  setTimeout(() => {
+    animationTrigger.value = true
+  }, 100)
+}
+
+async function fetchData() {
+  try {
+    dataLoaded.value = false
+    pastTrainings.value = []
+    //load data
+    const res = await httpClient.get('/trainingevaluation/' + loggedInUser.value!.id)
+    if (res.data.data && res.data.data.length > 0) {
+      //json result to objects
+      for (const trObj of res.data.data) {
+        const participants: TrainingParticipant[] = []
+        for (const partObj of trObj.participants) {
+          participants.push(
+            new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, partObj.cancelreason)
+          )
+        }
+        const trainers: TrainingTrainer[] = []
+        const trainingStartTime = parseApiDate(trObj.start)
+        const trainingEndTime = parseApiDate(trObj.end)
+        for (const partObj of trObj.trainers) {
+          let timeStart
+          if (partObj.accountingTimeStart != null) {
+            timeStart = parseApiDate(partObj.accountingTimeStart)
+          } else {
+            timeStart = trainingStartTime
+          }
+          let timeEnd
+          if (partObj.accountingTimeEnd != null) {
+            timeEnd = parseApiDate(partObj.accountingTimeEnd)
+          } else {
+            timeEnd = trainingEndTime
+          }
+          trainers.push(new TrainingTrainer(partObj.trainingId, partObj.userId, timeStart, timeEnd))
+        }
+        pastTrainings.value.push(
+          new TrainingEvaluation(
+            trObj.id,
+            trainingStartTime,
+            trainingEndTime,
+            trObj.locationId,
+            trObj.groupIds,
+            trObj.contentIds,
+            trainers,
+            participants,
+            trObj.comment,
+            trObj.prepared === 1 ? true : false,
+            trObj.evaluated === 1 ? true : false
+          )
+        )
+      }
+      //select first training
+      selectTraining(pastTrainings.value[0].id)
+    }
+    users.value = []
+    const userRes = await httpClient.get('/user')
+    for (const userObj of userRes.data) {
+      users.value.push(
+        new User(
+          userObj.id,
+          userObj.email,
+          userObj.firstName,
+          userObj.familyName,
+          userObj.birthdate ? parseApiDate(userObj.birthdate) : null,
+          userObj.active === 1 ? true : false,
+          userObj.groupIds,
+          userObj.roleNames,
+          userObj.trainerBranchIds,
+          userObj.registered,
+          userObj.profileImageName,
+          userObj.absenceStart ? parseApiDate(userObj.absenceStart) : null,
+          userObj.absenceEnd ? parseApiDate(userObj.absenceStart) : null,
+          userObj.absenceReason
+        )
+      )
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    dataLoaded.value = true
+  }
+}
+
+async function removeParticipant(userId: number) {
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/removeparticipant/' + userId)
+  if (data.status == 'ok') {
+    selectedTraining.value.participants.filter((p: TrainingParticipant) => p.userId === userId)[0].attend = false
+    useSnackbarStore().show('Benutzer entfernt', 'success')
+  }
+}
+
+async function addParticipant(userId: number) {
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/addparticipant/' + userId)
+  if (data.status == 'ok') {
+    if (!selectedTraining.value.participants.map((p: TrainingParticipant) => p.userId).includes(userId)) {
+      selectedTraining.value.participants.push(new TrainingParticipant(selectedTraining.value.id, userId, true, null))
+    }
+    selectedTraining.value.participants.filter((p: TrainingParticipant) => p.userId === userId)[0].attend = true
+    useSnackbarStore().show('Benutzer hinzugefügt', 'success')
+  }
+}
+
+async function addParticipantAsCanceled(userId: number) {
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/addparticipant/' + userId)
+  if (data.status == 'ok') {
+    if (!selectedTraining.value.participants.map((p: TrainingParticipant) => p.userId).includes(userId)) {
+      selectedTraining.value.participants.push(new TrainingParticipant(selectedTraining.value.id, userId, false, null))
+    } else {
+      selectedTraining.value.participants.filter((p: TrainingParticipant) => p.userId === userId)[0].attend = false
+    }
+    useSnackbarStore().show('Benutzer zu Absagen hinzugefügt', 'success')
+  }
+}
+
+async function removeParticipantToUndecided(userId: number) {
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/removeparticipant/' + userId)
+  if (data.status == 'ok') {
+    const index = selectedTraining.value.participants.findIndex((p: TrainingParticipant) => p.userId === userId)
+    if (index >= 0) {
+      selectedTraining.value.participants.splice(index, 1)
+    }
+    useSnackbarStore().show('Benutzer entfernt', 'success')
+  }
+}
+
+async function evaluated() {
+  confirmEvaluationDialog.value = false
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/evaluated')
+  if (data.status == 'ok') {
+    selectedTraining.value.evaluated = true
+    useSnackbarStore().show('Training abgeschlossen', 'success')
+  }
+}
+
+function editTime(item: TrainingTrainer) {
+  selectedTrainerId.value = item.userId
+  editStartTime.value = item.accountingTimeStart.format('HH:mm')
+  editEndTime.value = item.accountingTimeEnd.format('HH:mm')
+  timeDialogOpened.value = true
+}
+
+async function updateAccountingTime() {
+  timeDialogOpened.value = false
+  const selectedTrainer = selectedTraining.value.trainers.find((t: TrainingTrainer) => t.userId === selectedTrainerId.value)
+  const startDateTime = selectedTrainer.accountingTimeStart.clone().set({
+    h: editStartTime.value!.split(':')[0],
+    m: editStartTime.value!.split(':')[1]
+  })
+  const endDateTime = selectedTrainer.accountingTimeEnd.clone().set({
+    h: editEndTime.value!.split(':')[0],
+    m: editEndTime.value!.split(':')[1]
+  })
+  const postData = {
+    trainerId: selectedTrainerId.value,
+    start: startDateTime.format(),
+    end: endDateTime.format()
+  }
+  const { data } = await httpClient.post('/trainingevaluation/' + selectedTraining.value.id + '/updateaccountingtime', postData)
+  if (data.status == 'ok') {
+    selectedTrainer.accountingTimeStart = startDateTime
+    selectedTrainer.accountingTimeEnd = endDateTime
+    useSnackbarStore().show('Zeiten aktualisiert', 'success')
+  }
+}
+
+const fullName = (item: { firstName: string; familyName: string }) => item.firstName + ' ' + item.familyName
+
+function trainerFullName(id: number) {
+  return fullName(masterData.getSimpleTrainerById(id))
+}
+
+fetchData()
 </script>
 
 <style scoped lang="scss">

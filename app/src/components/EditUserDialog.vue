@@ -46,9 +46,17 @@
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-col>
+                        <v-col cols="12">
+                            <v-text-field
+                                    v-model="email"
+                                    label="E-Mail (optional, nötig für die Einladung)"
+                                    type="email"
+                                    :rules="[v => !v || /.+@.+\..+/.test(v) || 'Bitte eine gültige E-Mail-Adresse eingeben']"
+                                    prepend-icon="email"
+                            ></v-text-field>
+                        </v-col>
                         <v-col cols="12" md="6">
                             <v-menu
-                                    ref="birthdateMenu"
                                     :close-on-content-click="false"
                                     v-model="birthdateMenu">
                                 <template v-slot:activator="{ props }">
@@ -97,153 +105,155 @@
     </v-dialog>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-import GroupsSelect from "./GroupsSelect";
-import UploadProfileImage from "./UploadProfileImage";
-import {formatDate, parseDate} from "../helpers/date-helpers"
+import GroupsSelect from './GroupsSelect.vue'
+import UploadProfileImage from './UploadProfileImage.vue'
+import { formatDate } from '../helpers/date-helpers'
 import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useSnackbarStore } from '@/store/snackbar'
 
-    export default {
-        setup() {
-            const { xs } = useDisplay();
-            return { xs };
-        },
-        name: "EditUserDialog",
-        emits: ['close', 'saved'],
-        components: {GroupsSelect, UploadProfileImage},
-        props: [
-            'visible',
-            'editUserId',
-            'editFirstName',
-            'editFamilyName',
-            'editBirthdate',
-            'editProfileImageName',
-            'editGroupIds',
-            'editActive',
-        ],
-        data: function () {
-            return {
-                valid: false,
-                firstName: null,
-                familyName: null,
-                birthdate: null,
-                groupIds: [],
-                profileImageName: null,
-                active: true,
-                editGroups: [],
-                birthdateMenu: false,
-                imageToUpload: null,
-            }
-        },
-        computed: {
-            show: {
-                get() {
-                    if (this.visible) {
-                      this.assignValues()
-                    }
-                    return this.visible;
-                },
-                set(value) {
-                    if (!value) {
-                        this.$refs.form.resetValidation();
-                        this.$emit('close')
-                    }
-                }
-            },
-            birthdateFormatted() {
-                return this.formatDate(this.birthdate)
-            },
-        },
-        methods: {
-            async save() {
-                const { valid } = await this.$refs.form.validate();
-                if (!valid) return;
-                try {
-                    const postData = {
-                        firstName: this.firstName,
-                        familyName: this.familyName,
-                        groupIds: this.groupIds,
-                        profileImageName: this.profileImageName,
-                        active: this.active,
-                    }
+const props = defineProps<{
+  visible?: boolean
+  editUserId?: number | null
+  editFirstName?: string | null
+  editFamilyName?: string | null
+  editEmail?: string | null
+  editBirthdate?: any
+  editProfileImageName?: string | null
+  editGroupIds?: any[]
+  editActive?: boolean
+}>()
 
-                    let imageName = null;
-                    if (this.imageToUpload) {
-                        imageName = await this.uploadProfileImage();
-                    } else if (this.profileImageName) {
-                        imageName = this.profileImageName;
-                    }
-                    if (imageName) {
-                        postData.profileImageName = imageName;
-                    }
+const emit = defineEmits<{
+  close: []
+  saved: []
+}>()
 
-                    let response = null;
-                    if (this.birthdate) {
-                        postData.birthdate = parseApiDate(this.birthdate).format("YYYY-MM-DD");
-                    }
-                    if (this.editUserId) {
-                        response = await httpClient.put('/user/' + this.editUserId, postData);
-                    } else {
-                        response = await httpClient.post('/user/unregistered', postData);
-                    }
-                    if (response.data.status === 'ok') {
-                      useSnackbarStore().show("Benutzer gespeichert", "success")
-                      this.$emit("saved")
-                      this.show = false;
-                    } else {
-                      useSnackbarStore().show("Fehler beim Speichern", "error")
-                    }
-                } catch (error) {
-                    console.error(error);
-                    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
-                }
-            },
-            imageChanged(file) {
-                if (file && file.size) {
-                    this.imageToUpload = file;
-                } else {
-                    this.imageRemoved();
-                }
-            },
-            imageRemoved() {
-                this.imageToUpload = null;
-                this.profileImageName = null;
-            },
-            assignValues() {
-              this.firstName = this.editFirstName;
-              this.familyName = this.editFamilyName;
-              this.birthdate = this.editBirthdate ? parseApiDate(this.editBirthdate).format('YYYY-MM-DD') : null;
-              this.groupIds = this.editGroupIds;
-              this.active = this.editActive;
-              this.profileImageName = this.editProfileImageName;
-              this.imageToUpload = null;
-            },
-            async uploadProfileImage() {
-                const formData = new FormData();
-                formData.append('profile_image', this.imageToUpload);
-                const {data} = await httpClient.post('/user/me/uploadprofileimage', formData);
-                if (data.status === 'ok') {
-                    console.log("Image uploaded")
-                    return data.imageUrl;
-                }
-                useSnackbarStore().show("Fehler beim Hochladen des Bildes.", "error");
-                throw "Image upload error";
-            },
-            groupsChanged({groupIds}) {
-                this.groupIds = groupIds;
-            },
-            formatDate,
-            parseDate,
-        },
-        watch: {
-            birthdateMenu(val) {
-                val && setTimeout(() => (this.$refs.birthdatePicker.activePicker = 'YEAR'))
-            },
-        }
+const { xs } = useDisplay()
+
+const form = ref<any>(null)
+const birthdatePicker = ref<any>(null)
+
+const valid = ref(false)
+const firstName = ref<string | null | undefined>(null)
+const familyName = ref<string | null | undefined>(null)
+const email = ref<string | null>(null)
+const birthdate = ref<string | null>(null)
+const groupIds = ref<any[] | undefined>([])
+const profileImageName = ref<string | null | undefined>(null)
+const active = ref<boolean | undefined>(true)
+const birthdateMenu = ref(false)
+const imageToUpload = ref<File | null>(null)
+
+function assignValues() {
+  firstName.value = props.editFirstName
+  familyName.value = props.editFamilyName
+  email.value = props.editEmail || null
+  birthdate.value = props.editBirthdate ? parseApiDate(props.editBirthdate).format('YYYY-MM-DD') : null
+  groupIds.value = props.editGroupIds
+  active.value = props.editActive
+  profileImageName.value = props.editProfileImageName
+  imageToUpload.value = null
+}
+
+const show = computed({
+  get() {
+    if (props.visible) {
+      assignValues()
     }
+    return props.visible
+  },
+  set(value) {
+    if (!value) {
+      form.value.resetValidation()
+      emit('close')
+    }
+  }
+})
+
+const birthdateFormatted = computed(() => formatDate(birthdate.value))
+
+async function uploadProfileImage() {
+  const formData = new FormData()
+  formData.append('profile_image', imageToUpload.value as File)
+  const { data } = await httpClient.post('/user/me/uploadprofileimage', formData)
+  if (data.status === 'ok') {
+    return data.imageUrl
+  }
+  useSnackbarStore().show('Fehler beim Hochladen des Bildes.', 'error')
+  throw 'Image upload error'
+}
+
+async function save() {
+  const { valid: isValid } = await form.value.validate()
+  if (!isValid) return
+  try {
+    const postData: Record<string, any> = {
+      firstName: firstName.value,
+      familyName: familyName.value,
+      email: email.value ? email.value.trim() : null,
+      groupIds: groupIds.value,
+      profileImageName: profileImageName.value,
+      active: active.value
+    }
+
+    let imageName = null
+    if (imageToUpload.value) {
+      imageName = await uploadProfileImage()
+    } else if (profileImageName.value) {
+      imageName = profileImageName.value
+    }
+    if (imageName) {
+      postData.profileImageName = imageName
+    }
+
+    let response = null
+    if (birthdate.value) {
+      postData.birthdate = parseApiDate(birthdate.value).format('YYYY-MM-DD')
+    }
+    if (props.editUserId) {
+      response = await httpClient.put('/user/' + props.editUserId, postData)
+    } else {
+      response = await httpClient.post('/user/unregistered', postData)
+    }
+    if (response.data.status === 'ok') {
+      useSnackbarStore().show('Benutzer gespeichert', 'success')
+      emit('saved')
+      show.value = false
+    } else {
+      useSnackbarStore().show('Fehler beim Speichern', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    // e.g. 422 "Diese E-Mail-Adresse wird bereits verwendet."
+    useSnackbarStore().show(apiErrorMessage(error, 'Speichern fehlgeschlagen'), 'error')
+  }
+}
+
+function imageRemoved() {
+  imageToUpload.value = null
+  profileImageName.value = null
+}
+
+function imageChanged(file: File | null) {
+  if (file && file.size) {
+    imageToUpload.value = file
+  } else {
+    imageRemoved()
+  }
+}
+
+function groupsChanged({ groupIds: ids }: { groupIds: any[] }) {
+  groupIds.value = ids
+}
+
+watch(birthdateMenu, (val) => {
+  if (val) setTimeout(() => (birthdatePicker.value.activePicker = 'YEAR'))
+})
 </script>
 
 <style scoped>

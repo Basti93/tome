@@ -123,110 +123,100 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import { useDisplay } from 'vuetify';
-import httpClient from '@/http/api';
-import { useSnackbarStore } from '@/store/snackbar';
-import { useMasterDataStore } from '@/store/masterData';
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useDisplay } from 'vuetify'
+import httpClient from '@/http/api'
+import { useSnackbarStore } from '@/store/snackbar'
+import { useMasterDataStore } from '@/store/masterData'
 
-export default {
-  setup() {
-    const { xs, md } = useDisplay()
-    return { xs, md }
-  },
-  name: "LocationsPage",
-  data: function () {
-    return {
-      loading: false,
-      locations: [],
-      total: null,
-      rowsPerPageItems: [5, 10, 20, 50, 100],
-      page: 1,
-      itemsPerPage: 10,
-      headers: [
-        { title: 'Name', value: 'name', sortable: false},
-        { title: '', value: 'action', sortable: false},
-      ],
-      editedItem: {
-        id: null,
-        name: null,
-      },
-      defaultItem: {
-        id: null,
-        name: null,
-      },
-      showDialog: false,
-      titleDialog: null,
-      validDialog: false,
-    }
-  },
-  created() {
-    this.loadData();
-  },
-  methods: {
-    async loadData() {
-      this.loading = true
-      try {
-        await this.loadLocations();
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async loadLocations() {
-      const {data} = await httpClient.get('/location')
-      this.locations = data.data;
-      this.page = data.currentPage;
-      this.total = data.total;
-    },
-    async save() {
-      const { valid } = await this.$refs.form.validate();
-      if (!valid) return;
-      try {
-        const postData = {
-          name: this.editedItem.name,
-        }
+const { xs } = useDisplay()
 
-        let response = null;
-        if (this.editedItem.id) {
-          response = await httpClient.put('/location/' + this.editedItem.id, postData);
-        } else {
-          response = await httpClient.post('/location', postData);
-        }
-        if (response && response.data.error) {
-          useSnackbarStore().show("Ort konnte nicht gespeichert werden", "error")
-        } else {
-          useSnackbarStore().show("Ort gespeichert", "success")
-          this.showDialog = false;
-          await this.loadData();
-          this.updateMasterData();
-        }
-      } catch (error) {
-        console.error(error);
-        useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
-      }
-    },
-    createItem() {
-      this.titleDialog = "Ort erstellen"
-      this.showDialog = true;
-      this.editedItem = {...this.defaultItem}
-    },
-    editItem(location) {
-      this.titleDialog = "Ort bearbeiten"
-      this.showDialog = true;
-      this.editedItem = {...location}
-    },
-    closeDialog() {
-      this.$refs.form.resetValidation();
-      this.showDialog = false;
-    },
-    updateMasterData() {
-      const masterDataStore = useMasterDataStore();
-      masterDataStore.setLocations(this.locations);
-    },
+const form = ref<any>(null)
+const loading = ref(false)
+const locations = ref<any[]>([])
+const total = ref<number | null>(null)
+const rowsPerPageItems = [5, 10, 20, 50, 100]
+const page = ref(1)
+const itemsPerPage = ref(10)
+const headers = [
+  { title: 'Name', value: 'name', sortable: false },
+  { title: '', value: 'action', sortable: false }
+]
+const defaultItem = { id: null, name: null }
+const editedItem = ref<any>({ id: null, name: null })
+const showDialog = ref(false)
+const titleDialog = ref<string | null>(null)
+const validDialog = ref(false)
+
+async function loadLocations() {
+  const { data } = await httpClient.get('/location')
+  locations.value = data.data
+  page.value = data.currentPage
+  total.value = data.total
+}
+
+async function loadData() {
+  loading.value = true
+  try {
+    await loadLocations()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
   }
 }
+
+function updateMasterData() {
+  useMasterDataStore().setLocations(locations.value)
+}
+
+async function save() {
+  const { valid } = await form.value.validate()
+  if (!valid) return
+  try {
+    const postData = {
+      name: editedItem.value.name
+    }
+
+    let response = null
+    if (editedItem.value.id) {
+      response = await httpClient.put('/location/' + editedItem.value.id, postData)
+    } else {
+      response = await httpClient.post('/location', postData)
+    }
+    if (response && response.data.error) {
+      useSnackbarStore().show('Ort konnte nicht gespeichert werden', 'error')
+    } else {
+      useSnackbarStore().show('Ort gespeichert', 'success')
+      showDialog.value = false
+      await loadData()
+      updateMasterData()
+    }
+  } catch (error) {
+    console.error(error)
+    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
+  }
+}
+
+function createItem() {
+  titleDialog.value = 'Ort erstellen'
+  showDialog.value = true
+  editedItem.value = { ...defaultItem }
+}
+
+function editItem(location: any) {
+  titleDialog.value = 'Ort bearbeiten'
+  showDialog.value = true
+  editedItem.value = { ...location }
+}
+
+function closeDialog() {
+  form.value.resetValidation()
+  showDialog.value = false
+}
+
+loadData()
 </script>
 
 <style scoped>

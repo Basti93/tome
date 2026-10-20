@@ -102,271 +102,252 @@
   </v-container>
 </template>
 
-<script lang="ts">
-
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useCookieAuthStore } from '@/store/cookieAuth'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
-import TrainingCheckIn from "../components/TrainingCheckIn.vue";
-import GroupSelect from "../components/GroupSelect.vue";
-import CookieUserDialog from "../components/CookieUserDialog.vue";
-import Training from "@/models/Training";
-import TrainingParticipant from "@/models/TrainingParticipant";
-import TrainingSelector from "../components/TrainingSelector.vue";
-import { useDisplay } from 'vuetify'
+import TrainingCheckIn from '../components/TrainingCheckIn.vue'
+import GroupSelect from '../components/GroupSelect.vue'
+import CookieUserDialog from '../components/CookieUserDialog.vue'
+import Training from '@/models/Training'
+import TrainingParticipant from '@/models/TrainingParticipant'
+import TrainingSelector from '../components/TrainingSelector.vue'
 
-export default {
-  name: "TrainingsCheckInPage",
-  components: {TrainingSelector, CookieUserDialog, TrainingCheckIn, GroupSelect},
-  setup() {
-    const { xs } = useDisplay()
-    return { xs }
-  },
-  data: function () {
-    return {
-      initalSelectedTrainingId: null,
-      filterGroupId: null,
-      filterBranchId: null,
-      tempFilterGroupId: null,
-      tempFilterBranchId: null,
-      upcomingTrainings: [] as Training[],
-      dataLoaded: false,
-      filterDialogVisible: false,
-      cookieUserDialogVisible: false,
-      selectedTrainingId: null,
-      animationTrigger: true,
-      initializing: false,
+const { xs } = useDisplay()
+const route = useRoute()
+const authStore = useAuthStore()
+const cookieAuthStore = useCookieAuthStore()
+const masterData = useMasterDataStore()
+
+const initalSelectedTrainingId = ref<any>(null)
+const filterGroupId = ref<any>(null)
+const filterBranchId = ref<any>(null)
+const tempFilterGroupId = ref<any>(null)
+const tempFilterBranchId = ref<any>(null)
+const upcomingTrainings = ref<Training[]>([])
+const dataLoaded = ref(false)
+const filterDialogVisible = ref(false)
+const cookieUserDialogVisible = ref(false)
+const selectedTrainingId = ref<any>(null)
+const animationTrigger = ref(true)
+const initializing = ref(false)
+
+const loggedInUser = computed(() => authStore.user)
+const cookieUser = computed(() => cookieAuthStore.cookieUser)
+const currentUser = computed<any>(() => {
+  if (loggedInUser.value) {
+    return loggedInUser.value
+  } else if (cookieUser.value) {
+    return cookieUser.value
+  }
+  return null
+})
+const isCookieUser = computed(() => cookieUser.value != null)
+
+function getUpcomingTrainingById(id: any) {
+  if (upcomingTrainings.value.length > 0) {
+    return upcomingTrainings.value.filter((ut) => ut.id == id)[0]
+  }
+  return null
+}
+
+const selectedTraining = computed<any>(() => getUpcomingTrainingById(selectedTrainingId.value))
+
+const selectedTrainingColor = computed(() => {
+  if (selectedTraining.value) {
+    const mainBranch = masterData.getBranchByGroupIds(selectedTraining.value.groupIds)
+    if (mainBranch) {
+      return mainBranch.colorHex
     }
-  },
-  computed: {
-    loggedInUser() { return useAuthStore().user },
-    cookieUser() { return useCookieAuthStore().cookieUser },
-    currentUser() {
-      if (this.loggedInUser) {
-        return this.loggedInUser;
-      } else if (this.cookieUser) {
-        return this.cookieUser;
-      }
-      return null;
-    },
-    isCookieUser() {
-      return this.cookieUser != null;
-    },
-    selectedTraining() {
-      return this.getUpcomingTrainingById(this.selectedTrainingId);
-    },
-    selectedTrainingColor() {
-      if (this.selectedTraining) {
-        const masterData = useMasterDataStore();
-        const mainBranch = masterData.getBranchByGroupIds(this.selectedTraining.groupIds);
-        if (mainBranch) {
-          return mainBranch.colorHex;
-        }
-      }
-      return '#64b5f6';
-    },
-    currentUserGroupId() {
-      if (this.currentUser && this.currentUser.groupIds && this.currentUser.groupIds.length > 0) {
-        return this.currentUser.groupIds[0]
-      }
-      return null
-    },
-    filterDisplayValue() {
-      const masterData = useMasterDataStore();
-      if (this.filterGroupId) {
-        const group = masterData.getGroupById(this.filterGroupId)
-        if (group) {
-          return group.name;
-        }
-      } else if (this.filterBranchId) {
-        const branch = masterData.getBranchById(this.filterBranchId)
-        if (branch) {
-          return branch.name;
-        }
-      }
-      return "Alle Gruppen"
-    },
-    currentUserId() {
-      if (this.currentUser) {
-        return this.currentUser.id;
-      }
-      return null;
-    },
+  }
+  return '#64b5f6'
+})
 
-  },
-  async created() {
-    this.initializing = true;
-    if (!this.currentUser) {
-      this.cookieUserDialogVisible = true;
+const currentUserGroupId = computed(() => {
+  if (currentUser.value && currentUser.value.groupIds && currentUser.value.groupIds.length > 0) {
+    return currentUser.value.groupIds[0]
+  }
+  return null
+})
+
+const filterDisplayValue = computed(() => {
+  if (filterGroupId.value) {
+    const group = masterData.getGroupById(filterGroupId.value)
+    if (group) {
+      return group.name
     }
-    if (this.loggedInUser && this.loggedInUser.trainerBranchIds && this.loggedInUser.trainerBranchIds.length > 0) {
-      this.filterBranchId = this.loggedInUser.trainerBranchIds[0];
+  } else if (filterBranchId.value) {
+    const branch = masterData.getBranchById(filterBranchId.value)
+    if (branch) {
+      return branch.name
     }
-    this.fetchDataForCurrentUser();
-    this.initializing = false;
-  },
-  methods: {
-    groupChanged(groupId) {
-      this.tempFilterGroupId = groupId;
-    },
-    branchChanged(branchId) {
-      this.tempFilterBranchId = branchId;
-    },
-    async filterDone() {
-      this.filterBranchId = this.tempFilterBranchId;
-      this.filterGroupId = this.tempFilterGroupId;
-      await this.fetchData();
-      if (this.upcomingTrainings.length > 0) {
-        this.selectTraining(this.upcomingTrainings[0].id);
-      }
-      this.filterDialogVisible = false;
-    },
-    findBranch(groupIds) {
-      if (groupIds && groupIds.length > 0) {
-        return useMasterDataStore().getBranchByGroupId(groupIds[0]);
-      }
-      return null;
-    },
-    async fetchSingleTraining(trainingId: Number) {
-      const {data} = await httpClient.get('/training/upcoming/' + trainingId);
-      if (data.data) {
-        this.addToUpcomingTrainings(data.data);
-      } else {
-        console.log('Training with id ' + trainingId + ' could not be found or is in the past')
-      }
-    },
-    async fetchDataForCurrentUser() {
-      this.filterGroupId = this.currentUserGroupId;
+  }
+  return 'Alle Gruppen'
+})
 
-      this.initalSelectedTrainingId = this.$route.params.id;
-      await this.fetchData();
+const currentUserId = computed(() => (currentUser.value ? currentUser.value.id : null))
 
-      if (this.initalSelectedTrainingId) {
-        this.selectTraining(this.upcomingTrainings.filter(t => t.id == this.initalSelectedTrainingId)[0].id);
-      } else if (this.upcomingTrainings.length > 0) {
-        this.selectTraining(this.upcomingTrainings[0].id);
-      }
-    },
-    async fetchData() {
-      try {
-        this.dataLoaded = false;
-        this.upcomingTrainings = [];
+function groupChanged(groupId: any) {
+  tempFilterGroupId.value = groupId
+}
 
-        if (this.initalSelectedTrainingId) {
-          await this.fetchSingleTraining(this.initalSelectedTrainingId);
-        }
+function branchChanged(branchId: any) {
+  tempFilterBranchId.value = branchId
+}
 
-        //build fetch url
-        let url = '/training/upcoming';
-        if (this.filterGroupId) {
-          url += '?groupIds=' + this.filterGroupId;
-        } else if (this.filterBranchId) {
-          url += '?branchId=' + this.filterBranchId;
-        }
-        //load data
-        const {data} = await httpClient.get(url);
-        if (data.data && data.data.length > 0) {
-          for (const trObj of data.data) {
-            this.addToUpcomingTrainings(trObj);
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.dataLoaded = true;
-      }
-    },
-    addToUpcomingTrainings(trainingJson) {
-      const participants = [] as TrainingParticipant[];
-      for (const partObj of trainingJson.participants) {
-        participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null));
-      }
-      if (this.upcomingTrainings.filter(t => t.id === trainingJson.id).length === 0) {
-        this.upcomingTrainings.push(new Training(trainingJson.id, parseApiDate(trainingJson.start), parseApiDate(trainingJson.end), trainingJson.locationId, trainingJson.groupIds, trainingJson.contentIds, trainingJson.trainerIds, participants, trainingJson.comment, false, false, trainingJson.automaticAttend == 1));
-      }
-      this.upcomingTrainings.sort(function (a: Training, b: Training) {
-        return a.start.valueOf() - b.start.valueOf();
-      });
-    },
-    updateCheckedIn() {
-      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
-      if (participant && participant.length > 0) {
-        const index = this.selectedTraining.participants.indexOf(participant[0]);
-        participant[0].attend = true;
-        this.selectedTraining.participants[index].attend = true;
-      } else {
-        this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, true, null));
-      }
-      useSnackbarStore().show("Für das Training angemeldet", "success");
-    },
-    updateCheckedOut() {
-      const participant = this.selectedTraining.participants.filter(p => p.userId === this.currentUserId);
-      if (participant && participant.length > 0) {
-        const index = this.selectedTraining.participants.indexOf(participant[0]);
-        this.selectedTraining.participants[index].attend = false;
-      } else {
-        this.selectedTraining.participants.push(new TrainingParticipant(this.selectedTraining.id, this.currentUserId, false, null));
-      }
-      useSnackbarStore().show("Vom Training abgemeldet", "info");
-    },
-    showCookieUserLogin() {
-      this.cookieUserDialogVisible = true;
-    },
-    selectTraining(id) {
-      this.animationTrigger = false;
-      this.selectedTrainingId = id;
-      setTimeout(() => {
-        this.animationTrigger = true;
-      }, 100);
-    },
-    getUpcomingTrainingById(id) {
-      if (this.upcomingTrainings.length > 0) {
-        return this.upcomingTrainings.filter(ut => ut.id == id)[0];
-      }
-      return null;
-    },
-    removeCookieUser() {
-      useCookieAuthStore().eraseCookieUser()
-    },
-    attendingStatus(trainingId) {
-      const training = this.getUpcomingTrainingById(trainingId);
-      if (training) {
-        const tp = training.participants.filter(p => (p.userId === this.currentUserId));
-        if (tp && tp.length > 0) {
-          return tp[0].attend;
-        }
-      }
-      return null;
-    },
-    attending(trainingId) {
-      return this.attendingStatus(trainingId) ? true : false;
-    },
-    canceled(trainingId) {
-      const status = this.attendingStatus(trainingId);
-      return (status !== null && !status) ? true : false;
-    },
-    timelinecolor(trainingId: Number) {
-      if (this.attending(trainingId)) {
-        return 'primary'
-      } else if (this.canceled(trainingId)) {
-        return 'red lighten-2'
-      }
-      return 'blue lighten-2'
-    }
-  },
-  watch: {
-    currentUser() {
-      this.filterGroupId = this.currentUserGroupId;
-      if (!this.initializing) {
-        this.fetchDataForCurrentUser();
-      }
-    }
+function selectTraining(id: any) {
+  animationTrigger.value = false
+  selectedTrainingId.value = id
+  setTimeout(() => {
+    animationTrigger.value = true
+  }, 100)
+}
+
+function addToUpcomingTrainings(trainingJson: any) {
+  const participants: TrainingParticipant[] = []
+  for (const partObj of trainingJson.participants) {
+    participants.push(new TrainingParticipant(partObj.trainingId, partObj.userId, partObj.attend === 1 ? true : false, null))
+  }
+  if (upcomingTrainings.value.filter((t) => t.id === trainingJson.id).length === 0) {
+    upcomingTrainings.value.push(
+      new Training(
+        trainingJson.id,
+        parseApiDate(trainingJson.start),
+        parseApiDate(trainingJson.end),
+        trainingJson.locationId,
+        trainingJson.groupIds,
+        trainingJson.contentIds,
+        trainingJson.trainerIds,
+        participants,
+        trainingJson.comment,
+        false,
+        false,
+        trainingJson.automaticAttend == 1
+      )
+    )
+  }
+  upcomingTrainings.value.sort(function (a: Training, b: Training) {
+    return a.start.valueOf() - b.start.valueOf()
+  })
+}
+
+async function fetchSingleTraining(trainingId: any) {
+  const { data } = await httpClient.get('/training/upcoming/' + trainingId)
+  if (data.data) {
+    addToUpcomingTrainings(data.data)
+  } else {
+    console.log('Training with id ' + trainingId + ' could not be found or is in the past')
   }
 }
 
+async function fetchData() {
+  try {
+    dataLoaded.value = false
+    upcomingTrainings.value = []
+
+    if (initalSelectedTrainingId.value) {
+      await fetchSingleTraining(initalSelectedTrainingId.value)
+    }
+
+    //build fetch url
+    let url = '/training/upcoming'
+    if (filterGroupId.value) {
+      url += '?groupIds=' + filterGroupId.value
+    } else if (filterBranchId.value) {
+      url += '?branchId=' + filterBranchId.value
+    }
+    //load data
+    const { data } = await httpClient.get(url)
+    if (data.data && data.data.length > 0) {
+      for (const trObj of data.data) {
+        addToUpcomingTrainings(trObj)
+      }
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    dataLoaded.value = true
+  }
+}
+
+async function fetchDataForCurrentUser() {
+  filterGroupId.value = currentUserGroupId.value
+
+  initalSelectedTrainingId.value = route.params.id
+  await fetchData()
+
+  if (initalSelectedTrainingId.value) {
+    selectTraining(upcomingTrainings.value.filter((t) => t.id == initalSelectedTrainingId.value)[0].id)
+  } else if (upcomingTrainings.value.length > 0) {
+    selectTraining(upcomingTrainings.value[0].id)
+  }
+}
+
+async function filterDone() {
+  filterBranchId.value = tempFilterBranchId.value
+  filterGroupId.value = tempFilterGroupId.value
+  await fetchData()
+  if (upcomingTrainings.value.length > 0) {
+    selectTraining(upcomingTrainings.value[0].id)
+  }
+  filterDialogVisible.value = false
+}
+
+function updateCheckedIn() {
+  const participants = selectedTraining.value.participants
+  const participant = participants.filter((p: TrainingParticipant) => p.userId === currentUserId.value)
+  if (participant && participant.length > 0) {
+    const index = participants.indexOf(participant[0])
+    participant[0].attend = true
+    participants[index].attend = true
+  } else {
+    participants.push(new TrainingParticipant(selectedTraining.value.id, currentUserId.value, true, null))
+  }
+  useSnackbarStore().show('Für das Training angemeldet', 'success')
+}
+
+function updateCheckedOut() {
+  const participants = selectedTraining.value.participants
+  const participant = participants.filter((p: TrainingParticipant) => p.userId === currentUserId.value)
+  if (participant && participant.length > 0) {
+    const index = participants.indexOf(participant[0])
+    participants[index].attend = false
+  } else {
+    participants.push(new TrainingParticipant(selectedTraining.value.id, currentUserId.value, false, null))
+  }
+  useSnackbarStore().show('Vom Training abgemeldet', 'info')
+}
+
+function showCookieUserLogin() {
+  cookieUserDialogVisible.value = true
+}
+
+function removeCookieUser() {
+  cookieAuthStore.eraseCookieUser()
+}
+
+watch(currentUser, () => {
+  filterGroupId.value = currentUserGroupId.value
+  if (!initializing.value) {
+    fetchDataForCurrentUser()
+  }
+})
+
+initializing.value = true
+if (!currentUser.value) {
+  cookieUserDialogVisible.value = true
+}
+if (loggedInUser.value && loggedInUser.value.trainerBranchIds && loggedInUser.value.trainerBranchIds.length > 0) {
+  filterBranchId.value = loggedInUser.value.trainerBranchIds[0]
+}
+fetchDataForCurrentUser()
+initializing.value = false
 </script>
 
 <style scoped lang="scss">
