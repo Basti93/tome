@@ -3,7 +3,6 @@
     <v-row>
       <v-col cols="12" md="6" v-if="!hideDate">
         <v-menu
-            ref="dateMenuOpened"
             :close-on-content-click="false"
             v-model="dateMenuOpened"
         >
@@ -22,7 +21,6 @@
       </v-col>
       <v-col cols="6" md="3">
         <v-menu
-            ref="startMenuOpened"
             v-model="startMenuOpened"
             :close-on-content-click="false">
           <template v-slot:activator="{ props }">
@@ -44,7 +42,6 @@
       </v-col>
       <v-col cols="6" md="3">
         <v-menu
-            ref="endMenuOpened"
             :close-on-content-click="false"
             v-model="endMenuOpened">
           <template v-slot:activator="{ props }">
