@@ -11,7 +11,7 @@
                 :modelValue="trainingDateFormatted"
                 required
                 label="Datum"
-                prepend-icon="event"
+                prepend-icon="mdi-calendar"
                 readonly
                 v-bind="props"
             ></v-text-field>
@@ -28,7 +28,7 @@
                 v-model="startTime"
                 label="Start"
                 required
-                prepend-icon="schedule"
+                prepend-icon="mdi-clock-outline"
                 readonly
                 v-bind="props"
             ></v-text-field>
@@ -49,7 +49,7 @@
                 v-model="endTime"
                 required
                 label="Ende"
-                prepend-icon="schedule"
+                prepend-icon="mdi-clock-outline"
                 readonly
                 v-bind="props"
             ></v-text-field>
@@ -69,14 +69,14 @@
             clearable
             required
             label="Ort"
-            prepend-icon="add_location"
+            prepend-icon="mdi-map-marker-plus"
         ></v-select>
       </v-col>
       <v-col cols="12" md="6">
         <v-checkbox
             v-model.lazy="editedAutomaticAttend"
             label="Benutzer automatisch anmelden"
-            prepend-icon="active"
+            prepend-icon="mdi-check-circle-outline"
         ></v-checkbox>
       </v-col>
       <v-col cols="12">
@@ -90,7 +90,7 @@
             chips
             closable-chips
             label="Trainer"
-            prepend-icon="verified_user"
+            prepend-icon="mdi-shield-account"
             multiple
         >
         </v-select>
@@ -102,7 +102,7 @@
             item-value="id"
             :item-title="branchAndGroupName"
             label="Gruppen"
-            prepend-icon="groups"
+            prepend-icon="mdi-account-group"
             multiple
             clearable
             chips

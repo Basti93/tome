@@ -65,7 +65,7 @@
                                         v-model="editUser.firstName"
                                         label="Vorname"
                                         :rules="requiredRule"
-                                        prepend-icon="account_circle"
+                                        prepend-icon="mdi-account-circle"
                                         required>
                                     </v-text-field>
                                   </v-col>
@@ -74,7 +74,7 @@
                                         v-model="editUser.familyName"
                                         label="Nachname"
                                         :rules="requiredRule"
-                                        prepend-icon="account_circle"
+                                        prepend-icon="mdi-account-circle"
                                         required>
                                     </v-text-field>
                                   </v-col>
@@ -83,7 +83,7 @@
                                         v-model="editUser.email"
                                         label="E-Mail"
                                         :rules="emailRules"
-                                        prepend-icon="email"
+                                        prepend-icon="mdi-email-outline"
                                         required>
                                     </v-text-field>
                                   </v-col>
@@ -98,7 +98,7 @@
                                             v-model="birthdateFormatted"
                                             required
                                             label="Geburtsdatum"
-                                            prepend-icon="event"
+                                            prepend-icon="mdi-calendar"
                                             readonly
                                             v-bind="props"></v-text-field>
                                       </template>

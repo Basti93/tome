@@ -37,7 +37,7 @@
                     :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
                     @click:append="showPassword = !showPassword"
                     label="Neues Passwort"
-                    prepend-icon="security"
+                    prepend-icon="mdi-shield-lock-outline"
                     :hint="getPasswordHint()"
                     persistent-hint
                     required
@@ -57,7 +57,7 @@
                     :append-icon="showPasswordConfirm ? 'mdi-eye-off' : 'mdi-eye'"
                     @click:append="showPasswordConfirm = !showPasswordConfirm"
                     label="Passwort bestätigen"
-                    prepend-icon="security"
+                    prepend-icon="mdi-shield-lock-outline"
                     required
                 ></v-text-field>
 
@@ -84,7 +84,7 @@
                     v-model="email"
                     :rules="emailRules"
                     label="E-mail"
-                    prepend-icon="email"
+                    prepend-icon="mdi-email-outline"
                     required
                 ></v-text-field>
 

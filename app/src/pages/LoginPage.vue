@@ -45,7 +45,7 @@
                   v-model="email"
                   :rules="emailRules"
                   label="E-mail"
-                  prepend-icon="email"
+                  prepend-icon="mdi-email-outline"
                   required
               ></v-text-field>
 
@@ -53,7 +53,7 @@
                   :type="showPassword ? 'text' : 'password'"
                   :rules="passwordRules"
                   v-model="password"
-                  prepend-icon="security"
+                  prepend-icon="mdi-shield-lock-outline"
                   :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
                   @click:append="showPassword = !showPassword"
                   label="Passwort"

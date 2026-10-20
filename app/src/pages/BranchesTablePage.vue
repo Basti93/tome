@@ -8,7 +8,7 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="xs"
+                  :fullscreen="smAndDown"
                   persistent
                   max-width="1000px"
               >
@@ -53,14 +53,14 @@
                                 label="Name"
                                 required
                                 :rules="[v => !!v || 'Wird benötigt']"
-                                prepend-icon="bubble_chart"
+                                prepend-icon="mdi-chart-bubble"
                             ></v-text-field>
                             <v-text-field
                                 v-model="editedItem.shortName"
                                 label="Kurzname"
                                 required
                                 :rules="[v => !!v || 'Wird benötigt']"
-                                prepend-icon="bubble_chart"
+                                prepend-icon="mdi-chart-bubble"
                             ></v-text-field>
                             <v-color-picker
                                 v-model="editedItem.color"
@@ -84,6 +84,7 @@
                   <v-row>
                     <v-col>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="branches"
                           item-key="id"
@@ -150,12 +151,12 @@ import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 import { useMasterDataStore } from '@/store/masterData'
 
-const { xs } = useDisplay()
+const { smAndDown } = useDisplay()
 
 const form = ref<any>(null)
 const loading = ref(false)
 const branches = ref<any[]>([])
-const total = ref<number | null>(null)
+const total = ref(0)
 const rowsPerPageItems = [5, 10, 20, 50, 100]
 const page = ref(1)
 const itemsPerPage = ref(10)
@@ -179,7 +180,7 @@ async function loadBranches() {
   const { data } = await httpClient.get('/branch')
   branches.value = data.data
   page.value = data.currentPage
-  total.value = data.total
+  total.value = data.total ?? 0
 }
 
 async function loadData() {

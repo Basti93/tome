@@ -124,6 +124,7 @@
                       <h3>Benutzer mit eingetragener Abwesenheit (nur für Trainer sichtbar)</h3>
                       <h4>Abwesenheiten werden automatisch nach Ablauf gelöscht</h4>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="absenceUsers"
                           item-key="id"
@@ -200,7 +201,7 @@ const masterDataStore = useMasterDataStore()
 const snackbarStore = useSnackbarStore()
 
 const absenceUsers = ref([])
-const total = ref(null)
+const total = ref(0)
 const rowsPerPageItems = [5, 10, 20, 50]
 const page = ref(1)
 const itemsPerPage = ref(10)
@@ -289,7 +290,7 @@ async function loadAllAbsenceUsers() {
       absenceUsers.value.push(userFromApi(userObj))
     }
     page.value = data.currentPage
-    total.value = data.total
+    total.value = data.total ?? 0
   }
   loadingUsers.value = false
 }

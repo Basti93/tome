@@ -41,6 +41,7 @@
                           v-if="activeView == 1">
                       </TrainingCalendar>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           v-if="activeView == 0"
                           :headers="headers"
                           :items="trainings"
@@ -112,7 +113,8 @@
         transition="dialog-bottom-transition"
         persistent
         scrollable
-        fullscreen>
+        max-width="1000px"
+        :fullscreen="smAndDown">
       <v-card tile>
         <v-toolbar flat>
           <v-btn icon @click="close">
@@ -172,6 +174,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
@@ -183,6 +186,7 @@ import EditTrainingBase from '../components/EditTrainingBase.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import Training from '../models/Training'
 
+const { smAndDown } = useDisplay()
 const authStore = useAuthStore()
 const masterData = useMasterDataStore()
 
@@ -193,7 +197,7 @@ const filterBranches = ref<any[]>([{ id: -1, name: 'Alle' }])
 const editDialog = ref(false)
 const editDialogTitle = ref('')
 const loading = ref(false)
-const total = ref<number | null>(null)
+const total = ref(0)
 const totalItems = ref(0)
 const page = ref(1)
 const itemsPerPage = ref(10)

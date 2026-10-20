@@ -10,7 +10,7 @@
                 chips
                 closable-chips
                 label="Gruppen"
-                prepend-icon="group"
+                prepend-icon="mdi-account-group"
         >
         </v-autocomplete>
     </div>

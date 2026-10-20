@@ -31,7 +31,7 @@
                                     :rules="[v => !!v || 'Bitte gib dein aktuelles Passwort ein']"
                                     v-model="currentPassword"
                                     autocomplete="current-password"
-                                    prepend-icon="lock"
+                                    prepend-icon="mdi-lock-outline"
                                     label="Aktuelles Passwort"
                                     required
                             ></v-text-field>
@@ -41,7 +41,7 @@
                                     :rules="passwordRules"
                                     v-model="password"
                                     autocomplete="new-password"
-                                    prepend-icon="security"
+                                    prepend-icon="mdi-shield-lock-outline"
                                     label="Neues Passwort"
                                     required
                             ></v-text-field>
@@ -50,7 +50,7 @@
                                     type="password"
                                     :rules="[ confirmPassword ]"
                                     v-model="passwordConfirm"
-                                    prepend-icon="security"
+                                    prepend-icon="mdi-shield-lock-outline"
                                     autocomplete="new-password"
                                     label="Neues Passwort bestätigen"
                                     required

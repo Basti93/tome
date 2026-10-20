@@ -49,7 +49,7 @@
           class="mt-5"
           :rules="imageRule"
           accept="image/png, image/jpeg, image/bmp"
-          prepend-icon="add_a_photo"
+          prepend-icon="mdi-camera-plus"
           show-size
           v-model="files"
           @update:modelValue="imageChanged"

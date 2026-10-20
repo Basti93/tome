@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="show" max-width="1000px" :fullscreen="xs" persistent>
+    <v-dialog v-model="show" max-width="1000px" :fullscreen="smAndDown" persistent>
         <v-card>
             <v-toolbar flat>
                 <v-btn icon @click="show=false">
@@ -34,7 +34,7 @@
                                     label="Vorname"
                                     required
                                     :rules="[v => !!v || 'Wird benötigt']"
-                                    prepend-icon="account_circle"
+                                    prepend-icon="mdi-account-circle"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12" sm="6">
@@ -43,7 +43,7 @@
                                     label="Nachname"
                                     :rules="[v => !!v || 'Wird benötigt']"
                                     required
-                                    prepend-icon="account_circle"
+                                    prepend-icon="mdi-account-circle"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12">
@@ -52,7 +52,7 @@
                                     label="E-Mail (optional, nötig für die Einladung)"
                                     type="email"
                                     :rules="[v => !v || /.+@.+\..+/.test(v) || 'Bitte eine gültige E-Mail-Adresse eingeben']"
-                                    prepend-icon="email"
+                                    prepend-icon="mdi-email-outline"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -63,7 +63,7 @@
                                     <v-text-field
                                             v-model="birthdateFormatted"
                                             label="Geburtsdatum"
-                                            prepend-icon="event"
+                                            prepend-icon="mdi-calendar"
                                             readonly
                                             v-bind="props"
                                     ></v-text-field>
@@ -94,7 +94,7 @@
                             <v-checkbox
                                     v-model="active"
                                     label="Aktiv"
-                                    prepend-icon="active"
+                                    prepend-icon="mdi-check-circle-outline"
                             ></v-checkbox>
                         </v-col>
                     </v-row>
@@ -133,7 +133,7 @@ const emit = defineEmits<{
   saved: []
 }>()
 
-const { xs } = useDisplay()
+const { smAndDown } = useDisplay()
 
 const form = ref<any>(null)
 const birthdatePicker = ref<any>(null)

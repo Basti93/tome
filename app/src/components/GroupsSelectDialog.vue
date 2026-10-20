@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" max-width="600px" :fullscreen="xs" persistent>
+  <v-dialog v-model="show" max-width="600px" :fullscreen="smAndDown" persistent>
     <v-card>
       <v-toolbar flat>
         <v-btn icon @click="show=false">
@@ -22,7 +22,7 @@
           v-model="selectedBranchId"
           clearable
           label="Sparte"
-          prepend-icon="bubble_chart"
+          prepend-icon="mdi-chart-bubble"
         ></v-select>
         <v-select
           v-bind:disabled="!selectedBranchId"
@@ -35,7 +35,7 @@
           chips
           closable-chips
           label="Gruppen"
-          prepend-icon="group"
+          prepend-icon="mdi-account-group"
         ></v-select>
         </v-form>
       </v-card-text>
@@ -58,7 +58,7 @@ const emit = defineEmits<{
   done: [payload: { branchId: number | null; groupdIds: any[] | null }]
 }>()
 
-const { xs } = useDisplay()
+const { smAndDown } = useDisplay()
 const masterData = useMasterDataStore()
 
 const valid = ref(true)

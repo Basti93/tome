@@ -8,7 +8,7 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="xs"
+                  :fullscreen="smAndDown"
                   persistent
                   max-width="1000px"
               >
@@ -53,7 +53,7 @@
                                 label="Name"
                                 required
                                 :rules="[v => !!v || 'Wird benötigt']"
-                                prepend-icon="add_location"
+                                prepend-icon="mdi-map-marker-plus"
                             ></v-text-field>
                           </v-col>
                         </v-row>
@@ -72,6 +72,7 @@
                   <v-row>
                     <v-col>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="locations"
                           item-key="id"
@@ -130,12 +131,12 @@ import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 import { useMasterDataStore } from '@/store/masterData'
 
-const { xs } = useDisplay()
+const { smAndDown } = useDisplay()
 
 const form = ref<any>(null)
 const loading = ref(false)
 const locations = ref<any[]>([])
-const total = ref<number | null>(null)
+const total = ref(0)
 const rowsPerPageItems = [5, 10, 20, 50, 100]
 const page = ref(1)
 const itemsPerPage = ref(10)
@@ -153,7 +154,7 @@ async function loadLocations() {
   const { data } = await httpClient.get('/location')
   locations.value = data.data
   page.value = data.currentPage
-  total.value = data.total
+  total.value = data.total ?? 0
 }
 
 async function loadData() {

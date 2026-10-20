@@ -8,7 +8,7 @@
             <template v-slot:extension>
               <v-dialog
                   v-model="showDialog"
-                  :fullscreen="xs"
+                  :fullscreen="smAndDown"
                   persistent
                   max-width="1000px"
               >
@@ -53,7 +53,7 @@
                                 label="Name"
                                 required
                                 :rules="[v => !!v || 'Wird benötigt']"
-                                prepend-icon="groups"
+                                prepend-icon="mdi-account-group"
                             ></v-text-field>
                           </v-col>
                           <v-col cols="12">
@@ -64,7 +64,7 @@
                                 :rules="[v => !!v || 'Wird benötigt']"
                                 v-model="editedItem.branchId"
                                 :item-title="buildFullBranchname"
-                                prepend-icon="bubble_chart"
+                                prepend-icon="mdi-chart-bubble"
                                 item-value="id"
                             >
 
@@ -75,7 +75,7 @@
                                 :items="filteredUsers"
                                 :item-title="fullName"
                                 item-value="id"
-                                prepend-icon="group"
+                                prepend-icon="mdi-account-group"
                                 v-model="selectedUserIds"
                                 multiple
                                 clearable
@@ -141,6 +141,7 @@
                   <v-row>
                     <v-col>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="groups"
                           item-key="id"
@@ -212,7 +213,7 @@ import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
 import { parseApiDate } from '@/helpers/dayjs'
 
-const { xs } = useDisplay()
+const { smAndDown } = useDisplay()
 const masterData = useMasterDataStore()
 
 const form = ref<any>(null)
@@ -221,7 +222,7 @@ const groups = ref<Group[]>([])
 const users = ref<User[]>([])
 const filteredUsers = ref<User[]>([])
 const selectedUserIds = ref<any[]>([])
-const total = ref<number | null>(null)
+const total = ref(0)
 const rowsPerPageItems = [5, 10, 20, 50, 100]
 const page = ref(1)
 const itemsPerPage = ref(10)
@@ -256,7 +257,7 @@ async function loadGroups() {
     )
   }
   page.value = data.currentPage
-  total.value = data.total
+  total.value = data.total ?? 0
 }
 
 async function loadUsers() {

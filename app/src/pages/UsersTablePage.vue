@@ -58,6 +58,7 @@
                   <v-row>
                     <v-col>
                       <v-data-table-server
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="users"
                           item-key="id"
@@ -188,7 +189,7 @@ const invitingUserId = ref<number | null>(null)
 const filterBranchId = ref<number | null>(null)
 const filterGroupIds = ref<any[]>([])
 const loading = ref(false)
-const total = ref<number | null>(null)
+const total = ref(0)
 const rowsPerPageItems = [5, 10, 20, 50, 100]
 const page = ref(1)
 const itemsPerPage = ref(10)
@@ -247,7 +248,7 @@ function dataLoaded(res: any) {
     )
   }
   page.value = res.data.currentPage
-  total.value = res.data.total
+  total.value = res.data.total ?? 0
 }
 
 async function loadData() {

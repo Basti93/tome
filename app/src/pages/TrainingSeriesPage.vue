@@ -33,7 +33,9 @@
             </template>
             <v-dialog
                 v-model="showCreateDialog"
-                fullscreen>
+                max-width="1000px"
+                scrollable
+                :fullscreen="smAndDown">
               <v-card>
                 <v-toolbar flat>
                   <v-btn icon @click="showCreateDialog = false">
@@ -136,6 +138,7 @@
                   <v-row>
                     <v-col>
                       <v-data-table
+                          mobile-breakpoint="sm"
                           :headers="headers"
                           :items="trainingSeriesList"
                           :loading="loading"
@@ -203,6 +206,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import { computed, ref } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
@@ -215,6 +219,7 @@ import { dayArrayToString } from '../helpers/date-helpers'
 import WeekdaysComponent from '../components/WeekdaysComponent.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 
+const { smAndDown } = useDisplay()
 const authStore = useAuthStore()
 const masterData = useMasterDataStore()
 

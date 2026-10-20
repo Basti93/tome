@@ -37,6 +37,23 @@
   color: inherit;
 }
 
+/* Wider screens: the app container is narrow at md (about 700px) and the pages nest another container, which
+   clipped the data tables (edit/invite/delete icons off screen). Use the width, no double padding. */
+@media (min-width: 600px) {
+  .v-main > .v-container {
+    max-width: 1280px;
+  }
+  .v-main > .v-container > .v-container {
+    padding-inline: 0;
+    max-width: none;
+  }
+}
+
+/* containers inside cards (table wrappers, forms) use the card's width instead of the breakpoint max-width */
+.v-card .v-container {
+  max-width: none;
+}
+
 /* Small screens (Vuetify xs: < 600px): tighter spacing, less nesting. */
 @media (max-width: 599.98px) {
   .v-container {
