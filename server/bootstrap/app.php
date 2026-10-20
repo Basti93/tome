@@ -1,15 +1,12 @@
 <?php
 
 use App\Http\Middleware\ForceJsonResponse;
-use App\Http\Middleware\JwtFromCookie;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
-use PHPOpenSourceSaver\JWTAuth\Http\Middleware\Authenticate;
-use PHPOpenSourceSaver\JWTAuth\Http\Middleware\RefreshToken;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -24,19 +21,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'jwt.auth' => Authenticate::class,
-            'jwt.refresh' => RefreshToken::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
         ]);
         // The API always answers JSON: a missing Accept header must never turn a validation or auth
         // failure into a redirect (which fetch() follows to the SPA's index.html).
+        // Sanctum SPA authentication: requests from the SPA's own host get session + CSRF (SANCTUM_STATEFUL_DOMAINS)
+        $middleware->statefulApi();
         $middleware->api(prepend: [
             ForceJsonResponse::class,
         ]);
         $middleware->api(append: [
             HandleCors::class,
-            JwtFromCookie::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

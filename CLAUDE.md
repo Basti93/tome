@@ -4,7 +4,7 @@ T.O.M.E. (Training Organization Made Easy): training planning, check-in and eval
 
 ## Layout
 - `app/`: Vue 3.5 + TypeScript + Vuetify 4 + Pinia PWA (Vite, Vitest). Pages in `src/pages`, reusable parts in `src/components`.
-- `server/`: Laravel 13 / PHP 8.4 REST API at `/api/v1` (JWT in an HttpOnly cookie, spatie permissions, FCM push).
+- `server/`: Laravel 13 / PHP 8.4 REST API at `/api/v1` (Sanctum SPA auth: session cookie + CSRF, spatie permissions with guard `api`, FCM push).
 - `deploy/`: deploy, rollback, server setup and prod simulation scripts; Apache vhost template.
 - Setup and commands: see the `Makefile` (`make help`), `app/package.json`, `server/composer.json`.
 

@@ -47,20 +47,19 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::prefix('auth')->group(function () {
-        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:10,1'); // Increased to allow account lockout to trigger
+        Route::post('login', 'App\\Api\\V1\\Controllers\\LoginController@login')->middleware('throttle:login'); // 10 per minute per e-mail and IP; the account lockout (5 failures) is the real protection
 
-        Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:3,1');
+        Route::post('recovery', 'App\\Api\\V1\\Controllers\\ForgotPasswordController@sendResetEmail')->middleware('throttle:recovery');
         Route::post('reset', 'App\\Api\\V1\\Controllers\\ResetPasswordController@resetPassword');
 
         Route::post('email/send', 'App\\Api\\V1\\Controllers\\EmailVerificationController@sendVerificationEmail')->middleware('throttle:3,1');
         Route::post('email/verify', 'App\\Api\\V1\\Controllers\\EmailVerificationController@verifyEmail')->middleware('throttle:5,1');
 
         Route::post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
-        Route::post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
         Route::get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
     });
 
-    Route::middleware('jwt.auth')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('user')->group(function () {
             Route::get('/', 'App\\Api\\V1\\Controllers\\UserController@index');
             Route::get('/sort', 'App\\Api\\V1\\Controllers\\UserController@getBySort');

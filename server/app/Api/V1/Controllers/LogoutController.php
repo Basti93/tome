@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\AuthLogService;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class LogoutController extends Controller
 {
@@ -16,25 +17,27 @@ class LogoutController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jwt.auth', []);
+        $this->middleware('auth:sanctum');
     }
 
     /**
-     * Log the user out (Invalidate the token)
+     * Log the user out (the session is destroyed)
      *
      * @return JsonResponse
      */
-    public function logout()
+    public function logout(Request $request)
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('api')->id();
         Auth::guard('api')->logout();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         if ($userId) {
             AuthLogService::logout($userId, request());
         }
 
-        return response()
-            ->json(['message' => 'Successfully logged out'])
-            ->withCookie(cookie()->forget('jwt_token'));
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

@@ -25,7 +25,7 @@ class MasterDataCrudTest extends TestCase
         $u1 = UserFactory::new()->create();
         $u2 = UserFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/group', [
+        $this->actingAsUser($trainer)->postJson('/api/v1/group', [
             'name' => 'Kids', 'branchId' => $branch->id, 'userIds' => [$u1->id, $u2->id],
         ])->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
@@ -39,7 +39,7 @@ class MasterDataCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/group', [])
+        $this->actingAsUser($trainer)->postJson('/api/v1/group', [])
             ->assertStatus(422)->assertJsonValidationErrors(['name', 'branchId']);
     }
 
@@ -51,7 +51,7 @@ class MasterDataCrudTest extends TestCase
         $old = UserFactory::new()->inGroups([$group])->create();
         $new = UserFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/group/{$group->id}", [
+        $this->actingAsUser($trainer)->putJson("/api/v1/group/{$group->id}", [
             'name' => 'Teens', 'branchId' => $branch->id, 'userIds' => [$new->id],
         ])->assertOk()->assertExactJson(['status' => 'ok']);
 
@@ -66,22 +66,22 @@ class MasterDataCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $group = GroupFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->deleteJson("/api/v1/group/{$group->id}")->assertOk()->assertExactJson(['status' => 'ok']);
+        $this->actingAsUser($trainer)->deleteJson("/api/v1/group/{$group->id}")->assertOk()->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseMissing('groups', ['id' => $group->id]);
-        $this->actingAsJwt($trainer)->deleteJson('/api/v1/group/999999')->assertNotFound();
+        $this->actingAsUser($trainer)->deleteJson('/api/v1/group/999999')->assertNotFound();
     }
 
     public function test_admin_creates_and_updates_a_location(): void
     {
         $admin = $this->makeUser('admin');
 
-        $this->actingAsJwt($admin)->postJson('/api/v1/location', ['name' => 'Halle 1'])
+        $this->actingAsUser($admin)->postJson('/api/v1/location', ['name' => 'Halle 1'])
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
         $location = Location::firstOrFail();
         $this->assertSame('Halle 1', $location->name);
 
-        $this->actingAsJwt($admin)->putJson("/api/v1/location/{$location->id}", ['name' => 'Halle 2'])
+        $this->actingAsUser($admin)->putJson("/api/v1/location/{$location->id}", ['name' => 'Halle 2'])
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
         $this->assertSame('Halle 2', $location->fresh()->name);
     }
@@ -90,21 +90,21 @@ class MasterDataCrudTest extends TestCase
     {
         $admin = $this->makeUser('admin');
 
-        $this->actingAsJwt($admin)->postJson('/api/v1/location', [])->assertStatus(422)->assertJsonValidationErrors(['name']);
-        $this->actingAsJwt($admin)->putJson('/api/v1/location/999999', ['name' => 'x'])->assertNotFound();
+        $this->actingAsUser($admin)->postJson('/api/v1/location', [])->assertStatus(422)->assertJsonValidationErrors(['name']);
+        $this->actingAsUser($admin)->putJson('/api/v1/location/999999', ['name' => 'x'])->assertNotFound();
     }
 
     public function test_admin_creates_and_updates_a_branch(): void
     {
         $admin = $this->makeUser('admin');
 
-        $this->actingAsJwt($admin)->postJson('/api/v1/branch', ['name' => 'Judo', 'shortName' => 'JUD', 'colorHex' => '#112233'])
+        $this->actingAsUser($admin)->postJson('/api/v1/branch', ['name' => 'Judo', 'shortName' => 'JUD', 'colorHex' => '#112233'])
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
         $branch = Branch::firstOrFail();
         $this->assertSame('JUD', $branch->short_name);
         $this->assertSame('#112233', $branch->colorHex);
 
-        $this->actingAsJwt($admin)->putJson("/api/v1/branch/{$branch->id}", ['name' => 'Karate', 'shortName' => 'KAR', 'colorHex' => '#445566'])
+        $this->actingAsUser($admin)->putJson("/api/v1/branch/{$branch->id}", ['name' => 'Karate', 'shortName' => 'KAR', 'colorHex' => '#445566'])
             ->assertStatus(201);
         $this->assertSame('Karate', $branch->fresh()->name);
     }
@@ -113,7 +113,7 @@ class MasterDataCrudTest extends TestCase
     {
         $admin = $this->makeUser('admin');
 
-        $this->actingAsJwt($admin)->postJson('/api/v1/branch', [])
+        $this->actingAsUser($admin)->postJson('/api/v1/branch', [])
             ->assertStatus(422)->assertJsonValidationErrors(['name', 'shortName']);
     }
 
@@ -123,9 +123,9 @@ class MasterDataCrudTest extends TestCase
         $location = LocationFactory::new()->create();
         $branch = BranchFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/location', ['name' => 'x'])->assertForbidden();
-        $this->actingAsJwt($trainer)->putJson("/api/v1/location/{$location->id}", ['name' => 'x'])->assertForbidden();
-        $this->actingAsJwt($trainer)->postJson('/api/v1/branch', ['name' => 'x', 'shortName' => 'X'])->assertForbidden();
-        $this->actingAsJwt($trainer)->putJson("/api/v1/branch/{$branch->id}", ['name' => 'x', 'shortName' => 'X'])->assertForbidden();
+        $this->actingAsUser($trainer)->postJson('/api/v1/location', ['name' => 'x'])->assertForbidden();
+        $this->actingAsUser($trainer)->putJson("/api/v1/location/{$location->id}", ['name' => 'x'])->assertForbidden();
+        $this->actingAsUser($trainer)->postJson('/api/v1/branch', ['name' => 'x', 'shortName' => 'X'])->assertForbidden();
+        $this->actingAsUser($trainer)->putJson("/api/v1/branch/{$branch->id}", ['name' => 'x', 'shortName' => 'X'])->assertForbidden();
     }
 }

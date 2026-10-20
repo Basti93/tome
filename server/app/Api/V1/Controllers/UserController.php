@@ -27,7 +27,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jwt.auth', []);
+        $this->middleware('auth:sanctum');
         $this->middleware('permission:read-user', ['only' => ['index', 'getBySort', 'getTrainers', 'getBirthdayUsers', 'getAllAbsenceUsers']]);
         $this->middleware('permission:create-user', ['only' => ['create', 'store', 'createUnregistered']]);
         $this->middleware('permission:update-user', ['only' => ['edit', 'update', 'removeAbsence', 'invite']]);

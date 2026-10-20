@@ -189,17 +189,17 @@ class PasswordAndEmailTest extends TestCase
     public function test_change_password_requires_authentication_the_current_password_and_the_policy(): void
     {
         $user = $this->makeUser('member', ['email' => 'm@example.com']);
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'weak'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'weak'])
             ->assertStatus(422);
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['password' => 'NewSecret1!'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['password' => 'NewSecret1!'])
             ->assertStatus(422)->assertJsonValidationErrors(['currentPassword']);
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])
             ->assertStatus(422)->assertJsonPath('message', 'Das aktuelle Passwort ist falsch.');
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'NewSecret1!'])->assertStatus(403);
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->postJson('/api/v1/auth/login', ['email' => 'm@example.com', 'password' => 'NewSecret1!'])->assertOk();
@@ -214,10 +214,10 @@ class PasswordAndEmailTest extends TestCase
     {
         $user = $this->makeUser('member', ['email' => 'm@example.com']);
         for ($i = 0; $i < 5; $i++) {
-            $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])->assertStatus(422);
+            $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Falsch123!x', 'password' => 'NewSecret1!'])->assertStatus(422);
         }
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
             ->assertStatus(429);
     }
 
@@ -228,7 +228,7 @@ class PasswordAndEmailTest extends TestCase
             $this->postJson('/api/v1/auth/login', ['email' => 'other@example.com', 'password' => 'Falsch123!x']);
         }
 
-        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
+        $this->actingAsUser($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
             ->assertStatus(201);
     }
 }

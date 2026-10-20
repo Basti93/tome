@@ -7,14 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Services\AuthLogService;
 use App\Support\PasswordBrokers;
 use App\User;
-use Config;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Password;
-use PHPOpenSourceSaver\JWTAuth\JWTAuth;
 
 class ResetPasswordController extends Controller
 {
-    public function resetPassword(ResetPasswordRequest $request, JWTAuth $JWTAuth)
+    public function resetPassword(ResetPasswordRequest $request)
     {
         // reset links (60 minutes) and invitation links (7 days) come from two brokers with their own token tables
         $response = Password::INVALID_TOKEN;
@@ -46,15 +44,8 @@ class ResetPasswordController extends Controller
             AuthLogService::passwordReset($user->id, $request);
         }
 
-        if (! Config::get('boilerplate.reset_password.release_token')) {
-            return response()->json([
-                'status' => 'ok',
-            ]);
-        }
-
         return response()->json([
             'status' => 'ok',
-            'token' => $JWTAuth->fromUser($user),
         ]);
     }
 

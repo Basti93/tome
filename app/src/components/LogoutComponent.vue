@@ -13,7 +13,7 @@ const router = useRouter()
 
 async function logout() {
   try {
-    await httpClient.post('/auth/logout')
+    await httpClient.post('/auth/logout', undefined, { silent401: true })
   } catch {
     // ignore errors, still clear local state
   }

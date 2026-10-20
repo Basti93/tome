@@ -17,7 +17,7 @@ class LoginTest extends TestCase
 
     private function login(string $email, string $password = UserFactory::PASSWORD)
     {
-        return $this->postJson('/api/v1/auth/login', ['email' => $email, 'password' => $password]);
+        return $this->fromSpa()->postJson('/api/v1/auth/login', ['email' => $email, 'password' => $password]);
     }
 
     public function test_login_returns_user_and_sets_http_only_cookie_but_no_token_in_body(): void
@@ -30,17 +30,15 @@ class LoginTest extends TestCase
             ->assertJsonPath('user.id', $user->id)
             ->assertJsonPath('user.email', 'trainer@example.com')
             ->assertJsonPath('user.roleNames', ['trainer'])
-            ->assertJsonPath('expiresIn', 3600)
             ->assertJsonMissingPath('token')
             ->assertJsonMissingPath('user.password');
 
-        $cookie = $response->getCookie('jwt_token', false);
-        $this->assertNotNull($cookie, 'jwt_token cookie must be set');
+        $cookie = $response->getCookie(config('session.cookie'), false);
+        $this->assertNotNull($cookie, 'the session cookie must be set');
         $this->assertTrue($cookie->isHttpOnly());
-        $this->assertSame('strict', $cookie->getSameSite());
+        $this->assertSame('lax', $cookie->getSameSite());
         $this->assertSame('/', $cookie->getPath());
-        $this->assertFalse($cookie->isSecure(), 'cookie is only Secure in production');
-        $this->assertCount(3, explode('.', $cookie->getValue()), 'cookie holds a JWT');
+        $this->assertFalse($cookie->isSecure(), 'cookie is only Secure when SESSION_SECURE_COOKIE is set (production)');
     }
 
     public function test_user_payload_exposes_expected_fields(): void
@@ -69,8 +67,8 @@ class LoginTest extends TestCase
 
         $this->login('m@example.com', 'WrongPass1!')
             ->assertStatus(403)
-            ->assertExactJson(['status' => 'error', 'message' => 'E-Mail oder Passwort ist falsch.', 'code' => 'invalid_credentials'])
-            ->assertCookieMissing('jwt_token');
+            ->assertExactJson(['status' => 'error', 'message' => 'E-Mail oder Passwort ist falsch.', 'code' => 'invalid_credentials']);
+        $this->assertGuest('api');
 
         $this->assertDatabaseHas('auth_logs', ['action' => 'login_failed']);
     }
@@ -95,8 +93,8 @@ class LoginTest extends TestCase
 
         $this->login('new@example.com')
             ->assertStatus(403)
-            ->assertJsonPath('code', 'email_not_verified')
-            ->assertCookieMissing('jwt_token');
+            ->assertJsonPath('code', 'email_not_verified');
+        $this->assertGuest('api');
     }
 
     public function test_account_is_locked_after_five_failed_attempts(): void
@@ -122,8 +120,8 @@ class LoginTest extends TestCase
         // even the correct password is refused while locked
         $this->login('m@example.com')
             ->assertStatus(403)
-            ->assertJsonPath('code', 'locked')
-            ->assertCookieMissing('jwt_token');
+            ->assertJsonPath('code', 'locked');
+        $this->assertGuest('api');
     }
 
     public function test_lock_expires_after_fifteen_minutes(): void
@@ -175,7 +173,7 @@ class LoginTest extends TestCase
 
         $this->login('m@example.com')->assertStatus(403)
             ->assertJsonPath('code', 'inactive')
-            ->assertJsonPath('message', 'Dieses Konto ist deaktiviert. Bitte wende dich an deinen Trainer.')
-            ->assertCookieMissing('jwt_token');
+            ->assertJsonPath('message', 'Dieses Konto ist deaktiviert. Bitte wende dich an deinen Trainer.');
+        $this->assertGuest('api');
     }
 }

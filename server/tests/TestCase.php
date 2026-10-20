@@ -6,7 +6,6 @@ use App\User;
 use Database\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\Support\SeedRolesAndPermissions;
 
 /**
@@ -30,16 +29,19 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     }
 
+    /** The user of the session the following requests run in (see actingAsUser). */
+    private ?User $actor = null;
+
     /**
-     * The JWT guard and the tymon/jwt token holder are long-lived singletons, so
-     * without this a user authenticated by one request would leak into the next
-     * request of the same test.
+     * The session guard is a long-lived singleton, so without this a user authenticated by one request would leak
+     * into the next request of the same test: guards are reset and the acting user is set again per request.
      */
     public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
     {
         $this->app['auth']->forgetGuards();
-        $this->app->forgetInstance('tymon.jwt');
-        $this->app->forgetInstance('tymon.jwt.auth');
+        if ($this->actor) {
+            $this->app['auth']->guard('api')->setUser($this->actor);
+        }
 
         return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
     }
@@ -55,26 +57,17 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
         return $factory->create($attributes);
     }
 
-    protected function jwtFor(User $user): string
+    /** Authenticate the following requests as this user (Sanctum SPA session, guard `api`). */
+    protected function actingAsUser(User $user): static
     {
-        return JWTAuth::fromUser($user);
+        $this->actor = $user;
+
+        return $this;
     }
 
-    /** Authenticate subsequent requests like the browser does: HttpOnly `jwt_token` cookie. */
-    protected function actingAsJwt(User $user): static
+    /** Headers of a request from the SPA's own origin: Sanctum then starts the session (cookie + CSRF). */
+    protected function fromSpa(): static
     {
-        return $this->withJwtCookie($this->jwtFor($user));
-    }
-
-    /** Send the given raw JWT as the `jwt_token` cookie (JSON requests only carry cookies with credentials). */
-    protected function withJwtCookie(string $token): static
-    {
-        return $this->withCredentials()->withUnencryptedCookie('jwt_token', $token);
-    }
-
-    /** Authenticate subsequent requests with an Authorization bearer header. */
-    protected function actingAsBearer(User $user): static
-    {
-        return $this->withToken($this->jwtFor($user));
+        return $this->withHeaders(['Referer' => 'http://localhost', 'Origin' => 'http://localhost']);
     }
 }

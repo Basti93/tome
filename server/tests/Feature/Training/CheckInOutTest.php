@@ -18,7 +18,7 @@ class CheckInOutTest extends TestCase
         $member = UserFactory::new()->role('member')->inGroups([$group])->create();
         $training = TrainingFactory::new()->forGroups([$group])->create();
 
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkin/{$member->id}")
+        $this->actingAsUser($member)->postJson("/api/v1/training/{$training->id}/checkin/{$member->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseHas('training_participation', ['training_id' => $training->id, 'user_id' => $member->id, 'attend' => 1]);
@@ -29,7 +29,7 @@ class CheckInOutTest extends TestCase
         $member = UserFactory::new()->role('member')->inGroups([GroupFactory::new()->create()])->create();
         $training = TrainingFactory::new()->forGroups([GroupFactory::new()->create()])->create();
 
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkin/{$member->id}")
+        $this->actingAsUser($member)->postJson("/api/v1/training/{$training->id}/checkin/{$member->id}")
             ->assertStatus(403)->assertExactJson(['status' => 'User is not assigned to the training group']);
     }
 
@@ -38,8 +38,8 @@ class CheckInOutTest extends TestCase
         $member = $this->makeUser('member');
         $training = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkin/999999")->assertNotFound();
-        $this->actingAsJwt($member)->postJson("/api/v1/training/999999/checkin/{$member->id}")->assertNotFound();
+        $this->actingAsUser($member)->postJson("/api/v1/training/{$training->id}/checkin/999999")->assertNotFound();
+        $this->actingAsUser($member)->postJson("/api/v1/training/999999/checkin/{$member->id}")->assertNotFound();
     }
 
     public function test_check_in_works_for_inactive_users_when_authenticated(): void
@@ -50,7 +50,7 @@ class CheckInOutTest extends TestCase
         $inactive = UserFactory::new()->inactive()->inGroups([$group])->create();
         $training = TrainingFactory::new()->forGroups([$group])->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/training/{$training->id}/checkin/{$inactive->id}")->assertStatus(201);
+        $this->actingAsUser($trainer)->postJson("/api/v1/training/{$training->id}/checkin/{$inactive->id}")->assertStatus(201);
     }
 
     public function test_check_out_far_in_advance_marks_not_attending(): void
@@ -60,7 +60,7 @@ class CheckInOutTest extends TestCase
         $training = TrainingFactory::new()->forGroups([$group])->create();
         $training->participants()->attach($member->id, ['attend' => 1]);
 
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}")
+        $this->actingAsUser($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseHas('training_participation', ['training_id' => $training->id, 'user_id' => $member->id, 'attend' => 0]);
@@ -71,7 +71,7 @@ class CheckInOutTest extends TestCase
         $member = UserFactory::new()->role('member')->create();
         $training = TrainingFactory::new()->forGroups([GroupFactory::new()->create()])->create();
 
-        $this->actingAsJwt($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}")
+        $this->actingAsUser($member)->postJson("/api/v1/training/{$training->id}/checkout/{$member->id}")
             ->assertStatus(403)->assertJsonPath('status', 'not_assigned');
     }
 }

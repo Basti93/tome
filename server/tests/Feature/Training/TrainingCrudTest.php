@@ -31,7 +31,7 @@ class TrainingCrudTest extends TestCase
         $new = TrainingFactory::new()->between('2099-02-01 10:00:00', '2099-02-01 11:00:00')->create();
         TrainingFactory::new()->create(['deleted_at' => now()]);
 
-        $response = $this->actingAsJwt($trainer)->getJson('/api/v1/training')->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson('/api/v1/training')->assertOk();
 
         $this->assertSame([$new->id, $old->id], collect($response->json('data'))->pluck('id')->all());
         $response->assertJsonPath('meta.perPage', 10)->assertJsonPath('meta.total', 2);
@@ -44,10 +44,10 @@ class TrainingCrudTest extends TestCase
         $inGroup = TrainingFactory::new()->forGroups([$g])->create();
         TrainingFactory::new()->count(2)->create();
 
-        $ids = collect($this->actingAsJwt($trainer)->getJson("/api/v1/training?groupIds={$g->id}")->json('data'))->pluck('id')->all();
+        $ids = collect($this->actingAsUser($trainer)->getJson("/api/v1/training?groupIds={$g->id}")->json('data'))->pluck('id')->all();
         $this->assertSame([$inGroup->id], $ids);
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/training?per_page=2')->assertJsonCount(2, 'data')->assertJsonPath('meta.lastPage', 2);
+        $this->actingAsUser($trainer)->getJson('/api/v1/training?per_page=2')->assertJsonCount(2, 'data')->assertJsonPath('meta.lastPage', 2);
     }
 
     public function test_sort_maps_date_and_location_columns(): void
@@ -56,13 +56,13 @@ class TrainingCrudTest extends TestCase
         $a = TrainingFactory::new()->between('2099-01-01 10:00:00', '2099-01-01 11:00:00')->create();
         $b = TrainingFactory::new()->between('2099-03-01 10:00:00', '2099-03-01 11:00:00')->create();
 
-        $asc = collect($this->actingAsJwt($trainer)->getJson('/api/v1/training/sort?sortBy=date&direction=asc')->assertOk()->json('data'))->pluck('id')->all();
-        $desc = collect($this->actingAsJwt($trainer)->getJson('/api/v1/training/sort?sortBy=date&direction=desc')->json('data'))->pluck('id')->all();
+        $asc = collect($this->actingAsUser($trainer)->getJson('/api/v1/training/sort?sortBy=date&direction=asc')->assertOk()->json('data'))->pluck('id')->all();
+        $desc = collect($this->actingAsUser($trainer)->getJson('/api/v1/training/sort?sortBy=date&direction=desc')->json('data'))->pluck('id')->all();
 
         $this->assertSame([$a->id, $b->id], $asc);
         $this->assertSame([$b->id, $a->id], $desc);
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/training/sort?sortBy=locationId&direction=asc')->assertOk();
+        $this->actingAsUser($trainer)->getJson('/api/v1/training/sort?sortBy=locationId&direction=asc')->assertOk();
     }
 
     public function test_get_by_id(): void
@@ -70,10 +70,10 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->create(['comment' => 'hello']);
 
-        $this->actingAsJwt($trainer)->getJson("/api/v1/training/{$t->id}")->assertOk()
+        $this->actingAsUser($trainer)->getJson("/api/v1/training/{$t->id}")->assertOk()
             ->assertJsonPath('data.id', $t->id)
             ->assertJsonPath('data.comment', 'hello');
-        $this->actingAsJwt($trainer)->getJson('/api/v1/training/999999')->assertNotFound();
+        $this->actingAsUser($trainer)->getJson('/api/v1/training/999999')->assertNotFound();
     }
 
     public function test_calendar_requires_read_permission_and_exposes_participants(): void
@@ -81,7 +81,7 @@ class TrainingCrudTest extends TestCase
         $member = $this->makeUser('member');
         $t = TrainingFactory::new()->between('2099-06-10 18:00:00', '2099-06-10 19:00:00')->create();
 
-        $response = $this->actingAsJwt($member)->getJson('/api/v1/training/calendar?start=2099-06-01&end=2099-06-30')->assertOk();
+        $response = $this->actingAsUser($member)->getJson('/api/v1/training/calendar?start=2099-06-01&end=2099-06-30')->assertOk();
 
         $response->assertJsonPath('data.0.id', $t->id);
         $this->assertSame(
@@ -98,7 +98,7 @@ class TrainingCrudTest extends TestCase
         $content = ContentFactory::new()->create();
         $p1 = UserFactory::new()->inGroups([$group])->create();
 
-        $response = $this->actingAsJwt($trainer)->postJson('/api/v1/training', $this->payload([
+        $response = $this->actingAsUser($trainer)->postJson('/api/v1/training', $this->payload([
             'locationId' => $location->id,
             'trainerIds' => [$trainer->id],
             'groupIds' => [$group->id],
@@ -125,7 +125,7 @@ class TrainingCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/training', $this->payload(['automaticAttend' => 'false']))->assertStatus(201);
+        $this->actingAsUser($trainer)->postJson('/api/v1/training', $this->payload(['automaticAttend' => 'false']))->assertStatus(201);
 
         $this->assertSame(0, (int) Training::firstOrFail()->automatic_attend);
     }
@@ -134,7 +134,7 @@ class TrainingCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/training', [])
+        $this->actingAsUser($trainer)->postJson('/api/v1/training', [])
             ->assertStatus(422)->assertJsonValidationErrors(['start', 'end']);
     }
 
@@ -149,7 +149,7 @@ class TrainingCrudTest extends TestCase
         $t->participants()->attach($keep->id, ['attend' => 1]);
         $t->participants()->attach($drop->id, ['attend' => 1]);
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/training/{$t->id}", $this->payload([
+        $this->actingAsUser($trainer)->putJson("/api/v1/training/{$t->id}", $this->payload([
             'comment' => 'changed',
             'groupIds' => [$g2->id],
             'trainerIds' => [$trainer->id],
@@ -167,7 +167,7 @@ class TrainingCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->putJson('/api/v1/training/999999', $this->payload())->assertNotFound();
+        $this->actingAsUser($trainer)->putJson('/api/v1/training/999999', $this->payload())->assertNotFound();
     }
 
     public function test_destroy_hard_deletes_and_cascades(): void
@@ -175,7 +175,7 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->forGroups([GroupFactory::new()->create()])->create();
 
-        $this->actingAsJwt($trainer)->deleteJson("/api/v1/training/{$t->id}")
+        $this->actingAsUser($trainer)->deleteJson("/api/v1/training/{$t->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseMissing('trainings', ['id' => $t->id]);
@@ -187,7 +187,7 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->create(['deleted_at' => now()]);
 
-        $this->actingAsJwt($trainer)->deleteJson("/api/v1/training/{$t->id}")->assertStatus(201);
+        $this->actingAsUser($trainer)->deleteJson("/api/v1/training/{$t->id}")->assertStatus(201);
 
         $this->assertDatabaseMissing('trainings', ['id' => $t->id]);
     }
@@ -197,7 +197,7 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/training/{$t->id}/prepared")->assertOk()->assertExactJson(['status' => 'ok']);
+        $this->actingAsUser($trainer)->postJson("/api/v1/training/{$t->id}/prepared")->assertOk()->assertExactJson(['status' => 'ok']);
 
         $this->assertSame(1, (int) $t->fresh()->prepared);
     }
@@ -207,7 +207,7 @@ class TrainingCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->patchJson("/api/v1/training/{$t->id}/deleteinfuture")->assertOk()->assertExactJson(['status' => 'ok']);
+        $this->actingAsUser($trainer)->patchJson("/api/v1/training/{$t->id}/deleteinfuture")->assertOk()->assertExactJson(['status' => 'ok']);
 
         $this->assertSoftDeleted('trainings', ['id' => $t->id]);
         $this->getJson('/api/v1/training/upcoming')->assertJsonCount(0, 'data');
@@ -229,7 +229,7 @@ class TrainingCrudTest extends TestCase
         $open = TrainingFactory::new()->between('2099-01-19 18:00:00', '2099-01-19 19:00:00')->forGroups([$g])->create(['evaluated' => 0]);
         $open->participants()->attach($lazy->id, ['attend' => 1]);
 
-        $response = $this->actingAsJwt($trainer)->getJson("/api/v1/training/participationcount?groupIds={$g->id}&year=2099")->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson("/api/v1/training/participationcount?groupIds={$g->id}&year=2099")->assertOk();
 
         $response->assertExactJson([
             ['id' => $busy->id, 'firstName' => 'Busy', 'familyName' => 'Bee', 'total' => 2],
@@ -250,7 +250,7 @@ class TrainingCrudTest extends TestCase
         $nextYear = TrainingFactory::new()->between('2026-01-01 18:00:00', '2026-01-01 19:00:00')->forGroups([$g1])->create(['evaluated' => 1]);
         $nextYear->participants()->attach($user->id, ['attend' => 1]);
 
-        $this->actingAsJwt($trainer)
+        $this->actingAsUser($trainer)
             ->getJson("/api/v1/training/participationcount?groupIds={$g1->id},{$g2->id}&year=2025")
             ->assertOk()
             ->assertJsonPath('0.id', $user->id)

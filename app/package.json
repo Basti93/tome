@@ -22,7 +22,6 @@
     "apexcharts": "^8.3.1",
     "dayjs": "^1.11.23",
     "firebase": "^13.0.0",
-    "jwt-decode": "^4.0.0",
     "pinia": "^4.1.0",
     "vue": "^3.5.44",
     "vue-cal": "^4.10.0",

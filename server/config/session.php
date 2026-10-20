@@ -29,7 +29,8 @@ return [
     |
     */
 
-    'lifetime' => 120,
+    // minutes; the session lives 14 days and is renewed with every request ("stay logged in")
+    'lifetime' => (int) env('SESSION_LIFETIME', 20160),
 
     'expire_on_close' => false,
 
@@ -175,5 +176,8 @@ return [
     */
 
     'http_only' => true,
+
+    // the SPA and the API share one origin: Lax is enough (and is what Sanctum recommends)
+    'same_site' => 'lax',
 
 ];

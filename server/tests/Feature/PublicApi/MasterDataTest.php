@@ -45,14 +45,14 @@ class MasterDataTest extends TestCase
     {
         $user = UserFactory::new()->create(['firstName' => 'Anna', 'familyName' => 'Alt', 'profile_image_name' => 'profile_images/a.jpg']);
 
-        $response = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/simpleuser')->assertOk();
+        $response = $this->actingAsUser($this->makeUser('member'))->getJson('/api/v1/simpleuser')->assertOk();
 
         $row = collect($response->json('data'))->firstWhere('id', $user->id);
         $this->assertSame('Alt', $row['familyName']);
         $this->assertSame('profile_images/a.jpg', $row['profileImageName']);
     }
 
-    public function test_simple_trainers_expose_full_names_with_only_the_jwt_cookie_like_the_browser(): void
+    public function test_simple_trainers_expose_full_names_with_only_the_session_like_the_browser(): void
     {
         $trainer = $this->makeUser('trainer', ['firstName' => 'Tina', 'familyName' => 'Trainer']);
 
@@ -60,7 +60,7 @@ class MasterDataTest extends TestCase
         $this->assertSame('T.', collect($anonymous->json('data'))->firstWhere('id', $trainer->id)['familyName']);
 
         // the HttpOnly cookie is the ONLY credential (no Authorization header)
-        $loggedIn = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/simpleuser/trainers')->assertOk();
+        $loggedIn = $this->actingAsUser($this->makeUser('member'))->getJson('/api/v1/simpleuser/trainers')->assertOk();
         $this->assertSame('Trainer', collect($loggedIn->json('data'))->firstWhere('id', $trainer->id)['familyName']);
     }
 
@@ -75,11 +75,11 @@ class MasterDataTest extends TestCase
         $this->assertSame('Ü.', $rows[$umlaut->id]['familyName']);
     }
 
-    public function test_an_invalid_token_is_treated_like_no_login(): void
+    public function test_a_garbage_session_cookie_is_treated_like_no_login(): void
     {
         UserFactory::new()->create(['familyName' => 'Alt']);
 
-        $this->withJwtCookie('garbage')->getJson('/api/v1/simpleuser')
+        $this->fromSpa()->withUnencryptedCookie(config('session.cookie'), 'garbage')->getJson('/api/v1/simpleuser')
             ->assertOk()
             ->assertJsonPath('data.0.familyName', 'A.');
     }
@@ -165,7 +165,7 @@ class MasterDataTest extends TestCase
         $active = UserFactory::new()->inGroups([$group])->create();
         UserFactory::new()->inactive()->inGroups([$group])->create();
 
-        $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/group')->assertOk()
+        $this->actingAsUser($this->makeUser('member'))->getJson('/api/v1/group')->assertOk()
             ->assertJsonPath('data.0.userIds', [$active->id]);
     }
 

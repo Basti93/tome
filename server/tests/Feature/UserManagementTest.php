@@ -19,7 +19,7 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $other = UserFactory::new()->inactive()->create();
 
-        $response = $this->actingAsJwt($trainer)->getJson('/api/v1/user')->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson('/api/v1/user')->assertOk();
 
         $this->assertEqualsCanonicalizing([$trainer->id, $other->id], collect($response->json())->pluck('id')->all());
         $response->assertJsonStructure([[
@@ -39,9 +39,9 @@ class UserManagementTest extends TestCase
         $inGroup = UserFactory::new()->inGroups([$group])->create(['firstName' => 'Gerda', 'familyName' => 'Gruppe']);
         UserFactory::new()->create(['firstName' => 'Nina', 'familyName' => 'Nirgends']);
 
-        $byGroup = collect($this->actingAsJwt($trainer)->getJson("/api/v1/user?groupIds={$group->id}")->json())->pluck('id')->all();
-        $byBranch = collect($this->actingAsJwt($trainer)->getJson("/api/v1/user?branchId={$branch->id}")->json())->pluck('id')->all();
-        $bySearch = collect($this->actingAsJwt($trainer)->getJson('/api/v1/user?searchText=Gerd')->json())->pluck('id')->all();
+        $byGroup = collect($this->actingAsUser($trainer)->getJson("/api/v1/user?groupIds={$group->id}")->json())->pluck('id')->all();
+        $byBranch = collect($this->actingAsUser($trainer)->getJson("/api/v1/user?branchId={$branch->id}")->json())->pluck('id')->all();
+        $bySearch = collect($this->actingAsUser($trainer)->getJson('/api/v1/user?searchText=Gerd')->json())->pluck('id')->all();
 
         $this->assertSame([$inGroup->id], $byGroup);
         $this->assertSame([$inGroup->id], $byBranch);
@@ -53,7 +53,7 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         UserFactory::new()->count(3)->create();
 
-        $response = $this->actingAsJwt($trainer)->getJson('/api/v1/user?per_page=2')->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson('/api/v1/user?per_page=2')->assertOk();
 
         $response->assertJsonCount(2, 'data')->assertJsonPath('total', 4)->assertJsonPath('perPage', 2)->assertJsonPath('lastPage', 2);
     }
@@ -64,7 +64,7 @@ class UserManagementTest extends TestCase
         UserFactory::new()->create(['familyName' => 'Aaa']);
         UserFactory::new()->create(['familyName' => 'Zzz']);
 
-        $names = collect($this->actingAsJwt($trainer)->getJson('/api/v1/user/sort?sortBy=familyName&direction=asc')->assertOk()->json('data'))->pluck('familyName')->all();
+        $names = collect($this->actingAsUser($trainer)->getJson('/api/v1/user/sort?sortBy=familyName&direction=asc')->assertOk()->json('data'))->pluck('familyName')->all();
 
         $this->assertSame(['Aaa', 'Mmm', 'Zzz'], $names);
     }
@@ -77,8 +77,8 @@ class UserManagementTest extends TestCase
         $mine = UserFactory::new()->role('trainer')->trainerOfBranches([$branch])->create();
         UserFactory::new()->role('trainer')->trainerOfBranches([$other])->create();
 
-        $all = $this->actingAsJwt($this->makeUser('trainer'))->getJson('/api/v1/user/trainer')->assertOk()->json();
-        $filtered = $this->actingAsJwt($this->makeUser('trainer'))->getJson("/api/v1/user/trainer?branchIds={$branch->id}")->json();
+        $all = $this->actingAsUser($this->makeUser('trainer'))->getJson('/api/v1/user/trainer')->assertOk()->json();
+        $filtered = $this->actingAsUser($this->makeUser('trainer'))->getJson("/api/v1/user/trainer?branchIds={$branch->id}")->json();
 
         $this->assertCount(3, $all);
         $this->assertSame([$mine->id], collect($filtered)->pluck('id')->all());
@@ -92,7 +92,7 @@ class UserManagementTest extends TestCase
         UserFactory::new()->create(['firstName' => 'Out', 'familyName' => 'Range', 'birthdate' => '1990-09-15']);
         UserFactory::new()->inactive()->create(['birthdate' => '1990-06-16']);
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/user/birthdays?start=2099-06-01&end=2099-06-30')
+        $this->actingAsUser($trainer)->getJson('/api/v1/user/birthdays?start=2099-06-01&end=2099-06-30')
             ->assertOk()
             ->assertJsonCount(1)
             ->assertJsonPath('0.firstName', 'Bea')
@@ -100,7 +100,7 @@ class UserManagementTest extends TestCase
             ->assertJsonPath('0.birthdate', '1990-06-15');
 
         // only the fields the calendar needs (formerly the appended roleNames/groupIds/... leaked as well)
-        $keys = array_keys($this->actingAsJwt($trainer)->getJson('/api/v1/user/birthdays?start=2099-06-01&end=2099-06-30')->json('0'));
+        $keys = array_keys($this->actingAsUser($trainer)->getJson('/api/v1/user/birthdays?start=2099-06-01&end=2099-06-30')->json('0'));
         sort($keys);
         $this->assertSame(['birthdate', 'familyName', 'firstName'], $keys);
     }
@@ -113,7 +113,7 @@ class UserManagementTest extends TestCase
         UserFactory::new()->inactive()->create(['absenceStart' => '2099-01-01', 'absenceEnd' => '2099-02-01']);
         UserFactory::new()->create();
 
-        $response = $this->actingAsJwt($trainer)->getJson('/api/v1/user/allAbsence')->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson('/api/v1/user/allAbsence')->assertOk();
 
         $this->assertSame([$sooner->id, $later->id], collect($response->json('data'))->pluck('id')->all());
     }
@@ -123,7 +123,7 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $user = UserFactory::new()->create(['absenceStart' => '2099-01-01', 'absenceEnd' => '2099-02-01', 'absenceReason' => 'x']);
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}/removeAbsence")->assertOk()->assertExactJson(['status' => 'ok']);
+        $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}/removeAbsence")->assertOk()->assertExactJson(['status' => 'ok']);
 
         $user->refresh();
         $this->assertNull($user->absenceStart);
@@ -140,7 +140,7 @@ class UserManagementTest extends TestCase
         $group = GroupFactory::new()->create();
         $branch = BranchFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", [
+        $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", [
             'firstName' => 'Neu', 'familyName' => 'Name', 'email' => 'neu@example.com',
             'active' => 'false', 'groupIds' => [$group->id], 'trainerBranchIds' => [$branch->id],
             'profileImageName' => 'profile_images/'.str_repeat('n', 40).'.jpg',
@@ -168,7 +168,7 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $user = UserFactory::new()->create(['profile_image_name' => $old]);
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", [
+        $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", [
             'firstName' => 'A', 'familyName' => 'B', 'profileImageName' => null,
         ])->assertStatus(201);
 
@@ -184,7 +184,7 @@ class UserManagementTest extends TestCase
         Storage::disk('public')->put($new, 'y');
         $member = $this->makeUser('member', ['profile_image_name' => $old]);
 
-        $this->actingAsJwt($member)->putJson('/api/v1/user/me', [
+        $this->actingAsUser($member)->putJson('/api/v1/user/me', [
             'firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $new,
         ])->assertStatus(201);
 
@@ -200,14 +200,14 @@ class UserManagementTest extends TestCase
 
         foreach (['../../.env', 'profile_images/../../.env', 'profile_images/short.jpg', 'profile_images/'.str_repeat('a', 40).'.php',
             'other/'.str_repeat('a', 40).'.jpg', '/etc/passwd', 'profile_images/'.str_repeat('a', 40).'.jpg/../x', 'profile_images/'.str_repeat('a', 65).'.jpg'] as $bad) {
-            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
+            $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
                 ->assertStatus(422)->assertJsonValidationErrors(['profileImageName']);
-            $this->actingAsJwt($trainer)->putJson('/api/v1/user/me', ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
+            $this->actingAsUser($trainer)->putJson('/api/v1/user/me', ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $bad])
                 ->assertStatus(422)->assertJsonValidationErrors(['profileImageName']);
         }
 
         foreach (['jpg', 'jpeg', 'png'] as $ext) {
-            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $this->imageName('a', $ext)])
+            $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => $this->imageName('a', $ext)])
                 ->assertStatus(201);
         }
     }
@@ -222,7 +222,7 @@ class UserManagementTest extends TestCase
         // legacy rows with an unexpected name (path traversal, short name) are not removed from disk
         foreach (['../keep.txt', 'profile_images/legacy.jpg'] as $odd) {
             $user = UserFactory::new()->create(['profile_image_name' => $odd]);
-            $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => null])
+            $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", ['firstName' => 'A', 'familyName' => 'B', 'profileImageName' => null])
                 ->assertStatus(201);
         }
 
@@ -235,9 +235,9 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $user = UserFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/user/{$user->id}", [])
+        $this->actingAsUser($trainer)->putJson("/api/v1/user/{$user->id}", [])
             ->assertStatus(422)->assertJsonValidationErrors(['firstName', 'familyName']);
-        $this->actingAsJwt($trainer)->putJson('/api/v1/user/999999', ['firstName' => 'A', 'familyName' => 'B'])->assertNotFound();
+        $this->actingAsUser($trainer)->putJson('/api/v1/user/999999', ['firstName' => 'A', 'familyName' => 'B'])->assertNotFound();
     }
 
     public function test_update_me_changes_own_profile_but_not_groups_for_members(): void
@@ -245,7 +245,7 @@ class UserManagementTest extends TestCase
         $group = GroupFactory::new()->create();
         $member = $this->makeUser('member', ['email' => 'me@example.com']);
 
-        $this->actingAsJwt($member)->putJson('/api/v1/user/me', [
+        $this->actingAsUser($member)->putJson('/api/v1/user/me', [
             'firstName' => 'Mia', 'familyName' => 'Meyer', 'email' => 'mia@example.com',
             'birthdate' => '1999-04-03T00:00:00+0000', 'groupIds' => [$group->id], 'profileImageName' => null,
         ])->assertStatus(201)->assertExactJson(['status' => 'ok']);
@@ -262,7 +262,7 @@ class UserManagementTest extends TestCase
         $group = GroupFactory::new()->create();
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->putJson('/api/v1/user/me', [
+        $this->actingAsUser($trainer)->putJson('/api/v1/user/me', [
             'firstName' => 'T', 'familyName' => 'R', 'groupIds' => [$group->id], 'trainerBranchIds' => [],
         ])->assertStatus(201);
 
@@ -274,7 +274,7 @@ class UserManagementTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $group = GroupFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/user/unregistered', [
+        $this->actingAsUser($trainer)->postJson('/api/v1/user/unregistered', [
             'firstName' => 'Uli', 'familyName' => 'Unreg', 'birthdate' => '2010-02-02', 'groupIds' => [$group->id], 'active' => 'true',
         ])->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
@@ -290,7 +290,7 @@ class UserManagementTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/user/unregistered', [])
+        $this->actingAsUser($trainer)->postJson('/api/v1/user/unregistered', [])
             ->assertStatus(422)->assertJsonValidationErrors(['firstName', 'familyName']);
     }
 
@@ -298,13 +298,13 @@ class UserManagementTest extends TestCase
     {
         $user = UserFactory::new()->create();
 
-        $this->actingAsJwt($this->makeUser('trainer'))->deleteJson("/api/v1/user/{$user->id}")->assertForbidden();
+        $this->actingAsUser($this->makeUser('trainer'))->deleteJson("/api/v1/user/{$user->id}")->assertForbidden();
         $this->assertDatabaseHas('users', ['id' => $user->id]);
 
-        $this->actingAsJwt($this->makeUser('admin'))->deleteJson("/api/v1/user/{$user->id}")
+        $this->actingAsUser($this->makeUser('admin'))->deleteJson("/api/v1/user/{$user->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
-        $this->actingAsJwt($this->makeUser('admin'))->deleteJson('/api/v1/user/999999')->assertNotFound();
+        $this->actingAsUser($this->makeUser('admin'))->deleteJson('/api/v1/user/999999')->assertNotFound();
     }
 
     public function test_profile_image_upload_stores_a_reencoded_jpeg_on_the_public_disk(): void
@@ -313,7 +313,7 @@ class UserManagementTest extends TestCase
         Storage::fake('public_app');
         $member = $this->makeUser('member');
 
-        $response = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+        $response = $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', [
             'profile_image' => UploadedFile::fake()->image('me.png', 800, 800),
         ], ['Accept' => 'application/json'])->assertStatus(201)->assertJsonPath('status', 'ok');
 
@@ -334,7 +334,7 @@ class UserManagementTest extends TestCase
         Storage::fake('public');
         $member = $this->makeUser('member');
 
-        $response = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+        $response = $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', [
             'profile_image' => UploadedFile::fake()->image('wide.jpg', 1200, 600),
         ], ['Accept' => 'application/json'])->assertStatus(201);
 
@@ -349,7 +349,7 @@ class UserManagementTest extends TestCase
         $member = $this->makeUser('member');
         $names = [];
         for ($i = 0; $i < 2; $i++) {
-            $names[] = $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+            $names[] = $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', [
                 'profile_image' => UploadedFile::fake()->image('same.jpg', 200, 200),
             ], ['Accept' => 'application/json'])->assertStatus(201)->json('imageUrl');
         }
@@ -362,7 +362,7 @@ class UserManagementTest extends TestCase
     {
         $member = $this->makeUser('member');
 
-        $this->actingAsJwt($member)->postJson('/api/v1/user/me/uploadprofileimage')
+        $this->actingAsUser($member)->postJson('/api/v1/user/me/uploadprofileimage')
             ->assertStatus(400)->assertExactJson(['status' => 'error', 'message' => 'No file provided']);
     }
 
@@ -380,7 +380,7 @@ class UserManagementTest extends TestCase
             UploadedFile::fake()->createWithContent('anim.gif', base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')),
         ];
         foreach ($rejected as $file) {
-            $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
+            $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
                 ->assertStatus(422)->assertJsonValidationErrors(['profileImage']);
         }
 
@@ -396,11 +396,11 @@ class UserManagementTest extends TestCase
         $tooSmall = UploadedFile::fake()->image('tiny.jpg', 10, 10);
         $tooLarge = UploadedFile::fake()->image('huge.jpg', 8001, 100);
         foreach ([$tooBig, $tooSmall, $tooLarge] as $file) {
-            $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
+            $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', ['profile_image' => $file], ['Accept' => 'application/json'])
                 ->assertStatus(422)->assertJsonValidationErrors(['profileImage']);
         }
 
-        $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+        $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', [
             'profile_image' => UploadedFile::fake()->image('ok.webp', 300, 300),
         ], ['Accept' => 'application/json'])->assertStatus(201);
     }
@@ -417,7 +417,7 @@ class UserManagementTest extends TestCase
 
         // passes the mime check (valid PNG signature + IHDR) but cannot be decoded
         $broken = "\x89PNG\r\n\x1a\n".pack('N', 13).'IHDR'.pack('NNCCCCC', 100, 100, 8, 2, 0, 0, 0).'garbage';
-        $this->actingAsJwt($member)->post('/api/v1/user/me/uploadprofileimage', [
+        $this->actingAsUser($member)->post('/api/v1/user/me/uploadprofileimage', [
             'profile_image' => UploadedFile::fake()->createWithContent('broken.png', $broken),
         ], ['Accept' => 'application/json'])->assertStatus(500)
             ->assertExactJson(['status' => 'error', 'message' => 'Failed to upload image']);

@@ -6,17 +6,22 @@ import { useSnackbarStore } from '@/store/snackbar'
 // Override: VITE_API_URL environment variable (for absolute URLs if needed)
 const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL || '/api/v1'
 
-// Token refresh state
-let isAlreadyFetchingAccessToken = false
-let subscribers: Array<() => void> = []
+// Sanctum SPA authentication: the session cookie is HttpOnly (set by the login), unsafe requests carry the CSRF token
+// of the `XSRF-TOKEN` cookie in the `X-XSRF-TOKEN` header. The cookie is fetched from `<api>/sanctum/csrf-cookie`.
+const API_ROOT = API_BASE_URL.replace(/\/v1\/?$/, '')
 
-function onAccessTokenFetched() {
-  subscribers.forEach(callback => callback())
-  subscribers = []
+function xsrfToken(): string | null {
+  const match = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))
+  return match ? decodeURIComponent(match.slice('XSRF-TOKEN='.length)) : null
 }
 
-function addSubscriber(callback: () => void) {
-  subscribers.push(callback)
+let csrfRequest: Promise<void> | null = null
+function fetchCsrfCookie(): Promise<void> {
+  // one request at a time, also when several calls start together
+  csrfRequest ??= fetch(`${API_ROOT}/sanctum/csrf-cookie`, { credentials: 'include', headers: { Accept: 'application/json' } })
+    .then(() => undefined)
+    .finally(() => { csrfRequest = null })
+  return csrfRequest
 }
 
 interface RequestConfig {
@@ -26,8 +31,10 @@ interface RequestConfig {
   signal?: AbortSignal
   /** 'blob' returns the body of a successful response as a Blob (file downloads) */
   responseType?: 'json' | 'blob'
-  /** on 401: just reject (no token refresh, no logout, no redirect to the login page); used for session probes */
+  /** on 401: just reject (no logout, no redirect to the login page); used for session probes */
   silent401?: boolean
+  /** internal: the request was already repeated after a CSRF failure (419) */
+  csrfRetried?: boolean
 }
 
 interface FetchResponse<T = any> {
@@ -83,6 +90,14 @@ async function request<T = any>(
   // Only set Content-Type if not FormData (browser will set it for FormData)
   if (!(config.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
+  }
+
+  // unsafe methods need the CSRF token (also for anonymous calls such as check-in: they come from the SPA's host too)
+  const method = (config.method || 'GET').toUpperCase()
+  if (method !== 'GET' && method !== 'HEAD') {
+    if (!xsrfToken()) await fetchCsrfCookie()
+    const token = xsrfToken()
+    if (token) headers['X-XSRF-TOKEN'] = token
   }
 
   const fetchConfig: RequestInit = {
@@ -142,62 +157,16 @@ async function request<T = any>(
     }
   }
 
-  // Handle 401 - token refresh
-  if (response.status === 401 && config.silent401) {
-    throw createApiError(response, responseData, config)
+  // CSRF token expired or missing (e.g. after a logout in another tab): get a new one and try once more
+  if (response.status === 419 && !config.csrfRetried) {
+    await fetchCsrfCookie()
+    return request<T>(url, { ...config, csrfRetried: true })
   }
-  if (response.status === 401) {
-    if (!isAlreadyFetchingAccessToken) {
-      isAlreadyFetchingAccessToken = true
 
-      try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          credentials: 'include',
-        })
-
-        isAlreadyFetchingAccessToken = false
-
-        if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json()
-          if (refreshData.status === 'ok') {
-            onAccessTokenFetched()
-            // Retry original request
-            return request<T>(url, config)
-          } else {
-            const authStore = useAuthStore()
-            authStore.logout()
-            redirectToLogin()
-            throw createApiError(response, responseData, config)
-          }
-        } else {
-          isAlreadyFetchingAccessToken = false
-          const authStore = useAuthStore()
-          authStore.logout()
-          redirectToLogin()
-          throw createApiError(response, responseData, config)
-        }
-      } catch (error) {
-        isAlreadyFetchingAccessToken = false
-        const authStore = useAuthStore()
-        authStore.logout()
-        redirectToLogin()
-        throw error
-      }
-    }
-
-    // Queue request while token is being refreshed
-    return new Promise((resolve, reject) => {
-      addSubscriber(async () => {
-        try {
-          const result = await request<T>(url, config)
-          resolve(result)
-        } catch (error) {
-          reject(error)
-        }
-      })
-    })
+  // No (valid) session. Session probes (silent401) just reject; otherwise the user has to log in again and comes back.
+  if (response.status === 401 && !config.silent401) {
+    useAuthStore().logout()
+    redirectToLogin()
   }
 
   // Handle other error responses
