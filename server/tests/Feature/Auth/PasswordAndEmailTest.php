@@ -220,4 +220,15 @@ class PasswordAndEmailTest extends TestCase
         $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
             ->assertStatus(429);
     }
+
+    public function test_the_change_password_limit_is_per_user_and_not_eaten_by_logins_of_the_same_ip(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com']);
+        for ($i = 0; $i < 6; $i++) {
+            $this->postJson('/api/v1/auth/login', ['email' => 'other@example.com', 'password' => 'Falsch123!x']);
+        }
+
+        $this->actingAsJwt($user)->postJson('/api/v1/user/me/changepassword', ['current_password' => 'Password1!', 'password' => 'NewSecret1!'])
+            ->assertStatus(201);
+    }
 }
