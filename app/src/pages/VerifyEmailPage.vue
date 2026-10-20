@@ -54,63 +54,64 @@
   </v-container>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
 
-export default {
-  name: "VerifyEmailPage",
-  data: () => ({
-    loading: true,
-    errorMessage: '',
-    resendLoading: false,
-    resendDialog: false,
-    resendEmail: '',
-  }),
-  mounted: async function() {
-    try {
-      const token = this.$route.query.token
-      if (!token) {
-        this.errorMessage = 'Kein Verifizierungstoken gefunden.'
-        this.loading = false
-        return
-      }
+const route = useRoute()
+const router = useRouter()
 
-      const response = await httpClient.post('/auth/email/verify', {
-        token: token
-      })
+const loading = ref(true)
+const errorMessage = ref('')
+const resendLoading = ref(false)
+const resendDialog = ref(false)
+const resendEmail = ref('')
 
-      if (response.status === 200) {
-        useSnackbarStore().show('E-Mail erfolgreich verifiziert!', 'success')
-        this.$router.push('/login')
-      }
-    } catch (error) {
-      console.log(error)
-      this.errorMessage = error?.data?.message || 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.'
-      this.verified = false
-    } finally {
-      this.loading = false
+onMounted(async () => {
+  try {
+    const token = route.query.token
+    if (!token) {
+      errorMessage.value = 'Kein Verifizierungstoken gefunden.'
+      loading.value = false
+      return
     }
-  },
-  methods: {
-    async submitResend() {
-      if (!this.resendEmail) return
-      try {
-        this.resendLoading = true
-        await httpClient.post('/auth/email/send', {
-          email: this.resendEmail
-        })
-        this.resendDialog = false
-        this.resendEmail = ''
-        useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet', 'success')
-      } catch (error) {
-        console.log(error)
-        useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
-      } finally {
-        this.resendLoading = false
-      }
-    },
-  },
+
+    const response = await httpClient.post('/auth/email/verify', {
+      token: token
+    })
+
+    if (response.status === 200) {
+      useSnackbarStore().show('E-Mail erfolgreich verifiziert!', 'success')
+      router.push('/login')
+    }
+  } catch (err) {
+    const error = err as any
+    console.log(error)
+    errorMessage.value = error?.data?.message || 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.'
+  } finally {
+    loading.value = false
+  }
+})
+
+async function submitResend() {
+  if (!resendEmail.value) return
+  try {
+    resendLoading.value = true
+    await httpClient.post('/auth/email/send', {
+      email: resendEmail.value
+    })
+    resendDialog.value = false
+    resendEmail.value = ''
+    useSnackbarStore().show('Verifizierungs-E-Mail erneut gesendet', 'success')
+  } catch (err) {
+    const error = err as any
+    console.log(error)
+    useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+  } finally {
+    resendLoading.value = false
+  }
 }
 </script>
 

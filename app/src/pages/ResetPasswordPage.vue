@@ -109,121 +109,106 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useSnackbarStore } from '@/store/snackbar'
 import httpClient from '@/http/api'
-import { useRouter, useRoute } from 'vue-router'
-import { PASSWORD_POLICY } from '@/constants/passwordPolicy'
+import { useRoute } from 'vue-router'
 
-export default {
-  name: "ResetPasswordPage",
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    return { router, route, PASSWORD_POLICY }
-  },
-  data() {
-    return {
-      email: '',
-      token: '',
-      password: '',
-      passwordConfirm: '',
-      loading: false,
-      completed: false,
-      emailSent: false,
-      showPassword: false,
-      showPasswordConfirm: false,
-      emailFormValid: false,
-      passwordFormValid: false,
-      emailRules: [
-        (v: any) => !!v || 'E-mail wird benötigt',
-        (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein'
-      ],
-      passwordRules: [
-        (v: any) => !!v || 'Passwort wird benötigt',
-        (v: any) => (v && v.length >= 8) || 'Passwort muss mindestens 8 Zeichen lang sein',
-      ],
-      passwordConfirmRules: [
-        (v: any) => !!v || 'Passwortbestätigung wird benötigt',
-        (v: any) => v === (this as any).password || 'Passwörter müssen übereinstimmen',
-      ],
-    }
-  },
-  computed: {
-    passwordStrength(): number {
-      if (!this.password) return 0
-      let strength = 0
-      if (this.password.length >= 8) strength += 25
-      if (this.password.length >= 12) strength += 25
-      if (/[A-Z]/.test(this.password)) strength += 25
-      if (/[0-9!@#$%^&*]/.test(this.password)) strength += 25
-      return strength
-    },
-    passwordStrengthColor(): string {
-      if (this.passwordStrength < 50) return 'error'
-      if (this.passwordStrength < 75) return 'warning'
-      return 'success'
-    },
-  },
-  created() {
-    const emailParam = this.route.query.email
-    const tokenParam = this.route.query.token
+const route = useRoute()
 
-    if (emailParam) this.email = emailParam as string
-    if (tokenParam) this.token = tokenParam as string
-  },
-  methods: {
-    getPasswordHint(): string {
-      return 'Mindestens 8 Zeichen, empfohlen: Großbuchstaben und Zahlen/Sonderzeichen'
-    },
-    async requestResetEmail() {
-      try {
-        this.loading = true
-        await httpClient.post('/auth/recovery', { email: this.email })
-        this.emailSent = true
-        useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
-      } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Versand der E-Mail', 'error')
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    async resetPassword() {
-      try {
-        this.loading = true
-        await httpClient.post('/auth/reset', {
-          email: this.email,
-          token: this.token,
-          password: this.password,
-          password_confirmation: this.passwordConfirm,
-        })
-        this.completed = true
-        useSnackbarStore().show('Passwort erfolgreich zurückgesetzt', 'success')
-      } catch (error) {
-        const data = (error as any)?.data ?? (error as any)?.response?.data
-        if (data?.message) {
-          useSnackbarStore().show(data.message, 'error')
-        } else if (data?.errors) {
-          const first = Object.values(data.errors)[0]
-          const message = Array.isArray(first) ? first[0] : first
-          useSnackbarStore().show(message, 'error')
-        } else {
-          useSnackbarStore().show('Fehler beim Zurücksetzen des Passworts', 'error')
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-  },
+const email = ref('')
+const token = ref('')
+const password = ref('')
+const passwordConfirm = ref('')
+const loading = ref(false)
+const completed = ref(false)
+const emailSent = ref(false)
+const showPassword = ref(false)
+const showPasswordConfirm = ref(false)
+const emailFormValid = ref(false)
+const passwordFormValid = ref(false)
+const emailRules = [
+  (v: any) => !!v || 'E-mail wird benötigt',
+  (v: any) => /.+@.+/.test(v) || 'E-mail muss gültig sein'
+]
+const passwordRules = [
+  (v: any) => !!v || 'Passwort wird benötigt',
+  (v: any) => (v && v.length >= 8) || 'Passwort muss mindestens 8 Zeichen lang sein'
+]
+const passwordConfirmRules = [
+  (v: any) => !!v || 'Passwortbestätigung wird benötigt',
+  (v: any) => v === password.value || 'Passwörter müssen übereinstimmen'
+]
+
+const passwordStrength = computed((): number => {
+  if (!password.value) return 0
+  let strength = 0
+  if (password.value.length >= 8) strength += 25
+  if (password.value.length >= 12) strength += 25
+  if (/[A-Z]/.test(password.value)) strength += 25
+  if (/[0-9!@#$%^&*]/.test(password.value)) strength += 25
+  return strength
+})
+
+const passwordStrengthColor = computed((): string => {
+  if (passwordStrength.value < 50) return 'error'
+  if (passwordStrength.value < 75) return 'warning'
+  return 'success'
+})
+
+const emailParam = route.query.email
+const tokenParam = route.query.token
+
+if (emailParam) email.value = emailParam as string
+if (tokenParam) token.value = tokenParam as string
+
+function getPasswordHint(): string {
+  return 'Mindestens 8 Zeichen, empfohlen: Großbuchstaben und Zahlen/Sonderzeichen'
+}
+
+function showError(error: unknown, fallback: string) {
+  const data = (error as any)?.data ?? (error as any)?.response?.data
+  if (data?.message) {
+    useSnackbarStore().show(data.message, 'error')
+  } else if (data?.errors) {
+    const first = Object.values(data.errors)[0]
+    const message = Array.isArray(first) ? first[0] : first
+    useSnackbarStore().show(message as string, 'error')
+  } else {
+    useSnackbarStore().show(fallback, 'error')
+  }
+}
+
+async function requestResetEmail() {
+  try {
+    loading.value = true
+    await httpClient.post('/auth/recovery', { email: email.value })
+    emailSent.value = true
+    useSnackbarStore().show('Passwort-Zurücksetzen-Link gesendet', 'success')
+  } catch (error) {
+    showError(error, 'Fehler beim Versand der E-Mail')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function resetPassword() {
+  try {
+    loading.value = true
+    await httpClient.post('/auth/reset', {
+      email: email.value,
+      token: token.value,
+      password: password.value,
+      password_confirmation: passwordConfirm.value
+    })
+    completed.value = true
+    useSnackbarStore().show('Passwort erfolgreich zurückgesetzt', 'success')
+  } catch (error) {
+    showError(error, 'Fehler beim Zurücksetzen des Passworts')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
