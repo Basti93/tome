@@ -66,7 +66,7 @@
                                     clearable
                                     required
                                     label="Ort"
-                                    prepend-icon="add_location"
+                                    prepend-icon="mdi-map-marker-plus"
                                 ></v-select>
                                 <v-btn @click="saveEditLocation()"
                                        color="primary"
@@ -163,7 +163,7 @@
                                     v-model="selectedTraining.comment"
                                     readonly
                                     rows="3"
-                                    append-icon="edit" variant="filled"
+                                    append-icon="mdi-pencil" variant="filled"
                                 ></v-textarea>
                               </v-col>
                             </v-row>
@@ -193,14 +193,13 @@
                       <v-card class="ma-1">
                         <v-card-title>Teilnehmer</v-card-title>
                         <v-card-text class="pa-0 pa-md-4">
+                          <v-list v-model:opened="openedGroups">
                           <v-list-group
-                              v-model="participantsListGroupActive"
-                              prepend-icon="check"
-                              group="participants"
-                              no-action
+                              value="participants"
+                              prepend-icon="mdi-check"
                           >
-                            <template v-slot:activator>
-                              <v-list-item>
+                            <template v-slot:activator="{ props }">
+                              <v-list-item v-bind="props">
                                 <v-list-item-title>{{ participatingUsers.length }} Teilnehmer bis jetzt</v-list-item-title>
                               </v-list-item>
                             </template>
@@ -221,13 +220,11 @@
                             </v-list-item>
                           </v-list-group>
                           <v-list-group
-                              v-model="canceledUserListGroupActive"
-                              prepend-icon="cancel"
-                              group="canceledusers"
-                              no-action
+                              value="canceled"
+                              prepend-icon="mdi-cancel"
                           >
-                            <template v-slot:activator>
-                              <v-list-item>
+                            <template v-slot:activator="{ props }">
+                              <v-list-item v-bind="props">
                                 <v-list-item-title>{{ canceledUsers.length }} <span
                                     v-if="canceledUsers.length == 1">Absage</span><span
                                     v-else>Absagen</span></v-list-item-title>
@@ -253,6 +250,7 @@
                               </v-list-item-subtitle>
                             </v-list-item>
                           </v-list-group>
+                          </v-list>
                         </v-card-text>
                       </v-card>
                     </div>
@@ -360,8 +358,7 @@ const dataLoaded = ref(false)
 const selectedTrainingId = ref<any>(null)
 const animationTrigger = ref(true)
 const users = ref<User[]>([])
-const participantsListGroupActive = ref(false)
-const canceledUserListGroupActive = ref(false)
+const openedGroups = ref<string[]>([])
 const showCancelReasonDialog = ref(false)
 const cancelReasonDialogText = ref<string | null>(null)
 const timeDialogOpened = ref(false)

@@ -128,10 +128,9 @@
                           <v-card class="ma-1">
                             <v-card-title>Teilnehmer</v-card-title>
                             <v-card-text class="pa-0 pa-md-4">
-                              <v-list>
+                              <v-list v-model:opened="openedGroups">
                               <v-list-group
-                                  :value="participantsListGroupActive"
-                                  @update:open="participantsListGroupActive = $event"
+                                  value="participants"
                                   prepend-icon="mdi-check"
                               >
                                 <template v-slot:activator="{ props }">
@@ -189,9 +188,8 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  :value="canceledUserListGroupActive"
-                                  @update:open="canceledUserListGroupActive = $event"
-                                  prepend-icon="cancel"
+                                  value="canceled"
+                                  prepend-icon="mdi-cancel"
                               >
                                 <template v-slot:activator="{ props }">
                                   <v-list-item v-bind="props">
@@ -261,9 +259,8 @@
                                 </v-list-item>
                               </v-list-group>
                               <v-list-group
-                                  :value="undecidedUsersListGroupActive"
-                                  @update:open="undecidedUsersListGroupActive = $event"
-                                  prepend-icon="people"
+                                  value="undecided"
+                                  prepend-icon="mdi-account-multiple"
                               >
                                 <template v-slot:activator="{ props }">
                                   <v-list-item v-bind="props">
@@ -429,9 +426,8 @@ const selectedTrainingId = ref<any>(null)
 const selectedTrainerId = ref<any>(null)
 const animationTrigger = ref(true)
 const users = ref<User[]>([])
-const participantsListGroupActive = ref(true)
-const canceledUserListGroupActive = ref(true)
-const undecidedUsersListGroupActive = ref(true)
+// groups of the participant lists that are expanded (v-list-group `value`s)
+const openedGroups = ref(['participants', 'canceled', 'undecided'])
 const confirmEvaluationDialog = ref(false)
 const editStartTime = ref<string | null>(null)
 const editEndTime = ref<string | null>(null)
@@ -499,9 +495,7 @@ function openCancelReasonDialog(userId: number) {
 function selectTraining(id: any) {
   animationTrigger.value = false
   selectedTrainingId.value = id
-  participantsListGroupActive.value = true
-  canceledUserListGroupActive.value = true
-  undecidedUsersListGroupActive.value = true
+  openedGroups.value = ['participants', 'canceled', 'undecided']
   setTimeout(() => {
     animationTrigger.value = true
   }, 100)
