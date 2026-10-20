@@ -18,7 +18,7 @@ class TrainingPrepareController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('permission:update-training', ['only' => ['getUpcomingTrainingsForTrainer', 'trainingPrepared', 'updateTrainingTime', 'updateLocation', 'updateComment', 'updateContent']]);
+        $this->middleware('permission:update-training', ['only' => ['getUpcomingTrainingsForTrainer', 'updateTrainingTime', 'updateLocation', 'updateComment', 'updateContent']]);
     }
 
     public function getUpcomingTrainingsForTrainer($userId)
@@ -32,17 +32,6 @@ class TrainingPrepareController extends Controller
             ->get();
 
         return TrainingResource::collection($trainings);
-    }
-
-    public function trainingPrepared($trainingId)
-    {
-        $training = Training::findOrFail($trainingId);
-        $training->prepared = 1;
-        $training->save();
-
-        return response()->json([
-            'status' => 'ok',
-        ], 200);
     }
 
     public function updateTrainingTime(Request $request, $trainingId)
