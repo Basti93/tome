@@ -4,6 +4,7 @@
     <v-main>
       <v-container>
         <SnackbarStore/>
+        <AnnouncementDialog/>
         <v-banner
             color="blue"
             sticky
@@ -70,6 +71,7 @@ import { ref, computed, watch } from 'vue'
 import dayjs from '@/helpers/dayjs'
 import Navigation from '@/components/TomeNavigation.vue'
 import SnackbarStore from '@/components/SnackbarStore.vue'
+import AnnouncementDialog from '@/components/AnnouncementDialog.vue'
 import { useSnackbarStore } from '@/store/snackbar'
 import { useAuthStore } from '@/store/auth'
 import { useCookieAuthStore } from '@/store/cookieAuth'
