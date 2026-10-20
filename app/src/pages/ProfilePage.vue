@@ -335,7 +335,7 @@ async function save() {
     } else {
       useSnackbarStore().show('Fehler beim Speichern.', 'error')
     }
-  } catch (error) {
+  } catch {
     useSnackbarStore().show('Fehler beim Speichern.', 'error')
   }
 }

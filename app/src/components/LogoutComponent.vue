@@ -14,7 +14,7 @@ const router = useRouter()
 async function logout() {
   try {
     await httpClient.post('/auth/logout')
-  } catch (e) {
+  } catch {
     // ignore errors, still clear local state
   }
   // Track logout event

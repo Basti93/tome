@@ -201,7 +201,7 @@ onMounted(() => {
   try {
     const el = document.querySelector('input')
     if (el) el.focus()
-  } catch (e) {
+  } catch {
     // focus failed
   }
 })

@@ -252,7 +252,7 @@ function groupsChanged({ groupIds: ids }: { groupIds: any[] }) {
 }
 
 watch(birthdateMenu, (val) => {
-  val && setTimeout(() => (birthdatePicker.value.activePicker = 'YEAR'))
+  if (val) setTimeout(() => (birthdatePicker.value.activePicker = 'YEAR'))
 })
 </script>
 

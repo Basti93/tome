@@ -78,13 +78,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { dayArrayToString } from '../helpers/date-helpers'
 import { useMasterDataStore } from '@/store/masterData'
 
 const masterData = useMasterDataStore()
 
-const loading = ref(false)
 const headers = [
   { title: 'Name', value: 'name', sortable: false },
   { title: 'Sparte', value: 'branchId', sortable: false },
@@ -92,14 +91,9 @@ const headers = [
 ]
 
 const groups = computed(() => masterData.groups)
-const trainingSeries = computed(() => masterData.trainingSeries)
 
 function getSimpleUsersByGroupId(groupId: number) {
   return masterData.getSimpleUsersByGroupId(groupId)
-}
-
-function getSimpleTrainersByGroupId(groupId: number) {
-  return masterData.getSimpleTrainersByGroupId(groupId)
 }
 
 function getTrainingSeriesByGroupId(groupId: number) {

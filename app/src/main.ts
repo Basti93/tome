@@ -25,7 +25,7 @@ async function init() {
   const masterData = useMasterDataStore()
   try {
     await masterData.loadAll(httpClient)
-  } catch (e) {
+  } catch {
     // offline — mount anyway
   }
 
