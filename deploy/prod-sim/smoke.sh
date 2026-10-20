@@ -60,15 +60,12 @@ h="$(hdrs "http://${HOSTN}:${HTTP_PORT}/foo")"
 out="$("${C[@]}" "https://example.org:${PORT}/")"
 [[ "$out" == *OTHERSITE* ]]; check "Andere Seite unveraendert (example.org)" $?
 
-# JWT: Login und Authorization-Header muss bei PHP ankommen
-tok="$("${C[@]}" -X POST -H 'Content-Type: application/json' -d '{"email":"admin@tome.local","password":"password"}' "$BASE/api/v1/auth/login" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("token") or d.get("data",{}).get("token") or "")' 2>/dev/null)"
-if [[ -n "$tok" ]]; then
-  c=$(code -H "Authorization: Bearer $tok" "$BASE/api/v1/auth/me"); [[ "$c" == 200 ]]; check "Login + Authorization-Header (auth/me)" $? "HTTP $c"
-else
-  # Token kommt evtl. nur als HttpOnly-Cookie: Cookie-Jar verwenden
-  jar="$(mktemp)"; "${C[@]}" -c "$jar" -X POST -H 'Content-Type: application/json' -d '{"email":"admin@tome.local","password":"password"}' "$BASE/api/v1/auth/login" >/dev/null
-  c=$(code -b "$jar" "$BASE/api/v1/auth/me"); rm -f "$jar"; [[ "$c" == 200 ]]; check "Login + Cookie-Auth (auth/me)" $? "HTTP $c"
-fi
+# Sanctum SPA-Auth: CSRF-Cookie holen, einloggen (Session-Cookie), auth/me
+jar="$(mktemp)"
+"${C[@]}" -c "$jar" -b "$jar" -H "Referer: ${BASE}/" "$BASE/api/sanctum/csrf-cookie" -o /dev/null
+xsrf="$(awk '$6=="XSRF-TOKEN"{print $7}' "$jar" | python3 -c 'import sys,urllib.parse;print(urllib.parse.unquote(sys.stdin.read().strip()))')"
+"${C[@]}" -c "$jar" -b "$jar" -X POST -H 'Content-Type: application/json' -H "X-XSRF-TOKEN: $xsrf" -H "Referer: ${BASE}/" -d '{"email":"admin@tome.local","password":"password"}' "$BASE/api/v1/auth/login" >/dev/null
+c=$(code -b "$jar" -H "Referer: ${BASE}/" "$BASE/api/v1/auth/me"); rm -f "$jar"; [[ "$c" == 200 ]]; check "CSRF-Cookie + Login + Session-Auth (auth/me)" $? "HTTP $c"
 
 echo "---- ${pass} bestanden, ${fail} fehlgeschlagen"
 [[ "$fail" == 0 ]]

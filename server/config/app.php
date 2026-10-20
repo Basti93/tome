@@ -83,8 +83,6 @@ return [
 
   'aliases' => \Illuminate\Support\Facades\Facade::defaultAliases()->merge([
     'Image' => Intervention\Image\Laravel\Facades\Image::class,
-    'JWTAuth' => PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::class,
-    'JWTFactory' => PHPOpenSourceSaver\JWTAuth\Facades\JWTFactory::class,
   ])->toArray(),
 
 ];

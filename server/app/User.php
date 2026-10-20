@@ -9,15 +9,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
-use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable
 {
     /** Notification types that are OFF unless the user switched them on. */
     public const OPT_IN_NOTIFICATION_TYPES = ['trainer_upcoming', 'trainer_evaluation_reminder_email'];
 
     use HasRoles;
+
+    /** Roles and permissions of the database belong to the guard `api` (the Sanctum session guard, config/auth.php). */
+    protected $guard_name = 'api';
+
     use Notifiable;
 
     /**
@@ -60,26 +63,6 @@ class User extends Authenticatable implements JWTSubject
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);
-    }
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
     }
 
     /**

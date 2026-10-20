@@ -110,7 +110,7 @@ class AuthorizationMatrixTest extends TestCase
         $send = function (?string $role) use ($method, $uri, $body) {
             $fixtures = $this->fixtures();
             // the acting user for "{user}"-style endpoints is separate from the fixture user
-            $request = $role === null ? $this : $this->actingAsJwt($this->makeUser($role));
+            $request = $role === null ? $this : $this->actingAsUser($this->makeUser($role));
 
             return $request->json($method, $this->resolve($uri, $fixtures), $this->resolve($body, $fixtures));
         };
@@ -126,16 +126,16 @@ class AuthorizationMatrixTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $training = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/training/upcoming/trainer/1')->assertNotFound();
-        $this->actingAsJwt($trainer)->getJson("/api/v1/training/{$training->id}/trainingscount/2099")->assertNotFound();
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$training->id}/prepared")->assertStatus(404);
+        $this->actingAsUser($trainer)->getJson('/api/v1/training/upcoming/trainer/1')->assertNotFound();
+        $this->actingAsUser($trainer)->getJson("/api/v1/training/{$training->id}/trainingscount/2099")->assertNotFound();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingprepare/{$training->id}/prepared")->assertStatus(404);
     }
 
     public function test_debug_and_demo_routes_were_removed(): void
     {
         $this->getJson('/api/v1/hello')->assertNotFound();
         $this->getJson('/api/v1/mailtest')->assertNotFound();
-        $this->actingAsJwt($this->makeUser('admin'))->getJson('/api/v1/refresh')->assertNotFound();
+        $this->actingAsUser($this->makeUser('admin'))->getJson('/api/v1/refresh')->assertNotFound();
     }
 
     public function test_admin_passes_every_permission_check_without_holding_any_permission(): void

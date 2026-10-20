@@ -35,7 +35,7 @@ class TrainingSeriesCrudTest extends TestCase
         $content = ContentFactory::new()->create();
         $location = LocationFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload([
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', $this->payload([
             'locationId' => $location->id,
             'trainerIds' => [$trainer->id],
             'groupIds' => [$group->id],
@@ -60,7 +60,7 @@ class TrainingSeriesCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $group = GroupFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload([
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', $this->payload([
             'weekdays' => [1, 2, 3, 4, 5, 6, 7],
             'groupIds' => [$group->id],
             'trainerIds' => [$trainer->id],
@@ -77,7 +77,7 @@ class TrainingSeriesCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', [])
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', [])
             ->assertStatus(422)->assertJsonValidationErrors(['startTime', 'endTime', 'weekdays']);
     }
 
@@ -88,7 +88,7 @@ class TrainingSeriesCrudTest extends TestCase
         $g2 = GroupFactory::new()->create();
         $series = TrainingSeriesFactory::new()->forGroups([$g1])->create(['defer_until' => '2099-12-31 00:00:00']);
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", $this->payload([
+        $this->actingAsUser($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", $this->payload([
             'comment' => 'neu', 'groupIds' => [$g2->id], 'weekdays' => [5],
         ]))->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
@@ -102,7 +102,7 @@ class TrainingSeriesCrudTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->putJson('/api/v1/trainingSeries/999999', $this->payload())->assertNotFound();
+        $this->actingAsUser($trainer)->putJson('/api/v1/trainingSeries/999999', $this->payload())->assertNotFound();
     }
 
     public function test_destroy_deletes_the_series_but_keeps_generated_trainings(): void
@@ -111,7 +111,7 @@ class TrainingSeriesCrudTest extends TestCase
         $series = TrainingSeriesFactory::new()->create();
         $training = TrainingFactory::new()->create(['training_series_id' => $series->id]);
 
-        $this->actingAsJwt($trainer)->deleteJson("/api/v1/trainingSeries/{$series->id}")
+        $this->actingAsUser($trainer)->deleteJson("/api/v1/trainingSeries/{$series->id}")
             ->assertStatus(201)->assertExactJson(['status' => 'ok']);
 
         $this->assertDatabaseMissing('training_series', ['id' => $series->id]);
@@ -123,11 +123,11 @@ class TrainingSeriesCrudTest extends TestCase
         $trainer = $this->makeUser('trainer');
 
         // a DOM Event object that used to leak into the payload came out as {"isTrusted":true}
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => ['isTrusted' => true]]))
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => ['isTrusted' => true]]))
             ->assertStatus(422)->assertJsonValidationErrors(['weekdays']);
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => []]))
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => []]))
             ->assertStatus(422)->assertJsonValidationErrors(['weekdays']);
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => [8]]))
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', $this->payload(['weekdays' => [8]]))
             ->assertStatus(422);
         $this->assertSame(0, TrainingSeries::count());
     }
@@ -147,7 +147,7 @@ class TrainingSeriesCrudTest extends TestCase
         $group = GroupFactory::new()->create();
 
         // as sent by TrainingSeriesPage.save(): times without seconds, nulls, the id repeated in the body
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingSeries', [
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingSeries', [
             'startTime' => '09:00', 'endTime' => '12:00', 'weekdays' => [1, 3], 'comment' => null,
             'locationId' => null, 'trainerIds' => [], 'groupIds' => [$group->id], 'contentIds' => [],
             'deferUntil' => null, 'automaticAttend' => true,
@@ -156,7 +156,7 @@ class TrainingSeriesCrudTest extends TestCase
         $series = TrainingSeries::firstOrFail();
         $this->assertSame([1, 3], $series->weekdays);
 
-        $this->actingAsJwt($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", [
+        $this->actingAsUser($trainer)->putJson("/api/v1/trainingSeries/{$series->id}", [
             'id' => $series->id, 'startTime' => '09:00', 'endTime' => '12:00', 'weekdays' => [2, 4], 'comment' => 'x',
             'locationId' => null, 'trainerIds' => [], 'groupIds' => [$group->id], 'contentIds' => [],
             'deferUntil' => null, 'automaticAttend' => false,

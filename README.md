@@ -7,7 +7,7 @@ PWA to organize training sessions for a sport club. Trainers plan trainings and 
 ## Stack
 
 - **Frontend** (`/app`): Vue 3.5, Vite 8, Vuetify 4, Pinia 4, TypeScript
-- **Backend** (`/server`): Laravel 13 (PHP 8.4), REST API at `/api/v1`, JWT in HttpOnly cookies, Spatie permissions, Firebase Cloud Messaging
+- **Backend** (`/server`): Laravel 13 (PHP 8.4), REST API at `/api/v1`, Sanctum SPA authentication (session cookie + CSRF), Spatie permissions, Firebase Cloud Messaging
 - **Production**: Apache + PHP-FPM + MySQL, deployed with the scripts in `deploy/`
 
 ## Local development

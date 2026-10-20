@@ -9,9 +9,6 @@ use App\User;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use PHPOpenSourceSaver\JWTAuth\JWTAuth;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class LoginController extends Controller
 {
@@ -24,7 +21,7 @@ class LoginController extends Controller
      *
      * @return JsonResponse
      */
-    public function login(LoginRequest $request, JWTAuth $JWTAuth)
+    public function login(LoginRequest $request)
     {
         $credentials = $request->only(['email', 'password']);
         $user = User::where('email', $request->input('email'))->first();
@@ -35,35 +32,29 @@ class LoginController extends Controller
             return $this->lockedResponse();
         }
 
-        try {
-            $token = Auth::guard('api')->attempt($credentials);
+        // the credentials are checked without logging in: only a verified, active user gets a session
+        if (! $user || ! Auth::guard('api')->validate($credentials)) {
+            if ($user) {
+                $locked = $this->incrementFailedLoginAttempts($user);
 
-            if (! $token || ! Auth::user()) {
-                if ($user) {
-                    $locked = $this->incrementFailedLoginAttempts($user);
+                if ($locked) {
+                    AuthLogService::loginFailed($request->input('email'), 'Too many failed attempts', $request);
 
-                    if ($locked) {
-                        AuthLogService::loginFailed($request->input('email'), 'Too many failed attempts', $request);
-
-                        return $this->lockedResponse();
-                    }
+                    return $this->lockedResponse();
                 }
-
-                AuthLogService::loginFailed($request->input('email'), 'Invalid credentials', $request);
-
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'E-Mail oder Passwort ist falsch.',
-                    'code' => 'invalid_credentials',
-                ], 403);
             }
 
-        } catch (JWTException $e) {
-            throw new HttpException(500);
+            AuthLogService::loginFailed($request->input('email'), 'Invalid credentials', $request);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'E-Mail oder Passwort ist falsch.',
+                'code' => 'invalid_credentials',
+            ], 403);
         }
 
         // Check if email is verified
-        if ($user && ! $user->email_verified_at) {
+        if (! $user->email_verified_at) {
             AuthLogService::loginFailed($request->input('email'), 'Email not verified', $request);
 
             return response()->json([
@@ -74,8 +65,7 @@ class LoginController extends Controller
         }
 
         // deactivated members (e.g. left the club) cannot log in
-        if ($user && ! $user->active) {
-            Auth::guard('api')->logout();
+        if (! $user->active) {
             AuthLogService::loginFailed($request->input('email'), 'Account inactive', $request);
 
             return response()->json([
@@ -85,23 +75,21 @@ class LoginController extends Controller
             ], 403);
         }
 
-        if ($user) {
-            $user->failed_login_attempts = 0;
-            $user->locked_until = null;
-            $user->save();
-            AuthLogService::loginSuccess($request);
-        }
+        $user->failed_login_attempts = 0;
+        $user->locked_until = null;
+        $user->save();
 
-        $refreshTtlMinutes = config('jwt.refresh_ttl', 20160);
-        $secureCookie = app()->environment('production');
+        // Sanctum SPA authentication: a session (HttpOnly cookie) per login; a new session id against fixation
+        Auth::guard('api')->login($user);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+        AuthLogService::loginSuccess($request);
 
         return response()->json([
             'status' => 'ok',
-            'user' => Auth::guard('api')->user(),
-            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
-        ])->withCookie(
-            cookie('jwt_token', $token, $refreshTtlMinutes, '/', null, $secureCookie, true, false, 'Strict')
-        );
+            'user' => $user,
+        ]);
     }
 
     private function lockedResponse()

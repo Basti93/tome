@@ -28,7 +28,7 @@ class PrepareAndEvaluationTest extends TestCase
         TrainingFactory::new()->inPast()->withTrainers([$trainer])->create();
         TrainingFactory::new()->withTrainers([$trainer])->create(['deleted_at' => now()]);
 
-        $response = $this->actingAsJwt($trainer)->getJson("/api/v1/trainingprepare/{$trainer->id}")->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson("/api/v1/trainingprepare/{$trainer->id}")->assertOk();
 
         $this->assertSame(collect($mine)->take(5)->pluck('id')->all(), collect($response->json('data'))->pluck('id')->all());
         $response->assertJsonStructure(['data' => [['id', 'start', 'end', 'locationId', 'groupIds', 'trainerIds', 'participants', 'contentIds', 'comment', 'prepared', 'evaluated', 'automaticAttend']]]);
@@ -41,10 +41,10 @@ class PrepareAndEvaluationTest extends TestCase
         $location = LocationFactory::new()->create();
         $content = ContentFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatelocation", ['locationId' => $location->id])->assertOk();
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatecomment", ['comment' => 'Neu'])->assertOk();
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatecontent", ['contentIds' => [$content->id]])->assertOk();
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatetrainingtime", [
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatelocation", ['locationId' => $location->id])->assertOk();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatecomment", ['comment' => 'Neu'])->assertOk();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatecontent", ['contentIds' => [$content->id]])->assertOk();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingprepare/{$t->id}/updatetrainingtime", [
             'start' => '2099-10-01T17:00:00+0200', 'end' => '2099-10-01T18:00:00+0200',
         ])->assertOk();
 
@@ -60,7 +60,7 @@ class PrepareAndEvaluationTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingprepare/999999/updatecomment', ['comment' => 'x'])->assertNotFound();
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingprepare/999999/updatecomment', ['comment' => 'x'])->assertNotFound();
     }
 
     public function test_evaluation_lists_the_last_five_past_trainings_with_trainer_rows(): void
@@ -69,7 +69,7 @@ class PrepareAndEvaluationTest extends TestCase
         $past = TrainingFactory::new()->inPast(2)->withTrainers([$trainer])->create();
         TrainingFactory::new()->withTrainers([$trainer])->create(); // upcoming, excluded
 
-        $response = $this->actingAsJwt($trainer)->getJson("/api/v1/trainingevaluation/{$trainer->id}")->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson("/api/v1/trainingevaluation/{$trainer->id}")->assertOk();
 
         $response->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $past->id);
         $this->assertSame(
@@ -86,7 +86,7 @@ class PrepareAndEvaluationTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->between('2099-01-10 18:00:00', '2099-01-10 19:30:00')->withTrainers([$trainer])->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")
             ->assertOk()->assertExactJson(['status' => 'ok']);
 
         $this->assertSame(1, (int) $t->fresh()->evaluated);
@@ -102,12 +102,12 @@ class PrepareAndEvaluationTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = TrainingFactory::new()->between('2099-01-10 18:00:00', '2099-01-10 19:30:00')->withTrainers([$trainer])->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/updateaccountingtime", [
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/updateaccountingtime", [
             'trainerId' => $trainer->id,
             'start' => '2099-01-10T18:00:00+0100',
             'end' => '2099-01-10T18:45:00+0100',
         ])->assertOk();
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")->assertOk();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")->assertOk();
 
         $tt = TrainingTrainer::where('training_id', $t->id)->firstOrFail();
         $this->assertSame(45, $tt->accounting_minutes);
@@ -120,16 +120,16 @@ class PrepareAndEvaluationTest extends TestCase
         $user = UserFactory::new()->create();
         $t = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/addparticipant/{$user->id}")
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/addparticipant/{$user->id}")
             ->assertOk()->assertExactJson(['status' => 'ok']);
         $this->assertDatabaseHas('training_participation', ['training_id' => $t->id, 'user_id' => $user->id, 'attend' => 1]);
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/removeparticipant/{$user->id}")
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/removeparticipant/{$user->id}")
             ->assertOk()->assertExactJson(['status' => 'ok']);
         $this->assertDatabaseHas('training_participation', ['training_id' => $t->id, 'user_id' => $user->id, 'attend' => 0]);
 
         // adding again flips the existing row back instead of duplicating it
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/addparticipant/{$user->id}")->assertOk();
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/addparticipant/{$user->id}")->assertOk();
         $this->assertDatabaseCount('training_participation', 1);
         $this->assertDatabaseHas('training_participation', ['user_id' => $user->id, 'attend' => 1]);
     }
@@ -140,7 +140,7 @@ class PrepareAndEvaluationTest extends TestCase
         $user = UserFactory::new()->create();
         $t = TrainingFactory::new()->create();
 
-        $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/removeparticipant/{$user->id}")
+        $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/removeparticipant/{$user->id}")
             ->assertNotFound()->assertExactJson(['status' => 'user not assigned to the training']);
     }
 
@@ -155,10 +155,10 @@ class PrepareAndEvaluationTest extends TestCase
         TrainingFactory::new()->between('2099-02-14 18:00:00', '2099-02-14 19:30:00')->forGroups([$g])->withTrainers([$trainer])->create(['evaluated' => 0]);
 
         foreach ([$jan, $jan2, $feb] as $t) {
-            $this->actingAsJwt($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")->assertOk();
+            $this->actingAsUser($trainer)->postJson("/api/v1/trainingevaluation/{$t->id}/evaluated")->assertOk();
         }
 
-        $response = $this->actingAsJwt($trainer)->getJson("/api/v1/trainingevaluation/accountingtimestatistics?year=2099&groupIds={$g->id}")->assertOk();
+        $response = $this->actingAsUser($trainer)->getJson("/api/v1/trainingevaluation/accountingtimestatistics?year=2099&groupIds={$g->id}")->assertOk();
 
         $response->assertJsonCount(1);
         $response->assertJsonPath('0.trainer.id', $trainer->id);
@@ -173,7 +173,7 @@ class PrepareAndEvaluationTest extends TestCase
         Cache::flush();
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->getJson('/api/v1/trainingevaluation/accountingtimestatistics?year=2098')->assertOk()->assertExactJson([]);
+        $this->actingAsUser($trainer)->getJson('/api/v1/trainingevaluation/accountingtimestatistics?year=2098')->assertOk()->assertExactJson([]);
         $this->assertTrue(Cache::has('accounting_time_statistics2098'));
     }
 
@@ -183,7 +183,7 @@ class PrepareAndEvaluationTest extends TestCase
         Storage::fake('public');
         $trainer = $this->makeUser('trainer', ['firstName' => 'Tina', 'familyName' => 'Trainer']);
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
             'userId' => $trainer->id,
             'from' => '2099-01-01T00:00:00+0100',
             'to' => '2099-01-31T00:00:00+0100',
@@ -201,7 +201,7 @@ class PrepareAndEvaluationTest extends TestCase
         $training = TrainingFactory::new()->between('2099-01-10 18:00:00', '2099-01-10 19:30:00')->forGroups([$group])->withTrainers([$trainer])->create();
         TrainingTrainer::where('training_id', $training->id)->update(['accounting_time_start' => '2099-01-10 18:00:00', 'accounting_time_end' => '2099-01-10 19:30:00']);
 
-        $response = $this->actingAsJwt($trainer)->post('/api/v1/trainingevaluation/exportaccountingtimes', [
+        $response = $this->actingAsUser($trainer)->post('/api/v1/trainingevaluation/exportaccountingtimes', [
             'userId' => $trainer->id,
             'from' => '2099-01-01T00:00:00+0100',
             'to' => '2099-01-31T00:00:00+0100',
@@ -220,16 +220,16 @@ class PrepareAndEvaluationTest extends TestCase
         $other = $this->makeUser('trainer');
         $body = ['userId' => $other->id, 'from' => '2099-01-01T00:00:00+0100', 'to' => '2099-01-31T00:00:00+0100'];
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
-        $this->actingAsJwt($this->makeUser('member'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
-        $this->actingAsJwt($this->makeUser('admin'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertOk();
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
+        $this->actingAsUser($this->makeUser('member'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertForbidden();
+        $this->actingAsUser($this->makeUser('admin'))->postJson('/api/v1/trainingevaluation/exportaccountingtimes', $body)->assertOk();
     }
 
     public function test_export_accounting_times_rejects_unparsable_dates(): void
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [
             'userId' => $trainer->id, 'from' => 'yesterday', 'to' => '2099-01-31T00:00:00+0100',
         ])->assertStatus(422);
     }
@@ -238,7 +238,7 @@ class PrepareAndEvaluationTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
 
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [])
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingevaluation/exportaccountingtimes', [])
             ->assertStatus(422)->assertJsonValidationErrors(['userId', 'from', 'to']);
     }
 }

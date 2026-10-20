@@ -51,7 +51,7 @@ class HealthAndErrorsTest extends TestCase
     {
         config(['app.debug' => false]);
 
-        $response = $this->actingAsJwt($this->makeUser('trainer'))->getJson('/api/v1/training/999999')->assertNotFound();
+        $response = $this->actingAsUser($this->makeUser('trainer'))->getJson('/api/v1/training/999999')->assertNotFound();
 
         $this->assertSame('Not Found', $response->json('message'));
         $this->assertStringNotContainsString('App\\', $response->getContent());
@@ -77,9 +77,8 @@ class HealthAndErrorsTest extends TestCase
         $trainer = $this->makeUser('trainer');
 
         // exactly what a fetch() without `Accept: application/json` sends
-        $response = $this->call('POST', '/api/v1/trainingSeries', [], [], [], [
+        $response = $this->actingAsUser($trainer)->call('POST', '/api/v1/trainingSeries', [], [], [], [
             'HTTP_ACCEPT' => '*/*',
-            'HTTP_AUTHORIZATION' => 'Bearer '.$this->jwtFor($trainer),
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['startTime' => '18:00:00']));
 

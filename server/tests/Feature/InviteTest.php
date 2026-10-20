@@ -16,7 +16,7 @@ class InviteTest extends TestCase
     {
         $invitee = $this->makeUser('member', ['email' => 'kind@example.com', 'firstName' => 'Kim', 'email_verified_at' => null]);
 
-        $this->actingAsJwt($this->makeUser('admin'))->postJson("/api/v1/user/{$invitee->id}/invite")
+        $this->actingAsUser($this->makeUser('admin'))->postJson("/api/v1/user/{$invitee->id}/invite")
             ->assertOk()->assertExactJson(['status' => 'ok']);
 
         Mail::assertSent(InvitePassword::class, function (InvitePassword $mail) {
@@ -52,7 +52,7 @@ class InviteTest extends TestCase
     {
         $invitee = $this->makeUser('member', ['email' => 'kind@example.com', 'firstName' => 'Kim']);
 
-        $this->actingAsJwt($this->makeUser('trainer'))->postJson("/api/v1/user/{$invitee->id}/invite")->assertOk();
+        $this->actingAsUser($this->makeUser('trainer'))->postJson("/api/v1/user/{$invitee->id}/invite")->assertOk();
 
         Mail::assertSent(InvitePassword::class, function (InvitePassword $mail) {
             $html = $mail->render();
@@ -65,7 +65,7 @@ class InviteTest extends TestCase
     {
         $invitee = $this->makeUser('member', ['email' => null]);
 
-        $this->actingAsJwt($this->makeUser('admin'))->postJson("/api/v1/user/{$invitee->id}/invite")
+        $this->actingAsUser($this->makeUser('admin'))->postJson("/api/v1/user/{$invitee->id}/invite")
             ->assertStatus(422);
 
         Mail::assertNothingSent();
@@ -76,14 +76,14 @@ class InviteTest extends TestCase
         $invitee = $this->makeUser('member', ['email' => 'kind@example.com']);
 
         $this->postJson("/api/v1/user/{$invitee->id}/invite")->assertStatus(401);
-        $this->actingAsJwt($this->makeUser('member'))->postJson("/api/v1/user/{$invitee->id}/invite")->assertForbidden();
+        $this->actingAsUser($this->makeUser('member'))->postJson("/api/v1/user/{$invitee->id}/invite")->assertForbidden();
 
         Mail::assertNothingSent();
     }
 
     public function test_invite_for_unknown_user_is_404(): void
     {
-        $this->actingAsJwt($this->makeUser('admin'))->postJson('/api/v1/user/999999/invite')->assertNotFound();
+        $this->actingAsUser($this->makeUser('admin'))->postJson('/api/v1/user/999999/invite')->assertNotFound();
     }
 
     public function test_self_registration_is_closed(): void

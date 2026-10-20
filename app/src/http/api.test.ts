@@ -15,6 +15,7 @@ describe('httpClient', () => {
     setActivePinia(createPinia())
     vi.stubGlobal('fetch', fetchMock)
     vi.spyOn(console, 'log').mockImplementation(() => {})
+    document.cookie = 'XSRF-TOKEN=test; path=/' // the CSRF cookie of an ongoing session
   })
 
   afterEach(() => {
@@ -99,39 +100,90 @@ describe('httpClient', () => {
     })
   })
 
-  it('on 401 refreshes the token once and retries the original request', async () => {
-    fetchMock
-      .mockResolvedValueOnce(jsonResponse({ message: 'Token has expired' }, 401))
-      .mockResolvedValueOnce(jsonResponse({ status: 'ok' })) // POST /auth/refresh
-      .mockResolvedValueOnce(jsonResponse({ id: 1 })) // retry
-
-    const res = await httpClient.get('/training')
-
-    expect(res.data).toEqual({ id: 1 })
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/v1/training', '/api/v1/auth/refresh', '/api/v1/training'])
-    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST', credentials: 'include' })
-  })
-
-  it('on 401 with a failed refresh logs the user out and redirects to /login', async () => {
+  it('on 401 logs the user out and sends them to the login with the current page as ?redirect=', async () => {
     const auth = useAuthStore()
     auth.logout = vi.fn()
     const location = { href: '', hash: '#/quickEvaluation/7' }
     vi.stubGlobal('window', Object.assign(Object.create(window), { location }))
-    fetchMock
-      .mockResolvedValueOnce(jsonResponse({}, 401))
-      .mockResolvedValueOnce(jsonResponse({ message: 'broken' }, 500)) // refresh fails
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 401))
 
     await expect(httpClient.get('/training')).rejects.toBeTruthy()
 
     expect(auth.logout).toHaveBeenCalled()
     expect(location.href).toBe('/#/login?redirect=%2FquickEvaluation%2F7')
+    expect(fetchMock).toHaveBeenCalledTimes(1) // no refresh endpoint any more
 
     // a second failing request must not overwrite the redirect target
     location.hash = '#/login?redirect=%2FquickEvaluation%2F7'
     location.href = ''
-    fetchMock.mockResolvedValueOnce(jsonResponse({}, 401)).mockResolvedValueOnce(jsonResponse({ message: 'broken' }, 500))
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 401))
     await expect(httpClient.get('/training')).rejects.toBeTruthy()
     expect(location.href).toBe('')
+  })
+
+  it('a session probe (silent401) only rejects', async () => {
+    const auth = useAuthStore()
+    auth.logout = vi.fn()
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 401))
+
+    await expect(httpClient.get('/auth/me', { silent401: true })).rejects.toBeTruthy()
+
+    expect(auth.logout).not.toHaveBeenCalled()
+  })
+
+  describe('CSRF (Sanctum SPA authentication)', () => {
+    beforeEach(() => {
+      document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+    })
+    afterEach(() => {
+      document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+    })
+
+    it('fetches the CSRF cookie once before the first unsafe request and sends it as X-XSRF-TOKEN', async () => {
+      fetchMock.mockImplementation(async (url: string) => {
+        if (url === '/api/sanctum/csrf-cookie') {
+          document.cookie = 'XSRF-TOKEN=abc%3D%3D; path=/'
+          return new Response(null, { status: 204 })
+        }
+        return jsonResponse({ status: 'ok' })
+      })
+
+      await httpClient.post('/auth/login', { email: 'a@example.org' })
+      await httpClient.post('/training', {})
+
+      const urls = fetchMock.mock.calls.map(([url]) => url)
+      expect(urls).toEqual(['/api/sanctum/csrf-cookie', '/api/v1/auth/login', '/api/v1/training'])
+      expect(fetchMock.mock.calls[1][1].headers['X-XSRF-TOKEN']).toBe('abc==')
+      expect(fetchMock.mock.calls[1][1].credentials).toBe('include')
+    })
+
+    it('GET requests need no CSRF token', async () => {
+      fetchMock.mockResolvedValue(jsonResponse({}))
+
+      await httpClient.get('/branch')
+
+      expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/v1/branch'])
+      expect(fetchMock.mock.calls[0][1].headers['X-XSRF-TOKEN']).toBeUndefined()
+    })
+
+    it('on 419 (token expired) gets a new CSRF cookie and repeats the request once', async () => {
+      document.cookie = 'XSRF-TOKEN=old; path=/'
+      fetchMock.mockImplementation(async (url: string) => {
+        if (url === '/api/sanctum/csrf-cookie') {
+          document.cookie = 'XSRF-TOKEN=new; path=/'
+          return new Response(null, { status: 204 })
+        }
+        const calls = fetchMock.mock.calls.filter(([u]) => u === url).length
+        return calls === 1 ? jsonResponse({ message: 'CSRF token mismatch.' }, 419) : jsonResponse({ status: 'ok' })
+      })
+
+      const res = await httpClient.post('/training', {})
+
+      expect(res.data).toEqual({ status: 'ok' })
+      const posts = fetchMock.mock.calls.filter(([u]) => u === '/api/v1/training')
+      expect(posts[0][1].headers['X-XSRF-TOKEN']).toBe('old')
+      expect(posts[1][1].headers['X-XSRF-TOKEN']).toBe('new')
+    })
   })
 
   it('treats an HTML page answered to a JSON request (the SPA index.html) as an error', async () => {

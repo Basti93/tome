@@ -23,9 +23,6 @@ docker-compose exec -T laravel php artisan migrate --force
 echo "Seeding database..."
 docker-compose exec -T laravel php artisan db:seed
 
-echo "Generating JWT secret..."
-docker-compose exec -T laravel php artisan jwt:secret -f
-
 echo ""
 echo "✅ Database initialized successfully!"
 echo ""

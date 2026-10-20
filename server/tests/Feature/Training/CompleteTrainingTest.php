@@ -28,7 +28,7 @@ class CompleteTrainingTest extends TestCase
         $t = $this->training([$trainer]);
         $t->participants()->attach($a->id, ['attend' => 1]);
 
-        $response = $this->actingAsJwt($trainer)->postJson($this->url($t), [
+        $response = $this->actingAsUser($trainer)->postJson($this->url($t), [
             'attendeeIds' => [$a->id, $b->id],
             'trainerTimes' => [['userId' => $trainer->id, 'start' => '2099-01-10T18:15:00+01:00', 'end' => '2099-01-10T19:00:00+01:00']],
         ])->assertOk();
@@ -47,7 +47,7 @@ class CompleteTrainingTest extends TestCase
         $guest = UserFactory::new()->create();
         $t = $this->training([$trainer]);
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => [$guest->id]])->assertOk();
+        $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => [$guest->id]])->assertOk();
 
         $this->assertDatabaseHas('training_participation', ['training_id' => $t->id, 'user_id' => $guest->id, 'attend' => 1]);
     }
@@ -60,7 +60,7 @@ class CompleteTrainingTest extends TestCase
         $t = $this->training([$trainer]);
         $t->participants()->attach([$a->id => ['attend' => 1], $b->id => ['attend' => 1]]);
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => [$a->id]])->assertOk();
+        $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => [$a->id]])->assertOk();
 
         $this->assertDatabaseHas('training_participation', ['user_id' => $a->id, 'attend' => 1]);
         $this->assertDatabaseHas('training_participation', ['user_id' => $b->id, 'attend' => 0]);
@@ -72,7 +72,7 @@ class CompleteTrainingTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = $this->training([$trainer]);
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => []])->assertOk();
+        $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => []])->assertOk();
 
         $tt = TrainingTrainer::where('training_id', $t->id)->firstOrFail();
         $this->assertSame(90, $tt->accounting_minutes);
@@ -93,7 +93,7 @@ class CompleteTrainingTest extends TestCase
             'not a trainer of the training' => array_merge($good, ['userId' => $other->id]),
             'garbage' => array_merge($good, ['start' => 'xx']),
         ] as $label => $row) {
-            $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => [$a->id], 'trainerTimes' => [$row]])
+            $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => [$a->id], 'trainerTimes' => [$row]])
                 ->assertStatus(422, $label);
         }
 
@@ -106,8 +106,8 @@ class CompleteTrainingTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = $this->training([$trainer]);
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => [999999]])->assertStatus(422);
-        $this->actingAsJwt($trainer)->postJson($this->url($t), [])->assertStatus(422);
+        $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => [999999]])->assertStatus(422);
+        $this->actingAsUser($trainer)->postJson($this->url($t), [])->assertStatus(422);
     }
 
     public function test_a_trainer_who_is_not_assigned_gets_403_and_nothing_changes(): void
@@ -116,8 +116,8 @@ class CompleteTrainingTest extends TestCase
         $stranger = $this->makeUser('trainer');
         $t = $this->training([$assigned]);
 
-        $this->actingAsJwt($stranger)->postJson($this->url($t), ['attendeeIds' => []])->assertForbidden();
-        $this->actingAsJwt($stranger)->getJson("/api/v1/trainingevaluation/{$t->id}/detail")->assertForbidden();
+        $this->actingAsUser($stranger)->postJson($this->url($t), ['attendeeIds' => []])->assertForbidden();
+        $this->actingAsUser($stranger)->getJson("/api/v1/trainingevaluation/{$t->id}/detail")->assertForbidden();
 
         $this->assertSame(0, (int) $t->fresh()->evaluated);
     }
@@ -127,7 +127,7 @@ class CompleteTrainingTest extends TestCase
         $member = $this->makeUser('member');
         $t = $this->training([$member]);
 
-        $this->actingAsJwt($member)->postJson($this->url($t), ['attendeeIds' => []])->assertForbidden();
+        $this->actingAsUser($member)->postJson($this->url($t), ['attendeeIds' => []])->assertForbidden();
     }
 
     public function test_admin_may_complete_any_training(): void
@@ -136,7 +136,7 @@ class CompleteTrainingTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = $this->training([$trainer]);
 
-        $this->actingAsJwt($admin)->postJson($this->url($t), ['attendeeIds' => []])->assertOk();
+        $this->actingAsUser($admin)->postJson($this->url($t), ['attendeeIds' => []])->assertOk();
 
         $this->assertSame(1, (int) $t->fresh()->evaluated);
     }
@@ -147,8 +147,8 @@ class CompleteTrainingTest extends TestCase
         $t = $this->training([$trainer]);
         $t->forceFill(['deleted_at' => now()])->save();
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), ['attendeeIds' => []])->assertNotFound();
-        $this->actingAsJwt($trainer)->postJson('/api/v1/trainingevaluation/999999/complete', ['attendeeIds' => []])->assertNotFound();
+        $this->actingAsUser($trainer)->postJson($this->url($t), ['attendeeIds' => []])->assertNotFound();
+        $this->actingAsUser($trainer)->postJson('/api/v1/trainingevaluation/999999/complete', ['attendeeIds' => []])->assertNotFound();
     }
 
     public function test_completing_twice_is_idempotent(): void
@@ -161,8 +161,8 @@ class CompleteTrainingTest extends TestCase
             'trainerTimes' => [['userId' => $trainer->id, 'start' => '2099-01-10T18:00:00+01:00', 'end' => '2099-01-10T19:00:00+01:00']],
         ];
 
-        $first = $this->actingAsJwt($trainer)->postJson($this->url($t), $payload)->assertOk()->json();
-        $second = $this->actingAsJwt($trainer)->postJson($this->url($t), $payload)->assertOk()->json();
+        $first = $this->actingAsUser($trainer)->postJson($this->url($t), $payload)->assertOk()->json();
+        $second = $this->actingAsUser($trainer)->postJson($this->url($t), $payload)->assertOk()->json();
 
         $this->assertEquals($first, $second);
         $this->assertDatabaseCount('training_participation', 1);
@@ -176,7 +176,7 @@ class CompleteTrainingTest extends TestCase
         $t = $this->training([$trainer]);
         $t->participants()->attach($a->id, ['attend' => 1]);
 
-        $this->actingAsJwt($trainer)->getJson("/api/v1/trainingevaluation/{$t->id}/detail")->assertOk()
+        $this->actingAsUser($trainer)->getJson("/api/v1/trainingevaluation/{$t->id}/detail")->assertOk()
             ->assertJsonPath('data.id', $t->id)
             ->assertJsonPath('data.trainers.0.userId', $trainer->id)
             ->assertJsonPath('data.participants.0.userId', $a->id);
@@ -187,7 +187,7 @@ class CompleteTrainingTest extends TestCase
         $trainer = $this->makeUser('trainer');
         $t = $this->training([$trainer]);
 
-        $this->actingAsJwt($trainer)->postJson($this->url($t), [
+        $this->actingAsUser($trainer)->postJson($this->url($t), [
             'attendeeIds' => [],
             'trainerTimes' => [['userId' => $trainer->id, 'start' => '2099-01-10T18:15:00+01:00', 'end' => '2099-01-10T19:00:00+01:00']],
         ])->assertOk()

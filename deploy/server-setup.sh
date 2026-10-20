@@ -411,9 +411,8 @@ fi
 # ============================================================================
 # Abschnitt 7: .env
 # Fehlende Schluessel werden mit Produktionswerten ergaenzt, vorhandene NIE ueberschrieben.
-# APP_KEY und JWT_SECRET werden nur beim ersten Lauf erzeugt. Mail-Einstellungen werden aus
+# APP_KEY wird nur beim ersten Lauf erzeugt. Mail-Einstellungen werden aus
 # der alten App uebernommen (OLD_ENV), sonst bleiben Platzhalter AENDERN_*.
-# ACHTUNG: Ein neues JWT_SECRET macht alle alten Logins ungueltig (gewollt beim Cutover).
 # ============================================================================
 if ask 7 ".env aus Vorlage (${ENV_FILE})"; then
   ensure_env_file
@@ -429,14 +428,14 @@ if ask 7 ".env aus Vorlage (${ENV_FILE})"; then
     env_force APP_KEY "base64:$(openssl rand -base64 32)"
     info "APP_KEY erzeugt"
   fi
-  if [[ -z "$(env_get JWT_SECRET)" ]]; then
-    env_force JWT_SECRET "$(openssl rand -hex 32)"
-    info "JWT_SECRET erzeugt"
-  fi
   env_default LOG_CHANNEL daily
   env_default LOG_LEVEL info
   env_default LOG_DAILY_DAYS 14
   env_default SESSION_DRIVER file
+  # Sanctum SPA authentication (session cookie on the app's own host)
+  env_default SESSION_LIFETIME 20160
+  env_default SESSION_SECURE_COOKIE true
+  env_default SANCTUM_STATEFUL_DOMAINS "$SITE_HOST"
   env_default CACHE_DRIVER file
   env_default CACHE_STORE file
   env_default QUEUE_CONNECTION sync

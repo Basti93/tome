@@ -36,8 +36,10 @@ return [
   */
 
   'guards' => [
+    // Sanctum SPA authentication: the `api` guard is the session guard (cookie + CSRF); roles and permissions
+    // keep their guard_name `api`
     'api' => [
-      'driver' => 'jwt',
+      'driver' => 'session',
       'provider' => 'users',
     ],
 

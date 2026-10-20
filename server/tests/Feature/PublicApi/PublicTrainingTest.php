@@ -63,7 +63,7 @@ class PublicTrainingTest extends TestCase
         $training = TrainingFactory::new()->between('2099-03-05 18:00:00', '2099-03-05 19:30:00')->create();
         $training->participants()->attach($participant->id, ['attend' => 0, 'cancelreason' => 'krank']);
 
-        $item = $this->actingAsJwt($this->makeUser('member'))->getJson('/api/v1/training/upcoming')->assertOk()->json('data.0');
+        $item = $this->actingAsUser($this->makeUser('member'))->getJson('/api/v1/training/upcoming')->assertOk()->json('data.0');
 
         $this->assertSame(
             ['attend' => 0, 'cancelreason' => 'krank', 'trainingId' => $training->id, 'userId' => $participant->id],

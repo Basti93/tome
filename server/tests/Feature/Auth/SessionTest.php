@@ -2,18 +2,22 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
- * me / refresh / logout and how the JWT travels (HttpOnly cookie vs. Authorization header).
+ * Sanctum SPA authentication: me / logout and how the session travels (HttpOnly cookie, CSRF cookie).
  */
 class SessionTest extends TestCase
 {
-    protected function tearDown(): void
+    /** Log in like the SPA does and return the session cookie value to send with the next requests. */
+    private function loginCookie(string $email = 'm@example.com'): array
     {
-        Carbon::setTestNow();
-        parent::tearDown();
+        $this->makeUser('member', ['email' => $email]);
+        $response = $this->fromSpa()->postJson('/api/v1/auth/login', ['email' => $email, 'password' => 'Password1!'])->assertOk();
+        $cookie = $response->getCookie(config('session.cookie'), false);
+        $this->assertNotNull($cookie, 'the login sets the session cookie');
+
+        return [$cookie, $response];
     }
 
     public function test_me_requires_authentication(): void
@@ -21,11 +25,11 @@ class SessionTest extends TestCase
         $this->getJson('/api/v1/auth/me')->assertStatus(401);
     }
 
-    public function test_me_with_cookie_returns_the_user(): void
+    public function test_me_returns_the_user_without_secrets(): void
     {
         $user = $this->makeUser('trainer');
 
-        $this->actingAsJwt($user)->getJson('/api/v1/auth/me')
+        $this->actingAsUser($user)->getJson('/api/v1/auth/me')
             ->assertOk()
             ->assertJsonPath('id', $user->id)
             ->assertJsonPath('email', $user->email)
@@ -33,32 +37,10 @@ class SessionTest extends TestCase
             ->assertJsonMissingPath('password');
     }
 
-    public function test_me_with_bearer_header_returns_the_user(): void
+    public function test_a_garbage_session_cookie_is_unauthorized(): void
     {
-        $user = $this->makeUser('member');
-
-        $this->actingAsBearer($user)->getJson('/api/v1/auth/me')
-            ->assertOk()
-            ->assertJsonPath('id', $user->id);
-    }
-
-    public function test_bearer_header_wins_over_cookie(): void
-    {
-        $cookieUser = $this->makeUser('member');
-        $bearerUser = $this->makeUser('member');
-
-        $this->withJwtCookie($this->jwtFor($cookieUser))
-            ->withToken($this->jwtFor($bearerUser))
-            ->getJson('/api/v1/auth/me')
-            ->assertOk()
-            ->assertJsonPath('id', $bearerUser->id);
-    }
-
-    public function test_garbage_cookie_is_unauthorized(): void
-    {
-        $this->withJwtCookie('not-a-jwt')
-            ->getJson('/api/v1/auth/me')
-            ->assertStatus(401);
+        $this->fromSpa()->withUnencryptedCookie(config('session.cookie'), 'not-a-session')
+            ->getJson('/api/v1/auth/me')->assertStatus(401);
     }
 
     public function test_logout_requires_authentication(): void
@@ -66,105 +48,38 @@ class SessionTest extends TestCase
         $this->postJson('/api/v1/auth/logout')->assertStatus(401);
     }
 
-    public function test_logout_clears_the_cookie_and_invalidates_the_token(): void
+    public function test_the_session_cookie_is_http_only_lax_and_lasts_two_weeks(): void
     {
-        $user = $this->makeUser('member');
-        $token = $this->jwtFor($user);
+        [$cookie] = $this->loginCookie();
 
-        $response = $this->withJwtCookie($token)
-            ->postJson('/api/v1/auth/logout')
-            ->assertOk()
-            ->assertExactJson(['message' => 'Successfully logged out']);
-
-        $cookie = $response->getCookie('jwt_token', false);
-        $this->assertNotNull($cookie);
-        $this->assertTrue($cookie->isCleared(), 'cookie must be expired');
-        $this->assertDatabaseHas('auth_logs', ['action' => 'logout', 'user_id' => $user->id]);
-
-        // the blacklisted token no longer works
-        $this->withJwtCookie($token)
-            ->getJson('/api/v1/auth/me')
-            ->assertStatus(401);
-    }
-
-    public function test_refresh_issues_a_new_cookie_and_blacklists_the_old_token(): void
-    {
-        $user = $this->makeUser('member');
-        $oldToken = $this->jwtFor($user);
-
-        $response = $this->withJwtCookie($oldToken)
-            ->postJson('/api/v1/auth/refresh')
-            ->assertOk()
-            ->assertJsonPath('status', 'ok')
-            ->assertJsonPath('expiresIn', 3600)
-            ->assertJsonMissingPath('token');
-
-        $cookie = $response->getCookie('jwt_token', false);
-        $this->assertNotNull($cookie);
         $this->assertTrue($cookie->isHttpOnly());
-        $this->assertNotSame($oldToken, $cookie->getValue());
-        $this->assertDatabaseHas('auth_logs', ['action' => 'token_refresh', 'user_id' => $user->id]);
-
-        $this->withJwtCookie($cookie->getValue())->getJson('/api/v1/auth/me')->assertOk()->assertJsonPath('id', $user->id);
-        $this->withJwtCookie($oldToken)->getJson('/api/v1/auth/me')->assertStatus(401);
-        // the rotated-out token cannot be refreshed again either
-        $this->withJwtCookie($oldToken)->postJson('/api/v1/auth/refresh')->assertStatus(401);
-    }
-
-    public function test_refresh_also_works_with_an_authorization_header(): void
-    {
-        $user = $this->makeUser('member');
-
-        $this->withToken($this->jwtFor($user))->postJson('/api/v1/auth/refresh')->assertOk()->assertCookie('jwt_token');
-    }
-
-    public function test_an_expired_access_token_can_be_refreshed_inside_the_refresh_window(): void
-    {
-        $user = $this->makeUser('member');
-        $token = $this->jwtFor($user);
-
-        Carbon::setTestNow(now()->addMinutes(61));
-        $this->withJwtCookie($token)->getJson('/api/v1/auth/me')->assertStatus(401);
-
-        $response = $this->withJwtCookie($token)->postJson('/api/v1/auth/refresh')->assertOk();
-
-        $fresh = $response->getCookie('jwt_token', false)->getValue();
-        $this->withJwtCookie($fresh)->getJson('/api/v1/auth/me')->assertOk()->assertJsonPath('id', $user->id);
-    }
-
-    public function test_a_token_outside_the_refresh_window_cannot_be_refreshed(): void
-    {
-        $token = $this->jwtFor($this->makeUser('member'));
-
-        Carbon::setTestNow(now()->addMinutes((int) config('jwt.refresh_ttl') + 5));
-
-        $this->withJwtCookie($token)->postJson('/api/v1/auth/refresh')
-            ->assertStatus(401)->assertJsonPath('status', 'error');
-    }
-
-    public function test_a_logged_out_token_cannot_be_refreshed(): void
-    {
-        $token = $this->jwtFor($this->makeUser('member'));
-        $this->withJwtCookie($token)->postJson('/api/v1/auth/logout')->assertOk();
-
-        $this->withJwtCookie($token)->postJson('/api/v1/auth/refresh')->assertStatus(401);
-    }
-
-    public function test_refresh_without_or_with_a_garbage_token_is_401(): void
-    {
-        $this->postJson('/api/v1/auth/refresh')->assertStatus(401);
-        $this->withJwtCookie('not-a-jwt')->postJson('/api/v1/auth/refresh')->assertStatus(401);
+        $this->assertSame('lax', $cookie->getSameSite());
+        $this->assertSame('/', $cookie->getPath());
+        $this->assertSame(20160, (int) config('session.lifetime'));
+        $this->assertGreaterThan(now()->addDays(13)->timestamp, $cookie->getExpiresTime());
     }
 
     public function test_full_cookie_roundtrip_login_me_logout(): void
     {
-        $user = $this->makeUser('trainer', ['email' => 'rt@example.com']);
+        [$cookie] = $this->loginCookie();
 
-        $login = $this->postJson('/api/v1/auth/login', ['email' => 'rt@example.com', 'password' => 'Password1!'])->assertOk();
-        $jwt = $login->getCookie('jwt_token', false)->getValue();
+        $with = fn () => $this->fromSpa()->withCredentials()->withCookie($cookie->getName(), $cookie->getValue());
 
-        $this->withJwtCookie($jwt)->getJson('/api/v1/auth/me')
-            ->assertOk()->assertJsonPath('id', $user->id);
-        $this->withJwtCookie($jwt)->postJson('/api/v1/auth/logout')->assertOk();
+        $with()->getJson('/api/v1/auth/me')->assertOk()->assertJsonPath('email', 'm@example.com');
+        $with()->postJson('/api/v1/auth/logout')->assertOk();
+        $with()->getJson('/api/v1/auth/me')->assertStatus(401);
+    }
+
+    public function test_the_csrf_cookie_route_lives_under_api_and_sets_the_xsrf_token(): void
+    {
+        $response = $this->fromSpa()->get('/api/sanctum/csrf-cookie')->assertNoContent();
+
+        $this->assertNotNull($response->getCookie('XSRF-TOKEN', false));
+    }
+
+    public function test_an_unauthenticated_state_changing_request_from_the_spa_needs_the_csrf_token_in_production_like_runs(): void
+    {
+        // CSRF verification is skipped while running unit tests; this documents that the session middleware is active
+        $this->fromSpa()->postJson('/api/v1/auth/login', ['email' => 'nobody@example.com', 'password' => 'x'])->assertStatus(403);
     }
 }
