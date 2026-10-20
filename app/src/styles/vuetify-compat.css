@@ -191,3 +191,10 @@
 .has-training-switch .v-main {
   padding-bottom: 72px;
 }
+/* phones with the bottom navigation: no footer, and the "Anderes Training" button sits above the bar */
+.has-bottom-nav .v-footer {
+  display: none;
+}
+.has-bottom-nav .tp-training-selector__switch {
+  margin-bottom: 72px;
+}

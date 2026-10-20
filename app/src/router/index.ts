@@ -1,4 +1,5 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, START_LOCATION } from 'vue-router'
+import { startPageRedirect } from '@/helpers/navigation'
 import { useAuthStore } from '@/store/auth'
 import { analytics } from '@/services/analytics'
 import httpClient from '@/http/api'
@@ -30,6 +31,11 @@ const router = createRouter({
     {
       path: '/trainings', name: 'Trainings',
       component: () => import('@/pages/TrainingsTablePage.vue'),
+      meta: { requiresAuth: true, forTrainers: true }
+    },
+    {
+      path: '/today', name: 'Today',
+      component: () => import('@/pages/TodayPage.vue'),
       meta: { requiresAuth: true, forTrainers: true }
     },
     {
@@ -94,7 +100,11 @@ async function restoreSession(): Promise<void> {
   }
 }
 
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, from) => {
+  // trainers and admins start on "Heute" (app start and right after the login)
+  const startRedirect = startPageRedirect(to, from === START_LOCATION ? null : from.path, useAuthStore().user)
+  if (startRedirect) return { path: startRedirect }
+
   // Track page view
   const pageTitle = (to.name as string) || 'Page'
   analytics.trackPageView(pageTitle)

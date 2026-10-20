@@ -336,6 +336,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useMasterDataStore } from '@/store/masterData'
 import { useSnackbarStore } from '@/store/snackbar'
@@ -350,6 +351,7 @@ import TrainingSelector from '../components/TrainingSelector.vue'
 import GroupChip from '../components/GroupChip.vue'
 import User, { userFromApi } from '../models/User'
 
+const route = useRoute()
 const { xs } = useDisplay()
 const authStore = useAuthStore()
 const masterData = useMasterDataStore()
@@ -509,8 +511,9 @@ async function fetchData() {
           )
         )
       }
-      //select first training
-      selectTraining(upcomingTrainings.value[0].id)
+      // select the training given by ?training= (link from "Heute"), else the first one
+      const wanted = Number(route.query.training)
+      selectTraining(upcomingTrainings.value.find((t: any) => t.id === wanted)?.id ?? upcomingTrainings.value[0].id)
     }
     users.value = []
     const userRes = await httpClient.get('/user')
