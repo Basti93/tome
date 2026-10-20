@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 
@@ -32,7 +33,8 @@ class TrainingTrainer extends Pivot
         return $this->belongsTo(User::class);
     }
 
-    public function training()
+    /** @return BelongsTo<Training, $this> */
+    public function training(): BelongsTo
     {
         return $this->belongsTo(Training::class)->withTrashed();
     }

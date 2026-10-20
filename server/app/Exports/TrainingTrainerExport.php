@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Location;
+use App\Services\TrainerHours;
 use App\Training;
 use App\TrainingTrainer;
 use Illuminate\Support\Collection;
@@ -42,7 +43,7 @@ class TrainingTrainerExport implements FromCollection, ShouldAutoSize, WithHeadi
             $trainingTrainer->accounting_time_start->format('d.m.Y'),
             $trainingTrainer->accounting_time_start->format('H:i'),
             $trainingTrainer->accounting_time_end->format('H:i'),
-            round($trainingTrainer->accountingHours, 2),
+            TrainerHours::rowHours($trainingTrainer),
             $trainingTrainer->accountingMinutes,
         ];
     }
@@ -52,8 +53,7 @@ class TrainingTrainerExport implements FromCollection, ShouldAutoSize, WithHeadi
      */
     public function collection(): Enumerable
     {
-        return TrainingTrainer::where('user_id', $this->user->id)
-            ->whereBetween('accounting_time_start', [$this->from, $this->to])
-            ->get();
+        // the same entries as the "Meine Stunden" overview (App\Services\TrainerHours)
+        return app(TrainerHours::class)->entries($this->user, $this->from, $this->to);
     }
 }
