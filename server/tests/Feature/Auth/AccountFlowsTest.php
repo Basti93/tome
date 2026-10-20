@@ -5,6 +5,8 @@ namespace Tests\Feature\Auth;
 use App\Mail\InvitePassword;
 use App\Mail\ResetPassword;
 use App\User;
+use Database\Factories\BranchFactory;
+use Database\Factories\GroupFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -112,14 +114,15 @@ class AccountFlowsTest extends TestCase
 
     public function test_a_trainer_cannot_set_another_users_password_or_preferences_through_the_user_update(): void
     {
-        $admin = $this->makeUser('admin', ['email' => 'admin@example.com']);
-        $this->actingAsJwt($this->makeUser('trainer'))->putJson("/api/v1/user/{$admin->id}", [
-            'firstName' => 'Admin', 'familyName' => 'Boss', 'groupIds' => [], 'trainerBranchIds' => [],
+        $member = $this->makeUser('member', ['email' => 'member@example.com']);
+        $this->actingAsJwt($this->makeUser('trainer'))->putJson("/api/v1/user/{$member->id}", [
+            'firstName' => 'Neu', 'familyName' => 'Name', 'groupIds' => [], 'trainerBranchIds' => [],
             'password' => 'Hacked123!x', 'notification_preferences' => ['admin_messages' => false],
         ])->assertStatus(201);
 
-        $this->postJson('/api/v1/auth/login', ['email' => 'admin@example.com', 'password' => 'Hacked123!x'])->assertStatus(403);
-        $this->assertNull($admin->fresh()->notification_preferences);
+        $this->postJson('/api/v1/auth/login', ['email' => 'member@example.com', 'password' => 'Hacked123!x'])->assertStatus(403);
+        $this->assertNull($member->fresh()->notification_preferences);
+        $this->assertSame('Neu', $member->fresh()->firstName, 'basic data of members stays editable for trainers');
     }
 
     public function test_updating_the_own_profile_without_an_email_field_keeps_the_email(): void
@@ -165,7 +168,7 @@ class AccountFlowsTest extends TestCase
 
     public function test_only_admins_may_change_the_email_of_an_account_that_can_log_in(): void
     {
-        $victim = $this->makeUser('admin', ['email' => 'boss@example.com']);
+        $victim = $this->makeUser('trainer', ['email' => 'boss@example.com']);
         $kid = $this->makeUser(null, ['email' => null, 'registered' => 0]);
         DB::table('users')->where('id', $kid->id)->update(['password' => null]);
         $payload = fn ($email) => ['firstName' => 'X', 'familyName' => 'Y', 'email' => $email, 'groupIds' => [], 'trainerBranchIds' => []];
@@ -222,5 +225,85 @@ class AccountFlowsTest extends TestCase
         $this->actingAsJwt($this->makeUser('admin'))->postJson("/api/v1/user/{$user->id}/invite")->assertOk();
 
         Mail::assertSent(InvitePassword::class, fn ($mail) => str_contains($mail->render(), '7 Tage gültig'));
+    }
+
+    private function userPayload(array $overrides = []): array
+    {
+        return array_merge(['firstName' => 'X', 'familyName' => 'Y', 'groupIds' => [], 'trainerBranchIds' => []], $overrides);
+    }
+
+    public function test_only_an_admin_may_edit_an_admin(): void
+    {
+        $admin = $this->makeUser('admin', ['email' => 'boss@example.com']);
+
+        $this->actingAsJwt($this->makeUser('trainer'))->putJson("/api/v1/user/{$admin->id}", $this->userPayload(['firstName' => 'Hijack']))
+            ->assertStatus(403)->assertJsonPath('message', 'Admin-Konten kann nur ein Admin ändern.');
+        $this->assertNotSame('Hijack', $admin->fresh()->firstName);
+
+        $this->actingAsJwt($this->makeUser('admin'))->putJson("/api/v1/user/{$admin->id}", $this->userPayload(['firstName' => 'Neu']))->assertStatus(201);
+    }
+
+    public function test_a_trainer_cannot_deactivate_or_assign_branches_for_accounts_with_login(): void
+    {
+        $actor = $this->makeUser('trainer');
+        $otherTrainer = $this->makeUser('trainer');
+        $member = $this->makeUser('member');
+        $branch = BranchFactory::new()->create();
+
+        $this->actingAsJwt($actor)->putJson("/api/v1/user/{$otherTrainer->id}", $this->userPayload(['active' => 'false']))->assertStatus(403);
+        $this->assertSame(1, (int) $otherTrainer->fresh()->active);
+        $this->actingAsJwt($actor)->putJson("/api/v1/user/{$otherTrainer->id}", $this->userPayload(['trainerBranchIds' => [$branch->id]]))->assertStatus(403);
+        $this->assertSame(0, $otherTrainer->trainerBranches()->count());
+        $this->actingAsJwt($actor)->putJson("/api/v1/user/{$member->id}", $this->userPayload(['active' => 'false']))->assertStatus(403, 'members with a login too');
+
+        // unchanged values are fine (the edit form always sends them)
+        $this->actingAsJwt($actor)->putJson("/api/v1/user/{$otherTrainer->id}", $this->userPayload(['active' => 'true', 'firstName' => 'Okay']))->assertStatus(201);
+
+        // an admin may
+        $this->actingAsJwt($this->makeUser('admin'))->putJson("/api/v1/user/{$otherTrainer->id}", $this->userPayload(['trainerBranchIds' => [$branch->id]]))->assertStatus(201);
+        $this->assertSame(1, $otherTrainer->trainerBranches()->count());
+    }
+
+    public function test_a_trainer_still_manages_groups_and_activity_of_members_without_login(): void
+    {
+        $kid = $this->makeUser(null, ['registered' => 0]);
+        DB::table('users')->where('id', $kid->id)->update(['password' => null]);
+        $group = GroupFactory::new()->create();
+
+        $this->actingAsJwt($this->makeUser('trainer'))->putJson("/api/v1/user/{$kid->id}", $this->userPayload(['groupIds' => [$group->id], 'active' => 'false']))->assertStatus(201);
+
+        $this->assertSame([$group->id], $kid->groups()->pluck('groups.id')->all());
+        $this->assertSame(0, (int) $kid->fresh()->active);
+    }
+
+    public function test_a_missing_group_ids_or_trainer_branch_ids_key_leaves_the_relations_alone(): void
+    {
+        $member = $this->makeUser('member');
+        $group = GroupFactory::new()->create();
+        $member->groups()->attach($group->id);
+
+        $this->actingAsJwt($this->makeUser('admin'))->putJson("/api/v1/user/{$member->id}", ['firstName' => 'Nur', 'familyName' => 'Name'])->assertStatus(201);
+
+        $this->assertSame([$group->id], $member->groups()->pluck('groups.id')->all());
+    }
+
+    public function test_updating_the_own_profile_cannot_assign_trainer_branches_unless_admin(): void
+    {
+        $branch = BranchFactory::new()->create();
+        $trainer = $this->makeUser('trainer');
+
+        $this->actingAsJwt($trainer)->putJson('/api/v1/user/me', ['firstName' => 'T', 'familyName' => 'T', 'trainerBranchIds' => [$branch->id], 'groupIds' => []])->assertStatus(201);
+        $this->assertSame(0, $trainer->trainerBranches()->count());
+    }
+
+    public function test_changing_the_own_email_keeps_it_verified(): void
+    {
+        // documented decision: the user is logged in; un-verifying would lock them out after a typo
+        $user = $this->makeUser('member', ['email' => 'me@example.com']);
+
+        $this->actingAsJwt($user)->putJson('/api/v1/user/me', ['firstName' => 'A', 'familyName' => 'B', 'email' => 'neu@example.com'])->assertStatus(201);
+
+        $this->assertSame('neu@example.com', $user->fresh()->email);
+        $this->assertNotNull($user->fresh()->email_verified_at);
     }
 }

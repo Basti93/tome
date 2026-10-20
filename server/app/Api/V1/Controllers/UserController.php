@@ -175,14 +175,21 @@ class UserController extends Controller
 
         $user = User::findOrFail(Auth::user()->id);
 
-        // only allow update of groups for users with special rights
+        // only allow update of groups for users with special rights; the trainer branches (what a trainer may
+        // manage) only an admin can change, also for their own account. A missing key leaves the relation alone.
         if ($user->can('update-user')) {
-            $user->groups()->sync($request->input('groupIds'));
-            $user->trainerBranches()->sync($request->input('trainerBranchIds'));
+            if ($request->has('groupIds')) {
+                $user->groups()->sync($request->input('groupIds'));
+            }
+            if ($request->has('trainerBranchIds') && $user->hasRole('admin')) {
+                $user->trainerBranches()->sync($request->input('trainerBranchIds'));
+            }
         }
 
         $user->firstName = $request->input('firstName');
         $user->familyName = $request->input('familyName');
+        // A changed address stays verified: the user is logged in, and an unverified address would lock them out
+        // at the next login after a typo (an admin can fix it and re-invite). Changing it needs the session only.
         if ($request->has('email')) {
             $user->email = $request->input('email');
         }
@@ -217,27 +224,47 @@ class UserController extends Controller
     public function update(StoreUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
+        $actor = Auth::guard('api')->user();
+        $actorIsAdmin = $actor->hasRole('admin');
+
+        // Authorization first (nothing is changed or deleted before all checks passed).
+        // Admins and trainers can only be edited by an admin; so can everything that decides who may log in or
+        // act as a trainer: `active` and trainerBranchIds of accounts with a role or a password.
+        $forbidden = fn (string $message) => response()->json(['status' => 'error', 'message' => $message], 403);
+        $privileged = $user->hasAnyRole(['admin', 'trainer']) || ! empty($user->password);
+        if (! $actorIsAdmin) {
+            if ($user->hasRole('admin')) {
+                return $forbidden('Admin-Konten kann nur ein Admin ändern.');
+            }
+            if ($privileged) {
+                if ($request->has('active') && ($request->input('active') == 'true' ? 1 : 0) !== (int) $user->active) {
+                    return $forbidden('Ob ein Konto mit Anmeldung aktiv ist, kann nur ein Admin ändern.');
+                }
+                if ($request->has('trainerBranchIds')) {
+                    $current = $user->trainerBranches()->pluck('branches.id')->map(fn ($v) => (int) $v)->sort()->values()->all();
+                    $requested = collect($request->input('trainerBranchIds', []))->map(fn ($v) => (int) $v)->unique()->sort()->values()->all();
+                    if ($current !== $requested) {
+                        return $forbidden('Die Trainer-Sparten eines Kontos mit Anmeldung kann nur ein Admin ändern.');
+                    }
+                }
+            }
+            // Changing the address of an account that can log in would allow taking it over via "Passwort vergessen"
+            if ($request->has('email') && $request->input('email') !== $user->email && ! empty($user->password)) {
+                return $forbidden('Die E-Mail-Adresse eines Kontos mit Anmeldung kann nur ein Admin ändern.');
+            }
+        }
 
         // active boolean to 0 and 1
         if ($request->has('active')) {
             $user->active = $request->input('active') == 'true' ? 1 : 0;
         }
 
-        // delete old image because there is a new one (only files that match the profile image naming scheme)
-        if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
-            ProfileImage::deleteIfValid($user->profile_image_name);
-        }
-        // set new profile image
-        $user->profile_image_name = $request->input('profileImageName');
-
-        // Changing the address of an account that can log in would allow taking it over via "Passwort vergessen":
-        // only admins may do that (trainers can still set the address of users who have no password yet).
-        if ($request->has('email') && $request->input('email') !== $user->email
-            && ! empty($user->password) && ! Auth::guard('api')->user()->hasRole('admin')) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Die E-Mail-Adresse eines Kontos mit Anmeldung kann nur ein Admin ändern.',
-            ], 403);
+        if ($request->has('profileImageName')) {
+            // delete old image because there is a new one (only files that match the profile image naming scheme)
+            if (! empty($user->profile_image_name) && $user->profile_image_name !== $request->input('profileImageName')) {
+                ProfileImage::deleteIfValid($user->profile_image_name);
+            }
+            $user->profile_image_name = $request->input('profileImageName');
         }
 
         // only these fields are editable (never password, notification preferences, ...)
@@ -249,8 +276,13 @@ class UserController extends Controller
             throw new HttpException(500);
         }
 
-        $user->groups()->sync($request->input('groupIds'));
-        $user->trainerBranches()->sync($request->input('trainerBranchIds'));
+        // a missing key leaves the relation alone (sync(null) would detach everything)
+        if ($request->has('groupIds')) {
+            $user->groups()->sync($request->input('groupIds'));
+        }
+        if ($request->has('trainerBranchIds')) {
+            $user->trainerBranches()->sync($request->input('trainerBranchIds'));
+        }
 
         return response()->json([
             'status' => 'ok',
