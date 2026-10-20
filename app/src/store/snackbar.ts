@@ -5,7 +5,9 @@ export const useSnackbarStore = defineStore('snackbar', {
     visible: false,
     text: '',
     color: 'info',
-    timeout: 6000
+    timeout: 6000,
+    // changes with every message: a new message restarts the timer even if the same text is shown again
+    count: 0
   }),
   actions: {
     show(text: string, color = 'info', timeout = 6000) {
@@ -13,6 +15,7 @@ export const useSnackbarStore = defineStore('snackbar', {
       this.color = color
       this.timeout = timeout
       this.visible = true
+      this.count++
     },
     hide() {
       this.visible = false

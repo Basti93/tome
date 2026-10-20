@@ -69,7 +69,7 @@ class LoginTest extends TestCase
 
         $this->login('m@example.com', 'WrongPass1!')
             ->assertStatus(403)
-            ->assertExactJson(['status' => 'error', 'message' => 'Unauthorized'])
+            ->assertExactJson(['status' => 'error', 'message' => 'E-Mail oder Passwort ist falsch.', 'code' => 'invalid_credentials'])
             ->assertCookieMissing('jwt_token');
 
         $this->assertDatabaseHas('auth_logs', ['action' => 'login_failed']);
@@ -79,7 +79,7 @@ class LoginTest extends TestCase
     {
         $this->login('nobody@example.com')
             ->assertStatus(403)
-            ->assertExactJson(['status' => 'error', 'message' => 'Unauthorized']);
+            ->assertExactJson(['status' => 'error', 'message' => 'E-Mail oder Passwort ist falsch.', 'code' => 'invalid_credentials']);
     }
 
     public function test_login_requires_email_and_password(): void
@@ -106,14 +106,14 @@ class LoginTest extends TestCase
         for ($i = 1; $i <= 4; $i++) {
             $this->login('m@example.com', 'WrongPass1!')
                 ->assertStatus(403)
-                ->assertJsonPath('message', 'Unauthorized');
+                ->assertJsonPath('code', 'invalid_credentials');
         }
         $this->assertSame(4, (int) $user->fresh()->failed_login_attempts);
 
         // 5th failure locks the account
         $this->login('m@example.com', 'WrongPass1!')
             ->assertStatus(403)
-            ->assertJsonPath('message', 'Account locked due to too many failed login attempts. Please try again later.');
+            ->assertJsonPath('code', 'locked');
 
         $user->refresh();
         $this->assertSame(5, (int) $user->failed_login_attempts);
@@ -122,7 +122,7 @@ class LoginTest extends TestCase
         // even the correct password is refused while locked
         $this->login('m@example.com')
             ->assertStatus(403)
-            ->assertJsonPath('message', 'Account locked due to too many failed login attempts. Please try again later.')
+            ->assertJsonPath('code', 'locked')
             ->assertCookieMissing('jwt_token');
     }
 
@@ -153,5 +153,29 @@ class LoginTest extends TestCase
     {
         $this->login('nobody@example.com', 'x');
         $this->assertSame(0, User::count());
+    }
+
+    public function test_error_messages_are_german_and_the_lock_message_names_the_duration(): void
+    {
+        $user = $this->makeUser('member', ['email' => 'm@example.com', 'locked_until' => now()->addMinutes(10)]);
+
+        $this->login('m@example.com')->assertStatus(403)
+            ->assertJsonPath('code', 'locked')
+            ->assertJsonPath('message', 'Zu viele fehlgeschlagene Anmeldeversuche. Das Konto ist für 15 Minuten gesperrt.');
+
+        $user->forceFill(['locked_until' => null, 'email_verified_at' => null])->save();
+        $this->login('m@example.com')->assertStatus(403)
+            ->assertJsonPath('code', 'email_not_verified')
+            ->assertJsonPath('message', 'Bitte bestätige zuerst deine E-Mail-Adresse.');
+    }
+
+    public function test_an_inactive_user_cannot_log_in_and_gets_a_clear_message(): void
+    {
+        $this->makeUser('member', ['email' => 'm@example.com', 'active' => 0]);
+
+        $this->login('m@example.com')->assertStatus(403)
+            ->assertJsonPath('code', 'inactive')
+            ->assertJsonPath('message', 'Dieses Konto ist deaktiviert. Bitte wende dich an deinen Trainer.')
+            ->assertCookieMissing('jwt_token');
     }
 }

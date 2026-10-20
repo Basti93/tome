@@ -11,12 +11,12 @@
           class="ma-1"
           v-bind="props" variant="outlined"
       >
-        <v-avatar left>
+        <v-avatar start size="28" class="profile-chip-avatar">
           <v-img v-if="imageUrl"
                  :src="imageUrl"
                  :alt="fullName"
           ></v-img>
-          <v-icon v-else>mdi-account-circle</v-icon>
+          <v-icon v-else size="28">mdi-account-circle</v-icon>
         </v-avatar>
         {{ fullName }}
       </v-chip>
@@ -77,3 +77,10 @@ const imageUrl = computed(() => profileImageUrl(props.imagePath))
 const fullName = computed(() => props.firstName + ' ' + props.familyName)
 </script>
 
+<style scoped>
+/* Vuetify 4 `start` avatars sit flush with the chip edge: leave some air to the edge and to the name */
+.profile-chip-avatar {
+  margin-inline-start: 0;
+  margin-inline-end: 8px;
+}
+</style>

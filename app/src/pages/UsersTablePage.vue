@@ -149,6 +149,7 @@
         :edit-active="editedItem.active"
         :edit-birthdate="editedItem.birthdate"
         :edit-family-name="editedItem.familyName"
+        :edit-email="editedItem.email"
         :edit-group-ids="editedItem.groupIds"
         :edit-profile-image-name="editedItem.profileImageName"
         :edit-first-name="editedItem.firstName">
@@ -213,6 +214,7 @@ export default {
         id: null,
         firstName: null,
         familyName: null,
+        email: null,
         birthdate: null,
         profileImageName: null,
         groupIds: [],
@@ -223,6 +225,7 @@ export default {
         id: null,
         firstName: '',
         familyName: '',
+        email: null,
         birthdate: null,
         profileImageName: null,
         groupIds: [],

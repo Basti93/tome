@@ -14,7 +14,7 @@ class NotificationPreferencesTest extends TestCase
     private const URI = '/api/v1/user/me/notification-preferences';
 
     private const DEFAULTS = [
-        'trainerUpcoming' => true,
+        'trainerUpcoming' => false,
         'trainerCancelAlert' => true,
         'participantUpcoming' => true,
         'absenceAlert' => true,
@@ -48,7 +48,7 @@ class NotificationPreferencesTest extends TestCase
 
         $this->assertFalse($user->fresh()->notification_preferences['absence_alert']);
         $this->actingAsJwt($user)->getJson(self::URI)->assertJsonPath('notificationPreferences.absenceAlert', false)
-            ->assertJsonPath('notificationPreferences.trainerUpcoming', true);
+            ->assertJsonPath('notificationPreferences.trainerCancelAlert', true);
     }
 
     public function test_put_merges_over_defaults_so_omitted_types_are_re_enabled(): void
@@ -118,8 +118,8 @@ class NotificationPreferencesTest extends TestCase
         $a = $this->makeUser('member');
         $b = $this->makeUser('member');
 
-        $this->actingAsJwt($a)->putJson(self::URI, ['notification_preferences' => ['trainer_upcoming' => false]])->assertOk();
+        $this->actingAsJwt($a)->putJson(self::URI, ['notification_preferences' => ['trainer_cancel_alert' => false]])->assertOk();
 
-        $this->actingAsJwt($b)->getJson(self::URI)->assertJsonPath('notificationPreferences.trainerUpcoming', true);
+        $this->actingAsJwt($b)->getJson(self::URI)->assertJsonPath('notificationPreferences.trainerCancelAlert', true);
     }
 }

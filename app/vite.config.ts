@@ -4,6 +4,9 @@ import vuetify from 'vite-plugin-vuetify'
 import { fileURLToPath, URL } from 'node:url'
 import { tomeManifest } from './vite-manifest'
 
+// Backend for the dev server proxy (override e.g. to run against a throwaway backend: VITE_PROXY_TARGET=http://localhost:8002)
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:8000'
+
 export default defineConfig({
   plugins: [vue(), vuetify({ autoImport: true }), tomeManifest()],
   resolve: {
@@ -33,13 +36,13 @@ export default defineConfig({
     proxy: {
       // Uploaded files: /api/storage/* in nginx, /storage/* (public/storage symlink) on `php artisan serve`
       '/api/storage': {
-        target: 'http://localhost:8000',
+        target: proxyTarget,
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api\/storage/, '/storage')
       },
       '/api': {
-        target: 'http://localhost:8000',
+        target: proxyTarget,
         changeOrigin: true,
         secure: false
       }

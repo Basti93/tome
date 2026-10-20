@@ -7,28 +7,41 @@ use App\Http\Controllers\Controller;
 use App\Services\AuthLogService;
 use App\User;
 use Config;
-use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Password;
 use PHPOpenSourceSaver\JWTAuth\JWTAuth;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ResetPasswordController extends Controller
 {
     public function resetPassword(ResetPasswordRequest $request, JWTAuth $JWTAuth)
     {
-        $response = $this->broker()->reset(
-            $this->credentials($request), function ($user, $password) {
-                $this->reset($user, $password);
+        // reset links (60 minutes) and invitation links (7 days) come from two brokers with their own token tables
+        $response = Password::INVALID_TOKEN;
+        foreach (['users', 'invites'] as $name) {
+            $response = Password::broker($name)->reset(
+                $this->credentials($request), function ($user, $password) {
+                    $this->reset($user, $password);
+                }
+            );
+            if ($response === Password::PASSWORD_RESET) {
+                break;
             }
-        );
+        }
 
         if ($response !== Password::PASSWORD_RESET) {
-            throw new HttpException(500);
+            // expired, used or wrong token and unknown e-mail look the same (no account enumeration)
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Der Link ist ungültig oder abgelaufen. Bitte fordere über „Passwort vergessen“ einen neuen an.',
+                'code' => 'invalid_token',
+            ], 422);
         }
 
         $user = User::where('email', '=', $request->get('email'))->first();
         if ($user) {
+            // whatever else was pending for this account is void now
+            Password::broker('users')->deleteToken($user);
+            Password::broker('invites')->deleteToken($user);
             AuthLogService::passwordReset($user->id, $request);
         }
 
@@ -69,7 +82,7 @@ class ResetPasswordController extends Controller
     /**
      * Reset the given user's password.
      *
-     * @param  CanResetPassword  $user
+     * @param  User  $user
      * @param  string  $password
      * @return void
      */
@@ -80,6 +93,10 @@ class ResetPasswordController extends Controller
         if ($user->email_verified_at === null) {
             $user->email_verified_at = now();
         }
+        // an invited user now has e-mail and password; a new password also lifts a lockout
+        $user->registered = true;
+        $user->failed_login_attempts = 0;
+        $user->locked_until = null;
         $user->save();
     }
 }

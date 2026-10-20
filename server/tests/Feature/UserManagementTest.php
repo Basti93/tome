@@ -8,6 +8,7 @@ use Database\Factories\BranchFactory;
 use Database\Factories\GroupFactory;
 use Database\Factories\UserFactory;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -134,6 +135,8 @@ class UserManagementTest extends TestCase
     {
         $trainer = $this->makeUser('trainer');
         $user = UserFactory::new()->create();
+        // an account without login (no password yet): the trainer may set its e-mail address
+        DB::table('users')->where('id', $user->id)->update(['password' => null]);
         $group = GroupFactory::new()->create();
         $branch = BranchFactory::new()->create();
 

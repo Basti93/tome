@@ -28,10 +28,21 @@
                         <v-col cols="12">
                             <v-text-field
                                     type="password"
+                                    :rules="[v => !!v || 'Bitte gib dein aktuelles Passwort ein']"
+                                    v-model="currentPassword"
+                                    autocomplete="current-password"
+                                    prepend-icon="lock"
+                                    label="Aktuelles Passwort"
+                                    required
+                            ></v-text-field>
+
+                            <v-text-field
+                                    type="password"
                                     :rules="passwordRules"
                                     v-model="password"
+                                    autocomplete="new-password"
                                     prepend-icon="security"
-                                    label="Passwort"
+                                    label="Neues Passwort"
                                     required
                             ></v-text-field>
 
@@ -40,7 +51,8 @@
                                     :rules="[ confirmPassword ]"
                                     v-model="passwordConfirm"
                                     prepend-icon="security"
-                                    label="Passwort bestätigen"
+                                    autocomplete="new-password"
+                                    label="Neues Passwort bestätigen"
                                     required
                             ></v-text-field>
                         </v-col>
@@ -55,6 +67,8 @@
 import { computed, ref } from 'vue'
 import httpClient from '@/http/api'
 import { useSnackbarStore } from '@/store/snackbar'
+import { apiErrorMessage } from '@/helpers/apiError'
+import { getPasswordValidationRules } from '@/constants/passwordPolicy'
 
 const props = defineProps<{
   visible?: boolean
@@ -65,11 +79,13 @@ const emit = defineEmits<{
 }>()
 
 const valid = ref(true)
+const currentPassword = ref<string | null>(null)
 const password = ref<string | null>(null)
 const passwordConfirm = ref<string | null>(null)
-const passwordRules = [(v: string) => !!v || 'Wird benötigt']
+const passwordRules = getPasswordValidationRules()
 
 function reset() {
+  currentPassword.value = null
   password.value = null
   passwordConfirm.value = null
 }
@@ -97,15 +113,15 @@ function confirmPassword(confirmation: string) {
 
 async function save() {
   try {
-    const response = await httpClient.post('/user/me/changepassword', { password: password.value })
+    const response = await httpClient.post('/user/me/changepassword', { current_password: currentPassword.value, password: password.value })
     if (response.data.status === 'ok') {
       useSnackbarStore().show('Passwort geändert', 'success')
       show.value = false
     } else {
       useSnackbarStore().show('Fehler beim Ändern des Passworts', 'error')
     }
-  } catch {
-    useSnackbarStore().show('Fehler beim Ändern des Passworts', 'error')
+  } catch (error) {
+    useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Ändern des Passworts'), 'error')
   }
 }
 </script>

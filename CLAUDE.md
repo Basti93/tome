@@ -11,6 +11,7 @@ T.O.M.E. (Training Organization Made Easy): training planning, check-in and eval
 ## Checks
 - `make check` runs what CI runs (pint, phpstan, phpunit, eslint, vue-tsc, vitest, build). `SKIP_TEST_DB=1` skips starting the MySQL test DB.
 - Backend tests need MySQL (defaults in `server/phpunit.xml`, `make test-db`). Frontend tests live next to the code as `*.test.ts`.
+- Account workflows have black-box e2e scripts: `app/e2e/README.md` (throwaway database only).
 - Every fix gets a regression test.
 
 ## Conventions

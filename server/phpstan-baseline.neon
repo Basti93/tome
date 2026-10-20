@@ -55,18 +55,6 @@ parameters:
 			path: app/Api/V1/Controllers/LocationController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$email_verified_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Api/V1/Controllers/ResetPasswordController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\CanResetPassword\:\:\$password\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Api/V1/Controllers/ResetPasswordController.php
-
-		-
 			message: '#^Method App\\Api\\V1\\Controllers\\SimpleUserController\:\:getTrainers\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
 			identifier: class.notFound
 			count: 1

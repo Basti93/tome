@@ -102,6 +102,7 @@ class RetentionTest extends TestCase
         DB::table('user_training_notification')->insert(['user_id' => $user->id, 'training_id' => $oldTraining->id, 'type' => 1]);
         DB::table('auth_logs')->insert(['user_id' => $user->id, 'action' => 'login', 'created_at' => $this->format($this->now)]);
         DB::table('password_resets')->insert(['email' => 'old@example.com', 'token' => 'x', 'created_at' => $this->format($this->now)]);
+        DB::table('password_invites')->insert(['email' => 'old@example.com', 'token' => 'x', 'created_at' => $this->format($this->now)]);
 
         $keeper = $this->makeUser('member');
         $keeperGroup = GroupFactory::new()->create();
@@ -118,6 +119,7 @@ class RetentionTest extends TestCase
         $this->assertSame(0, DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', User::class)->count());
         $this->assertSame(0, DB::table('model_has_permissions')->where('model_id', $user->id)->where('model_type', User::class)->count());
         $this->assertSame(0, DB::table('password_resets')->where('email', 'old@example.com')->count());
+        $this->assertSame(0, DB::table('password_invites')->where('email', 'old@example.com')->count());
         Storage::disk('public')->assertMissing('profile_images/'.str_repeat('a', 40).'.jpg');
 
         // the recently created user (fixture user keeper) and its pivots are untouched

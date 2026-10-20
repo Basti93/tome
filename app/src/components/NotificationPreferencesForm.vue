@@ -132,7 +132,7 @@ export default defineComponent({
   data() {
     return {
       preferences: {
-        trainer_upcoming: true,
+        trainer_upcoming: false,
         trainer_cancel_alert: true,
         participant_upcoming: true,
         absence_alert: true,
@@ -141,7 +141,7 @@ export default defineComponent({
         trainer_evaluation_reminder_email: false,
       } as NotificationPreferences,
       originalPreferences: {
-        trainer_upcoming: true,
+        trainer_upcoming: false,
         trainer_cancel_alert: true,
         participant_upcoming: true,
         absence_alert: true,
@@ -169,7 +169,7 @@ export default defineComponent({
         const { data } = await httpClient.get('/user/me/notification-preferences')
         const loaded = snakeCaseKeys(data?.notificationPreferences ?? data?.notification_preferences)
         if (loaded) {
-          // keys missing in older stored preferences count as enabled (the e-mail reminder as disabled)
+          // keys missing in older stored preferences count as enabled (the opt-in reminders as disabled)
           this.preferences = { ...this.preferences, ...loaded }
           this.originalPreferences = { ...this.preferences }
         }

@@ -58,6 +58,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import httpClient from '@/http/api'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useSnackbarStore } from '@/store/snackbar'
 
 const route = useRoute()
@@ -89,7 +90,7 @@ onMounted(async () => {
   } catch (err) {
     const error = err as any
     console.log(error)
-    errorMessage.value = error?.data?.message || 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.'
+    errorMessage.value = apiErrorMessage(error, 'Es gab einen Fehler bei der Verifizierung deiner E-Mail.')
   } finally {
     loading.value = false
   }
@@ -108,7 +109,7 @@ async function submitResend() {
   } catch (err) {
     const error = err as any
     console.log(error)
-    useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+    useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
   } finally {
     resendLoading.value = false
   }

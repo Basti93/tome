@@ -46,6 +46,15 @@
                                     prepend-icon="account_circle"
                             ></v-text-field>
                         </v-col>
+                        <v-col cols="12">
+                            <v-text-field
+                                    v-model="email"
+                                    label="E-Mail (optional, nötig für die Einladung)"
+                                    type="email"
+                                    :rules="[v => !v || /.+@.+\..+/.test(v) || 'Bitte eine gültige E-Mail-Adresse eingeben']"
+                                    prepend-icon="email"
+                            ></v-text-field>
+                        </v-col>
                         <v-col cols="12" md="6">
                             <v-menu
                                     :close-on-content-click="false"
@@ -104,6 +113,7 @@ import UploadProfileImage from './UploadProfileImage.vue'
 import { formatDate } from '../helpers/date-helpers'
 import { parseApiDate } from '@/helpers/dayjs'
 import httpClient from '@/http/api'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { useSnackbarStore } from '@/store/snackbar'
 
 const props = defineProps<{
@@ -111,6 +121,7 @@ const props = defineProps<{
   editUserId?: number | null
   editFirstName?: string | null
   editFamilyName?: string | null
+  editEmail?: string | null
   editBirthdate?: any
   editProfileImageName?: string | null
   editGroupIds?: any[]
@@ -130,6 +141,7 @@ const birthdatePicker = ref<any>(null)
 const valid = ref(false)
 const firstName = ref<string | null | undefined>(null)
 const familyName = ref<string | null | undefined>(null)
+const email = ref<string | null>(null)
 const birthdate = ref<string | null>(null)
 const groupIds = ref<any[] | undefined>([])
 const profileImageName = ref<string | null | undefined>(null)
@@ -140,6 +152,7 @@ const imageToUpload = ref<File | null>(null)
 function assignValues() {
   firstName.value = props.editFirstName
   familyName.value = props.editFamilyName
+  email.value = props.editEmail || null
   birthdate.value = props.editBirthdate ? parseApiDate(props.editBirthdate).format('YYYY-MM-DD') : null
   groupIds.value = props.editGroupIds
   active.value = props.editActive
@@ -182,6 +195,7 @@ async function save() {
     const postData: Record<string, any> = {
       firstName: firstName.value,
       familyName: familyName.value,
+      email: email.value ? email.value.trim() : null,
       groupIds: groupIds.value,
       profileImageName: profileImageName.value,
       active: active.value
@@ -215,7 +229,8 @@ async function save() {
     }
   } catch (error) {
     console.error(error)
-    useSnackbarStore().show('Speichern fehlgeschlagen', 'error')
+    // e.g. 422 "Diese E-Mail-Adresse wird bereits verwendet."
+    useSnackbarStore().show(apiErrorMessage(error, 'Speichern fehlgeschlagen'), 'error')
   }
 }
 

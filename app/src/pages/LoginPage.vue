@@ -19,7 +19,7 @@
             <v-row class="align-center">
               <v-col>
                 <strong>E-Mail nicht verifiziert</strong>
-                <p class="mb-0">Bitte bestätigen Sie Ihre E-Mail-Adresse, um sich anzumelden.</p>
+                <p class="mb-0">Bitte bestätige deine E-Mail-Adresse, um dich anzumelden.</p>
                 <p class="caption mb-0">{{ emailForResend }}</p>
               </v-col>
               <v-col cols="auto">
@@ -96,6 +96,7 @@ import httpClient from '@/http/api'
 import { refreshMasterData } from '@/helpers/refreshMasterData'
 import { useRouter, useRoute } from 'vue-router'
 import User from '@/models/User'
+import { apiErrorMessage } from '@/helpers/apiError'
 import { analytics } from '@/services/analytics'
 
 const router = useRouter()
@@ -132,7 +133,7 @@ async function login() {
       if (data.code === 'email_not_verified') {
         emailNotVerifiedError.value = true
         emailForResend.value = email.value
-        useSnackbarStore().show('E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.', 'error')
+        useSnackbarStore().show('E-Mail-Adresse nicht bestätigt. Bitte bestätige deine E-Mail.', 'error')
       } else {
         useSnackbarStore().show(data.message, 'error')
       }
@@ -160,9 +161,9 @@ async function login() {
     if (status === 403 && data?.code === 'email_not_verified') {
       emailNotVerifiedError.value = true
       emailForResend.value = email.value
-      useSnackbarStore().show('E-Mail-Adresse nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail.', 'error')
+      useSnackbarStore().show('E-Mail-Adresse nicht bestätigt. Bitte bestätige deine E-Mail.', 'error')
     } else if (status === 429) {
-      useSnackbarStore().show('Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.', 'error')
+      useSnackbarStore().show('Zu viele Anmeldeversuche. Bitte warte einen Moment.', 'error')
     } else if (data?.errors) {
       const first = Object.values(data.errors)[0]
       const message = Array.isArray(first) ? first[0] : first
@@ -184,13 +185,13 @@ async function resendVerificationEmail() {
       email: emailForResend.value
     })
     useSnackbarStore().show(
-      'Verifizierungs-E-Mail erneut gesendet. Bitte überprüfen Sie Ihren E-Mail-Eingang.',
+      'Verifizierungs-E-Mail erneut gesendet. Bitte prüfe deinen E-Mail-Eingang.',
       'success'
     )
   } catch (err) {
     const error = err as any
     console.log(error)
-    useSnackbarStore().show(error?.data?.message || 'Fehler beim Versand der E-Mail', 'error')
+    useSnackbarStore().show(apiErrorMessage(error, 'Fehler beim Versand der E-Mail'), 'error')
   } finally {
     resendLoading.value = false
   }

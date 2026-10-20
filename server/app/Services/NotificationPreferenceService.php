@@ -35,7 +35,7 @@ class NotificationPreferenceService
     public function getDefaultPreferences()
     {
         return [
-            'trainer_upcoming' => true,
+            'trainer_upcoming' => false,
             'trainer_cancel_alert' => true,
             'participant_upcoming' => true,
             'absence_alert' => true,
