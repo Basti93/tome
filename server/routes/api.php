@@ -34,7 +34,6 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('group')->group(function () {
         Route::get('/', 'App\\Api\\V1\\Controllers\\GroupController@index');
-        Route::get('/branch/{id}', 'App\\Api\\V1\\Controllers\\GroupController@getByBranchId');
     });
 
     Route::prefix('trainingSeries')->group(function () {

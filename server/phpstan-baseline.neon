@@ -19,18 +19,6 @@ parameters:
 			path: app/Api/V1/Controllers/ChangePasswordController.php
 
 		-
-			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:getByBranchId\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/GroupController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:getByBranchId\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Api/V1/Controllers/GroupController.php
-
-		-
 			message: '#^Method App\\Api\\V1\\Controllers\\GroupController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
 			identifier: class.notFound
 			count: 1
@@ -53,6 +41,12 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Api/V1/Controllers/LocationController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:deleteToken\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Api/V1/Controllers/ResetPasswordController.php
 
 		-
 			message: '#^Method App\\Api\\V1\\Controllers\\SimpleUserController\:\:getTrainers\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
@@ -91,44 +85,8 @@ parameters:
 			path: app/Api/V1/Controllers/TrainingCalendarController.php
 
 		-
-			message: '#^Access to an undefined property App\\Training\:\:\$participants\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
-			message: '#^Call to static method make\(\) on an unknown class App\\Api\\V1\\Controllers\\View\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
 			message: '#^Cannot call method format\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
-			message: '#^Constant error not found\.$#'
-			identifier: constant.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:create\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
-			identifier: return.type
 			count: 1
 			path: app/Api/V1/Controllers/TrainingController.php
 
@@ -199,36 +157,6 @@ parameters:
 			path: app/Api/V1/Controllers/TrainingEvaluationController.php
 
 		-
-			message: '#^Call to static method make\(\) on an unknown class App\\Api\\V1\\Controllers\\View\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingSeriesController.php
-
-		-
-			message: '#^Constant error not found\.$#'
-			identifier: constant.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingSeriesController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:create\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingSeriesController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:index\(\) has invalid return type App\\Api\\V1\\Controllers\\Response\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Api/V1/Controllers/TrainingSeriesController.php
-
-		-
-			message: '#^Method App\\Api\\V1\\Controllers\\TrainingSeriesController\:\:index\(\) should return App\\Api\\V1\\Controllers\\Response but returns Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Api/V1/Controllers/TrainingSeriesController.php
-
-		-
 			message: '#^Property App\\TrainingSeries\:\:\$automatic_attend \(bool\) does not accept int\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -249,6 +177,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Api/V1/Controllers/UserController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:createToken\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Api/V1/Controllers/UserController.php
 
@@ -313,12 +247,6 @@ parameters:
 			path: app/Api/V1/Controllers/UserController.php
 
 		-
-			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/AbsenceNotification.php
-
-		-
 			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -347,18 +275,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 2
 			path: app/Console/Commands/TrainingAutomaticAttend.php
-
-		-
-			message: '#^Parameter \#1 \$hour of method DateTime\:\:setTime\(\) expects int, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Console/Commands/TrainingSeriesCommand.php
-
-		-
-			message: '#^Parameter \#2 \$minute of method DateTime\:\:setTime\(\) expects int, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Console/Commands/TrainingSeriesCommand.php
 
 		-
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
@@ -833,6 +749,18 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/PushNotifier.php
+
+		-
+			message: '#^Access to an undefined property App\\Training\:\:\$participants\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TrainingAttendance.php
 
 		-
 			message: '#^Access to an undefined property App\\Training\:\:\$contents\.$#'

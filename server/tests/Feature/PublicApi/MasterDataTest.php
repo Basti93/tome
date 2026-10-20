@@ -156,7 +156,6 @@ class MasterDataTest extends TestCase
                 'userIds' => [],
             ])
             ->assertJsonStructure(['data', 'links', 'meta']);
-        $this->getJson("/api/v1/group/branch/{$branch->id}")->assertOk()->assertJsonPath('data.0.userIds', []);
     }
 
     public function test_groups_expose_the_active_user_ids_to_logged_in_users(): void
@@ -181,19 +180,6 @@ class MasterDataTest extends TestCase
         $names = collect($this->getJson('/api/v1/group')->json('data'))->pluck('name')->all();
 
         $this->assertSame(['A', 'Z', 'B'], $names);
-    }
-
-    public function test_groups_by_branch_are_not_paginated(): void
-    {
-        $branch = BranchFactory::new()->create();
-        $other = BranchFactory::new()->create();
-        $group = GroupFactory::new()->create(['branch_id' => $branch->id]);
-        GroupFactory::new()->create(['branch_id' => $other->id]);
-
-        $response = $this->getJson("/api/v1/group/branch/{$branch->id}")->assertOk();
-
-        $this->assertSame([$group->id], collect($response->json('data'))->pluck('id')->all());
-        $response->assertJsonMissingPath('meta');
     }
 
     public function test_contents_are_returned_as_plain_json_sorted_by_branch_and_order(): void

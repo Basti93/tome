@@ -5,19 +5,12 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\StoreUserAbsenceRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SimpleUser as SimpleUserResource;
+use App\Services\PushNotifier;
 use App\User;
 use DateTime;
-use Illuminate\Support\Facades\Artisan;
 
 class SimpleUserController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
-    public function __construct() {}
-
     public function index()
     {
         $groupIds = request()->query('groupIds');
@@ -32,7 +25,7 @@ class SimpleUserController extends Controller
         return SimpleUserResource::collection($users->get());
     }
 
-    public function storeAbsence(StoreUserAbsenceRequest $request, $id)
+    public function storeAbsence(StoreUserAbsenceRequest $request, PushNotifier $notifier, $id)
     {
         $user = User::findOrFail($id);
 
@@ -58,12 +51,7 @@ class SimpleUserController extends Controller
             $untilFormatted = $user->absenceEnd->format('d.m.y');
         }
 
-        Artisan::call('notification:absence', [
-            'userId' => $user->id,
-            'from' => $fromFormatted,
-            'until' => $untilFormatted,
-            'absenceReason' => (string) $user->absenceReason,
-        ]);
+        $notifier->absence($user, $fromFormatted, $untilFormatted, (string) $user->absenceReason);
 
         return response()->json([
             'status' => 'ok',

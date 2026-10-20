@@ -5,29 +5,19 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\StoreTrainingSeriesRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TrainingSeries as TrainingSeriesResource;
+use App\Services\TrainingSeriesGenerator;
 use App\TrainingSeries;
 use DateTime;
-use Illuminate\Support\Facades\Artisan;
 
 class TrainingSeriesController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
-        $this->middleware('permission:create-training-series', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training-series', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:create-training-series', ['only' => ['store']]);
+        $this->middleware('permission:update-training-series', ['only' => ['update']]);
         $this->middleware('permission:delete-training-series', ['only' => ['destroy']]);
     }
 
-    /**
-     * Get users with pagination.
-     *
-     * @return Response
-     */
     public function index()
     {
         $per_page = empty(request('per_page')) ? 100 : (int) request('per_page');
@@ -44,82 +34,41 @@ class TrainingSeriesController extends Controller
         return TrainingSeriesResource::collection($trainings);
     }
 
-    public function getById($id)
+    public function store(StoreTrainingSeriesRequest $request, TrainingSeriesGenerator $generator)
     {
-        return TrainingSeriesResource::make(TrainingSeries::findOrFail($id));
+        $this->save(new TrainingSeries, $request);
+        $generator->generate();
+
+        return response()->json(['status' => 'ok'], 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
+    public function update(StoreTrainingSeriesRequest $request, TrainingSeriesGenerator $generator, $id)
     {
-        return View::make('TrainingSeries');
-    }
+        $this->save(TrainingSeries::findOrFail($id), $request);
+        $generator->generate();
 
-    public function store(StoreTrainingSeriesRequest $request)
-    {
-        $training = new TrainingSeries;
-
-        $training->location_id = $request->input('locationId');
-
-        $training->startTime = $request->input('startTime');
-        $training->endTime = $request->input('endTime');
-        $training->comment = $request->input('comment');
-        $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
-        $training->weekdays = array_values(array_map('intval', $request->input('weekdays')));
-        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
-        $training->save();
-        $training->trainers()->sync($request->input('trainerIds'));
-        $training->groups()->sync($request->input('groupIds'));
-        $training->contents()->sync($request->input('contentIds'));
-
-        Artisan::call('training:series');
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
-
-    }
-
-    public function update(StoreTrainingSeriesRequest $request, $id)
-    {
-        $training = TrainingSeries::findOrFail($id);
-
-        $training->location_id = $request->input('locationId');
-
-        $training->startTime = $request->input('startTime');
-        $training->endTime = $request->input('endTime');
-        $training->comment = $request->input('comment');
-        $training->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
-        $training->weekdays = array_values(array_map('intval', $request->input('weekdays')));
-        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
-        $training->update();
-        $training->trainers()->sync($request->input('trainerIds'));
-        $training->groups()->sync($request->input('groupIds'));
-        $training->contents()->sync($request->input('contentIds'));
-
-        Artisan::call('training:series');
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
-
+        return response()->json(['status' => 'ok'], 201);
     }
 
     public function destroy($id)
     {
-        $series = TrainingSeries::findOrFail($id);
-        if ($series) {
-            $series->delete();
+        TrainingSeries::findOrFail($id)->delete();
 
-            return response()->json([
-                'status' => 'ok',
-            ], 201);
-        } else {
-            return response()->json(error);
-        }
+        return response()->json(['status' => 'ok'], 201);
+    }
+
+    private function save(TrainingSeries $series, StoreTrainingSeriesRequest $request): void
+    {
+        $series->location_id = $request->input('locationId');
+        $series->startTime = $request->input('startTime');
+        $series->endTime = $request->input('endTime');
+        $series->comment = $request->input('comment');
+        $series->defer_until = $request->input('deferUntil') ? DateTime::createFromFormat(DateTime::ISO8601, $request->input('deferUntil')) : null;
+        $series->weekdays = array_values(array_map('intval', $request->input('weekdays')));
+        $series->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
+        $series->save();
+        $series->trainers()->sync($request->input('trainerIds'));
+        $series->groups()->sync($request->input('groupIds'));
+        $series->contents()->sync($request->input('contentIds'));
     }
 }

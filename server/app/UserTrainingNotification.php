@@ -9,4 +9,6 @@ class UserTrainingNotification extends Model
     protected $table = 'user_training_notification';
 
     public $timestamps = false;
+
+    protected $guarded = [];
 }

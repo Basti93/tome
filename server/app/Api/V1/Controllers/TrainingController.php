@@ -5,48 +5,27 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\StoreTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Training as TrainingResource;
+use App\Services\TrainingAttendance;
 use App\Training;
 use App\User;
 use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class TrainingController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function __construct(private TrainingAttendance $attendance)
     {
         $this->middleware('permission:read-training', ['only' => ['getParticipationCount', 'getBySort', 'index', 'getById']]);
-        $this->middleware('permission:create-training', ['only' => ['create', 'store']]);
-        $this->middleware('permission:update-training', ['only' => ['edit', 'update', 'trainingPrepared']]);
+        $this->middleware('permission:create-training', ['only' => ['store']]);
+        $this->middleware('permission:update-training', ['only' => ['update', 'trainingPrepared']]);
         $this->middleware('permission:checkin-training', ['only' => ['checkIn', 'checkOut']]);
         $this->middleware('permission:delete-training', ['only' => ['destroy', 'deleteinfuture']]);
     }
 
-    /**
-     * Get users with pagination.
-     *
-     * @return Response
-     */
     public function index()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
-        $groupIds = request()->query('groupIds');
-
-        $trainings = Training::orderBy('start', 'desc')
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('groups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                });
-            })
-            ->paginate($per_page);
-
-        return TrainingResource::collection($trainings);
+        return TrainingResource::collection($this->paginated(Training::orderBy('start', 'desc')));
     }
 
     public function getById($id)
@@ -56,28 +35,13 @@ class TrainingController extends Controller
 
     public function getBySort()
     {
-        $per_page = empty(request('per_page')) ? 10 : (int) request('per_page');
-        $direction = request()->query('direction');
-        $sortBy = request()->query('sortBy');
-        $groupIds = request()->query('groupIds');
+        $sortBy = match (request()->query('sortBy')) {
+            'date' => 'start',
+            'locationId' => 'location_id',
+            default => request()->query('sortBy'),
+        };
 
-        // mapping
-        if ($sortBy === 'date') {
-            $sortBy = 'start';
-        } elseif ($sortBy === 'locationId') {
-            $sortBy = 'location_id';
-        }
-
-        $trainings = Training::orderBy($sortBy, $direction)
-            ->when($groupIds, function ($query, $groupIds) {
-                $query->whereHas('groups', function ($query) use ($groupIds) {
-                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
-                });
-            });
-
-        $trainings = $trainings->paginate($per_page);
-
-        return TrainingResource::collection($trainings);
+        return TrainingResource::collection($this->paginated(Training::orderBy($sortBy, request()->query('direction'))));
     }
 
     public function getUpcomingTrainings()
@@ -150,37 +114,112 @@ class TrainingController extends Controller
         $training->prepared = 1;
         $training->save();
 
-        return response()->json([
-            'status' => 'ok',
-        ], 200);
+        return response()->json(['status' => 'ok'], 200);
     }
 
     public function deleteinfuture($trainingId)
     {
-        $training = Training::findOrFail($trainingId);
-        $training->delete();
+        Training::findOrFail($trainingId)->delete();
 
-        return response()->json([
-            'status' => 'ok',
-        ], 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        return View::make('Training');
+        return response()->json(['status' => 'ok'], 200);
     }
 
     public function store(StoreTrainingRequest $request)
     {
-        $training = new Training;
+        $training = $this->save(new Training, $request);
 
+        return response()->json([
+            'status' => 'ok',
+            'start' => $training->start->format('Y-m-d\TH:i:s.000\Z'),
+        ], 201);
+    }
+
+    public function update(StoreTrainingRequest $request, $id)
+    {
+        $this->save(Training::findOrFail($id), $request);
+
+        return response()->json(['status' => 'ok'], 201);
+    }
+
+    public function checkIn($id, $userId)
+    {
+        return $this->checkInBasic(User::findOrFail($userId), Training::findOrFail($id));
+    }
+
+    public function checkInUnregistered($id, $userId)
+    {
+        $user = User::whereActive('1')->findOrFail($userId);
+
+        return $this->checkInBasic($user, Training::findOrFail($id));
+    }
+
+    public function checkOut(Request $request, $id, $userId)
+    {
+        return $this->checkOutBasic(User::findOrFail($userId), Training::findOrFail($id), $request->input('reason'));
+    }
+
+    public function checkOutUnregistered(Request $request, $id, $userId)
+    {
+        $user = User::whereActive('1')->findOrFail($userId);
+
+        return $this->checkOutBasic($user, Training::findOrFail($id), $request->input('reason'));
+    }
+
+    /** Flagged-as-deleted trainings can still be removed for good. */
+    public function destroy($id)
+    {
+        Training::withTrashed()->findOrFail($id)->forceDelete();
+
+        return response()->json(['status' => 'ok'], 201);
+    }
+
+    private function checkInBasic(User $user, Training $training)
+    {
+        if (! $this->attendance->isAssigned($training, $user)) {
+            return response()->json(['status' => 'User is not assigned to the training group'], 403);
+        }
+
+        $this->attendance->checkIn($training, $user->id);
+
+        return response()->json(['status' => 'ok'], 201);
+    }
+
+    private function checkOutBasic(User $user, Training $training, ?string $reason)
+    {
+        if (! $this->attendance->isAssigned($training, $user)) {
+            return response()->json([
+                'status' => 'not_assigned',
+                'message' => 'User is not assigned to the training group',
+            ], 403);
+        }
+
+        if (! $this->attendance->checkOut($training, $user, $reason)) {
+            return response()->json([
+                'status' => 'cancel_needs_reason',
+                'message' => 'The training is in the next 24 hours and needs a reason for cancellation',
+            ], 201);
+        }
+
+        return response()->json(['status' => 'ok'], 201);
+    }
+
+    /** Paginate a training query, optionally filtered by the `groupIds` query parameter. */
+    private function paginated($query)
+    {
+        $perPage = empty(request('per_page')) ? 10 : (int) request('per_page');
+
+        return $query
+            ->when(request()->query('groupIds'), function ($query, $groupIds) {
+                $query->whereHas('groups', function ($query) use ($groupIds) {
+                    $query->whereIn('group_id', preg_split('/,/', $groupIds));
+                });
+            })
+            ->paginate($perPage);
+    }
+
+    private function save(Training $training, StoreTrainingRequest $request): Training
+    {
         $training->location_id = $request->input('locationId');
-
         $training->start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
         $training->end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
         $training->comment = $request->input('comment');
@@ -196,178 +235,9 @@ class TrainingController extends Controller
 
         $participantIds = $request->input('participantIds');
         if (! empty($participantIds)) {
-            $this->updateParticipants($participantIds, $training);
+            $this->attendance->setAttendees($training, $participantIds);
         }
 
-        return response()->json([
-            'status' => 'ok',
-            'start' => $training->start->format('Y-m-d\TH:i:s.000\Z'),
-        ], 201);
-
-    }
-
-    public function checkIn($id, $userId)
-    {
-        $training = Training::findOrFail($id);
-        $user = User::findOrFail($userId);
-
-        return $this->checkInBasic($user, $training);
-    }
-
-    public function checkInUnregistered($id, $userId)
-    {
-        $user = User::whereActive('1')->findOrFail($userId);
-        if ($user === null) {
-            return response()->json([
-                'status' => ' user not found',
-            ], 404);
-
-        }
-        $training = Training::findOrFail($id);
-
-        return $this->checkInBasic($user, $training);
-    }
-
-    private function checkInBasic($user, $training)
-    {
-
-        if (! $training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
-            return response()->json([
-                'status' => 'User is not assigned to the training group',
-            ], 403);
-        }
-
-        $this->updateParticipant($training, $user->id);
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
-    }
-
-    public function checkOutUnregistered(Request $request, $id, $userId)
-    {
-        $user = User::whereActive('1')->findOrFail($userId);
-        if ($user === null) {
-            return response()->json([
-                'status' => 'user not found',
-            ], 404);
-        }
-
-        $training = Training::findOrFail($id);
-
-        return $this->checkOutBasic($user, $training, $request->input('reason'));
-    }
-
-    public function checkOut(Request $request, $id, $userId)
-    {
-        $training = Training::findOrFail($id);
-        $user = User::findOrFail($userId);
-
-        return $this->checkOutBasic($user, $training, $request->input('reason'));
-    }
-
-    private function checkOutBasic($user, $training, $reason)
-    {
-
-        if (! $training->groups()->whereIn('groups.id', $user->getGroupIdsAttribute())->exists()) {
-            return response()->json([
-                'status' => 'not_assigned',
-                'message' => 'User is not assigned to the training group',
-            ], 403);
-        }
-
-        // if training is in the next 24 hours
-        if (strtotime($training->start) > time() && strtotime($training->start) < (time() + 86400)) {
-            if (empty($reason)) {
-                return response()->json([
-                    'status' => 'cancel_needs_reason',
-                    'message' => 'The training is in the next 24 hours and needs a reason for cancellation',
-                ], 201);
-            } else {
-                if ($training->participants->contains($user->id)) {
-                    $training->participants()->updateExistingPivot($user->id, ['attend' => 0, 'cancelreason' => $reason], false);
-                } else {
-                    $training->participants()->attach($user, ['attend' => 0, 'cancelreason' => $reason]);
-                }
-                Artisan::call('notification:cancelTrainingForTrainer', [
-                    'userId' => $user->id,
-                    'trainingId' => $training->id,
-                    'cancelReason' => $reason,
-                ]);
-            }
-        } else {
-            if ($training->participants->contains($user->id)) {
-                $training->participants()->updateExistingPivot($user->id, ['attend' => 0], false);
-            } else {
-                $training->participants()->attach($user, ['attend' => 0]);
-            }
-
-        }
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
-    }
-
-    public function update(StoreTrainingRequest $request, $id)
-    {
-        $training = Training::findOrFail($id);
-
-        $training->location_id = $request->input('locationId');
-
-        $training->start = DateTime::createFromFormat(DateTime::ISO8601, $request->input('start'));
-        $training->end = DateTime::createFromFormat(DateTime::ISO8601, $request->input('end'));
-        $training->comment = $request->input('comment');
-        $training->automatic_attend = $request->input('automaticAttend') == 'true' ? 1 : 0;
-        $training->update();
-        $training->trainers()->sync($request->input('trainerIds'));
-        $training->groups()->sync($request->input('groupIds'));
-
-        $contents = $request->input('contentIds');
-        if (! empty($contents)) {
-            $training->contents()->sync($contents);
-        }
-
-        $participantIds = $request->input('participantIds');
-        if (! empty($participantIds)) {
-            $this->updateParticipants($participantIds, $training);
-        }
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
-
-    }
-
-    private function updateParticipants($participantIds, Training $training): void
-    {
-        if (! empty($participantIds)) {
-            foreach ($participantIds as $participantId) {
-                $this->updateParticipant($training, $participantId);
-            }
-        }
-
-        DB::table('training_participation')
-            ->whereNotIn('user_id', $participantIds)
-            ->where('training_id', $training->id)
-            ->update(['attend' => 0]);
-    }
-
-    private function updateParticipant(Training $training, $participantId): void
-    {
-        if ($training->participants->contains($participantId)) {
-            $training->participants()->updateExistingPivot($participantId, ['attend' => 1], false);
-        } else {
-            $training->participants()->attach($participantId, ['attend' => 1]);
-        }
-    }
-
-    public function destroy($id)
-    {
-        Training::withTrashed()->findOrFail($id)->forceDelete();
-
-        return response()->json([
-            'status' => 'ok',
-        ], 201);
+        return $training;
     }
 }

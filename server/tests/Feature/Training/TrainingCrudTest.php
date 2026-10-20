@@ -182,6 +182,16 @@ class TrainingCrudTest extends TestCase
         $this->assertDatabaseCount('training_group', 0);
     }
 
+    public function test_destroy_also_removes_a_training_that_was_flagged_as_deleted(): void
+    {
+        $trainer = $this->makeUser('trainer');
+        $t = TrainingFactory::new()->create(['deleted_at' => now()]);
+
+        $this->actingAsJwt($trainer)->deleteJson("/api/v1/training/{$t->id}")->assertStatus(201);
+
+        $this->assertDatabaseMissing('trainings', ['id' => $t->id]);
+    }
+
     public function test_prepared_flag(): void
     {
         $trainer = $this->makeUser('trainer');

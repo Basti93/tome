@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\PushNotifier;
 use App\User;
 use Illuminate\Console\Command;
 
@@ -36,36 +37,8 @@ class AbsenceNotification extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(PushNotifier $notifier)
     {
-        $userId = $this->argument('userId');
-        $from = $this->argument('from');
-        $until = $this->argument('until');
-        $absenceReason = $this->argument('absenceReason');
-
-        $user = User::findOrFail($userId);
-
-        $branchIds = $user->groups()->pluck('branch_id')->toArray();
-        $trainers = User::role('trainer')
-            ->when($branchIds, function ($query, $branchIds) {
-                $query->whereHas('trainerBranches', function ($query) use ($branchIds) {
-                    $query->whereIn('branch_id', $branchIds);
-                });
-            })->get();
-
-        $trainerArrayString = implode(',', $trainers->pluck('id')->toArray());
-
-        $this->info('Trainers for branch ids '.implode(',', $branchIds).' with ids  '.$trainerArrayString);
-        $this->info('From '.$from);
-        $this->info('Until '.$until);
-
-        $this->call('notification:sendToUsers', [
-            'userIds' => $trainerArrayString,
-            'title' => 'Abwesenheit '.$user->firstName.' '.$user->familyName,
-            'data' => 'Von '.$from.' bis '.$until.(empty($absenceReason) ? '' : "\r\nGrund: ".$absenceReason),
-            '--url' => config('app.vue_url').'/#/absenceForm',
-            '--type' => 'absence_alert',
-        ]);
-
+        $notifier->absence(User::findOrFail($this->argument('userId')), $this->argument('from'), $this->argument('until'), $this->argument('absenceReason'));
     }
 }

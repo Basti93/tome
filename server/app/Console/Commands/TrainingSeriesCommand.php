@@ -2,119 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Training;
-use App\TrainingSeries;
-use DateInterval;
-use DatePeriod;
-use DateTime;
+use App\Services\TrainingSeriesGenerator;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class TrainingSeriesCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'training:series';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Check all training series and add the training for the next 3 weeks';
+    protected $description = 'Check all training series and add the trainings for the next 7 days';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(TrainingSeriesGenerator $generator)
     {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        // get all training series
-        $allSeries = TrainingSeries::get();
-        $start = new DateTime;
-        $start->setTime(00, 00);
-        $end = new DateTime;
-        $end->setTime(00, 00);
-        $end->modify('+7 day');
-        $interval = DateInterval::createFromDateString('1 day');
-        $period = new DatePeriod($start, $interval, $end);
-        $this->info('Creating training series in time period from '.$start->format('Y-m-d H:i:s').' until '.$end->format('Y-m-d H:i:s'));
-        foreach ($allSeries as $series) {
-            // create all possible trainings for next week
-            $this->processSeries($series, $start, $end, $period);
-
-        }
-
-    }
-
-    private function processSeries($series, $start, $end, $period)
-    {
-        $weekdaysArray = $series->weekdays;
-        if (! is_array($weekdaysArray)) {
-            // a corrupt series must not stop the creation of all the other series
-            $this->warn('Series with id '.$series->id.' has invalid weekdays, skipping');
-
-            return;
-        }
-
-        // iterate through the days of the next week
-        foreach ($period as $dt) {
-            $dayNumber = $dt->format('N');
-            // check if series has this day
-            if (in_array($dayNumber, $weekdaysArray)) {
-                // check if series is deferred
-                if ($series->defer_until && new DateTime($series->defer_until) >= new DateTime('midnight')) {
-                    $this->info('Series with id '.$series->id.' is deferred until '.$series->defer_until);
-
-                    continue;
-                }
-
-                // check if training is already created (raw query: trainings deleted in the future still count)
-                if (DB::table('trainings')
-                    ->whereDate('start', $dt->format('Y-m-d'))
-                    ->where('training_series_id', $series->id)
-                    ->exists()) {
-                    $this->info('Training with series id '.$series->id.' already exists on '.$dt->format('Y-m-d'));
-
-                    continue;
-                }
-                $this->info('Creating training with series id '.$series->id);
-                // create training from series data
-                $training = new Training;
-                $training->start = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->startTime);
-                $training->end = $this->toDateAddTime($dt->format(DateTime::ISO8601), $series->endTime);
-                $training->comment = $series->comment;
-                $training->automatic_attend = $series->automatic_attend;
-                $training->training_series_id = $series->id;
-                $training->location_id = $series->location_id;
-                $training->save();
-                $training->contents()->attach($series->content_ids);
-                $training->trainers()->attach($series->trainer_ids);
-                $training->groups()->attach($series->group_ids);
-
-            }
-        }
-    }
-
-    private function toDateAddTime($dateString, $timeString)
-    {
-        $date = DateTime::createFromFormat(DateTime::ISO8601, $dateString);
-        $time = DateTime::createFromFormat('H:i:s', $timeString);
-
-        return $date->setTime($time->format('H'), $time->format('i'));
+        $this->info('Created '.$generator->generate().' trainings from series');
     }
 }

@@ -33,16 +33,6 @@ class GroupController extends Controller
         return GroupResource::collection(Group::orderBy('branch_id')->orderBy('name')->paginate($per_page));
     }
 
-    /**
-     * Get users with pagination.
-     *
-     * @return Response
-     */
-    public function getByBranchId($id)
-    {
-        return GroupResource::collection(Group::where('branch_id', $id)->get());
-    }
-
     public function store(StoreGroupRequest $request)
     {
         $group = new Group;

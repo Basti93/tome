@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Services\PushNotifier;
 use App\Training;
-use App\TrainingParticipation;
 use App\User;
-use DateTime;
 use Illuminate\Console\Command;
 
 class CancelTrainingNotification extends Command
@@ -39,24 +38,8 @@ class CancelTrainingNotification extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(PushNotifier $notifier)
     {
-        $userId = $this->argument('userId');
-        $trainingId = $this->argument('trainingId');
-        $cancelReason = $this->argument('cancelReason');
-
-        $training = Training::findOrFail($trainingId);
-        $user = User::findOrFail($userId);
-        $trainerArrayString = implode(',', $training->trainers()->pluck('user_id')->toArray());
-        $this->info('Trainers with ids  '.$trainerArrayString);
-        $this->call('notification:sendToUsersTrainingContext', [
-            'userIds' => $trainerArrayString,
-            'trainingId' => $training->id,
-            'title' => 'Absage für das Training um '.DateTime::createFromFormat('Y-m-d H:i:s', $training->start)->format('H:i').' Uhr',
-            'data' => 'Sportler: '.$user->firstName.' '.$user->familyName."\r\nGrund: ".$cancelReason."\r\nBis jetzt angemeldet: ".TrainingParticipation::whereTrainingId($training->id)->whereAttend(1)->count().' Sportler',
-            'notificationType' => 2,
-            '--url' => config('app.vue_url').'/#/trainingsPrepare',
-        ]);
-
+        $notifier->trainingCancelled(Training::findOrFail($this->argument('trainingId')), User::findOrFail($this->argument('userId')), $this->argument('cancelReason'));
     }
 }
