@@ -36,6 +36,13 @@
                   persistent-hint
                   class="mt-2"
                 ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.trainer_birthday"
+                  label="Geburtstage meiner Sportler (Push)"
+                  hint="Morgens um 7 Uhr, falls jemand aus deinen Gruppen Geburtstag hat"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -118,6 +125,7 @@ interface NotificationPreferences {
   admin_messages: boolean
   trainer_evaluation_reminder: boolean
   trainer_evaluation_reminder_email: boolean
+  trainer_birthday: boolean
 }
 
 const emit = defineEmits<{
@@ -137,7 +145,8 @@ const defaults = (): NotificationPreferences => ({
   absence_alert: true,
   admin_messages: true,
   trainer_evaluation_reminder: true,
-  trainer_evaluation_reminder_email: false
+  trainer_evaluation_reminder_email: false,
+  trainer_birthday: true,
 })
 
 const authStore = useAuthStore()

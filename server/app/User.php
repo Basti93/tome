@@ -5,6 +5,7 @@ namespace App;
 use App\Mail\InvitePassword;
 use App\Mail\ResetPassword;
 use Hash;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -84,14 +85,16 @@ class User extends Authenticatable
         return $this->hasOne('App\Group', 'id', 'group_id');
     }
 
-    public function trainerBranches()
+    /** @return BelongsToMany<Branch, $this> */
+    public function trainerBranches(): BelongsToMany
     {
-        return $this->belongsToMany('App\Branch', 'trainer_branch', 'user_id');
+        return $this->belongsToMany(Branch::class, 'trainer_branch', 'user_id');
     }
 
-    public function groups()
+    /** @return BelongsToMany<Group, $this> */
+    public function groups(): BelongsToMany
     {
-        return $this->belongsToMany('App\Group', 'user_group', 'user_id');
+        return $this->belongsToMany(Group::class, 'user_group', 'user_id');
     }
 
     /** @return HasMany<NotificationToken, $this> */

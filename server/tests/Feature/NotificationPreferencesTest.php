@@ -21,6 +21,7 @@ class NotificationPreferencesTest extends TestCase
         'adminMessages' => true,
         'trainerEvaluationReminder' => true,
         'trainerEvaluationReminderEmail' => false,
+        'trainerBirthday' => true,
     ];
 
     public function test_requires_authentication(): void

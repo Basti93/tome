@@ -28,7 +28,7 @@ class ScheduleTest extends TestCase
     {
         $events = $this->events();
 
-        $this->assertCount(8, app(Schedule::class)->events());
+        $this->assertCount(9, app(Schedule::class)->events());
         $this->assertEqualsCanonicalizing([
             'training:automatic-attend',
             'notification:upcomingTrainingForTrainer',
@@ -38,6 +38,7 @@ class ScheduleTest extends TestCase
             'user:absence-clean',
             'emails:last-month-statistics',
             'tome:retention',
+            'notification:birthdays',
         ], array_keys($events));
     }
 
@@ -61,6 +62,7 @@ class ScheduleTest extends TestCase
         $this->assertSame('0 20 * * *', $events['notification:evaluation-reminder']->expression);
         $this->assertSame('0 0 1 * *', $events['emails:last-month-statistics']->expression);
         $this->assertSame('0 3 1 * *', $events['tome:retention']->expression, 'retention runs monthly');
+        $this->assertSame('0 7 * * *', $events['notification:birthdays']->expression, 'birthdays every morning at 7');
     }
 
     public function test_every_scheduled_command_exists(): void

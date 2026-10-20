@@ -25,6 +25,9 @@ Schedule::command('training:automatic-attend')->everyThirtyMinutes()->between('6
 Schedule::command('notification:upcomingTrainingForTrainer')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings_for_trainers.log'));
 Schedule::command('notification:upcomingTraining')->everyThirtyMinutes()->between('6:00', '22:00')->appendOutputTo(storage_path('logs/com_upcoming_trainings.log'));
 
+// Every morning: trainers get one push with the birthdays of their athletes today (preference trainer_birthday)
+Schedule::command('notification:birthdays')->dailyAt('07:00')->appendOutputTo(storage_path('logs/com_birthdays.log'));
+
 // Once a day: trainers get one message listing their trainings that are still not evaluated (push: trainer_evaluation_reminder, e-mail: trainer_evaluation_reminder_email)
 Schedule::command('notification:evaluation-reminder')->dailyAt('20:00')->appendOutputTo(storage_path('logs/com_evaluation_reminder.log'));
 

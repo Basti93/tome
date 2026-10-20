@@ -68,4 +68,20 @@ describe('NotificationPreferencesForm', () => {
     expect((w.vm as any).preferences.trainer_evaluation_reminder_email).toBe(true)
     expect((w.vm as any).hasChanges).toBe(true)
   })
+
+  it('has a birthday push checkbox that is on by default and saved with the other preferences', async () => {
+    http.get.mockResolvedValue({ data: { notificationPreferences: { trainerUpcoming: false, trainerBirthday: true } } })
+    http.put = vi.fn().mockResolvedValue({ data: { status: 'ok', notificationPreferences: { trainerBirthday: false } } })
+    const w = mount(NotificationPreferencesForm, { global: { plugins: [vuetify] }, attachTo: document.body })
+    await flushPromises()
+
+    expect(w.text()).toContain('Geburtstage meiner Sportler (Push)')
+    expect((w.vm as any).preferences.trainer_birthday).toBe(true)
+
+    const box = w.findAll('input[type=checkbox]').find((i) => i.element.closest('.v-input')?.textContent?.includes('Geburtstage meiner Sportler'))!
+    await box.setValue(false)
+    await (w.vm as any).save()
+
+    expect(http.put).toHaveBeenCalledWith('/user/me/notification-preferences', { notification_preferences: expect.objectContaining({ trainer_birthday: false }) })
+  })
 })

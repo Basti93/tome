@@ -55,12 +55,6 @@ parameters:
 			path: app/Api/V1/Controllers/SimpleUserController.php
 
 		-
-			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Api/V1/Controllers/SimpleUserController.php
-
-		-
 			message: '#^Parameter \#1 \$hour of method DateTime\:\:setTime\(\) expects int, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -217,31 +211,7 @@ parameters:
 			path: app/Api/V1/Controllers/UserController.php
 
 		-
-			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 7
-			path: app/Api/V1/Controllers/UserController.php
-
-		-
-			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Api/V1/Controllers/UserController.php
-
-		-
-			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
-
-		-
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
-
-		-
-			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
@@ -251,12 +221,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
-
-		-
-			message: '#^Relation ''groups'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Console/Commands/TrainingAutomaticAttend.php
 
 		-
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
@@ -733,12 +697,6 @@ parameters:
 			path: app/Providers/EventServiceProvider.php
 
 		-
-			message: '#^Relation ''trainerBranches'' is not found in App\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/PushNotifier.php
-
-		-
 			message: '#^Access to an undefined property App\\Training\:\:\$participants\.$#'
 			identifier: property.notFound
 			count: 1
@@ -767,18 +725,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/TrainingSeries.php
-
-		-
-			message: '#^Access to an undefined property App\\User\:\:\$groups\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/User.php
-
-		-
-			message: '#^Access to an undefined property App\\User\:\:\$trainerBranches\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/User.php
 
 		-
 			message: '#^PHPDoc type array of property App\\User\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'

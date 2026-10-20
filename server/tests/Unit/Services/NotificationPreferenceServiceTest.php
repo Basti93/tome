@@ -27,6 +27,7 @@ class NotificationPreferenceServiceTest extends TestCase
             'admin_messages' => true,
             'trainer_evaluation_reminder' => true,
             'trainer_evaluation_reminder_email' => false,
+            'trainer_birthday' => true,
         ], $this->service->getDefaultPreferences());
     }
 
