@@ -84,4 +84,21 @@ describe('NotificationPreferencesForm', () => {
 
     expect(http.put).toHaveBeenCalledWith('/user/me/notification-preferences', { notification_preferences: expect.objectContaining({ trainer_birthday: false }) })
   })
+
+  it('has a monthly statistics e-mail checkbox that is on by default (also for older stored preferences) and saved', async () => {
+    http.get.mockResolvedValue({ data: { notificationPreferences: { trainerUpcoming: false } } })
+    http.put.mockResolvedValue({ data: { status: 'ok', notificationPreferences: { trainerMonthlyStatistics: false } } })
+    const w = mount(NotificationPreferencesForm, { global: { plugins: [vuetify] }, attachTo: document.body })
+    await flushPromises()
+
+    expect(w.text()).toContain('Monatliche Trainingsstatistik per E-Mail')
+    expect((w.vm as any).preferences.trainer_monthly_statistics).toBe(true)
+
+    const box = w.findAll('input[type=checkbox]').find((i) => i.element.closest('.v-input')?.textContent?.includes('Monatliche Trainingsstatistik'))!
+    expect(box.attributes('disabled')).toBeUndefined()
+    await box.setValue(false)
+    await (w.vm as any).save()
+
+    expect(http.put).toHaveBeenCalledWith('/user/me/notification-preferences', { notification_preferences: expect.objectContaining({ trainer_monthly_statistics: false }) })
+  })
 })

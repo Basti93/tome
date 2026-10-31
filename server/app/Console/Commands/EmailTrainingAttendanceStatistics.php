@@ -2,12 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Group;
 use App\Mail\UserTrainingStatistics;
-use App\Training;
+use App\Services\TrainingStatisticsReport;
 use App\User;
-use DateTime;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class EmailTrainingAttendanceStatistics extends Command
@@ -41,41 +40,13 @@ class EmailTrainingAttendanceStatistics extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(TrainingStatisticsReport $statistics)
     {
-        $branchId = $this->argument('branchId');
-        $from = DateTime::createFromFormat('Y-m-d', $this->argument('startDate'));
-        $until = DateTime::createFromFormat('Y-m-d', $this->argument('endDate'));
+        $branchId = (int) $this->argument('branchId');
+        $from = Carbon::createFromFormat('Y-m-d', $this->argument('startDate'))->startOfDay();
+        $until = Carbon::createFromFormat('Y-m-d', $this->argument('endDate'))->endOfDay();
 
-        $groups = Group::whereBranchId($branchId)->get();
-
-        $groupsArray = [];
-        foreach ($groups as $group) {
-            $groupId = $group->id;
-            $groupUsers = User::whereActive('1')->whereHas('groups', function ($query) use ($groupId) {
-                $query->whereGroupId($groupId);
-            })->get();
-
-            $userArray = [];
-            foreach ($groupUsers as $groupUser) {
-                $userId = $groupUser->id;
-                $trainingsCount = Training::whereBetween('start', [$from, $until])
-                    ->where('evaluated', true)
-                    ->whereHas('groups', function ($query) use ($groupId) {
-                        $query->where('group_id', $groupId);
-                    })
-                    ->whereHas('participants', function ($query) use ($userId) {
-                        $query->where('user_id', $userId)->whereAttend(1);
-                    })
-                    ->count();
-                $userArray[$groupUser->firstName.' '.$groupUser->familyName] = $trainingsCount;
-            }
-            uasort($userArray, function ($a, $b) {
-                return $b - $a;
-            });
-
-            $groupsArray[$group->name] = $userArray;
-        }
+        $report = $statistics->forBranch($branchId, $from, $until);
 
         $branchTrainers = User::role('trainer')
             ->whereHas('trainerBranches', function ($query) use ($branchId) {
@@ -84,10 +55,9 @@ class EmailTrainingAttendanceStatistics extends Command
             ->get();
 
         foreach ($branchTrainers as $branchTrainer) {
-            if ($branchTrainer->email) {
-                Mail::to($branchTrainer)->send(new UserTrainingStatistics($branchTrainer, $groupsArray, $from, $until));
+            if ($branchTrainer->email && $branchTrainer->isNotificationEnabled('trainer_monthly_statistics')) {
+                Mail::to($branchTrainer)->send(new UserTrainingStatistics($statistics->forTrainer($report, $branchTrainer)));
             }
         }
-
     }
 }

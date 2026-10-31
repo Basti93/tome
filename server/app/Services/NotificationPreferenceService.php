@@ -43,6 +43,8 @@ class NotificationPreferenceService
             'trainer_evaluation_reminder' => true,
             'trainer_evaluation_reminder_email' => false,
             'trainer_birthday' => true,
+            // e-mail (not a push): monthly training statistics for trainers
+            'trainer_monthly_statistics' => true,
         ];
     }
 

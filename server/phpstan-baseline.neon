@@ -214,12 +214,6 @@ parameters:
 			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
-			path: app/Console/Commands/EmailTrainingAttendanceStatistics.php
-
-		-
-			message: '#^Relation ''participants'' is not found in App\\Training model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Console/Commands/TrainerUpcomingTrainingNotifications.php
 
 		-

@@ -2,41 +2,20 @@
 
 namespace App\Mail;
 
-use App\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 
+/** Monthly trainer statistics; the view model comes from App\Services\TrainingStatisticsReport. */
 class UserTrainingStatistics extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
 
-    public $user;
+    /** @param  array<string, mixed>  $report */
+    public function __construct(public array $report) {}
 
-    public $userGroupAttendance;
-
-    public $fromDate;
-
-    public $untilDate;
-
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(User $user, $userGroupAttendance, $fromDate, $untilDate)
-    {
-        $this->user = $user;
-        $this->userGroupAttendance = $userGroupAttendance;
-        $this->fromDate = $fromDate;
-        $this->untilDate = $untilDate;
-    }
-
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
     public function build()
     {
-        return $this->subject('Monatliche Trainingsstatistik '.date_format($this->fromDate, 'm.Y'))->view('email.trainingstatistics');
+        return $this->subject('Monatliche Trainingsstatistik '.$this->report['monthLabel'])
+            ->view('email.trainingstatistics', ['report' => $this->report]);
     }
 }

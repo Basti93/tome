@@ -22,6 +22,7 @@ class NotificationPreferencesTest extends TestCase
         'trainerEvaluationReminder' => true,
         'trainerEvaluationReminderEmail' => false,
         'trainerBirthday' => true,
+        'trainerMonthlyStatistics' => true,
     ];
 
     public function test_requires_authentication(): void
@@ -122,5 +123,14 @@ class NotificationPreferencesTest extends TestCase
         $this->actingAsUser($a)->putJson(self::URI, ['notification_preferences' => ['trainer_cancel_alert' => false]])->assertOk();
 
         $this->actingAsUser($b)->getJson(self::URI)->assertJsonPath('notificationPreferences.trainerCancelAlert', true);
+    }
+
+    public function test_monthly_statistics_switch_can_be_saved(): void
+    {
+        $user = $this->makeUser('trainer');
+
+        $this->actingAsUser($user)->putJson(self::URI, ['notification_preferences' => ['trainer_monthly_statistics' => false]])
+            ->assertOk()->assertJsonPath('notificationPreferences.trainerMonthlyStatistics', false);
+        $this->assertFalse($user->fresh()->isNotificationEnabled('trainer_monthly_statistics'));
     }
 }

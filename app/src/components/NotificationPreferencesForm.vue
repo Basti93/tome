@@ -43,6 +43,13 @@
                   persistent-hint
                   class="mt-2"
                 ></v-checkbox>
+                <v-checkbox
+                  v-model="preferences.trainer_monthly_statistics"
+                  label="Monatliche Trainingsstatistik per E-Mail"
+                  hint="Am Monatsanfang eine E-Mail mit der Statistik deiner Gruppen"
+                  persistent-hint
+                  class="mt-2"
+                ></v-checkbox>
               </v-card-text>
             </v-card>
           </v-col>
@@ -126,6 +133,7 @@ interface NotificationPreferences {
   trainer_evaluation_reminder: boolean
   trainer_evaluation_reminder_email: boolean
   trainer_birthday: boolean
+  trainer_monthly_statistics: boolean
 }
 
 const emit = defineEmits<{
@@ -147,6 +155,7 @@ const defaults = (): NotificationPreferences => ({
   trainer_evaluation_reminder: true,
   trainer_evaluation_reminder_email: false,
   trainer_birthday: true,
+  trainer_monthly_statistics: true,
 })
 
 const authStore = useAuthStore()
